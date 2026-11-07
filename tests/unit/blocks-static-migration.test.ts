@@ -38,6 +38,8 @@ beforeAll(async () => {
     "INSERT INTO pages_blocks_hero_locales(heading,id,_locale,_parent_id) VALUES('Merhaba',1,'tr','hero-1')",
   ]) await run(q)
   await payload.db.migrate({ migrations: migrations.slice(0, index + 1) as unknown as MigrateArgs })
+  // Payload's schema also contains the F5 tables; they are independent of F4, so keep them applied for reads.
+  await migrations.find((m) => m.name === '20261107_130000_blocks_dynamic_set')!.up(args())
 }, 60000)
 afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
 

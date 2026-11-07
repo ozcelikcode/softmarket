@@ -15,7 +15,7 @@ import type {
  * and every call degrades to an empty value instead of throwing.
  */
 
-const anon = (locale: Locale) => ({
+export const anon = (locale: Locale) => ({
   locale, overrideAccess: false as const, user: null, draft: false as const,
 })
 
@@ -23,7 +23,7 @@ const anon = (locale: Locale) => ({
 const mediaPick = { url: true, filename: true, alt: true, width: true, height: true, mimeType: true, protected: true, visibility: true } as const
 const familyPick = { title: true, slug: true, tagline: true } as const
 
-const populate = {
+export const populate = {
   media: mediaPick,
   'product-families': familyPick,
   products: { title: true, slug: true, tagline: true, summary: true, family: true, heroImage: true },

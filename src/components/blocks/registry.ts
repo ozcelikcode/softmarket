@@ -1,3 +1,4 @@
+import { CaseStudyBlock } from '@/components/blocks/case-study-block'
 import { CTABlock } from '@/components/blocks/cta-block'
 import { DividerBlock } from '@/components/blocks/divider-block'
 import { FAQBlock } from '@/components/blocks/faq-block'
@@ -6,7 +7,11 @@ import { HeroBlock } from '@/components/blocks/hero-block'
 import { LogoWallBlock } from '@/components/blocks/logo-wall-block'
 import { MediaBlock } from '@/components/blocks/media-block'
 import { MediaTextBlock } from '@/components/blocks/media-text-block'
+import { NewsListBlock } from '@/components/blocks/news-list-block'
+import { ProductFamiliesBlock } from '@/components/blocks/product-families-block'
+import { ProductShowcaseBlock } from '@/components/blocks/product-showcase-block'
 import { RichTextBlock } from '@/components/blocks/rich-text-block'
+import { SolutionsGridBlock } from '@/components/blocks/solutions-grid-block'
 import { SpacerBlock } from '@/components/blocks/spacer-block'
 import { SpecTableBlock } from '@/components/blocks/spec-table-block'
 import { StatsBlock } from '@/components/blocks/stats-block'
@@ -36,6 +41,11 @@ export const blockRegistry: { [K in LayoutBlockType]: BlockComponent<BlockOf<K>>
   tabs: TabsBlock,
   spacer: SpacerBlock,
   divider: DividerBlock,
+  productFamilies: ProductFamiliesBlock,
+  productShowcase: ProductShowcaseBlock,
+  solutionsGrid: SolutionsGridBlock,
+  caseStudy: CaseStudyBlock,
+  newsList: NewsListBlock,
 }
 
 export const hasBlockRenderer = (blockType: string): blockType is LayoutBlockType =>

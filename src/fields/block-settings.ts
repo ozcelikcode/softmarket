@@ -63,6 +63,11 @@ export const BLOCK_DEFAULTS: Record<string, BlockDefaults> = {
   tabs: { ...base, theme: 'light' },
   spacer: { ...base, theme: 'light', spacing: 'none', width: false },
   divider: { ...base, theme: 'light', spacing: 'sm' },
+  productFamilies: { ...base, theme: 'light', spacing: 'lg' },
+  productShowcase: { ...base, theme: 'light', spacing: 'lg' },
+  solutionsGrid: { ...base, theme: 'dark', spacing: 'lg' },
+  caseStudy: { ...base, theme: 'dark', spacing: 'lg' },
+  newsList: { ...base, theme: 'light', spacing: 'lg' },
 }
 const FALLBACK: BlockDefaults = { ...base, theme: 'light' }
 
@@ -163,6 +168,9 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
           defaultValue: d.animation,
           label: L('Animasyon', 'Animation'),
           options: [opt('subtle', 'Hafif (görününce)', 'Subtle (on reveal)'), opt('none', 'Yok', 'None')],
+          // `enum__case_studies_v_blocks_<slug>_appearance_animation` exceeds Payload's 63 char limit for 15+ char
+          // slugs (productFamilies). The enum name only exists in the drizzle schema (SQLite has no enums).
+          ...(blockType.length >= 15 ? { enumName: ({ tableName }: { tableName?: string }) => `enum_${tableName}_anim` } : {}),
           admin: { width: '33%' },
         },
       ],

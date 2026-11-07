@@ -1,5 +1,6 @@
 import { getBlockRenderer, hasBlockRenderer } from '@/components/blocks/registry'
 import type { LayoutBlock } from '@/components/blocks/types'
+import { preloadBlockData } from '@/lib/blocks/data'
 import { planBlocks } from '@/lib/blocks/render-plan'
 
 export type { LayoutBlock } from '@/components/blocks/types'
@@ -12,6 +13,8 @@ export type { LayoutBlock } from '@/components/blocks/types'
 export function RenderBlocks({ blocks, locale, firstHeroH1 = false }: { blocks?: LayoutBlock[] | null; locale: string; firstHeroH1?: boolean }) {
   const planned = planBlocks(blocks, { firstHeroH1, isKnown: hasBlockRenderer })
   if (!planned.length) return null
+  // Start every data-bound block's fetch now; blocks then join the in-flight (cached) requests.
+  preloadBlockData(planned.map(({ block }) => block), locale)
   return (
     <>
       {planned.map(({ block, key, ctx }) => {

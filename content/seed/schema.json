@@ -907,8 +907,16 @@
           "enum": [
             "manual",
             "caseStudies",
-            "partners"
+            "partners",
+            "allPartners",
+            "allCaseStudies",
+            "partnersAndCaseStudies"
           ]
+        },
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 24
         },
         "logos": {
           "type": "array",
@@ -1942,6 +1950,597 @@
       "required": [
         "blockType"
       ]
+    },
+    "productFamilies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "all",
+            "manual"
+          ]
+        },
+        "families": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "showCount": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "sort": {
+          "enum": [
+            "order",
+            "newest",
+            "oldest",
+            "manual"
+          ]
+        },
+        "layout": {
+          "enum": [
+            "grid-3",
+            "grid-2",
+            "grid-4",
+            "list"
+          ]
+        },
+        "showViewAll": {
+          "type": "boolean"
+        },
+        "viewAllLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewAllUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productFamilies"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productShowcase": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "featured",
+            "all",
+            "manual",
+            "byFamily",
+            "byIndustry"
+          ]
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "industry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "sort": {
+          "enum": [
+            "order",
+            "newest",
+            "oldest",
+            "manual"
+          ]
+        },
+        "layout": {
+          "enum": [
+            "grid-3",
+            "grid-2",
+            "grid-4",
+            "list",
+            "alternating"
+          ]
+        },
+        "showViewAll": {
+          "type": "boolean"
+        },
+        "viewAllLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewAllUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productShowcase"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "solutionsGrid": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "all",
+            "manual",
+            "byIndustry"
+          ]
+        },
+        "solutions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "industry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "sort": {
+          "enum": [
+            "order",
+            "newest",
+            "oldest",
+            "manual"
+          ]
+        },
+        "layout": {
+          "enum": [
+            "grid-3",
+            "grid-2",
+            "grid-4",
+            "list"
+          ]
+        },
+        "showViewAll": {
+          "type": "boolean"
+        },
+        "viewAllLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewAllUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "solutionsGrid"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "caseStudy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "featured",
+            "latest",
+            "manual",
+            "byIndustry"
+          ]
+        },
+        "caseStudy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "industry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "showResults": {
+          "type": "boolean"
+        },
+        "showLink": {
+          "type": "boolean"
+        },
+        "linkLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "linkUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "caseStudy"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "newsList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "latest",
+            "category",
+            "manual"
+          ]
+        },
+        "category": {
+          "enum": [
+            "news",
+            "product-update",
+            "event",
+            "blog"
+          ]
+        },
+        "posts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "sort": {
+          "enum": [
+            "order",
+            "newest",
+            "oldest",
+            "manual"
+          ]
+        },
+        "layout": {
+          "enum": [
+            "grid-3",
+            "grid-2",
+            "grid-4",
+            "list"
+          ]
+        },
+        "showViewAll": {
+          "type": "boolean"
+        },
+        "viewAllLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewAllUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "newsList"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
     }
   },
   "title": "SoftMarket bilingual content seed v1",
@@ -2235,6 +2834,21 @@
                     },
                     {
                       "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
                     }
                   ]
                 }
@@ -2446,6 +3060,21 @@
                     },
                     {
                       "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
                     }
                   ]
                 }
@@ -2837,6 +3466,21 @@
                     },
                     {
                       "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
                     }
                   ]
                 }
@@ -2943,6 +3587,21 @@
                     },
                     {
                       "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
                     }
                   ]
                 }
@@ -3556,6 +4215,21 @@
                     },
                     {
                       "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
                     }
                   ]
                 }
@@ -3637,6 +4311,21 @@
                     },
                     {
                       "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
                     }
                   ]
                 }

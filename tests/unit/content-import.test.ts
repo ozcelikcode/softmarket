@@ -39,6 +39,14 @@ const run = (payload: Payload, seed: unknown = example, dryRun = false) => impor
 describe('content import', () => {
   it('keeps the shipped JSON Schema in sync with the collection/block model', () => expect(schema).toEqual(seedSchema))
   it('accepts the bilingual minimal example', () => expect(() => validateSeed(example, 'example.json')).not.toThrow())
+  it('rejects list limits above 24 in the JSON schema before mutation', async () => {
+    for (const blockType of ['productFamilies', 'productShowcase', 'solutionsGrid', 'newsList', 'logoWall']) {
+      const doc = { slug: 'too-many', title: 'Too many', layout: [{ blockType, limit: 25 }] }
+      const { payload, client } = fakePayload()
+      await expect(run(payload, { version: 1, pages: [{ tr: doc, en: doc }] })).rejects.toThrow(/<= 24/)
+      expect(client.create).not.toHaveBeenCalled()
+    }
+  })
   it.each([
     { version: 1, products: [{ tr: { title: 'bad' } }] },
     { ...example, products: [{ tr: { ...example.products[0].tr, family: 42 }, en: example.products[0].en }] },
@@ -141,6 +149,46 @@ describe('content import', () => {
     expect(pages.every(p => p.tr.pageType === 'legal' && p.en.pageType === 'legal')).toBe(true)
     expect(pages.find(p => p.tr.slug === 'kvkk-aydinlatma')).toBeTruthy()
     expect(await readFile('content/legal/tr/kvkk-aydinlatma.md', 'utf8')).toContain('Cloudflare Web Analytics')
+  })
+  it('resolves F5 dynamic block relationships by TR slug (including DB-only case studies) and rejects unknown targets', async () => {
+    const { payload, store } = fakePayload()
+    store.set('case-studies', [{ id: 777, slug: 'musteri-vaka' }])
+    const layout = [
+      { blockType: 'productFamilies', source: 'manual', families: ['ornek-aile'], layout: 'grid-2' },
+      { blockType: 'productShowcase', source: 'manual', products: ['ornek-urun'] },
+      { blockType: 'productShowcase', source: 'byFamily', family: 'ornek-aile' },
+      { blockType: 'solutionsGrid', source: 'manual', solutions: ['cozum-bir'] },
+      { blockType: 'solutionsGrid', source: 'byIndustry', industry: 'sanayi' },
+      { blockType: 'caseStudy', source: 'manual', caseStudy: 'musteri-vaka' },
+      { blockType: 'newsList', source: 'manual', posts: ['haber-bir'] },
+    ]
+    const seed = {
+      ...example,
+      industries: [{ tr: { slug: 'sanayi', title: 'Sanayi' }, en: { slug: 'sanayi', title: 'Industry' } }],
+      solutions: [{ tr: { slug: 'cozum-bir', title: 'Çözüm' }, en: { slug: 'cozum-bir', title: 'Solution' } }],
+      posts: [{ tr: { slug: 'haber-bir', title: 'Haber' }, en: { slug: 'haber-bir', title: 'News' } }],
+      pages: [{
+        tr: { slug: 'dinamik', title: 'Dinamik', pageType: 'landing', layout: layout.map((b) => (b.blockType === 'caseStudy' ? b : { ...b, heading: 'TR' })) },
+        en: { slug: 'dynamic', title: 'Dynamic', pageType: 'landing', layout: layout.map((b) => (b.blockType === 'caseStudy' ? b : { ...b, heading: 'EN' })) },
+      }],
+    } as unknown as Seed
+    expect(() => validateSeed(seed, 'dynamic.json')).not.toThrow()
+    await run(payload, seed)
+    const page = store.get('pages')![0].layout as Data[]
+    const id = (collection: string, slug: string) => store.get(collection)!.find((d) => d.slug === slug)!.id
+    expect(page[0].families).toEqual([id('product-families', 'ornek-aile')])
+    expect(page[1].products).toEqual([id('products', 'ornek-urun')])
+    expect(page[2].family).toBe(id('product-families', 'ornek-aile'))
+    expect(page[3].solutions).toEqual([id('solutions', 'cozum-bir')])
+    expect(page[4].industry).toBe(id('industries', 'sanayi'))
+    expect(page[5].caseStudy).toBe(777)
+    expect(page[6].posts).toEqual([id('posts', 'haber-bir')])
+    const unknown = structuredClone(seed) as unknown as { pages: { tr: { layout: Data[] }; en: { layout: Data[] } }[] }
+    for (const locale of ['tr', 'en'] as const) unknown.pages[0][locale].layout[5].caseStudy = 'yok-boyle-vaka'
+    await expect(run(fakePayload().payload, unknown as unknown as Seed)).rejects.toThrow(/Unresolved relationship case-studies:yok-boyle-vaka/)
+    const invalid = structuredClone(seed) as unknown as { pages: { tr: { layout: Data[] } }[] }
+    invalid.pages[0].tr.layout[0].layout = 'grid-9'
+    expect(() => validateSeed(invalid, 'bad.json')).toThrow()
   })
   it('rejects media outside the media directory', async () => {
     await expect(safeMediaPath(resolve('content/seed'), '../legal/tr/eula.md')).rejects.toThrow('outside')

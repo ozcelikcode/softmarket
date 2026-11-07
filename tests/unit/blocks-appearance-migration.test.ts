@@ -61,11 +61,14 @@ describe(`migration ${NAME}`, () => {
     // Payload's schema now includes F4 tables/columns; apply that migration for the read and revert it after.
     const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
     const later = migrations.find((m) => m.name === '20261107_111754_blocks_static_set')!
+    const dynamic = migrations.find((m) => m.name === '20261107_130000_blocks_dynamic_set')!
     await later.up(args())
+    await dynamic.up(args())
     let product
     try {
       product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
     } finally {
+      await dynamic.down(args())
       await later.down(args())
     }
     expect(product.layout?.[0]).toMatchObject({ blockType: 'cta', style: 'card', appearance: { theme: 'auto', spacing: 'md', align: 'center', hidden: false } })

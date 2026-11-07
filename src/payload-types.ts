@@ -402,6 +402,11 @@ export interface Product {
         | TabsBlock
         | SpacerBlock
         | DividerBlock
+        | ProductFamiliesBlock
+        | ProductShowcaseBlock
+        | SolutionsGridBlock
+        | CaseStudyBlock
+        | NewsListBlock
       )[]
     | null;
   features?:
@@ -614,6 +619,11 @@ export interface Page {
         | TabsBlock
         | SpacerBlock
         | DividerBlock
+        | ProductFamiliesBlock
+        | ProductShowcaseBlock
+        | SolutionsGridBlock
+        | CaseStudyBlock
+        | NewsListBlock
       )[]
     | null;
   meta?: {
@@ -817,6 +827,11 @@ export interface Solution {
         | TabsBlock
         | SpacerBlock
         | DividerBlock
+        | ProductFamiliesBlock
+        | ProductShowcaseBlock
+        | SolutionsGridBlock
+        | CaseStudyBlock
+        | NewsListBlock
       )[]
     | null;
   industries?: (number | Industry)[] | null;
@@ -926,7 +941,11 @@ export interface StatsBlock {
  */
 export interface LogoWallBlock {
   heading?: string | null;
-  source?: ('manual' | 'caseStudies' | 'partners') | null;
+  source?: ('manual' | 'caseStudies' | 'partners' | 'allPartners' | 'allCaseStudies' | 'partnersAndCaseStudies') | null;
+  /**
+   * Only applies to automatic sources.
+   */
+  limit?: number | null;
   logos?:
     | {
         logo: number | Media;
@@ -1028,6 +1047,11 @@ export interface CaseStudy {
         | TabsBlock
         | SpacerBlock
         | DividerBlock
+        | ProductFamiliesBlock
+        | ProductShowcaseBlock
+        | SolutionsGridBlock
+        | CaseStudyBlock
+        | NewsListBlock
       )[]
     | null;
   industry?: (number | null) | Industry;
@@ -1831,6 +1855,252 @@ export interface DividerBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'divider';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFamiliesBlock".
+ */
+export interface ProductFamiliesBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  source?: ('all' | 'manual') | null;
+  families?: (number | ProductFamily)[] | null;
+  showCount?: boolean | null;
+  /**
+   * Between 1 and 24.
+   */
+  limit?: number | null;
+  /**
+   * "Manual selection order" only applies to a manual source.
+   */
+  sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list') | null;
+  showViewAll?: boolean | null;
+  /**
+   * Empty uses "View all".
+   */
+  viewAllLabel?: string | null;
+  /**
+   * Empty uses /urunler. Internal path (/...) or https URL.
+   */
+  viewAllUrl?: string | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productFamilies';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductShowcaseBlock".
+ */
+export interface ProductShowcaseBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  source?: ('featured' | 'all' | 'manual' | 'byFamily' | 'byIndustry') | null;
+  products?: (number | Product)[] | null;
+  family?: (number | null) | ProductFamily;
+  industry?: (number | null) | Industry;
+  /**
+   * Between 1 and 24.
+   */
+  limit?: number | null;
+  /**
+   * "Manual selection order" only applies to a manual source.
+   */
+  sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list' | 'alternating') | null;
+  showViewAll?: boolean | null;
+  /**
+   * Empty uses "View all".
+   */
+  viewAllLabel?: string | null;
+  /**
+   * Empty uses /urunler. Internal path (/...) or https URL.
+   */
+  viewAllUrl?: string | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SolutionsGridBlock".
+ */
+export interface SolutionsGridBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  source?: ('all' | 'manual' | 'byIndustry') | null;
+  solutions?: (number | Solution)[] | null;
+  industry?: (number | null) | Industry;
+  /**
+   * Between 1 and 24.
+   */
+  limit?: number | null;
+  /**
+   * "Manual selection order" only applies to a manual source.
+   */
+  sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list') | null;
+  showViewAll?: boolean | null;
+  /**
+   * Empty uses "View all".
+   */
+  viewAllLabel?: string | null;
+  /**
+   * Empty uses /cozumler. Internal path (/...) or https URL.
+   */
+  viewAllUrl?: string | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'solutionsGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyBlock".
+ */
+export interface CaseStudyBlock {
+  eyebrow?: string | null;
+  source?: ('featured' | 'latest' | 'manual' | 'byIndustry') | null;
+  caseStudy?: (number | null) | CaseStudy;
+  industry?: (number | null) | Industry;
+  showResults?: boolean | null;
+  showLink?: boolean | null;
+  /**
+   * Empty uses "Learn more".
+   */
+  linkLabel?: string | null;
+  /**
+   * Empty links to the case study's own page.
+   */
+  linkUrl?: string | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudy';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsListBlock".
+ */
+export interface NewsListBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  source?: ('latest' | 'category' | 'manual') | null;
+  category?: ('news' | 'product-update' | 'event' | 'blog') | null;
+  posts?: (number | Post)[] | null;
+  /**
+   * Between 1 and 24.
+   */
+  limit?: number | null;
+  /**
+   * "Manual selection order" only applies to a manual source.
+   */
+  sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list') | null;
+  showViewAll?: boolean | null;
+  /**
+   * Empty uses "View all".
+   */
+  viewAllLabel?: string | null;
+  /**
+   * Empty uses /haberler. Internal path (/...) or https URL.
+   */
+  viewAllUrl?: string | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsList';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2682,6 +2952,11 @@ export interface ProductsSelect<T extends boolean = true> {
         tabs?: T | TabsBlockSelect<T>;
         spacer?: T | SpacerBlockSelect<T>;
         divider?: T | DividerBlockSelect<T>;
+        productFamilies?: T | ProductFamiliesBlockSelect<T>;
+        productShowcase?: T | ProductShowcaseBlockSelect<T>;
+        solutionsGrid?: T | SolutionsGridBlockSelect<T>;
+        caseStudy?: T | CaseStudyBlockSelect<T>;
+        newsList?: T | NewsListBlockSelect<T>;
       };
   features?:
     | T
@@ -2908,6 +3183,7 @@ export interface StatsBlockSelect<T extends boolean = true> {
 export interface LogoWallBlockSelect<T extends boolean = true> {
   heading?: T;
   source?: T;
+  limit?: T;
   logos?:
     | T
     | {
@@ -3163,6 +3439,158 @@ export interface DividerBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFamiliesBlock_select".
+ */
+export interface ProductFamiliesBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  description?: T;
+  source?: T;
+  families?: T;
+  showCount?: T;
+  limit?: T;
+  sort?: T;
+  layout?: T;
+  showViewAll?: T;
+  viewAllLabel?: T;
+  viewAllUrl?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductShowcaseBlock_select".
+ */
+export interface ProductShowcaseBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  description?: T;
+  source?: T;
+  products?: T;
+  family?: T;
+  industry?: T;
+  limit?: T;
+  sort?: T;
+  layout?: T;
+  showViewAll?: T;
+  viewAllLabel?: T;
+  viewAllUrl?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SolutionsGridBlock_select".
+ */
+export interface SolutionsGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  description?: T;
+  source?: T;
+  solutions?: T;
+  industry?: T;
+  limit?: T;
+  sort?: T;
+  layout?: T;
+  showViewAll?: T;
+  viewAllLabel?: T;
+  viewAllUrl?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyBlock_select".
+ */
+export interface CaseStudyBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  source?: T;
+  caseStudy?: T;
+  industry?: T;
+  showResults?: T;
+  showLink?: T;
+  linkLabel?: T;
+  linkUrl?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsListBlock_select".
+ */
+export interface NewsListBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  description?: T;
+  source?: T;
+  category?: T;
+  posts?: T;
+  limit?: T;
+  sort?: T;
+  layout?: T;
+  showViewAll?: T;
+  viewAllLabel?: T;
+  viewAllUrl?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "editions_select".
  */
 export interface EditionsSelect<T extends boolean = true> {
@@ -3209,6 +3637,11 @@ export interface SolutionsSelect<T extends boolean = true> {
         tabs?: T | TabsBlockSelect<T>;
         spacer?: T | SpacerBlockSelect<T>;
         divider?: T | DividerBlockSelect<T>;
+        productFamilies?: T | ProductFamiliesBlockSelect<T>;
+        productShowcase?: T | ProductShowcaseBlockSelect<T>;
+        solutionsGrid?: T | SolutionsGridBlockSelect<T>;
+        caseStudy?: T | CaseStudyBlockSelect<T>;
+        newsList?: T | NewsListBlockSelect<T>;
       };
   industries?: T;
   products?: T;
@@ -3292,6 +3725,11 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         tabs?: T | TabsBlockSelect<T>;
         spacer?: T | SpacerBlockSelect<T>;
         divider?: T | DividerBlockSelect<T>;
+        productFamilies?: T | ProductFamiliesBlockSelect<T>;
+        productShowcase?: T | ProductShowcaseBlockSelect<T>;
+        solutionsGrid?: T | SolutionsGridBlockSelect<T>;
+        caseStudy?: T | CaseStudyBlockSelect<T>;
+        newsList?: T | NewsListBlockSelect<T>;
       };
   industry?: T;
   products?: T;
@@ -3401,6 +3839,11 @@ export interface PagesSelect<T extends boolean = true> {
         tabs?: T | TabsBlockSelect<T>;
         spacer?: T | SpacerBlockSelect<T>;
         divider?: T | DividerBlockSelect<T>;
+        productFamilies?: T | ProductFamiliesBlockSelect<T>;
+        productShowcase?: T | ProductShowcaseBlockSelect<T>;
+        solutionsGrid?: T | SolutionsGridBlockSelect<T>;
+        caseStudy?: T | CaseStudyBlockSelect<T>;
+        newsList?: T | NewsListBlockSelect<T>;
       };
   meta?:
     | T

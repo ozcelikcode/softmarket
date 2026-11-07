@@ -19,7 +19,7 @@ function fieldSchema(field: Field): Schema {
   let schema: Schema
   switch (field.type) {
     case 'text': case 'textarea': case 'email': case 'date': case 'code': schema = string; break
-    case 'number': schema = { type: 'number', ...('min' in field && field.min !== undefined ? { minimum: field.min } : {}) }; break
+    case 'number': schema = { type: 'number', ...('min' in field && field.min !== undefined ? { minimum: field.min } : {}), ...('max' in field && field.max !== undefined ? { maximum: field.max } : {}) }; break
     case 'checkbox': schema = { type: 'boolean' }; break
     case 'select': case 'radio': schema = { enum: field.options.map(o => typeof o === 'string' ? o : o.value) }; break
     case 'relationship': case 'upload': schema = relation(field); break

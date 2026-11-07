@@ -1,7 +1,10 @@
 import { getTranslations } from 'next-intl/server'
+import { Suspense } from 'react'
 
 import type { Locale } from '@/i18n/routing'
 import { getHeaderNav, getMegaData, type NavItem, type NavLink } from '@/lib/site'
+
+import { MotionObserver } from '@/components/ui/motion-observer'
 
 import { HeaderShell } from './header-shell'
 
@@ -48,6 +51,8 @@ export async function Header({ locale }: { locale: Locale }) {
   ]
 
   return (
+    <>
+    <Suspense fallback={null}><MotionObserver /></Suspense>
     <HeaderShell
       locale={locale}
       items={cms.items.length ? cms.items : fallback}
@@ -67,5 +72,6 @@ export async function Header({ locale }: { locale: Locale }) {
         catalogSoon: t('catalogSoon'),
       }}
     />
+    </>
   )
 }

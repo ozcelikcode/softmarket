@@ -10,8 +10,8 @@ import { MediaCard } from '@/components/sections/media-card'
 import { PageHero } from '@/components/sections/page-hero'
 import { Container } from '@/components/ui/container'
 import { MediaImage } from '@/components/ui/media-image'
-import { Reveal } from '@/components/ui/reveal'
 import { Section } from '@/components/ui/section'
+import { anim } from '@/lib/anim'
 import { getCaseStudies, mediaOf } from '@/lib/content'
 import { initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
@@ -41,13 +41,13 @@ export default async function CustomersPage({ params }: Props) {
           {cases.length ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {cases.map((cs, i) => (
-                <Reveal key={cs.id} delay={(i % 3) * 0.05} className="h-full">
+                <div key={cs.id} {...anim(i % 3)} className="h-full">
                   <MediaCard
                     headingAs="h2"
                     href={`/referanslar/${encodeURIComponent(cs.slug!)}`} locale={locale} title={cs.title} description={cs.summary} meta={cs.customerName}
                     logo={mediaOf(cs.customerLogo) ? <MediaImage media={cs.customerLogo} className="max-h-12 w-auto object-contain" /> : undefined}
                   />
-                </Reveal>
+                </div>
               ))}
             </div>
           ) : (

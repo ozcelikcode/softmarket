@@ -79,7 +79,7 @@ export async function Footer({ locale }: { locale: Locale }) {
 
   return (
     <footer data-theme="dark" className="border-t border-border bg-bg text-text">
-      <Container size="wide" className="py-16 lg:py-20">
+      <Container className="py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2.8fr]">
           <div className="max-w-xs">
             <Logo locale={locale} label={siteName} />

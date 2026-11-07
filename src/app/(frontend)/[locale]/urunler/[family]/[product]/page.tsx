@@ -30,7 +30,7 @@ import { getProductDetail, getProductVariants, mediaOf } from '@/lib/content'
 import { formatBytes } from '@/lib/format'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
 import { absoluteUrl, breadcrumbJsonLd, buildMetadata, seoText, siteUrl } from '@/lib/seo'
-import { safeHref } from '@/lib/utils'
+import { cn, safeHref } from '@/lib/utils'
 
 type Props = { params: Promise<{ locale: string; family: string; product: string }> }
 
@@ -136,7 +136,7 @@ export default async function ProductPage({ params }: Props) {
         ) : undefined}
       />
 
-      <Section theme="dark" spacing="none" className="sticky top-16 z-30 border-b border-border bg-bg/85 backdrop-blur lg:top-[4.5rem]">
+      <Section theme="dark" spacing="none" className="sticky top-16 z-30 border-b border-border bg-surface/90 backdrop-blur lg:top-[4.5rem]">
         <Container>
           <div className="relative">
           <nav aria-label={t('nav')} className="-mx-1 flex gap-1 overflow-x-auto pr-8 [scrollbar-width:none] lg:pr-0 [&::-webkit-scrollbar]:hidden">
@@ -146,7 +146,7 @@ export default async function ProductPage({ params }: Props) {
               </a>
             ))}
           </nav>
-          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-bg to-transparent lg:hidden" />
+          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-surface to-transparent lg:hidden" />
           </div>
         </Container>
       </Section>
@@ -155,7 +155,7 @@ export default async function ProductPage({ params }: Props) {
         <div id="genel-bakis" className="scroll-mt-32">
           {product.summary ? (
             <Section theme="light" spacing="md">
-              <Container size="narrow"><p className="text-h3 font-normal text-text text-pretty">{product.summary}</p></Container>
+              <Container><p className="max-w-3xl text-h3 font-normal text-text text-pretty">{product.summary}</p></Container>
             </Section>
           ) : null}
         </div>
@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: Props) {
             {requirements.length ? (
               <div>
                 <SectionHeading title={t('requirements')} className="mb-10" />
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className={cn('grid gap-5', requirements.length > 1 && 'md:grid-cols-2')}>
                   {requirements.map((r, i) => (
                     <div key={r.id ?? i} className="rounded-lg border border-border bg-surface p-6">
                       <Badge variant="accent">{os(r.os)}</Badge>
@@ -196,8 +196,6 @@ export default async function ProductPage({ params }: Props) {
           </Container>
         </Section>
       ) : null}
-
-      {extraBlocks.length ? <RenderBlocks blocks={extraBlocks} locale={locale} /> : null}
 
       <Section id="surumler" theme="dark" spacing="lg" className="scroll-mt-32 overflow-hidden border-y border-border">
         <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />
@@ -260,6 +258,9 @@ export default async function ProductPage({ params }: Props) {
           <Button asChild variant="secondary" size="lg"><AppLink href={docsHref} locale={locale}>{t('openDocs')}<ArrowRight aria-hidden /></AppLink></Button>
         </Container>
       </Section>
+
+      {/* Extra CMS blocks (FAQ, closing CTA) come last: the single dark showcase (editions) sits between light sections. */}
+      {extraBlocks.length ? <RenderBlocks blocks={extraBlocks} locale={locale} /> : null}
     </>
   )
 }

@@ -1,5 +1,7 @@
 # İlerleme
 
+- 2026-11-07 F1/F2/G çapraz denetim: taslak sonrası unpublish invalidation, nesne seçenekli cache anahtarları, eksik aile sayaçları, observer hata/URL query temizliği, hero görseli opacity gecikmesi, uzun breadcrumb taşması ve kodlanmış mailto yer tutucuları düzeltildi. Gerçek Payload/SQLite yayın yaşam döngüsü regresyonu eklendi. Typecheck/lint/31 dosya 372 test/`.next-prod` build geçti. 3200 `pnpm start` duman: 6 rota 200, olmayan rota 404, SSR pending=0, Mono preload=0. Süreç kapatıldı; 3100/.next/commit işlemi yok.
+
 - 2026-11-07 F0 kısmi tarayıcısız ölçüm: bundle ve 144 URL HTTP sonuçları `docs/perf/baseline.md`; SQLite sayacı ve timeout kök nedeni henüz eksik.
 
 - Güvenlik QA (2026-11-07): lisans e-postası HTTP yanıtı sonrası, bağımsız doğrulanmış kalıcı kayıt için gönderilir; SMTP yoksa anahtar konsola yazılmaz. İstek bağlamı dışındaki atamalarda bildirim zamanlanmaz. Uygulanmış `20261107_092304_remove_sales_legal_fields` üç eski ilişki değerini siler; down değerleri geri getirmez. Migration geçmişi değiştirilmedi.
@@ -137,3 +139,5 @@
 - `pnpm typecheck`, `pnpm test` (27 dosya / 317 test), `NEXT_DIST_DIR=.next-prod pnpm build` başarılı (lint dahil). 3200’de curl: /tr/xyz, /en/xyz, /xyz → 404 + main içinde 404; /tr, /admin → 200; /api/media/file/yok → 404; TR/EN OG → 200 PNG.
 - 3200’e özel geçici Playwright config ile 3 HTTP E2E geçti; 404/main beklentileri genişletildi, medya 404 eklendi. Origin kontrolü sabit 3100 yerine test baseURL origin’i ile tam eşitlik kullanır. Browser smoke uygulama açılmadan Chromium MachPort Permission denied (1100) nedeniyle engelli; görünürlük assertion’ı korunuyor.
 - Geçici production sunucusu kapatıldı; 3100 dev, .env, DB/şema ve commit işlemlerine dokunulmadı.
+
+- F2 + G (2026-11-07): animasyon sistemi (data-anim + tek MotionObserver, hero keyframe, token'lar) ve görsel düzeltmeler uygulandı. typecheck/lint/31 dosya 359 test geçti; prod build 3200'de Playwright: JS kapalı/reduced-motion'da gizli öğe 0, normalde kaydırma sonrası 0, CLS 0.000 (8 sayfa/genişlik), client nav yeniden tarıyor. Lighthouse mobil 100 (ilk koşu /tr TBT 274→13 ms), LCP ~1.05-1.2 s değişmedi. 3200 kapatıldı, commit yok.

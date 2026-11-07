@@ -14,8 +14,8 @@ import { PageHero } from '@/components/sections/page-hero'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
-import { Reveal } from '@/components/ui/reveal'
 import { Section } from '@/components/ui/section'
+import { anim } from '@/lib/anim'
 import { getPosts } from '@/lib/content'
 import { formatDate } from '@/lib/format'
 import { initLocale, MAX_PAGE, parsePage } from '@/lib/page-utils'
@@ -55,13 +55,13 @@ async function NewsPage({ params, searchParams }: Props) {
             <>
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {posts.docs.map((p, i) => (
-                  <Reveal key={p.id} delay={(i % 3) * 0.05} className="h-full">
+                  <div key={p.id} {...anim(i % 3)} className="h-full">
                     <MediaCard
                       headingAs="h2"
                       href={`/haberler/${encodeURIComponent(p.slug!)}`} locale={locale} title={p.title} description={p.excerpt}
                       image={p.coverImage} badge={p.category ? t(`cat.${p.category}`) : null} meta={formatDate(p.publishedAt, locale)}
                     />
-                  </Reveal>
+                  </div>
                 ))}
               </div>
               {totalPages > 1 ? (

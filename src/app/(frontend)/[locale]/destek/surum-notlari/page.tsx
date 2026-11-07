@@ -45,13 +45,13 @@ async function ReleaseNotesPage({ params, searchParams }: Props) {
       <div className="space-y-6">
         {releases.map((r) => (
           <article key={r.id} className="rounded-lg border border-border bg-surface p-6 sm:p-8">
-            <p className="text-small text-muted">
-              {relOf<Product>(r.product)?.title} · {formatDate(r.releaseDate, locale)} · {r.channel}
-            </p>
-            <h2 className="my-3 text-h3">
-              {r.version}
-              {r.title ? ` — ${r.title}` : ''}
-            </h2>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <h2 className="font-mono text-h2 text-text">{r.version}</h2>
+              <p className="text-small text-muted">
+                {[relOf<Product>(r.product)?.title, formatDate(r.releaseDate, locale), r.channel].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+            {r.title ? <p className="mb-4 mt-2 text-h4 text-text">{r.title}</p> : <div className="mb-4" />}
             <RichContent locale={locale} data={r.notes} />
             {r.changes?.length ? (
               <ul className="mt-4 list-disc space-y-2 pl-5">

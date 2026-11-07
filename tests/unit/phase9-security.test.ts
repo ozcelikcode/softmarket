@@ -55,6 +55,23 @@ describe('CMS cache invalidation', () => {
     await revalidatePublicContent()
     expect(cache.revalidatePath.mock.calls).toEqual([['/tr', 'layout'], ['/en', 'layout'], ['/sitemap.xml']])
   })
+  it('invalidates publish and unpublish but not draft saves', async () => {
+    vi.stubEnv('NEXT_RUNTIME', 'nodejs')
+    const config = withPublicRevalidation({ slug: 'pages', fields: [], versions: { drafts: true } })
+    const hook = config.hooks!.afterChange![0]!
+    const findOne = vi.fn()
+    const invoke = (doc: object, previousDoc: object) => hook({ doc, previousDoc, req: { payload: { db: { findOne } } } } as never)
+    await invoke({ id: 1, _status: 'published' }, { _status: 'draft' })
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(3)
+    cache.revalidatePath.mockClear()
+    await invoke({ id: 1, _status: 'draft' }, { _status: 'draft' })
+    expect(cache.revalidatePath).not.toHaveBeenCalled()
+    findOne.mockResolvedValueOnce({ _status: 'published' }).mockResolvedValueOnce({ _status: 'draft' })
+    await invoke({ id: 1, _status: 'draft' }, { _status: 'published' })
+    expect(cache.revalidatePath).not.toHaveBeenCalled()
+    await invoke({ id: 1, _status: 'draft' }, { _status: 'published' })
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(3)
+  })
   it('preserves existing hooks and does not fail when Next cache context is absent', async () => {
     const existing = vi.fn()
     const collection = withPublicRevalidation({ slug: 'products', fields: [], hooks: { afterChange: [existing] } })
@@ -65,5 +82,16 @@ describe('CMS cache invalidation', () => {
     cache.revalidatePath.mockImplementationOnce(() => { throw new Error('No incremental cache') })
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     await expect(revalidatePublicContent()).resolves.toBeUndefined()
+  })
+  it('invalidates unpublish when the latest version was already a draft', async () => {
+    vi.stubEnv('NEXT_RUNTIME', 'nodejs')
+    const config = withPublicRevalidation({ slug: 'pages', fields: [], versions: { drafts: true } })
+    const originalDoc = { id: 1, _status: 'draft' }
+    const data = { _status: 'draft' }
+    const findOne = vi.fn().mockResolvedValueOnce({ _status: 'published' }).mockResolvedValueOnce({ _status: 'draft' })
+    const req = { payload: { db: { findOne } } }
+    for (const hook of config.hooks?.beforeChange ?? []) await hook({ data, originalDoc, operation: 'update', req } as never)
+    await config.hooks!.afterChange![0]!({ doc: { id: 1, ...data }, previousDoc: originalDoc, req } as never)
+    expect(cache.revalidatePath.mock.calls).toEqual([['/tr', 'layout'], ['/en', 'layout'], ['/sitemap.xml']])
   })
 })

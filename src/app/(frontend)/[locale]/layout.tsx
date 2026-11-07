@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
-import { GeistMono } from 'geist/font/mono'
+import localFont from 'next/font/local'
+
+const GeistMono = localFont({ src: '../../../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2', variable: '--font-geist-mono', preload: false, display: 'swap' })
 import { GeistSans } from 'geist/font/sans'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'

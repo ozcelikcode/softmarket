@@ -19,11 +19,11 @@ import { Container } from '@/components/ui/container'
 import { Eyebrow, Heading, SectionHeading } from '@/components/ui/heading'
 import { NamedIcon } from '@/components/ui/icon'
 import { MediaImage } from '@/components/ui/media-image'
-import { Reveal } from '@/components/ui/reveal'
 import { Section } from '@/components/ui/section'
 import {
-  getCaseStudies, getCatalogProducts, getContactSettings, getFamilies, getPartners, getPosts, getSolutions, mediaOf,
+  getCaseStudies, getProductFamilyCounts, getContactSettings, getFamilies, getPartners, getPosts, getSolutions, mediaOf,
 } from '@/lib/content'
+import { anim, heroIn } from '@/lib/anim'
 import { formatDate } from '@/lib/format'
 import { initLocale } from '@/lib/page-utils'
 import { absoluteUrl, buildMetadata, siteUrl } from '@/lib/seo'
@@ -44,25 +44,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const locale = await initLocale(params)
-  const [t, c, n, pr, families, products, solutions, cases, partners, posts, settings] = await Promise.all([
+  const [t, c, n, pr, families, countByFamily, solutions, cases, partners, posts, settings] = await Promise.all([
     getTranslations({ locale, namespace: 'home' }),
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'news' }),
     getTranslations({ locale, namespace: 'products' }),
     getFamilies(locale, 6),
-    getCatalogProducts(locale, { limit: 200 }),
+    getProductFamilyCounts(locale),
     getSolutions(locale, 4),
     getCaseStudies(locale, { limit: 12 }),
     getPartners(locale, 12),
     getPosts(locale, { limit: 3 }),
     getContactSettings(locale),
   ])
-
-  const countByFamily = new Map<number, number>()
-  for (const p of products) {
-    const id = typeof p.family === 'object' ? p.family.id : p.family
-    countByFamily.set(id, (countByFamily.get(id) ?? 0) + 1)
-  }
 
   const logos: Logo[] = [
     ...partners.filter((p) => mediaOf(p.logo)).map((p) => ({ name: p.name, src: mediaOf(p.logo)!.url! })),
@@ -95,12 +89,12 @@ export default async function HomePage({ params }: Props) {
       <Section theme="dark" spacing="none" className="overflow-hidden pb-20 pt-40 sm:pb-28 sm:pt-48">
         <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />
         <div aria-hidden className="bg-grid pointer-events-none absolute inset-0 opacity-70" />
-        <Container size="wide" className="relative grid items-center gap-16 lg:grid-cols-[1.1fr_1fr]">
-          <Reveal>
-            <Eyebrow className="mb-6">{t('eyebrow')}</Eyebrow>
-            <Heading size="display">{t('title')}</Heading>
-            <p className="mt-6 max-w-xl text-lead text-muted text-pretty">{t('lead')}</p>
-            <div className="mt-10 flex flex-wrap gap-3">
+        <Container className="relative grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          <div className="min-w-0">
+            <Eyebrow className="mb-6" {...heroIn(0)}>{t('eyebrow')}</Eyebrow>
+            <Heading size="display" {...heroIn(1, 'slide')}>{t('title')}</Heading>
+            <p className="mt-6 max-w-xl text-lead text-muted text-pretty break-words" {...heroIn(2, 'slide')}>{t('lead')}</p>
+            <div className="mt-10 flex flex-wrap gap-3" {...heroIn(3)}>
               <Button asChild size="lg">
                 <AppLink href="/demo-talep" locale={locale}>{t('ctaPrimary')}</AppLink>
               </Button>
@@ -108,9 +102,9 @@ export default async function HomePage({ params }: Props) {
                 <AppLink href="/urunler" locale={locale}>{t('ctaSecondary')}<ArrowRight aria-hidden /></AppLink>
               </Button>
             </div>
-          </Reveal>
-          <Reveal delay={0.1} y={24}>
-            <div className="rounded-xl border border-border bg-surface p-1.5 shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--accent)_35%,transparent)]">
+          </div>
+          <div className="min-w-0" {...heroIn(4)}>
+            <div className="w-full max-w-full rounded-xl border border-border bg-surface p-1.5 shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--accent)_35%,transparent)]">
               <div className="rounded-lg border border-border bg-bg p-5">
                 <div className="flex items-center justify-between">
                   <div aria-hidden className="flex gap-1.5">
@@ -141,7 +135,7 @@ export default async function HomePage({ params }: Props) {
                 {!families.length ? <p className="mt-4 text-center text-xs text-muted">{t('panelEmpty')}</p> : null}
               </div>
             </div>
-          </Reveal>
+          </div>
         </Container>
       </Section>
 
@@ -156,14 +150,14 @@ export default async function HomePage({ params }: Props) {
             {families.length ? (
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {families.map((f, i) => (
-                  <Reveal key={f.id} delay={(i % 3) * 0.06} className="h-full">
+                  <div key={f.id} {...anim(i % 3)} className="h-full">
                     <ProductCard
                       title={f.title} description={f.tagline ?? undefined} href={`/urunler/${encodeURIComponent(f.slug!)}`} locale={locale}
                       icon={<NamedIcon name={f.icon} />}
                       badge={countByFamily.get(f.id) ? pr('count', { count: countByFamily.get(f.id)! }) : undefined}
                       image={mediaOf(f.image) ? <MediaImage media={f.image} className="transition-transform duration-500 group-hover:scale-[1.03]" /> : undefined}
                     />
-                  </Reveal>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -183,9 +177,9 @@ export default async function HomePage({ params }: Props) {
             </div>
             <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
               {solutions.map((s, i) => (
-                <Reveal key={s.id} delay={i * 0.05} className="h-full">
+                <div key={s.id} {...anim(i)} className="h-full">
                   <ProductCard title={s.title} description={s.summary ?? undefined} href={`/cozumler/${encodeURIComponent(s.slug!)}`} locale={locale} icon={<NamedIcon name="workflow" />} />
-                </Reveal>
+                </div>
               ))}
             </div>
           </Container>
@@ -239,12 +233,12 @@ export default async function HomePage({ params }: Props) {
             </div>
             <div className="mt-14 grid gap-5 md:grid-cols-3">
               {posts.docs.map((p, i) => (
-                <Reveal key={p.id} delay={i * 0.06} className="h-full">
+                <div key={p.id} {...anim(i)} className="h-full">
                   <MediaCard
                     href={`/haberler/${encodeURIComponent(p.slug!)}`} locale={locale} title={p.title} description={p.excerpt}
                     image={p.coverImage} badge={p.category ? n(`cat.${p.category}`) : null} meta={formatDate(p.publishedAt, locale)}
                   />
-                </Reveal>
+                </div>
               ))}
             </div>
           </Container>

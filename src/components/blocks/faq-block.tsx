@@ -1,5 +1,4 @@
 import { RichContent } from '@/components/blocks/rich-text'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Container } from '@/components/ui/container'
 import { Heading } from '@/components/ui/heading'
 import { Section } from '@/components/ui/section'
@@ -19,14 +18,14 @@ export function FAQBlock({ block, locale }: { block: Block; locale: string }) {
     <Section theme="light" tone="raised" spacing="md">
       <Container size="narrow">
         {block.heading ? <Heading size="h2" className="mb-8">{block.heading}</Heading> : null}
-        <Accordion type="single" collapsible>
+        <div>
           {items.map((it) => (
-            <AccordionItem key={it.id} value={it.id}>
-              <AccordionTrigger>{it.question}</AccordionTrigger>
-              <AccordionContent><RichContent data={it.answer} locale={locale} /></AccordionContent>
-            </AccordionItem>
+            <details key={it.id} className="border-b border-border py-4">
+              <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-offset-4">{it.question}</summary>
+              <div className="pt-4"><RichContent data={it.answer} locale={locale} /></div>
+            </details>
           ))}
-        </Accordion>
+        </div>
       </Container>
     </Section>
   )

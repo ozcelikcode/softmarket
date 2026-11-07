@@ -18,8 +18,8 @@ import { ProductCard } from '@/components/sections/product-card'
 import { Container } from '@/components/ui/container'
 import { NamedIcon } from '@/components/ui/icon'
 import { MediaImage } from '@/components/ui/media-image'
-import { Reveal } from '@/components/ui/reveal'
 import { Section } from '@/components/ui/section'
+import { anim } from '@/lib/anim'
 import { SectionHeading } from '@/components/ui/heading'
 import { getCatalogProducts, getFamily, getSlugVariants, mediaOf } from '@/lib/content'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
@@ -83,14 +83,14 @@ export default async function FamilyPage({ params }: Props) {
           {products.length ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {products.map((p, i) => (
-                <Reveal key={p.id} delay={(i % 3) * 0.05} className="h-full">
+                <div key={p.id} {...anim(i % 3)} className="h-full">
                   <ProductCard
                     title={p.title} description={p.tagline ?? p.summary ?? undefined}
                     href={`/urunler/${enc(slug)}/${enc(p.slug!)}`} locale={locale}
                     icon={<NamedIcon name={family.icon} />}
                     image={mediaOf(p.heroImage) ? <MediaImage media={p.heroImage} /> : undefined}
                   />
-                </Reveal>
+                </div>
               ))}
             </div>
           ) : (

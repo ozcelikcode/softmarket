@@ -34,7 +34,6 @@ export async function SupportFrame({
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
       <PageHero
-        theme="light"
         locale={locale}
         crumbLabel={c('breadcrumb')}
         crumbs={trail}

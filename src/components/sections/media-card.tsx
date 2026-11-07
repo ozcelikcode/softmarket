@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { MediaImage } from '@/components/ui/media-image'
+import { mediaOf } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
 /** Editorial card (news, case study, solution): optional image, meta line, title, summary. */
@@ -26,12 +27,21 @@ export function MediaCard({
       href={href}
       locale={locale}
       className={cn(
-        'group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-border-strong hover:bg-surface-2',
+        'card-hover group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface hover:border-border-strong hover:bg-surface-2',
         className,
       )}
     >
       <div className="relative aspect-[16/9] overflow-hidden border-b border-border bg-surface-2">
-        <MediaImage media={image} sizes="(min-width: 1024px) 33vw, 100vw" className="transition-transform duration-500 group-hover:scale-[1.03]" />
+        {mediaOf(image) ? (
+          <MediaImage media={image} sizes="(min-width: 1024px) 33vw, 100vw" className="transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : !logo ? (
+          // Branded placeholder (pure CSS, no request): accent glow + fine diagonal lines + wordmark glyph.
+          <div aria-hidden className="bg-brand-pattern absolute inset-0 flex items-center justify-center">
+            <span className="inline-flex size-10 items-center justify-center rounded-lg border border-border-strong/40 bg-bg/40 text-accent">
+              <svg viewBox="0 0 16 16" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5.5h10M3 10.5h10" /></svg>
+            </span>
+          </div>
+        ) : null}
         {logo ? <div className="absolute inset-0 flex items-center justify-center p-8">{logo}</div> : null}
         {badge ? <Badge variant="accent" className="absolute left-4 top-4 bg-bg/80 backdrop-blur">{badge}</Badge> : null}
       </div>

@@ -38,13 +38,21 @@ for (const locale of ['tr', 'en'] as const) {
 test('product language switch follows localized CMS slugs and returns to the same product', async ({ page }) => {
   await page.goto('/tr/urunler')
   await page.locator('main a[href^="/tr/urunler/"]').filter({ has: page.locator('h2') }).first().click()
-  const original = new URL(page.url()).pathname
+  await page.waitForURL(/\/tr\/urunler\/[^/]+\/[^/]+$/)
+  const originalUrl = page.url()
+  const original = new URL(originalUrl).pathname
+  expect(original).toMatch(/^\/tr\/urunler\/[^/]+\/[^/]+$/)
   const english = new URL((await page.locator('link[rel="alternate"][hreflang="en"]').getAttribute('href'))!).pathname
+  expect(english).toMatch(/^\/en\/products\/[^/]+\/[^/]+$/)
   await page.getByRole('button', { name: /: EN$/ }).first().click()
-  await expect(page).toHaveURL(new RegExp(english + '$'))
+  await expect(page).toHaveURL((url) => url.pathname === english)
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page.locator('#surumler')).toBeVisible()
+  await expect(page.locator('link[rel="alternate"][hreflang="tr"]')).toHaveAttribute('href', originalUrl)
   await page.getByRole('button', { name: /: TR$/ }).first().click()
-  await expect(page).toHaveURL(new RegExp(original + '$'))
+  await expect(page).toHaveURL((url) => url.pathname === original)
+  await expect(page.locator('html')).toHaveAttribute('lang', 'tr')
+  await expect(page.locator('#surumler')).toBeVisible()
 })
 
 test('support FAQ opens by keyboard; search is noindex and absent from sitemap', async ({ page, request }) => {

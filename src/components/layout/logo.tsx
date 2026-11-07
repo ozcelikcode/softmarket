@@ -1,12 +1,13 @@
 import { AppLink } from '@/components/ui/app-link'
 
 /** Wordmark placeholder; swap for the uploaded site-settings logo when available. */
-export function Logo({ locale, label }: { locale: string; label: string }) {
+export function Logo({ locale, label, onClick }: { locale: string; label: string; onClick?: () => void }) {
   return (
     <AppLink
       href="/"
       locale={locale}
       aria-label={label}
+      onClick={onClick}
       className="inline-flex min-h-11 items-center gap-2.5 text-text"
     >
       <span

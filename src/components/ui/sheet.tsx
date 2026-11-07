@@ -25,7 +25,7 @@ export function SheetContent({
       <DialogPrimitive.Content
         data-theme="dark"
         className={cn(
-          'fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-border bg-bg text-text outline-none data-[state=open]:animate-[slide-in-right_260ms_cubic-bezier(0.22,1,0.36,1)]',
+          'fixed inset-y-0 right-0 z-50 flex w-full flex-col sm:max-w-sm border-l border-border bg-bg text-text outline-none data-[state=open]:animate-[slide-in-right_260ms_cubic-bezier(0.22,1,0.36,1)]',
           className,
         )}
         {...props}

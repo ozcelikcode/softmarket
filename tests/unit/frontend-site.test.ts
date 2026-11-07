@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 const client = vi.hoisted(() => ({findGlobal: vi.fn(), find: vi.fn(), findByID: vi.fn()}))
 vi.mock('@payload-config', () => ({default: {}}))
 vi.mock('payload', () => ({getPayload: vi.fn(async () => client)}))
 
 import { getFooterData, getHeaderNav, getMegaData, getSiteSettings, resolveLink } from '@/lib/site'
+import { Actions } from '@/components/blocks/actions'
 
 beforeEach(() => vi.resetAllMocks())
 
@@ -70,5 +73,30 @@ describe('anonymous frontend Local API', () => {
 
   it('rejects unsafe CMS links before client serialization', () => {
     expect(resolveLink({label: 'x', type: 'external', url: 'javascript:alert(1)'})).toBeNull()
+  })
+
+  it.each(['data:text/html,test', '//evil.test', 'mailto:[COMPANY EMAIL]', 'mailto:[COMPANY_EMAIL]', 'mailto:%5BCOMPANY%20EMAIL%5D'])('drops unsafe or placeholder CTA target %s', (url) => {
+    expect(resolveLink({ label: 'Contact', type: 'external', url })).toBeNull()
+  })
+
+  it('preserves real email links and query parameters', () => {
+    expect(resolveLink({ label: 'Contact', type: 'external', url: 'mailto:sales@example.com?subject=Quote%20request' })?.href)
+      .toBe('mailto:sales@example.com?subject=Quote%20request')
+  })
+
+  it('renders the localized quote fallback only when all CMS actions are invalid', () => {
+    const fallback = { label: 'Request quote', href: '/teklif-iste' }
+    const html = renderToStaticMarkup(createElement(Actions, { locale: 'en', fallback, actions: [
+      { link: { label: 'Contact', type: 'external', url: 'mailto:%5BCOMPANY_EMAIL%5D' } },
+      { link: { label: 'Unsafe', type: 'external', url: 'javascript:alert(1)' } },
+    ] }))
+    expect(html).toContain('href="/en/request-quote"')
+    expect(html).not.toContain('mailto:')
+    expect(html).not.toContain('javascript:')
+    const valid = renderToStaticMarkup(createElement(Actions, { locale: 'en', fallback, actions: [
+      { link: { label: 'Contact', type: 'external', url: 'mailto:sales@example.com' } },
+    ] }))
+    expect(valid).toContain('mailto:sales@example.com')
+    expect(valid).not.toContain('request-quote')
   })
 })

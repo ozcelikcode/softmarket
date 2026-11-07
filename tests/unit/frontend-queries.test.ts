@@ -6,7 +6,7 @@ vi.mock('payload', () => ({ getPayload: vi.fn(async () => client) }))
 
 import {
   getCareer, getCareers, getCaseStudies, getCaseStudy, getCatalogProducts, getContactSettings,
-  getFamilies, getFamily, getPage, getPartners, getPost, getPosts, getProductDetail,
+  getFamilies, getFamily, getPage, getPartners, getPost, getPosts, getProductDetail, getProductFamilyCounts,
   getProductVariants, getSitemapEntries, getSlugVariants, getSolution, getSolutions,
 } from '@/lib/content'
 
@@ -37,6 +37,25 @@ describe('public content queries', () => {
     const contact = client.findGlobal.mock.calls[0][0]
     expect(contact.select.company).toEqual({ legalName: true })
     expect(contact.select).not.toHaveProperty('commerce')
+  })
+
+  it('does not persist React cache outside a render, as in CLI and import callers', async () => {
+    client.find.mockResolvedValueOnce({ docs: [{ id: 1, slug: 'first' }] })
+      .mockResolvedValueOnce({ docs: [{ id: 1, slug: 'updated' }] })
+    expect((await getFamily('tr', 'family'))?.slug).toBe('first')
+    expect((await getFamily('tr', 'family'))?.slug).toBe('updated')
+    expect(client.find).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps valid family counts when a product has a missing relationship or slug', async () => {
+    client.find.mockResolvedValue({ docs: [
+      { slug: 'one', family: 1 }, { slug: 'two', family: { id: 1 } },
+      { slug: 'orphan', family: null }, { slug: 'missing-family' }, { family: 1 },
+    ] })
+    expect(await getProductFamilyCounts('en')).toEqual(new Map([[1, 2]]))
+    expect(client.find).toHaveBeenCalledWith(expect.objectContaining({
+      collection: 'products', locale: 'en', user: null, draft: false, overrideAccess: false, depth: 0,
+    }))
   })
 
   it('never requests licensed downloads or unrelated commerce relations on product pages', async () => {

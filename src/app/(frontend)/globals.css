@@ -158,6 +158,14 @@
   mask-image: radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%);
 }
 
+@utility bg-brand-pattern {
+  background-color: var(--surface-2);
+  background-image:
+    radial-gradient(28rem 14rem at 80% 0%, color-mix(in oklab, var(--accent) 24%, transparent), transparent 70%),
+    radial-gradient(20rem 12rem at 0% 100%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%),
+    repeating-linear-gradient(135deg, color-mix(in oklab, var(--text) 5%, transparent) 0 1px, transparent 1px 14px);
+}
+
 @keyframes accordion-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }
@@ -196,9 +204,50 @@
   .rich-text th, .rich-text td { border: 1px solid var(--border); padding: 0.55em 0.8em; text-align: left; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  [data-reveal] { transition: opacity 600ms cubic-bezier(.22,1,.36,1) var(--reveal-delay), transform 600ms cubic-bezier(.22,1,.36,1) var(--reveal-delay); }
-  [data-reveal="pending"] { opacity: 0; transform: translateY(var(--reveal-y)); }
-  [data-reveal="visible"] { opacity: 1; transform: translateY(0); }
+/*
+ * Motion system (plan section 5). Only transform and opacity animate; colors/borders may transition.
+ * Hidden state exists only when MotionObserver sets data-anim-state="pending" on an off-screen element,
+ * so server markup, no-JS and reduced-motion always show all content.
+ */
+:root {
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-reveal: 560ms;
+  --dur-hero: 520ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --reveal-distance: 12px;
+  --stagger: 60ms;
+  --hero-stagger: 80ms;
 }
+
+@keyframes hero-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* LCP candidates (h1, lead) never start at opacity 0: they only slide. */
+@keyframes hero-slide { from { transform: translateY(8px); } to { transform: translateY(0); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-anim][data-anim-state="pending"] { opacity: 0; transform: translateY(var(--reveal-distance)); }
+  [data-anim][data-anim-state="visible"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--dur-reveal) var(--ease-out-soft) calc(var(--i, 0) * var(--stagger)),
+      transform var(--dur-reveal) var(--ease-out-soft) calc(var(--i, 0) * var(--stagger));
+  }
+  [data-hero-in] { animation: hero-slide var(--dur-hero) var(--ease-out-soft) calc(var(--i, 0) * var(--hero-stagger)) backwards; }
+  [data-hero-in="fade"] { animation-name: hero-rise; }
+  /* Hover lift: transform + border color only, hover-capable pointers only. */
+  @media (hover: hover) {
+    .card-hover:hover { transform: translateY(-2px); }
+  }
+}
+.card-hover {
+  transition:
+    transform var(--dur-base) var(--ease-out-soft),
+    border-color var(--dur-fast) linear,
+    background-color var(--dur-fast) linear;
+}
+/* Site setting motion = none (html[data-motion="none"]): everything static. */
+html[data-motion="none"] [data-anim][data-anim-state] { opacity: 1 !important; transform: none !important; transition: none !important; }
+html[data-motion="none"] [data-hero-in] { animation: none !important; }
+html[data-motion="none"] .card-hover:hover { transform: none; }
 #main { scroll-margin-top: 4.5rem; }

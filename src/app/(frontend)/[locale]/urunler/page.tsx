@@ -14,8 +14,8 @@ import { AppLink } from '@/components/ui/app-link'
 import { Container } from '@/components/ui/container'
 import { NamedIcon } from '@/components/ui/icon'
 import { MediaImage } from '@/components/ui/media-image'
-import { Reveal } from '@/components/ui/reveal'
 import { Section } from '@/components/ui/section'
+import { anim } from '@/lib/anim'
 import { getCatalogProducts, getFamilies, mediaOf, relOf } from '@/lib/content'
 import { first, initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
@@ -77,7 +77,7 @@ async function ProductsPage({ params, searchParams }: Props) {
               {visible.map((p, i) => {
                 const fam = relOf<ProductFamily>(p.family)!
                 return (
-                  <Reveal key={p.id} delay={(i % 3) * 0.05} className="h-full">
+                  <div key={p.id} {...anim(i % 3)} className="h-full">
                     <ProductCard
                       headingAs="h2"
                       title={p.title}
@@ -88,7 +88,7 @@ async function ProductsPage({ params, searchParams }: Props) {
                       icon={<NamedIcon name={fam.icon} />}
                       image={mediaOf(p.heroImage) ? <MediaImage media={p.heroImage} /> : undefined}
                     />
-                  </Reveal>
+                  </div>
                 )
               })}
             </div>

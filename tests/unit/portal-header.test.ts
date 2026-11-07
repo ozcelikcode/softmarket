@@ -16,14 +16,19 @@ const render = (path: string) => {
     labels: { siteName: 'SoftMarket', search: 'Search', account: 'Account', signIn: 'Sign in', signOut: 'Sign out', accountMenu: 'Account menu', menu: 'Menu', close: 'Close', allProducts: 'Products', allSolutions: 'Solutions', catalogSoon: 'Soon' },
   }))
 }
-describe('support and portal header contrast', () => {
-  it.each(['/tr/destek', '/tr/destek/dokumantasyon', '/en/support', '/en/account', '/tr/hesap/giris'])('paints a light background behind the dark logo on %s before scrolling', (path) => {
+describe('portal header contrast', () => {
+  it.each(['/en/account', '/tr/hesap/giris'])('paints a light background behind the dark logo on %s before scrolling', (path) => {
     const html = render(path)
     const header = html.match(/<header[^>]*>/)![0]
     expect(header).toContain('data-theme="light"')
     expect(header).toContain('bg-bg')
     expect(header).not.toContain('bg-transparent')
     expect(html).toContain('SoftMarket')
+  })
+  it.each(['/tr/destek', '/tr/teklif-iste', '/en/request-demo'])('keeps the transparent dark header over the dark hero on %s', (path) => {
+    const header = render(path).match(/<header[^>]*>/)![0]
+    expect(header).toContain('data-theme="dark"')
+    expect(header).toContain('bg-transparent')
   })
   it('preserves the transparent dark showcase header', () => {
     expect(render('/tr').match(/<header[^>]*>/)![0]).toContain('data-theme="dark"')

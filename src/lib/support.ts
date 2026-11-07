@@ -194,7 +194,7 @@ export const getDoc = cache(async (locale: Locale, productId: number, slug: stri
 )
 
 /** Localized dynamic support paths, matched by IDs rather than translated slug guesses. */
-export const supportVariants = async (productId: number, docId?: number) =>
+export const supportVariants = cache(async (productId: number, docId?: number) =>
   safe(
     async () => {
       const payload = await getPayloadClient()
@@ -233,7 +233,7 @@ export const supportVariants = async (productId: number, docId?: number) =>
       return paths
     },
     {} as Partial<Record<Locale, string>>,
-  )
+  ))
 
 export const getSupportSitemapEntries = async () =>
   safe(

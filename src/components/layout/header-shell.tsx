@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, Menu, Search, User } from 'lucide-react'
+import { ArrowRight, ChevronDown, Menu, Search, User } from 'lucide-react'
 import { NavigationMenu } from 'radix-ui'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -49,8 +49,9 @@ const triggerCls =
 
 export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
   const pathname = usePathname()
-  // Support and portal pages open with a light hero: the transparent header must switch to light tokens there.
-  const light = /^\/(?:tr|en)\/(?:hesap|account|destek|support)(?:\/|$)/.test(pathname)
+  // Only portal pages open on a light surface (no hero): the transparent header must switch to light tokens there.
+  // Every other page starts with a dark hero (PageHero default), so one rule keeps header and hero consistent.
+  const light = /^\/(?:tr|en)\/(?:hesap|account)(?:\/|$)/.test(pathname)
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -78,7 +79,7 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
           : light ? 'border-transparent bg-bg' : 'border-transparent bg-transparent',
       )}
     >
-      <Container size="wide" className="flex h-16 items-center gap-6 lg:h-[4.5rem]">
+      <Container className="flex h-16 items-center gap-6 lg:h-[4.5rem]">
         <Logo locale={locale} label={labels.siteName} />
 
         <NavigationMenu.Root aria-label={labels.menu} className="hidden flex-1 lg:block [&>div]:!static" style={{ position: 'static' }} delayDuration={80}>
@@ -96,7 +97,7 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
                     </NavigationMenu.Trigger>
                     <NavigationMenu.Content className="absolute inset-x-0 top-full data-[state=open]:animate-[mega-in_180ms_ease-out]">
                       <div className="border-b border-border bg-bg/95 backdrop-blur-xl">
-                        <Container size="wide" className="py-8">
+                        <Container className="py-8">
                           {item.mega === 'products' ? (
                             <ProductsMega
                               item={item}
@@ -209,7 +210,8 @@ function ProductsMega({
     )
   }
   return (
-    <div className="grid gap-x-10 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+    <div className="grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
       {data.families.map((family) => (
         <div key={family.href}>
           <NavigationMenu.Link asChild>
@@ -237,14 +239,20 @@ function ProductsMega({
           </ul>
         </div>
       ))}
+    </div>
       {item.href ? (
-        <div className="flex items-end md:col-span-3 xl:col-span-4">
-          <NavigationMenu.Link asChild>
-            <AppLink href={item.href} locale={locale} className="text-small font-medium text-accent hover:underline">
-              {labels.allProducts} →
-            </AppLink>
-          </NavigationMenu.Link>
-        </div>
+        <NavigationMenu.Link asChild>
+          <AppLink
+            href={item.href}
+            locale={locale}
+            className="bg-brand-pattern card-hover group relative hidden min-h-48 flex-col justify-end overflow-hidden rounded-lg border border-border p-6 hover:border-border-strong lg:flex"
+          >
+            <span className="text-h3 text-text">{labels.allProducts}</span>
+            <span className="mt-3 inline-flex items-center gap-1 text-small font-medium text-accent">
+              <ArrowRight aria-hidden className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </span>
+          </AppLink>
+        </NavigationMenu.Link>
       ) : null}
     </div>
   )
@@ -313,7 +321,10 @@ function MobileNav({
 
   const row = 'flex min-h-11 w-full font-semibold items-center justify-between py-3.5 text-h4 text-text'
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-6 pb-8 pt-16">
+    <div className="flex h-full flex-col overflow-y-auto px-6 pb-8 pt-4">
+      <div className="mb-4 flex h-12 items-center pr-14">
+        <Logo locale={locale} label={labels.siteName} onClick={onNavigate} />
+      </div>
       <nav aria-label={labels.menu} className="flex-1">
         <ul className="divide-y divide-border">
           {items.map((item) => {

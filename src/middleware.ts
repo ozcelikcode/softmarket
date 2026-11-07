@@ -15,7 +15,9 @@ export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const legacy = legacySearchPath(pathname)
   if (legacy) {
-    const url = request.nextUrl.clone()
+    // NextURL normalizes loopback hosts even with skipMiddlewareUrlNormalize.
+    // The original request URL preserves the origin for this same-host redirect.
+    const url = new URL(request.url)
     url.pathname = legacy
     return NextResponse.redirect(url, 308)
   }

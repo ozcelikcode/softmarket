@@ -19,28 +19,30 @@ export function Breadcrumb({
 }) {
   return (
     <nav aria-label={label} className={className}>
-      <ol className="flex flex-wrap items-center gap-1.5 text-small text-muted">
+      <ol className="flex min-w-0 items-center gap-1.5 text-small text-muted sm:flex-wrap">
         {items.map((item, i) => {
           const last = i === items.length - 1
+          // Narrow screens: show only the parent and the current page so the trail stays on one line.
+          const far = i < items.length - 2
           return (
             <Fragment key={`${item.label}-${i}`}>
-              <li className="flex items-center gap-1.5">
+              <li className={cn('min-w-0 items-center gap-1.5', far ? 'hidden sm:flex' : 'flex')}>
                 {item.href && !last ? (
                   <AppLink
                     href={item.href}
                     locale={locale}
-                    className={cn('inline-flex min-h-11 items-center rounded-sm hover:text-text lg:min-h-0')}
+                    className="inline-flex min-h-11 min-w-0 items-center rounded-sm hover:text-text lg:min-h-0"
                   >
-                    {item.label}
+                    <span className="truncate">{item.label}</span>
                   </AppLink>
                 ) : (
-                  <span aria-current={last ? 'page' : undefined} className={last ? 'text-text' : ''}>
+                  <span aria-current={last ? 'page' : undefined} className={cn(last && 'truncate text-text')}>
                     {item.label}
                   </span>
                 )}
               </li>
               {!last ? (
-                <li aria-hidden className="flex">
+                <li aria-hidden className={cn('shrink-0', far ? 'hidden sm:flex' : 'flex')}>
                   <ChevronRight className="size-3.5" />
                 </li>
               ) : null}

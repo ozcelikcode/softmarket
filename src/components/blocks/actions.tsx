@@ -6,12 +6,20 @@ type ActionRow = { link?: LinkGroup; id?: string | null }
 type Appearance = 'primary' | 'secondary' | 'link' | null | undefined
 
 /** CMS link rows -> buttons. Rows without a resolvable, safe target are dropped. */
-export function Actions({ actions, locale }: { actions?: ActionRow[] | null; locale: string }) {
+/** `fallback` renders one primary button when no row resolves (e.g. placeholder mailto targets are dropped). */
+export function Actions({ actions, locale, fallback }: { actions?: ActionRow[] | null; locale: string; fallback?: { label: string; href: string } }) {
   const rows = (actions ?? []).flatMap((a, i) => {
     const link = resolveLink(a.link)
     return link ? [{ link, key: a.id ?? String(i), appearance: (a.link as { appearance?: Appearance } | null)?.appearance }] : []
   })
-  if (!rows.length) return null
+  if (!rows.length) {
+    if (!fallback) return null
+    return (
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <Button asChild size="lg"><AppLink href={fallback.href} locale={locale}>{fallback.label}</AppLink></Button>
+      </div>
+    )
+  }
   return (
     <div className="mt-8 flex flex-wrap items-center gap-3">
       {rows.map(({ link, key, appearance }) => (

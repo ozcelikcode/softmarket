@@ -23,7 +23,7 @@ export function ProductCard({ title, description, href, locale, badge, icon, ima
       href={href}
       locale={locale}
       className={cn(
-        'group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-border-strong hover:bg-surface-2',
+        'card-hover group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface hover:border-border-strong hover:bg-surface-2',
         className,
       )}
     >

@@ -59,7 +59,7 @@ test('HTTP: search/noindex, sitemap, portal no-store, 404 and optimizer denial',
     // Next 15.4.11: notFound() under the (frontend)/[locale] root layout SSRs the __next_error__ shell;
     // the localized 404 renders client-side from the RSC payload. Visible <main> 404 is asserted in smoke.spec.ts (browser).
     const html = await missing.text()
-    expect(html).toContain('<meta name="next-error" content="not-found"/>')
+    expect(html).toMatch(/<meta name="next-error" content="not-found"\/?>/)
     expect(html).toContain('NEXT_HTTP_ERROR_FALLBACK;404')
   }
   const missingMedia = await request.get('/api/media/file/yok')
@@ -80,10 +80,12 @@ test('HTTP: search/noindex, sitemap, portal no-store, 404 and optimizer denial',
   expect((await request.get('/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fprotected.png&w=640&q=75')).status()).toBe(400)
 })
 
-test('legacy search preserves queries and invalid dynamic content returns HTTP 404', async ({ request }) => {
+test('legacy search preserves queries and invalid dynamic content returns HTTP 404', async ({ request, baseURL }) => {
   const legacy = await request.get('/tr/arama?q=akis&page=1', { maxRedirects: 0 })
   expect(legacy.status()).toBe(308)
-  expect(legacy.headers().location).toBe('/tr/ara?q=akis&page=1')
+  const location = new URL(legacy.headers().location, baseURL)
+  expect(location.pathname + location.search).toBe('/tr/ara?q=akis&page=1')
+  expect(location.origin).toBe(new URL(baseURL!).origin)
   for (const path of ['/tr/yasal/olmayan', '/en/legal/missing-routine-check', '/tr/ara?q=%25', '/en/search?q=%25']) {
     const response = await request.get(path)
     expect(response.status(), path).toBe(404)

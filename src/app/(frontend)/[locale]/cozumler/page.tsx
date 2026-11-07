@@ -11,8 +11,8 @@ import { JsonLd } from '@/components/sections/json-ld'
 import { MediaCard } from '@/components/sections/media-card'
 import { PageHero } from '@/components/sections/page-hero'
 import { Container } from '@/components/ui/container'
-import { Reveal } from '@/components/ui/reveal'
 import { Section } from '@/components/ui/section'
+import { anim } from '@/lib/anim'
 import { getSolutions, relOf } from '@/lib/content'
 import { first, initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
@@ -47,9 +47,9 @@ async function SolutionsPage({ params, searchParams }: Props) {
           {solutions.length ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {solutions.map((s, i) => (
-                <Reveal key={s.id} delay={(i % 3) * 0.05} className="h-full">
+                <div key={s.id} {...anim(i % 3)} className="h-full">
                   <MediaCard headingAs="h2" href={`/cozumler/${encodeURIComponent(s.slug!)}`} locale={locale} title={s.title} description={s.summary} image={s.heroImage} />
-                </Reveal>
+                </div>
               ))}
             </div>
           ) : (

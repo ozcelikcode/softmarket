@@ -199,3 +199,12 @@ SQLite WAL, `busyTimeout: 5000` ve `transactionOptions.behavior: immediate` kull
 3. 36.70 sn: başarılı.
 
 Sorgu zamanlaması ve kilit telemetrisi bulunmadığından timeout'un kök nedeni belirlenemedi. Sayfa başına SQLite sayacı ve testleri henüz uygulanmadı; kilit/loader hipotezlerini ölçmek için bunlarla tekrarlanması gerekir. Build sırasında 3100 kapatılmadığı için dev açık/kapalı karşılaştırması yapılmadı.
+
+## F1 ara ölçümü (2026-11-07)
+
+| Ölçüm | F0 önce | F1 sonra |
+|---|---:|---:|
+| Ana sayfa First Load JS (Next build) | 135 kB | 135 kB |
+| İstek başına SQLite sorgusu | ölçülmedi | ölçülmedi |
+
+SQLite çevrimiçi yedeğiyle, aynı DB dosyasına başka süreç erişmeden üç `.next-perf` build başarılı: 33/37/33 sn. Salt-okuma yükü altındaki ilk deneme, paralel kod değişikliği sırasında eksik `reveal` modülü nedeniyle derleme aşamasında durdu. Aynı yedekte 5 ms aralıkla ürün sayısı okuyan ayrı bir SQLite bağlantısıyla tekrar edilen build 32 sn’de başarılı oldu. 3100 açık kaldı. SQLite WAL ve 5000 ms busy timeout zaten yapılandırılmıştır. `/500` ve doküman timeout kök nedeni doğrulanmamıştır; query logger henüz tamamlanmamıştır. Bu salt-okuma deneyi yazma kilidini veya üretimdeki diğer iş yüklerini temsil etmez. `motion` uygulama kodunda kullanılmıyordu; kaldırılması tek başına JS boyutunda düşüş anlamına gelmez.

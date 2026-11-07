@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { Where } from 'payload'
 
 import type { Locale } from '@/i18n/routing'
@@ -54,34 +55,54 @@ export type CatalogProduct = Pick<Product, 'id' | 'title' | 'slug' | 'tagline' |
 
 /* ------------------------------------------------------------------ products */
 
-export const getFamilies = (locale: Locale, limit = 24) =>
+export const getFamilies = cache((locale: Locale, limit = 24) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'product-families', ...anon(locale), limit, depth: 1, sort: 'sortOrder',
     select: { title: true, slug: true, tagline: true, icon: true, image: true },
     populate,
-  }).then((r) => r.docs.filter((d) => d.slug) as ProductFamily[]), [] as ProductFamily[])
+  }).then((r) => r.docs.filter((d) => d.slug) as ProductFamily[]), [] as ProductFamily[]))
 
-export const getCatalogProducts = (locale: Locale, opts: { familyId?: number; featured?: boolean; limit?: number } = {}) =>
+/** Count only public products, without populating their relationships. */
+export const getProductFamilyCounts = cache((locale: Locale) =>
+  safe(async () => {
+    const result = await (await getPayloadClient()).find({
+      collection: 'products', ...anon(locale), pagination: false, limit: 0, depth: 0,
+      select: { family: true, slug: true },
+    })
+    const counts = new Map<number, number>()
+    for (const product of result.docs) {
+      if (!product.slug) continue
+      const id = typeof product.family === 'object' ? product.family?.id : product.family
+      if (typeof id !== 'number') continue
+      counts.set(id, (counts.get(id) ?? 0) + 1)
+    }
+    return counts
+  }, new Map<number, number>()))
+
+const getCatalogProductsCached = cache((locale: Locale, familyId: number | undefined, featured: boolean, limit: number) =>
   safe(async () => {
     const and: Where[] = []
-    if (opts.familyId) and.push({ family: { equals: opts.familyId } })
-    if (opts.featured) and.push({ featured: { equals: true } })
+    if (familyId) and.push({ family: { equals: familyId } })
+    if (featured) and.push({ featured: { equals: true } })
     return (await getPayloadClient()).find({
-      collection: 'products', ...anon(locale), limit: opts.limit ?? 100, depth: 2, sort: 'sortOrder',
+      collection: 'products', ...anon(locale), limit, depth: 2, sort: 'sortOrder',
       where: and.length ? { and } : undefined,
       select: { title: true, slug: true, tagline: true, summary: true, heroImage: true, family: true, featured: true },
       populate,
     }).then((r) => r.docs.filter((d) => d.slug && relOf<ProductFamily>(d.family)?.slug) as CatalogProduct[])
-  }, [] as CatalogProduct[])
+  }, [] as CatalogProduct[]))
 
-export const getFamily = (locale: Locale, slug: string) =>
+export const getCatalogProducts = (locale: Locale, opts: { familyId?: number; featured?: boolean; limit?: number } = {}) =>
+  getCatalogProductsCached(locale, opts.familyId, Boolean(opts.featured), opts.limit ?? 100)
+
+export const getFamily = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'product-families', ...anon(locale), limit: 1, depth: 1, where: bySlug(slug),
     select: { title: true, slug: true, tagline: true, description: true, icon: true, image: true, meta: true },
     populate,
-  }).then((r) => (r.docs[0] as ProductFamily | undefined) ?? null), null)
+  }).then((r) => (r.docs[0] as ProductFamily | undefined) ?? null), null))
 
-export async function getProductDetail(locale: Locale, familySlug: string, productSlug: string) {
+export const getProductDetail = cache(async (locale: Locale, familySlug: string, productSlug: string) => {
   return safe(async () => {
     const payload = await getPayloadClient()
     const family = await getFamily(locale, familySlug)
@@ -121,18 +142,18 @@ export async function getProductDetail(locale: Locale, familySlug: string, produ
     ])
     return { family, product, editions, downloads, docSlug: doc }
   }, null)
-}
+})
 
 /* ----------------------------------------------------------------- solutions */
 
-export const getSolutions = (locale: Locale, limit = 24) =>
+export const getSolutions = cache((locale: Locale, limit = 24) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'solutions', ...anon(locale), limit, depth: 1, sort: 'sortOrder',
     select: { title: true, slug: true, summary: true, heroImage: true, industries: true },
     populate,
-  }).then((r) => r.docs.filter((d) => d.slug) as Solution[]), [] as Solution[])
+  }).then((r) => r.docs.filter((d) => d.slug) as Solution[]), [] as Solution[]))
 
-export const getSolution = (locale: Locale, slug: string) =>
+export const getSolution = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'solutions', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
     select: {
@@ -140,19 +161,22 @@ export const getSolution = (locale: Locale, slug: string) =>
       products: true, caseStudies: true, meta: true,
     },
     populate,
-  }).then((r) => (r.docs[0] as Solution | undefined) ?? null), null)
+  }).then((r) => (r.docs[0] as Solution | undefined) ?? null), null))
 
 /* ------------------------------------------------------------------ company */
 
-export const getCaseStudies = (locale: Locale, opts: { limit?: number; featured?: boolean } = {}) =>
+const getCaseStudiesCached = cache((locale: Locale, limit: number, featured: boolean) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'case-studies', ...anon(locale), limit: opts.limit ?? 24, depth: 1, sort: '-publishedAt',
-    where: opts.featured ? { featured: { equals: true } } : undefined,
+    collection: 'case-studies', ...anon(locale), limit, depth: 1, sort: '-publishedAt',
+    where: featured ? { featured: { equals: true } } : undefined,
     select: { title: true, slug: true, customerName: true, customerLogo: true, summary: true, results: true, featured: true, publishedAt: true },
     populate,
-  }).then((r) => r.docs.filter((d) => d.slug) as CaseStudy[]), [] as CaseStudy[])
+  }).then((r) => r.docs.filter((d) => d.slug) as CaseStudy[]), [] as CaseStudy[]))
 
-export const getCaseStudy = (locale: Locale, slug: string) =>
+export const getCaseStudies = (locale: Locale, opts: { limit?: number; featured?: boolean } = {}) =>
+  getCaseStudiesCached(locale, opts.limit ?? 24, Boolean(opts.featured))
+
+export const getCaseStudy = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'case-studies', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
     select: {
@@ -161,20 +185,23 @@ export const getCaseStudy = (locale: Locale, slug: string) =>
       meta: true, publishedAt: true,
     },
     populate,
-  }).then((r) => (r.docs[0] as CaseStudy | undefined) ?? null), null)
+  }).then((r) => (r.docs[0] as CaseStudy | undefined) ?? null), null))
 
 export const POSTS_PER_PAGE = 9
 
-export const getPosts = (locale: Locale, opts: { limit?: number; page?: number } = {}) =>
+const getPostsCached = cache((locale: Locale, limit: number, page: number) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'posts', ...anon(locale), limit: opts.limit ?? POSTS_PER_PAGE, page: opts.page ?? 1, depth: 1,
+    collection: 'posts', ...anon(locale), limit, page, depth: 1,
     sort: '-publishedAt',
     select: { title: true, slug: true, excerpt: true, coverImage: true, category: true, publishedAt: true },
     populate,
   }).then((r) => ({ docs: r.docs.filter((d) => d.slug) as Post[], totalPages: r.totalPages })),
-  { docs: [] as Post[], totalPages: 0 })
+  { docs: [] as Post[], totalPages: 0 }))
 
-export const getPost = (locale: Locale, slug: string) =>
+export const getPosts = (locale: Locale, opts: { limit?: number; page?: number } = {}) =>
+  getPostsCached(locale, opts.limit ?? POSTS_PER_PAGE, opts.page ?? 1)
+
+export const getPost = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'posts', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
     select: {
@@ -182,44 +209,47 @@ export const getPost = (locale: Locale, slug: string) =>
       products: true, meta: true, publishedAt: true, updatedAt: true,
     },
     populate,
-  }).then((r) => (r.docs[0] as Post | undefined) ?? null), null)
+  }).then((r) => (r.docs[0] as Post | undefined) ?? null), null))
 
-export const getCareers = (locale: Locale) =>
+export const getCareers = cache((locale: Locale) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'careers', ...anon(locale), limit: 50, depth: 0, sort: '-publishedAt',
     select: { title: true, slug: true, department: true, location: true, employmentType: true, workMode: true, summary: true },
-  }).then((r) => r.docs.filter((d) => d.slug) as Career[]), [] as Career[])
+  }).then((r) => r.docs.filter((d) => d.slug) as Career[]), [] as Career[]))
 
-export const getCareer = (locale: Locale, slug: string) =>
+export const getCareer = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'careers', ...anon(locale), limit: 1, depth: 0, where: bySlug(slug),
     select: {
       title: true, slug: true, department: true, location: true, employmentType: true, workMode: true,
       summary: true, description: true, meta: true, publishedAt: true,
     },
-  }).then((r) => (r.docs[0] as Career | undefined) ?? null), null)
+  }).then((r) => (r.docs[0] as Career | undefined) ?? null), null))
 
-export const getPartners = (locale: Locale, limit = 100) =>
+export const getPartners = cache((locale: Locale, limit = 100) =>
   safe(async () => (await getPayloadClient()).find({
     collection: 'partners', ...anon(locale), limit, depth: 1, sort: 'sortOrder',
     select: { name: true, logo: true, website: true, tier: true, country: true, city: true, description: true },
     populate,
-  }).then((r) => r.docs as Partner[]), [] as Partner[])
+  }).then((r) => r.docs as Partner[]), [] as Partner[]))
 
-export const getPage = (locale: Locale, slugs: string | string[], opts: { legalOnly?: boolean } = {}) =>
+const getPageCached = cache((locale: Locale, serializedSlugs: string, legalOnly: boolean) =>
   safe(async () => {
-    const list = Array.isArray(slugs) ? slugs : [slugs]
+    const list: string[] = JSON.parse(serializedSlugs)
     const and: Where[] = [{ slug: { in: list } }]
-    if (opts.legalOnly) and.push({ pageType: { equals: 'legal' } })
+    if (legalOnly) and.push({ pageType: { equals: 'legal' } })
     return (await getPayloadClient()).find({
       collection: 'pages', ...anon(locale), limit: 1, depth: 2, where: { and },
       select: { title: true, slug: true, layout: true, meta: true, pageType: true, updatedAt: true },
       populate,
     }).then((r) => (r.docs[0] as Page | undefined) ?? null)
-  }, null)
+  }, null))
+
+export const getPage = (locale: Locale, slugs: string | string[], opts: { legalOnly?: boolean } = {}) =>
+  getPageCached(locale, JSON.stringify(Array.isArray(slugs) ? slugs : [slugs]), Boolean(opts.legalOnly))
 
 /** Public company/contact settings (explicit field selection: no tax or KEP data). */
-export const getContactSettings = (locale: Locale) =>
+export const getContactSettings = cache((locale: Locale) =>
   safe(async () => (await getPayloadClient()).findGlobal({
     slug: 'site-settings', locale, depth: 1, overrideAccess: false, user: null, draft: false,
     select: {
@@ -227,7 +257,7 @@ export const getContactSettings = (locale: Locale) =>
       company: { legalName: true }, contact: true, social: true,
     },
     populate: { media: mediaPick },
-  }), null)
+  }), null))
 
 /* ----------------------------------------------------------- locale variants */
 
@@ -244,7 +274,7 @@ const pickLocales = (raw: unknown): SlugMap => {
 }
 
 /** Slug per locale (no fallback) for hreflang and the language switcher. */
-export const getSlugVariants = (
+export const getSlugVariants = cache((
   collection: 'product-families' | 'solutions' | 'case-studies' | 'posts' | 'careers' | 'pages',
   id: number,
 ) =>
@@ -254,9 +284,9 @@ export const getSlugVariants = (
       depth: 0, select: { slug: true },
     })
     return pickLocales((doc as { slug?: unknown }).slug)
-  }, {} as SlugMap)
+  }, {} as SlugMap))
 
-export const getProductVariants = (id: number) =>
+export const getProductVariants = cache((id: number) =>
   safe(async () => {
     const doc = await (await getPayloadClient()).findByID({
       collection: 'products', id, locale: 'all', fallbackLocale: false, overrideAccess: false, user: null,
@@ -267,14 +297,14 @@ export const getProductVariants = (id: number) =>
     const out: Partial<Record<Locale, string[]>> = {}
     for (const l of routing.locales) if (product[l] && family[l]) out[l] = [family[l]!, product[l]!]
     return out
-  }, {} as Partial<Record<Locale, string[]>>)
+  }, {} as Partial<Record<Locale, string[]>>))
 
 /* ------------------------------------------------------------------- sitemap */
 
 export type SitemapEntry = { paths: Partial<Record<Locale, string>>; lastModified?: string }
 
 /** Every published URL, with the per-locale slug (docs missing a slug in a locale are skipped there). */
-export const getSitemapEntries = () =>
+export const getSitemapEntries = cache(() =>
   safe(async () => {
     const payload = await getPayloadClient()
     const base = { locale: 'all' as const, fallbackLocale: false as const, overrideAccess: false as const, user: null, draft: false as const, limit: 1000, pagination: false as const }
@@ -316,4 +346,4 @@ export const getSitemapEntries = () =>
       if (Object.keys(paths).length) entries.push({ paths, lastModified: d.updatedAt })
     }
     return entries
-  }, [] as SitemapEntry[])
+  }, [] as SitemapEntry[]))

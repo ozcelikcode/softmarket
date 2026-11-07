@@ -1,6 +1,7 @@
 import { searchFields } from './lib/search-index'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { withDbQueryLogging } from './lib/db-query-log'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
@@ -10,6 +11,8 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { en } from 'payload/i18n/en'
+import { tr } from 'payload/i18n/tr'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
@@ -53,6 +56,14 @@ const smtpHost = process.env.SMTP_HOST?.trim()
 // Omitting email selects Payload's built-in console adapter, without DNS lookup.
 const smtpConfigured = smtpHost && !smtpHost.startsWith('CHANGE_') && process.env.SMTP_FROM
 
+const databaseAdapter = sqliteAdapter({
+  push: false,
+  client: { url: process.env.DATABASE_URI || 'file:./data/softmarket.db' },
+  wal: true,
+  busyTimeout: 5000,
+  transactionOptions: { behavior: 'immediate' },
+})
+
 export default buildConfig({
   admin: {
     // Only `users` (admin/editor) can enter the panel; `customers` is portal-only.
@@ -60,6 +71,11 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+  },
+  // Admin UI language (separate from content localization). TR first; editors may switch to EN.
+  i18n: {
+    fallbackLanguage: 'tr',
+    supportedLanguages: { tr, en },
   },
   localization: {
     locales: [
@@ -121,13 +137,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    push: false,
-    client: { url: process.env.DATABASE_URI || 'file:./data/softmarket.db' },
-    wal: true,
-    busyTimeout: 5000,
-    transactionOptions: { behavior: 'immediate' },
-  }),
+  db: process.env.SM_DB_QUERY_LOG === '1' ? withDbQueryLogging(databaseAdapter) : databaseAdapter,
   sharp,
   plugins: [
     mcpPlugin(mcpOptions),

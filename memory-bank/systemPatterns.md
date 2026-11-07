@@ -49,7 +49,7 @@
 - **Güvenli sorgu:** `src/lib/site.ts` ve `src/lib/content.ts` anonim okuma kalıbı: `overrideAccess: false`, `user: null`, `draft: false`, sınırlı alan ve derinlik; hata fırlatmaz, güvenli fallback döner.
 - **safeHref** (`src/lib/utils.ts`): `javascript:` ve protokol-relative (`//`) URL'leri ayıklar; yalnız `http`, `https`, `mailto`, `tel` ve yerel yolları geçirir.
 - **Section theme** (`src/components/ui/section.tsx`): `data-theme="dark|light"` ile alt ağaçtaki CSS token'larını değiştirir.
-- **Blocks renderer** (`src/components/blocks/render-blocks.tsx`): Payload blok dizisini eşler; tanımsız bloğu hata vermeden atlar.
+- **Blocks renderer** (`src/components/blocks/render-blocks.tsx`): `registry.ts` (tek eşleme) + `lib/blocks/render-plan.ts`; tanımsız/gizli bloğu atlar. Her blok `BlockShell` ile sarılır (tema/boşluk/container/anchor/`data-anim`); `appearance` varsayılanları `src/fields/block-settings.ts` tek kaynak. Hero h1 yalnız `firstHeroH1` ile. Blok alanları yalnız eklenir (yeniden adlandırma = SQLite tablo yeniden kurulumu).
 - **Slug** (`src/fields/slug.ts`): otomatik üretim, regex doğrulama, `scope` ile üst ilişki bazlı tekillik.
 
 ## Test

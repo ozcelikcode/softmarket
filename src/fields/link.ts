@@ -43,15 +43,16 @@ export const linkField = ({
           type: 'radio',
           defaultValue: 'internal',
           options: [
-            { label: 'Internal', value: 'internal' },
-            { label: 'External', value: 'external' },
+            { label: { tr: 'Site içi', en: 'Internal' }, value: 'internal' },
+            { label: { tr: 'Harici', en: 'External' }, value: 'external' },
           ],
+          label: { tr: 'Bağlantı türü', en: 'Link type' },
           admin: { layout: 'horizontal' },
         },
         {
           name: 'newTab',
           type: 'checkbox',
-          label: 'Open in new tab',
+          label: { tr: 'Yeni sekmede aç', en: 'Open in new tab' },
         },
       ],
     },
@@ -60,16 +61,18 @@ export const linkField = ({
       type: 'relationship',
       relationTo: LINKABLE_COLLECTIONS,
       maxDepth: 1,
+      label: { tr: 'Hedef kayıt', en: 'Target document' },
       admin: { condition: (_, sibling) => sibling?.type === 'internal' },
     },
     {
       name: 'url',
       type: 'text',
       localized: true,
+      label: { tr: 'Adres (URL)', en: 'URL' },
       admin: { condition: (_, sibling) => sibling?.type === 'external' },
     },
     ...(withLabel
-      ? [{ name: 'label', type: 'text' as const, localized: true, required }]
+      ? [{ name: 'label', type: 'text' as const, localized: true, required, label: { tr: 'Metin', en: 'Label' } }]
       : []),
     ...(withAppearance
       ? [
@@ -77,10 +80,11 @@ export const linkField = ({
             name: 'appearance',
             type: 'select' as const,
             defaultValue: 'primary',
+            label: { tr: 'Görünüm', en: 'Appearance' },
             options: [
-              { label: 'Primary', value: 'primary' },
-              { label: 'Secondary', value: 'secondary' },
-              { label: 'Link', value: 'link' },
+              { label: { tr: 'Birincil', en: 'Primary' }, value: 'primary' },
+              { label: { tr: 'İkincil', en: 'Secondary' }, value: 'secondary' },
+              { label: { tr: 'Metin bağlantısı', en: 'Link' }, value: 'link' },
             ],
           },
         ]

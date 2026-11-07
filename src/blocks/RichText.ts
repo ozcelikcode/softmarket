@@ -1,20 +1,23 @@
 import type { Block } from 'payload'
 
+import { blockSettings } from '@/fields/block-settings'
+
+import { L, blockMeta, opt } from './meta'
+
 export const RichText: Block = {
   slug: 'richText',
   interfaceName: 'RichTextBlock',
-  labels: { singular: 'Rich Text', plural: 'Rich Text' },
+  ...blockMeta('richText', ['Zengin metin', 'Rich text'], ['Zengin metinler', 'Rich text'], 'content'),
   fields: [
     {
+      // Text measure. Predates F3, so this block's appearance group has no separate width option.
       name: 'width',
       type: 'select',
       defaultValue: 'normal',
-      options: [
-        { label: 'Narrow', value: 'narrow' },
-        { label: 'Normal', value: 'normal' },
-        { label: 'Wide', value: 'wide' },
-      ],
+      label: L('Metin genişliği', 'Text width'),
+      options: [opt('narrow', 'Dar', 'Narrow'), opt('normal', 'Normal', 'Normal'), opt('wide', 'Geniş', 'Wide')],
     },
-    { name: 'content', type: 'richText', localized: true, required: true },
+    { name: 'content', type: 'richText', localized: true, required: true, label: L('İçerik', 'Content') },
+    blockSettings('richText'),
   ],
 }

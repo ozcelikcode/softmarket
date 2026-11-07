@@ -8,8 +8,9 @@
         "variant": {
           "enum": [
             "default",
+            "split",
             "centered",
-            "split"
+            "minimal"
           ]
         },
         "eyebrow": {
@@ -227,6 +228,54 @@
           },
           "maxItems": 2
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "hero"
         }
@@ -255,6 +304,12 @@
             "4"
           ]
         },
+        "style": {
+          "enum": [
+            "cards",
+            "plain"
+          ]
+        },
         "items": {
           "type": "array",
           "items": {
@@ -262,8 +317,25 @@
             "additionalProperties": false,
             "properties": {
               "icon": {
-                "type": "string",
-                "minLength": 1
+                "enum": [
+                  "boxes",
+                  "cloud",
+                  "cpu",
+                  "database",
+                  "film",
+                  "gauge",
+                  "globe",
+                  "layers",
+                  "life-buoy",
+                  "lock",
+                  "network",
+                  "package",
+                  "shield",
+                  "shield-check",
+                  "sparkles",
+                  "workflow",
+                  "zap"
+                ]
               },
               "image": {
                 "type": "string",
@@ -283,6 +355,54 @@
             ]
           },
           "minItems": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
         },
         "blockType": {
           "const": "featureGrid"
@@ -521,6 +641,54 @@
           },
           "maxItems": 2
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "mediaText"
         }
@@ -575,6 +743,54 @@
           },
           "minItems": 1
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "specTable"
         }
@@ -617,6 +833,54 @@
           },
           "minItems": 1,
           "maxItems": 6
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
         },
         "blockType": {
           "const": "stats"
@@ -680,6 +944,54 @@
             "minLength": 1
           }
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "logoWall"
         }
@@ -695,7 +1007,8 @@
         "style": {
           "enum": [
             "banner",
-            "card"
+            "card",
+            "split"
           ]
         },
         "heading": {
@@ -906,6 +1219,54 @@
           "minItems": 1,
           "maxItems": 2
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "cta"
         }
@@ -965,6 +1326,54 @@
             ]
           }
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "faq"
         }
@@ -996,6 +1405,47 @@
             "markdown"
           ]
         },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
         "blockType": {
           "const": "richText"
         }
@@ -1024,6 +1474,54 @@
         "caption": {
           "type": "string",
           "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
         },
         "blockType": {
           "const": "videoEmbed"

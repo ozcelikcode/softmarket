@@ -1,0 +1,35 @@
+import { CTABlock } from '@/components/blocks/cta-block'
+import { FAQBlock } from '@/components/blocks/faq-block'
+import { FeatureGridBlock } from '@/components/blocks/feature-grid-block'
+import { HeroBlock } from '@/components/blocks/hero-block'
+import { LogoWallBlock } from '@/components/blocks/logo-wall-block'
+import { MediaTextBlock } from '@/components/blocks/media-text-block'
+import { RichTextBlock } from '@/components/blocks/rich-text-block'
+import { SpecTableBlock } from '@/components/blocks/spec-table-block'
+import { StatsBlock } from '@/components/blocks/stats-block'
+import type { BlockComponent, BlockOf, LayoutBlock, LayoutBlockType } from '@/components/blocks/types'
+import { VideoEmbedBlock } from '@/components/blocks/video-embed-block'
+
+/**
+ * Block type -> server component; the only place renderers are wired. The mapped type makes a missing
+ * entry for any configured block a type error, and tests/unit/blocks-core.test.tsx checks parity with the
+ * Payload block config at runtime.
+ */
+export const blockRegistry: { [K in LayoutBlockType]: BlockComponent<BlockOf<K>> } = {
+  hero: HeroBlock,
+  featureGrid: FeatureGridBlock,
+  mediaText: MediaTextBlock,
+  specTable: SpecTableBlock,
+  stats: StatsBlock,
+  logoWall: LogoWallBlock,
+  cta: CTABlock,
+  faq: FAQBlock,
+  richText: RichTextBlock,
+  videoEmbed: VideoEmbedBlock,
+}
+
+export const hasBlockRenderer = (blockType: string): blockType is LayoutBlockType =>
+  Object.prototype.hasOwnProperty.call(blockRegistry, blockType)
+
+export const getBlockRenderer = (blockType: string): BlockComponent<LayoutBlock> | undefined =>
+  hasBlockRenderer(blockType) ? (blockRegistry[blockType] as BlockComponent<LayoutBlock>) : undefined

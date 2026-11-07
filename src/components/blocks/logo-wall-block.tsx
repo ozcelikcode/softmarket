@@ -1,10 +1,11 @@
+import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import type { BlockProps } from '@/components/blocks/types'
 import { LogoWall, type Logo } from '@/components/sections/logo-wall'
-import { Container } from '@/components/ui/container'
-import { Section } from '@/components/ui/section'
 import { mediaOf, relOf } from '@/lib/content'
+import { cn } from '@/lib/utils'
 import type { CaseStudy, LogoWallBlock as Block, Partner } from '@/payload-types'
 
-export function LogoWallBlock({ block }: { block: Block }) {
+export function LogoWallBlock({ block, ctx }: BlockProps<Block>) {
   const logos: Logo[] = []
   const push = (name: string | undefined, media: unknown) => {
     if (!name) return
@@ -20,11 +21,9 @@ export function LogoWallBlock({ block }: { block: Block }) {
   }
   if (!logos.length) return null
   return (
-    <Section theme="dark" spacing="md" className="border-y border-border">
-      <Container>
-        {block.heading ? <p className="mb-8 text-center text-small text-muted">{block.heading}</p> : null}
-        <LogoWall logos={logos} />
-      </Container>
-    </Section>
+    <BlockShell blockType="logoWall" appearance={ctx.appearance} className="border-y border-border">
+      {block.heading ? <p className={cn('mb-8 text-small text-muted', alignClass(ctx.appearance))}>{block.heading}</p> : null}
+      <LogoWall logos={logos} />
+    </BlockShell>
   )
 }

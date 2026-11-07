@@ -5,6 +5,7 @@ import * as migration_20261106_161413_portal_security_consent from './20261106_1
 import * as migration_20261106_164616_phase8a_content_mcp from './20261106_164616_phase8a_content_mcp';
 import * as migration_20261106_165449_phase8a_media_identity from './20261106_165449_phase8a_media_identity';
 import * as migration_20261107_092304_remove_sales_legal_fields from './20261107_092304_remove_sales_legal_fields';
+import * as migration_20261107_110012_blocks_appearance from './20261107_110012_blocks_appearance';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261107_092304_remove_sales_legal_fields.up,
     down: migration_20261107_092304_remove_sales_legal_fields.down,
-    name: '20261107_092304_remove_sales_legal_fields'
+    name: '20261107_092304_remove_sales_legal_fields',
+  },
+  {
+    up: migration_20261107_110012_blocks_appearance.up,
+    down: migration_20261107_110012_blocks_appearance.down,
+    name: '20261107_110012_blocks_appearance'
   },
 ];

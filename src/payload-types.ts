@@ -499,7 +499,10 @@ export interface Product {
  * via the `definition` "HeroBlock".
  */
 export interface HeroBlock {
-  variant?: ('default' | 'centered' | 'split') | null;
+  /**
+   * The first hero on a page is the page title (h1); others become section headings (h2).
+   */
+  variant?: ('default' | 'split' | 'centered' | 'minimal') | null;
   eyebrow?: string | null;
   heading: string;
   subheading?: string | null;
@@ -553,6 +556,24 @@ export interface HeroBlock {
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'hero';
@@ -604,18 +625,57 @@ export interface FeatureGridBlock {
   heading?: string | null;
   intro?: string | null;
   columns?: ('2' | '3' | '4') | null;
+  style?: ('cards' | 'plain') | null;
   items?:
     | {
         /**
-         * Icon name (e.g. lucide icon id).
+         * An image, if set, replaces the icon.
          */
-        icon?: string | null;
+        icon?:
+          | (
+              | 'boxes'
+              | 'cloud'
+              | 'cpu'
+              | 'database'
+              | 'film'
+              | 'gauge'
+              | 'globe'
+              | 'layers'
+              | 'life-buoy'
+              | 'lock'
+              | 'network'
+              | 'package'
+              | 'shield'
+              | 'shield-check'
+              | 'sparkles'
+              | 'workflow'
+              | 'zap'
+            )
+          | null;
         image?: (number | null) | Media;
         title: string;
         description?: string | null;
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureGrid';
@@ -692,6 +752,24 @@ export interface MediaTextBlock {
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaText';
@@ -759,6 +837,24 @@ export interface SpecTableBlock {
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'specTable';
@@ -772,7 +868,7 @@ export interface StatsBlock {
   items?:
     | {
         /**
-         * e.g. 500+, %99.9
+         * e.g. 500+, 99.9%
          */
         value: string;
         label: string;
@@ -780,6 +876,24 @@ export interface StatsBlock {
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'stats';
@@ -801,6 +915,24 @@ export interface LogoWallBlock {
     | null;
   caseStudies?: (number | CaseStudy)[] | null;
   partners?: (number | Partner)[] | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'logoWall';
@@ -896,7 +1028,7 @@ export interface CaseStudy {
  * via the `definition` "CTABlock".
  */
 export interface CTABlock {
-  style?: ('banner' | 'card') | null;
+  style?: ('banner' | 'card' | 'split') | null;
   heading: string;
   body?: string | null;
   actions?:
@@ -948,6 +1080,24 @@ export interface CTABlock {
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
@@ -1342,6 +1492,24 @@ export interface FAQBlock {
         id?: string | null;
       }[]
     | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'faq';
@@ -1399,6 +1567,23 @@ export interface RichTextBlock {
     };
     [k: string]: unknown;
   };
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'richText';
@@ -1409,9 +1594,30 @@ export interface RichTextBlock {
  */
 export interface VideoEmbedBlock {
   heading?: string | null;
+  /**
+   * Only https YouTube or Vimeo URLs.
+   */
   url: string;
   poster?: (number | null) | Media;
   caption?: string | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'videoEmbed';
@@ -2334,6 +2540,17 @@ export interface HeroBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2345,6 +2562,7 @@ export interface FeatureGridBlockSelect<T extends boolean = true> {
   heading?: T;
   intro?: T;
   columns?: T;
+  style?: T;
   items?:
     | T
     | {
@@ -2353,6 +2571,17 @@ export interface FeatureGridBlockSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         id?: T;
+      };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
       };
   id?: T;
   blockName?: T;
@@ -2381,6 +2610,17 @@ export interface MediaTextBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2403,6 +2643,17 @@ export interface SpecTableBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2419,6 +2670,17 @@ export interface StatsBlockSelect<T extends boolean = true> {
         label?: T;
         description?: T;
         id?: T;
+      };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
       };
   id?: T;
   blockName?: T;
@@ -2440,6 +2702,17 @@ export interface LogoWallBlockSelect<T extends boolean = true> {
       };
   caseStudies?: T;
   partners?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2466,6 +2739,17 @@ export interface CTABlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2484,6 +2768,17 @@ export interface FAQBlockSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2494,6 +2789,16 @@ export interface FAQBlockSelect<T extends boolean = true> {
 export interface RichTextBlockSelect<T extends boolean = true> {
   width?: T;
   content?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2506,6 +2811,17 @@ export interface VideoEmbedBlockSelect<T extends boolean = true> {
   url?: T;
   poster?: T;
   caption?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
   id?: T;
   blockName?: T;
 }

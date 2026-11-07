@@ -3,16 +3,18 @@ import {
   ShieldCheck, Sparkles, Workflow, Zap, type LucideIcon,
 } from 'lucide-react'
 
-const ICONS: Record<string, LucideIcon> = {
+import { normalizeIconName, type IconName } from '@/lib/icon-names'
+
+// Typed by IconName: adding a name to ICON_NAMES without an icon here fails typecheck.
+const ICONS: Record<IconName, LucideIcon> = {
   boxes: Boxes, cloud: Cloud, cpu: Cpu, database: Database, film: Film, gauge: Gauge, globe: Globe,
   layers: Layers, 'life-buoy': LifeBuoy, lock: Lock, network: Network, package: Package, shield: Shield,
   'shield-check': ShieldCheck, sparkles: Sparkles, workflow: Workflow, zap: Zap,
 }
 
-const normalize = (name: string) => name.trim().replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
-
 /** Maps a CMS icon name (lucide id) to a curated icon set; unknown names fall back. */
 export function NamedIcon({ name, fallback = Boxes, className }: { name?: string | null; fallback?: LucideIcon; className?: string }) {
-  const Icon = (name && ICONS[normalize(name)]) || fallback
+  const id = normalizeIconName(name)
+  const Icon = (id && ICONS[id]) || fallback
   return <Icon aria-hidden className={className} />
 }

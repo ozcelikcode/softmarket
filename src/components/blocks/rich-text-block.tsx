@@ -1,14 +1,17 @@
+import { alignClass, BlockShell } from '@/components/blocks/block-shell'
 import { RichContent } from '@/components/blocks/rich-text'
-import { Container } from '@/components/ui/container'
-import { Section } from '@/components/ui/section'
+import type { BlockProps } from '@/components/blocks/types'
 import type { RichTextBlock as Block } from '@/payload-types'
 
-export function RichTextBlock({ block, locale }: { block: Block; locale: string }) {
+/** The block's own `width` field (text measure) predates F3; its appearance group has no width option. */
+export function RichTextBlock({ block, locale, ctx }: BlockProps<Block>) {
   return (
-    <Section theme="light" spacing="md">
-      <Container size={block.width === 'wide' ? 'content' : 'narrow'} className={block.width === 'normal' || !block.width ? 'max-w-[52rem]' : undefined}>
-        <RichContent data={block.content} locale={locale} />
-      </Container>
-    </Section>
+    <BlockShell
+      blockType="richText"
+      appearance={ctx.appearance}
+      container={{ size: block.width === 'wide' ? 'content' : 'narrow', className: block.width === 'normal' || !block.width ? 'max-w-[52rem]' : undefined }}
+    >
+      <RichContent data={block.content} locale={locale} className={alignClass(ctx.appearance)} />
+    </BlockShell>
   )
 }

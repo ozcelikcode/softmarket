@@ -208,3 +208,34 @@ Sorgu zamanlaması ve kilit telemetrisi bulunmadığından timeout'un kök neden
 | İstek başına SQLite sorgusu | ölçülmedi | ölçülmedi |
 
 SQLite çevrimiçi yedeğiyle, aynı DB dosyasına başka süreç erişmeden üç `.next-perf` build başarılı: 33/37/33 sn. Salt-okuma yükü altındaki ilk deneme, paralel kod değişikliği sırasında eksik `reveal` modülü nedeniyle derleme aşamasında durdu. Aynı yedekte 5 ms aralıkla ürün sayısı okuyan ayrı bir SQLite bağlantısıyla tekrar edilen build 32 sn’de başarılı oldu. 3100 açık kaldı. SQLite WAL ve 5000 ms busy timeout zaten yapılandırılmıştır. `/500` ve doküman timeout kök nedeni doğrulanmamıştır; query logger henüz tamamlanmamıştır. Bu salt-okuma deneyi yazma kilidini veya üretimdeki diğer iş yüklerini temsil etmez. `motion` uygulama kodunda kullanılmıyordu; kaldırılması tek başına JS boyutunda düşüş anlamına gelmez.
+
+## Sorgu sayısı — 2026-11-07
+
+`NEXT_DIST_DIR=.next-perf pnpm build` başarılı. Ardından `SM_DB_QUERY_LOG=1 PORT=3300 NEXT_DIST_DIR=.next-perf pnpm start` ile yerel SQLite üzerinde ölçüldü. Sunucu stdout'u `/tmp/softmarket-db-server.log` dosyasına yönlendirildi; `SM_DB_QUERY_LOG_FILE=/tmp/softmarket-db-server.log pnpm exec tsx scripts/perf-isr.ts http://127.0.0.1:3300` çalıştırıldı. Script sitemap'teki 144 URL'ye arama ve portal girişi ekler; her route için sırayla iki GET yapar. Bütün 292 yanıt HTTP 200.
+
+Sayaç `payload.config.ts` içinde yalnız `SM_DB_QUERY_LOG=1` iken libSQL istemcisini Drizzle yakalamadan sarar. Node instrumentation HTTP girişinde `AsyncLocalStorage` bağlamı açar; middleware kullanılmaz, `getDbQueryStats()` server render sırasında anlık kopyayı okuyabilir. `execute`, batch/migrate içindeki statement'lar ve transaction begin/commit/rollback işlemleri sayılır; hata veren çağrılar da dahildir. Süre, istemci çağrılarının geçen süre toplamıdır (saf SQLite CPU süresi değildir). SQL/parametre/çerez/query değerleri loglanmaz.
+
+Yanıt streaming sırasında header erken gönderilebileceği için nihai sayılar `finish` olayında `SM_DB_QUERY` JSON satırına yazılır. Script bunları rastgele `x-sm-perf-id` istek kimliğiyle eşler; eksik logu 0 kabul etmez. Bayrak kapalıyken adapter/client ve HTTP emit sarılmaz, ALS oluşturulmaz, sorgu başına ek kod çalışmaz. Production'da da yalnız açık bayrakla etkinleşir. Bu ölçüm Node HTTP/1 `pnpm start` içindir; yanıt tamamlandıktan sonraki arka plan işleri dahil değildir.
+
+En çok sorgu üreten 10 route, iki isteğin en yüksek sayısına göre sıralı (eşitlikte ölçüm sırası):
+
+| Route | Sorgu ilk / ikinci | SQL toplam ms ilk / ikinci | Cache ilk → ikinci |
+|---|---:|---:|---|
+| `/tr/ara?q=akis` | 33 / 33 | 4.525 / 3.477 | - → - |
+| `/tr/urunler` | 17 / 14 | 14.033 / 2.513 | - → - |
+| `/tr/iletisim` | 16 / 16 | 4.646 / 2.338 | - → - |
+| `/en/contact` | 16 / 16 | 2.281 / 2.14 | - → - |
+| `/tr/destek/indirmeler` | 16 / 16 | 3.811 / 2.386 | - → - |
+| `/en/support/downloads` | 16 / 16 | 2.09 / 2.058 | - → - |
+| `/tr/destek/talep` | 15 / 15 | 2.874 / 2.862 | - → - |
+| `/en/support/request` | 15 / 15 | 2.867 / 2.802 | - → - |
+| `/tr/demo-talep` | 15 / 15 | 2.772 / 3.19 | - → - |
+| `/en/request-demo` | 15 / 15 | 2.879 / 2.8 | - → - |
+
+`/tr/urunler` ilk dinamik istekte 17, ikincide 14 sorgu üretti; ilk isteğin sayısı istemci açılışındaki üç PRAGMA çağrısını da içerir. Bu yüzden ilk sütun soğuk başlatma maliyetini içerebilir. `/tr/ara?q=akis`: 33/33; `/tr/destek/indirmeler`: 16/16; `/tr/iletisim`: 16/16; `/tr/hesap/giris`: 9/9 (1.260/1.239 ms).
+
+122 ISR HIT/HIT route çiftinin tamamında **0/0 sorgu, 0/0 ms** doğrulandı (244 yanıt). Kalan 24 route dinamiktir; MISS diye etiketlenmedi. Yeni içerik yazılmadı/revalidate tetiklenmedi; cache dışı render için yukarıdaki dinamik sayfalar kullanıldı. Aynı anda yapılan arama, portal giriş ve katalog GET'lerinde ayrı sayaçlar **33/9/14** kaldı. 3300 ölçüm sunucusu kapatıldı; 3100 dev sürecine dokunulmadı.
+
+Birim testleri: bayrak kapalıyken istemci/adapter/HTTP emit kimliği korunur; açıkken adapter'ın yeni istemci ataması yakalanır, method receiver korunur; batch/transaction/hata sayımı, çift sarmalama koruması, süre ve eşzamanlı bağlam izolasyonu doğrulanır. Önceki bölümlerdeki “ölçülmedi” ifadeleri eski F0/F1 koşularına aittir; bu tablo sorgu ölçümünü tamamlar.
+
+Son doğrulama: `pnpm typecheck`, `pnpm lint`, `pnpm test` (32 dosya / 376 test) ve `git diff --check` geçti. İzole production build başarılı; ölçüm sonrası 3300 üzerinde dinleyen süreç yok. Commit atılmadı.

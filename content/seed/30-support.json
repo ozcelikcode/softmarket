@@ -1,0 +1,1281 @@
+{
+  "version": 1,
+  "faqs": [
+    {
+      "tr": {
+        "slug": "lisans",
+        "question": "Lisans nasıl talep edilir?",
+        "answer": {
+          "markdown": "Teklif formu üzerinden ihtiyacınızı iletin; lisans kapsamı görüşmede belirlenir."
+        },
+        "category": "licensing",
+        "sortOrder": 1
+      },
+      "en": {
+        "slug": "lisans",
+        "question": "How do I request a license?",
+        "answer": {
+          "markdown": "Share your needs through the proposal form; license scope is agreed during discussion."
+        },
+        "category": "licensing",
+        "sortOrder": 1
+      }
+    },
+    {
+      "tr": {
+        "slug": "kurulum",
+        "question": "Kurulum desteği sunuluyor mu?",
+        "answer": {
+          "markdown": "Kurulum desteğinin kapsamı teklif ve proje planında netleştirilir."
+        },
+        "category": "technical",
+        "sortOrder": 2
+      },
+      "en": {
+        "slug": "kurulum",
+        "question": "Is installation assistance available?",
+        "answer": {
+          "markdown": "Installation assistance is defined in the proposal and project plan."
+        },
+        "category": "technical",
+        "sortOrder": 2
+      }
+    },
+    {
+      "tr": {
+        "slug": "veri",
+        "question": "Veriler nerede tutulur?",
+        "answer": {
+          "markdown": "Barındırma modeli teknik değerlendirme ve kurum politikalarına göre belirlenir."
+        },
+        "category": "technical",
+        "sortOrder": 3
+      },
+      "en": {
+        "slug": "veri",
+        "question": "Where is data stored?",
+        "answer": {
+          "markdown": "The hosting model is determined by technical review and organizational policy."
+        },
+        "category": "technical",
+        "sortOrder": 3
+      }
+    },
+    {
+      "tr": {
+        "slug": "demo",
+        "question": "Demo talep edebilir miyim?",
+        "answer": {
+          "markdown": "Evet. Demo talebinde kullanım senaryonuzu ve iletişim bilginizi paylaşın."
+        },
+        "category": "general",
+        "sortOrder": 4
+      },
+      "en": {
+        "slug": "demo",
+        "question": "Can I request a demo?",
+        "answer": {
+          "markdown": "Yes. Share your use case and contact details in a demo request."
+        },
+        "category": "general",
+        "sortOrder": 4
+      }
+    },
+    {
+      "tr": {
+        "slug": "destek",
+        "question": "Destek kanalına nasıl ulaşırım?",
+        "answer": {
+          "markdown": "Destek iletişim bilgileri yer tutucudur; kurulumda şirket bilgileriyle değiştirilmelidir."
+        },
+        "category": "general",
+        "sortOrder": 5
+      },
+      "en": {
+        "slug": "destek",
+        "question": "How can I reach support?",
+        "answer": {
+          "markdown": "Support contact details are placeholders and should be replaced during setup."
+        },
+        "category": "general",
+        "sortOrder": 5
+      }
+    },
+    {
+      "tr": {
+        "slug": "urun-akis-merkezi",
+        "question": "Akış Merkezi hangi ekipler için uygundur?",
+        "answer": {
+          "markdown": "Bu örnek ürün, süreçlerini düzenlemek isteyen kurumsal ekipleri temsil eder."
+        },
+        "category": "technical",
+        "sortOrder": 6
+      },
+      "en": {
+        "slug": "urun-akis-merkezi",
+        "question": "Which teams is Akış Merkezi designed for?",
+        "answer": {
+          "markdown": "This sample product represents enterprise teams looking to organize their workflows."
+        },
+        "category": "technical",
+        "sortOrder": 6
+      }
+    },
+    {
+      "tr": {
+        "slug": "urun-belge-rotasi",
+        "question": "Belge Rotası hangi ekipler için uygundur?",
+        "answer": {
+          "markdown": "Bu örnek ürün, süreçlerini düzenlemek isteyen kurumsal ekipleri temsil eder."
+        },
+        "category": "technical",
+        "sortOrder": 7
+      },
+      "en": {
+        "slug": "urun-belge-rotasi",
+        "question": "Which teams is Belge Rotası designed for?",
+        "answer": {
+          "markdown": "This sample product represents enterprise teams looking to organize their workflows."
+        },
+        "category": "technical",
+        "sortOrder": 7
+      }
+    },
+    {
+      "tr": {
+        "slug": "urun-talep-masasi",
+        "question": "Talep Masası hangi ekipler için uygundur?",
+        "answer": {
+          "markdown": "Bu örnek ürün, süreçlerini düzenlemek isteyen kurumsal ekipleri temsil eder."
+        },
+        "category": "technical",
+        "sortOrder": 8
+      },
+      "en": {
+        "slug": "urun-talep-masasi",
+        "question": "Which teams is Talep Masası designed for?",
+        "answer": {
+          "markdown": "This sample product represents enterprise teams looking to organize their workflows."
+        },
+        "category": "technical",
+        "sortOrder": 8
+      }
+    },
+    {
+      "tr": {
+        "slug": "urun-veri-pusulasi",
+        "question": "Veri Pusulası hangi ekipler için uygundur?",
+        "answer": {
+          "markdown": "Bu örnek ürün, süreçlerini düzenlemek isteyen kurumsal ekipleri temsil eder."
+        },
+        "category": "technical",
+        "sortOrder": 9
+      },
+      "en": {
+        "slug": "urun-veri-pusulasi",
+        "question": "Which teams is Veri Pusulası designed for?",
+        "answer": {
+          "markdown": "This sample product represents enterprise teams looking to organize their workflows."
+        },
+        "category": "technical",
+        "sortOrder": 9
+      }
+    },
+    {
+      "tr": {
+        "slug": "urun-rapor-atolyesi",
+        "question": "Rapor Atölyesi hangi ekipler için uygundur?",
+        "answer": {
+          "markdown": "Bu örnek ürün, süreçlerini düzenlemek isteyen kurumsal ekipleri temsil eder."
+        },
+        "category": "technical",
+        "sortOrder": 10
+      },
+      "en": {
+        "slug": "urun-rapor-atolyesi",
+        "question": "Which teams is Rapor Atölyesi designed for?",
+        "answer": {
+          "markdown": "This sample product represents enterprise teams looking to organize their workflows."
+        },
+        "category": "technical",
+        "sortOrder": 10
+      }
+    }
+  ],
+  "docs": [
+    {
+      "tr": {
+        "product": "akis-merkezi",
+        "slug": "baslangic",
+        "title": "Akış Merkezi: Başlarken",
+        "excerpt": "Akış Merkezi için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 1
+      },
+      "en": {
+        "product": "akis-merkezi",
+        "slug": "getting-started",
+        "title": "Akış Merkezi: Getting Started",
+        "excerpt": "Getting Started steps for Akış Merkezi.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 1
+      }
+    },
+    {
+      "tr": {
+        "product": "akis-merkezi",
+        "slug": "kurulum",
+        "title": "Akış Merkezi: Kurulum Rehberi",
+        "excerpt": "Akış Merkezi için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 2
+      },
+      "en": {
+        "product": "akis-merkezi",
+        "slug": "installation",
+        "title": "Akış Merkezi: Installation Guide",
+        "excerpt": "Installation Guide steps for Akış Merkezi.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 2
+      }
+    },
+    {
+      "tr": {
+        "product": "akis-merkezi",
+        "slug": "yapilandirma",
+        "title": "Akış Merkezi: Yapılandırma",
+        "excerpt": "Akış Merkezi için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 3
+      },
+      "en": {
+        "product": "akis-merkezi",
+        "slug": "configuration",
+        "title": "Akış Merkezi: Configuration",
+        "excerpt": "Configuration steps for Akış Merkezi.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 3
+      }
+    },
+    {
+      "tr": {
+        "product": "belge-rotasi",
+        "slug": "baslangic",
+        "title": "Belge Rotası: Başlarken",
+        "excerpt": "Belge Rotası için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 4
+      },
+      "en": {
+        "product": "belge-rotasi",
+        "slug": "getting-started",
+        "title": "Belge Rotası: Getting Started",
+        "excerpt": "Getting Started steps for Belge Rotası.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 4
+      }
+    },
+    {
+      "tr": {
+        "product": "belge-rotasi",
+        "slug": "kurulum",
+        "title": "Belge Rotası: Kurulum Rehberi",
+        "excerpt": "Belge Rotası için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 5
+      },
+      "en": {
+        "product": "belge-rotasi",
+        "slug": "installation",
+        "title": "Belge Rotası: Installation Guide",
+        "excerpt": "Installation Guide steps for Belge Rotası.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 5
+      }
+    },
+    {
+      "tr": {
+        "product": "belge-rotasi",
+        "slug": "yapilandirma",
+        "title": "Belge Rotası: Yapılandırma",
+        "excerpt": "Belge Rotası için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 6
+      },
+      "en": {
+        "product": "belge-rotasi",
+        "slug": "configuration",
+        "title": "Belge Rotası: Configuration",
+        "excerpt": "Configuration steps for Belge Rotası.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 6
+      }
+    },
+    {
+      "tr": {
+        "product": "talep-masasi",
+        "slug": "baslangic",
+        "title": "Talep Masası: Başlarken",
+        "excerpt": "Talep Masası için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 7
+      },
+      "en": {
+        "product": "talep-masasi",
+        "slug": "getting-started",
+        "title": "Talep Masası: Getting Started",
+        "excerpt": "Getting Started steps for Talep Masası.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 7
+      }
+    },
+    {
+      "tr": {
+        "product": "talep-masasi",
+        "slug": "kurulum",
+        "title": "Talep Masası: Kurulum Rehberi",
+        "excerpt": "Talep Masası için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 8
+      },
+      "en": {
+        "product": "talep-masasi",
+        "slug": "installation",
+        "title": "Talep Masası: Installation Guide",
+        "excerpt": "Installation Guide steps for Talep Masası.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 8
+      }
+    },
+    {
+      "tr": {
+        "product": "talep-masasi",
+        "slug": "yapilandirma",
+        "title": "Talep Masası: Yapılandırma",
+        "excerpt": "Talep Masası için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 9
+      },
+      "en": {
+        "product": "talep-masasi",
+        "slug": "configuration",
+        "title": "Talep Masası: Configuration",
+        "excerpt": "Configuration steps for Talep Masası.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 9
+      }
+    },
+    {
+      "tr": {
+        "product": "veri-pusulasi",
+        "slug": "baslangic",
+        "title": "Veri Pusulası: Başlarken",
+        "excerpt": "Veri Pusulası için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 10
+      },
+      "en": {
+        "product": "veri-pusulasi",
+        "slug": "getting-started",
+        "title": "Veri Pusulası: Getting Started",
+        "excerpt": "Getting Started steps for Veri Pusulası.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 10
+      }
+    },
+    {
+      "tr": {
+        "product": "veri-pusulasi",
+        "slug": "kurulum",
+        "title": "Veri Pusulası: Kurulum Rehberi",
+        "excerpt": "Veri Pusulası için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 11
+      },
+      "en": {
+        "product": "veri-pusulasi",
+        "slug": "installation",
+        "title": "Veri Pusulası: Installation Guide",
+        "excerpt": "Installation Guide steps for Veri Pusulası.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 11
+      }
+    },
+    {
+      "tr": {
+        "product": "veri-pusulasi",
+        "slug": "yapilandirma",
+        "title": "Veri Pusulası: Yapılandırma",
+        "excerpt": "Veri Pusulası için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 12
+      },
+      "en": {
+        "product": "veri-pusulasi",
+        "slug": "configuration",
+        "title": "Veri Pusulası: Configuration",
+        "excerpt": "Configuration steps for Veri Pusulası.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 12
+      }
+    },
+    {
+      "tr": {
+        "product": "rapor-atolyesi",
+        "slug": "baslangic",
+        "title": "Rapor Atölyesi: Başlarken",
+        "excerpt": "Rapor Atölyesi için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 13
+      },
+      "en": {
+        "product": "rapor-atolyesi",
+        "slug": "getting-started",
+        "title": "Rapor Atölyesi: Getting Started",
+        "excerpt": "Getting Started steps for Rapor Atölyesi.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 13
+      }
+    },
+    {
+      "tr": {
+        "product": "rapor-atolyesi",
+        "slug": "kurulum",
+        "title": "Rapor Atölyesi: Kurulum Rehberi",
+        "excerpt": "Rapor Atölyesi için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 14
+      },
+      "en": {
+        "product": "rapor-atolyesi",
+        "slug": "installation",
+        "title": "Rapor Atölyesi: Installation Guide",
+        "excerpt": "Installation Guide steps for Rapor Atölyesi.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 14
+      }
+    },
+    {
+      "tr": {
+        "product": "rapor-atolyesi",
+        "slug": "yapilandirma",
+        "title": "Rapor Atölyesi: Yapılandırma",
+        "excerpt": "Rapor Atölyesi için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 15
+      },
+      "en": {
+        "product": "rapor-atolyesi",
+        "slug": "configuration",
+        "title": "Rapor Atölyesi: Configuration",
+        "excerpt": "Configuration steps for Rapor Atölyesi.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 15
+      }
+    },
+    {
+      "tr": {
+        "product": "kalite-izleyici",
+        "slug": "baslangic",
+        "title": "Kalite İzleyici: Başlarken",
+        "excerpt": "Kalite İzleyici için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 16
+      },
+      "en": {
+        "product": "kalite-izleyici",
+        "slug": "getting-started",
+        "title": "Kalite İzleyici: Getting Started",
+        "excerpt": "Getting Started steps for Kalite İzleyici.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 16
+      }
+    },
+    {
+      "tr": {
+        "product": "kalite-izleyici",
+        "slug": "kurulum",
+        "title": "Kalite İzleyici: Kurulum Rehberi",
+        "excerpt": "Kalite İzleyici için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 17
+      },
+      "en": {
+        "product": "kalite-izleyici",
+        "slug": "installation",
+        "title": "Kalite İzleyici: Installation Guide",
+        "excerpt": "Installation Guide steps for Kalite İzleyici.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 17
+      }
+    },
+    {
+      "tr": {
+        "product": "kalite-izleyici",
+        "slug": "yapilandirma",
+        "title": "Kalite İzleyici: Yapılandırma",
+        "excerpt": "Kalite İzleyici için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 18
+      },
+      "en": {
+        "product": "kalite-izleyici",
+        "slug": "configuration",
+        "title": "Kalite İzleyici: Configuration",
+        "excerpt": "Configuration steps for Kalite İzleyici.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 18
+      }
+    },
+    {
+      "tr": {
+        "product": "erisim-kilidi",
+        "slug": "baslangic",
+        "title": "Erişim Kilidi: Başlarken",
+        "excerpt": "Erişim Kilidi için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 19
+      },
+      "en": {
+        "product": "erisim-kilidi",
+        "slug": "getting-started",
+        "title": "Erişim Kilidi: Getting Started",
+        "excerpt": "Getting Started steps for Erişim Kilidi.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 19
+      }
+    },
+    {
+      "tr": {
+        "product": "erisim-kilidi",
+        "slug": "kurulum",
+        "title": "Erişim Kilidi: Kurulum Rehberi",
+        "excerpt": "Erişim Kilidi için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 20
+      },
+      "en": {
+        "product": "erisim-kilidi",
+        "slug": "installation",
+        "title": "Erişim Kilidi: Installation Guide",
+        "excerpt": "Installation Guide steps for Erişim Kilidi.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 20
+      }
+    },
+    {
+      "tr": {
+        "product": "erisim-kilidi",
+        "slug": "yapilandirma",
+        "title": "Erişim Kilidi: Yapılandırma",
+        "excerpt": "Erişim Kilidi için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 21
+      },
+      "en": {
+        "product": "erisim-kilidi",
+        "slug": "configuration",
+        "title": "Erişim Kilidi: Configuration",
+        "excerpt": "Configuration steps for Erişim Kilidi.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 21
+      }
+    },
+    {
+      "tr": {
+        "product": "sistem-nobeti",
+        "slug": "baslangic",
+        "title": "Sistem Nöbeti: Başlarken",
+        "excerpt": "Sistem Nöbeti için başlarken adımları.",
+        "content": {
+          "markdown": "# Başlarken\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 22
+      },
+      "en": {
+        "product": "sistem-nobeti",
+        "slug": "getting-started",
+        "title": "Sistem Nöbeti: Getting Started",
+        "excerpt": "Getting Started steps for Sistem Nöbeti.",
+        "content": {
+          "markdown": "# Getting Started\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 22
+      }
+    },
+    {
+      "tr": {
+        "product": "sistem-nobeti",
+        "slug": "kurulum",
+        "title": "Sistem Nöbeti: Kurulum Rehberi",
+        "excerpt": "Sistem Nöbeti için kurulum rehberi adımları.",
+        "content": {
+          "markdown": "# Kurulum Rehberi\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 23
+      },
+      "en": {
+        "product": "sistem-nobeti",
+        "slug": "installation",
+        "title": "Sistem Nöbeti: Installation Guide",
+        "excerpt": "Installation Guide steps for Sistem Nöbeti.",
+        "content": {
+          "markdown": "# Installation Guide\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 23
+      }
+    },
+    {
+      "tr": {
+        "product": "sistem-nobeti",
+        "slug": "yapilandirma",
+        "title": "Sistem Nöbeti: Yapılandırma",
+        "excerpt": "Sistem Nöbeti için yapılandırma adımları.",
+        "content": {
+          "markdown": "# Yapılandırma\n\n> Bu doküman örnek amaçlıdır.\n\n## Ön koşullar\n\n- Yetkili kullanıcı hesabı\n- Onaylanmış kurulum ortamı\n\n## Adımlar\n\n1. Kurumunuzun sorumlusunu belirleyin.\n2. İhtiyaç duyulan yapılandırmaları teknik ekiple gözden geçirin.\n3. Kurulum veya yapılandırmayı doğrulama planına göre kontrol edin.\n\nGerçek ortam ayrıntıları proje planında belgelenmelidir."
+        },
+        "sortOrder": 24
+      },
+      "en": {
+        "product": "sistem-nobeti",
+        "slug": "configuration",
+        "title": "Sistem Nöbeti: Configuration",
+        "excerpt": "Configuration steps for Sistem Nöbeti.",
+        "content": {
+          "markdown": "# Configuration\n\n> This documentation is for sample purposes.\n\n## Prerequisites\n\n- Authorized user account\n- Approved deployment environment\n\n## Steps\n\n1. Identify your organization's owner.\n2. Review required configuration with the technical team.\n3. Verify installation or configuration against an agreed plan.\n\nDocument actual environment details in the project plan."
+        },
+        "sortOrder": 24
+      }
+    }
+  ],
+  "releases": [
+    {
+      "tr": {
+        "product": "akis-merkezi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "akis-merkezi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "akis-merkezi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "akis-merkezi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "belge-rotasi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "belge-rotasi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "belge-rotasi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "belge-rotasi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "talep-masasi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "talep-masasi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "talep-masasi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "talep-masasi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "veri-pusulasi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "veri-pusulasi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "veri-pusulasi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "veri-pusulasi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "rapor-atolyesi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "rapor-atolyesi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "rapor-atolyesi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "rapor-atolyesi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "kalite-izleyici",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "kalite-izleyici",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "kalite-izleyici",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "kalite-izleyici",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "erisim-kilidi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "erisim-kilidi",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "erisim-kilidi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "erisim-kilidi",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "sistem-nobeti",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Örnek bakım ve iyileştirme sürümü",
+        "notes": {
+          "markdown": "## Bakım ve iyileştirme\n\nKullanılabilirlik ve yapılandırma akışları gözden geçirildi. Bu notlar örnektir."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Yapılandırma açıklamaları iyileştirildi."
+          }
+        ]
+      },
+      "en": {
+        "product": "sistem-nobeti",
+        "version": "1.1.0",
+        "releaseDate": "2026-10-01",
+        "channel": "stable",
+        "title": "Sample maintenance and improvements",
+        "notes": {
+          "markdown": "## Maintenance and improvements\n\nUsability and configuration workflows were reviewed. These notes are samples."
+        },
+        "changes": [
+          {
+            "type": "improved",
+            "description": "Improved configuration guidance."
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "product": "sistem-nobeti",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "İlk örnek sürüm",
+        "notes": {
+          "markdown": "## İlk örnek sürüm\n\nİşlev kapsamı ve dağıtım adımları için ürün dokümantasyonuna bakın."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Temel ürün akışı sunuldu."
+          }
+        ]
+      },
+      "en": {
+        "product": "sistem-nobeti",
+        "version": "1.0.0",
+        "releaseDate": "2026-06-01",
+        "channel": "stable",
+        "title": "Initial sample release",
+        "notes": {
+          "markdown": "## Initial sample release\n\nSee product documentation for scope and deployment steps."
+        },
+        "changes": [
+          {
+            "type": "new",
+            "description": "Introduced the core product workflow."
+          }
+        ]
+      }
+    }
+  ]
+}

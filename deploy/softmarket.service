@@ -1,0 +1,21 @@
+[Unit]
+Description=SoftMarket
+After=network.target
+[Service]
+User=softmarket
+Group=softmarket
+WorkingDirectory=/opt/softmarket/current
+EnvironmentFile=/etc/softmarket.env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+ExecStart=/usr/bin/env pnpm start
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/softmarket/shared/data /opt/softmarket/shared/uploads
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "solutions": [
+    {
+      "tr": {
+        "slug": "surec-otomasyonu",
+        "title": "Süreç Otomasyonu",
+        "summary": "Süreç Otomasyonu için yazılım bileşenlerini birlikte değerlendiren örnek çözüm.",
+        "products": [
+          "akis-merkezi",
+          "talep-masasi"
+        ],
+        "industries": [
+          "finans",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 1
+      },
+      "en": {
+        "slug": "surec-otomasyonu",
+        "title": "Workflow Automation",
+        "summary": "A sample solution combining software components for workflow automation.",
+        "products": [
+          "akis-merkezi",
+          "talep-masasi"
+        ],
+        "industries": [
+          "finans",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 1
+      }
+    },
+    {
+      "tr": {
+        "slug": "belge-yonetimi",
+        "title": "Belge Yönetimi",
+        "summary": "Belge Yönetimi için yazılım bileşenlerini birlikte değerlendiren örnek çözüm.",
+        "products": [
+          "belge-rotasi",
+          "akis-merkezi"
+        ],
+        "industries": [
+          "kamu",
+          "finans"
+        ],
+        "sortOrder": 2
+      },
+      "en": {
+        "slug": "belge-yonetimi",
+        "title": "Document Management",
+        "summary": "A sample solution combining software components for document management.",
+        "products": [
+          "belge-rotasi",
+          "akis-merkezi"
+        ],
+        "industries": [
+          "kamu",
+          "finans"
+        ],
+        "sortOrder": 2
+      }
+    },
+    {
+      "tr": {
+        "slug": "kurumsal-raporlama",
+        "title": "Kurumsal Raporlama",
+        "summary": "Kurumsal Raporlama için yazılım bileşenlerini birlikte değerlendiren örnek çözüm.",
+        "products": [
+          "veri-pusulasi",
+          "rapor-atolyesi"
+        ],
+        "industries": [
+          "uretim",
+          "finans"
+        ],
+        "sortOrder": 3
+      },
+      "en": {
+        "slug": "kurumsal-raporlama",
+        "title": "Enterprise Reporting",
+        "summary": "A sample solution combining software components for enterprise reporting.",
+        "products": [
+          "veri-pusulasi",
+          "rapor-atolyesi"
+        ],
+        "industries": [
+          "uretim",
+          "finans"
+        ],
+        "sortOrder": 3
+      }
+    },
+    {
+      "tr": {
+        "slug": "guvenli-dijital-ortam",
+        "title": "Güvenli Dijital Ortam",
+        "summary": "Güvenli Dijital Ortam için yazılım bileşenlerini birlikte değerlendiren örnek çözüm.",
+        "products": [
+          "erisim-kilidi",
+          "sistem-nobeti"
+        ],
+        "industries": [
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 4
+      },
+      "en": {
+        "slug": "guvenli-dijital-ortam",
+        "title": "Secure Digital Environment",
+        "summary": "A sample solution combining software components for secure digital environment.",
+        "products": [
+          "erisim-kilidi",
+          "sistem-nobeti"
+        ],
+        "industries": [
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 4
+      }
+    }
+  ]
+}

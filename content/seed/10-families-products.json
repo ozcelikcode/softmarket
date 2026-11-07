@@ -1,0 +1,3351 @@
+{
+  "version": 1,
+  "product-families": [
+    {
+      "tr": {
+        "slug": "akis-yonetimi",
+        "title": "Akış Yönetimi",
+        "tagline": "İş akışlarını düzenleyen ve izlenebilir kılan çözümler.",
+        "sortOrder": 1,
+        "description": {
+          "markdown": "İş akışlarını düzenleyen ve izlenebilir kılan çözümler."
+        }
+      },
+      "en": {
+        "slug": "akis-yonetimi",
+        "title": "Workflow Management",
+        "tagline": "Solutions for organizing and tracking operational workflows.",
+        "sortOrder": 1,
+        "description": {
+          "markdown": "Solutions for organizing and tracking operational workflows."
+        }
+      }
+    },
+    {
+      "tr": {
+        "slug": "veri-zekasi",
+        "title": "Veri Zekası",
+        "tagline": "Veriyi anlamlı içgörüye dönüştüren kurumsal araçlar.",
+        "sortOrder": 2,
+        "description": {
+          "markdown": "Veriyi anlamlı içgörüye dönüştüren kurumsal araçlar."
+        }
+      },
+      "en": {
+        "slug": "veri-zekasi",
+        "title": "Data Intelligence",
+        "tagline": "Enterprise tools that turn data into useful insight.",
+        "sortOrder": 2,
+        "description": {
+          "markdown": "Enterprise tools that turn data into useful insight."
+        }
+      }
+    },
+    {
+      "tr": {
+        "slug": "guvenli-altyapi",
+        "title": "Güvenli Altyapı",
+        "tagline": "Erişim, süreklilik ve altyapı yönetimi için yazılımlar.",
+        "sortOrder": 3,
+        "description": {
+          "markdown": "Erişim, süreklilik ve altyapı yönetimi için yazılımlar."
+        }
+      },
+      "en": {
+        "slug": "guvenli-altyapi",
+        "title": "Secure Infrastructure",
+        "tagline": "Software for access, continuity, and infrastructure management.",
+        "sortOrder": 3,
+        "description": {
+          "markdown": "Software for access, continuity, and infrastructure management."
+        }
+      }
+    }
+  ],
+  "industries": [
+    {
+      "tr": {
+        "slug": "finans",
+        "title": "Finans ve Sigorta",
+        "summary": "Finans ve Sigorta ekipleri için örnek kullanım alanları.",
+        "description": {
+          "markdown": "## Finans ve Sigorta\n\nBu içerik örnek amaçlıdır; gerçek müşteri veya sonuç iddiası içermez."
+        },
+        "sortOrder": 1
+      },
+      "en": {
+        "slug": "finans",
+        "title": "Financial Services",
+        "summary": "Example use cases for Financial Services teams.",
+        "description": {
+          "markdown": "## Financial Services\n\nThis sample content makes no claim about real customers or outcomes."
+        },
+        "sortOrder": 1
+      }
+    },
+    {
+      "tr": {
+        "slug": "uretim",
+        "title": "Üretim",
+        "summary": "Üretim ekipleri için örnek kullanım alanları.",
+        "description": {
+          "markdown": "## Üretim\n\nBu içerik örnek amaçlıdır; gerçek müşteri veya sonuç iddiası içermez."
+        },
+        "sortOrder": 2
+      },
+      "en": {
+        "slug": "uretim",
+        "title": "Manufacturing",
+        "summary": "Example use cases for Manufacturing teams.",
+        "description": {
+          "markdown": "## Manufacturing\n\nThis sample content makes no claim about real customers or outcomes."
+        },
+        "sortOrder": 2
+      }
+    },
+    {
+      "tr": {
+        "slug": "kamu",
+        "title": "Kamu Hizmetleri",
+        "summary": "Kamu Hizmetleri ekipleri için örnek kullanım alanları.",
+        "description": {
+          "markdown": "## Kamu Hizmetleri\n\nBu içerik örnek amaçlıdır; gerçek müşteri veya sonuç iddiası içermez."
+        },
+        "sortOrder": 3
+      },
+      "en": {
+        "slug": "kamu",
+        "title": "Public Services",
+        "summary": "Example use cases for Public Services teams.",
+        "description": {
+          "markdown": "## Public Services\n\nThis sample content makes no claim about real customers or outcomes."
+        },
+        "sortOrder": 3
+      }
+    },
+    {
+      "tr": {
+        "slug": "profesyonel-hizmetler",
+        "title": "Profesyonel Hizmetler",
+        "summary": "Profesyonel Hizmetler ekipleri için örnek kullanım alanları.",
+        "description": {
+          "markdown": "## Profesyonel Hizmetler\n\nBu içerik örnek amaçlıdır; gerçek müşteri veya sonuç iddiası içermez."
+        },
+        "sortOrder": 4
+      },
+      "en": {
+        "slug": "profesyonel-hizmetler",
+        "title": "Professional Services",
+        "summary": "Example use cases for Professional Services teams.",
+        "description": {
+          "markdown": "## Professional Services\n\nThis sample content makes no claim about real customers or outcomes."
+        },
+        "sortOrder": 4
+      }
+    }
+  ],
+  "products": [
+    {
+      "tr": {
+        "slug": "akis-merkezi",
+        "title": "Akış Merkezi",
+        "tagline": "Akışları tek noktadan tasarlayın ve izleyin.",
+        "summary": "Akışları tek noktadan tasarlayın ve izleyin.",
+        "family": "akis-yonetimi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Akış Merkezi",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Akışları tek noktadan tasarlayın ve izleyin."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 1
+      },
+      "en": {
+        "slug": "akis-merkezi",
+        "title": "Akış Merkezi",
+        "tagline": "Design and monitor workflows from one place.",
+        "summary": "Design and monitor workflows from one place.",
+        "family": "akis-yonetimi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Akış Merkezi",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Design and monitor workflows from one place."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 1
+      }
+    },
+    {
+      "tr": {
+        "slug": "belge-rotasi",
+        "title": "Belge Rotası",
+        "tagline": "Belgeleri kontrollü süreçlere yönlendirin.",
+        "summary": "Belgeleri kontrollü süreçlere yönlendirin.",
+        "family": "akis-yonetimi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Belge Rotası",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Belgeleri kontrollü süreçlere yönlendirin."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 2
+      },
+      "en": {
+        "slug": "belge-rotasi",
+        "title": "Belge Rotası",
+        "tagline": "Route documents through controlled processes.",
+        "summary": "Route documents through controlled processes.",
+        "family": "akis-yonetimi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Belge Rotası",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Route documents through controlled processes."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 2
+      }
+    },
+    {
+      "tr": {
+        "slug": "talep-masasi",
+        "title": "Talep Masası",
+        "tagline": "İç talepleri düzenli ve görünür biçimde yönetin.",
+        "summary": "İç talepleri düzenli ve görünür biçimde yönetin.",
+        "family": "akis-yonetimi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Talep Masası",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "İç talepleri düzenli ve görünür biçimde yönetin."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 3
+      },
+      "en": {
+        "slug": "talep-masasi",
+        "title": "Talep Masası",
+        "tagline": "Manage internal requests with clarity and consistency.",
+        "summary": "Manage internal requests with clarity and consistency.",
+        "family": "akis-yonetimi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Talep Masası",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Manage internal requests with clarity and consistency."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 3
+      }
+    },
+    {
+      "tr": {
+        "slug": "veri-pusulasi",
+        "title": "Veri Pusulası",
+        "tagline": "Operasyon verilerini keşfedilebilir hale getirin.",
+        "summary": "Operasyon verilerini keşfedilebilir hale getirin.",
+        "family": "veri-zekasi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Veri Pusulası",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Operasyon verilerini keşfedilebilir hale getirin."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 4
+      },
+      "en": {
+        "slug": "veri-pusulasi",
+        "title": "Veri Pusulası",
+        "tagline": "Make operational data easier to explore.",
+        "summary": "Make operational data easier to explore.",
+        "family": "veri-zekasi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Veri Pusulası",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Make operational data easier to explore."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 4
+      }
+    },
+    {
+      "tr": {
+        "slug": "rapor-atolyesi",
+        "title": "Rapor Atölyesi",
+        "tagline": "Tekrarlanabilir raporlama akışları oluşturun.",
+        "summary": "Tekrarlanabilir raporlama akışları oluşturun.",
+        "family": "veri-zekasi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Rapor Atölyesi",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Tekrarlanabilir raporlama akışları oluşturun."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 5
+      },
+      "en": {
+        "slug": "rapor-atolyesi",
+        "title": "Rapor Atölyesi",
+        "tagline": "Create repeatable reporting workflows.",
+        "summary": "Create repeatable reporting workflows.",
+        "family": "veri-zekasi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Rapor Atölyesi",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Create repeatable reporting workflows."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 5
+      }
+    },
+    {
+      "tr": {
+        "slug": "kalite-izleyici",
+        "title": "Kalite İzleyici",
+        "tagline": "Veri kalitesini kurallarla takip edin.",
+        "summary": "Veri kalitesini kurallarla takip edin.",
+        "family": "veri-zekasi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Kalite İzleyici",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Veri kalitesini kurallarla takip edin."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 6
+      },
+      "en": {
+        "slug": "kalite-izleyici",
+        "title": "Kalite İzleyici",
+        "tagline": "Monitor data quality through clear rules.",
+        "summary": "Monitor data quality through clear rules.",
+        "family": "veri-zekasi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Kalite İzleyici",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Monitor data quality through clear rules."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 6
+      }
+    },
+    {
+      "tr": {
+        "slug": "erisim-kilidi",
+        "title": "Erişim Kilidi",
+        "tagline": "Kurumsal erişim politikalarını yönetin.",
+        "summary": "Kurumsal erişim politikalarını yönetin.",
+        "family": "guvenli-altyapi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Erişim Kilidi",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Kurumsal erişim politikalarını yönetin."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 7
+      },
+      "en": {
+        "slug": "erisim-kilidi",
+        "title": "Erişim Kilidi",
+        "tagline": "Manage enterprise access policies.",
+        "summary": "Manage enterprise access policies.",
+        "family": "guvenli-altyapi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Erişim Kilidi",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Manage enterprise access policies."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 7
+      }
+    },
+    {
+      "tr": {
+        "slug": "sistem-nobeti",
+        "title": "Sistem Nöbeti",
+        "tagline": "Altyapı bileşenlerinin durumunu görünür kılın.",
+        "summary": "Altyapı bileşenlerinin durumunu görünür kılın.",
+        "family": "guvenli-altyapi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Sistem Nöbeti",
+            "eyebrow": "ÖRNEK ÜRÜN",
+            "subheading": "Altyapı bileşenlerinin durumunu görünür kılın."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Öne çıkan özellikler",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Süreç tasarımı",
+                "description": "İş adımlarını açık kurallarla tanımlayın."
+              },
+              {
+                "title": "Rol bazlı çalışma",
+                "description": "Görevleri sorumlu rollere yönlendirin."
+              },
+              {
+                "title": "İzlenebilir kayıt",
+                "description": "Değişiklik ve işlem geçmişini inceleyin."
+              },
+              {
+                "title": "Esnek yapı",
+                "description": "Kuruluşunuzun çalışma biçimine uyarlayın."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Teknik özellikler ve gereksinimler",
+            "groups": [
+              {
+                "title": "Teknik özellikler",
+                "rows": [
+                  {
+                    "label": "Dağıtım modeli",
+                    "value": "Web tabanlı / kurum içi seçenekler değerlendirilir"
+                  },
+                  {
+                    "label": "Kimlik doğrulama",
+                    "value": "Kurumsal yapılandırmaya bağlı"
+                  },
+                  {
+                    "label": "Entegrasyon",
+                    "value": "API ve dosya aktarımı seçenekleri"
+                  }
+                ]
+              },
+              {
+                "title": "Sistem gereksinimleri",
+                "rows": [
+                  {
+                    "label": "İstemci",
+                    "value": "Güncel web tarayıcısı"
+                  },
+                  {
+                    "label": "Sunucu",
+                    "value": "Boyutlandırma ve desteklenen ortam teklif aşamasında netleştirilir"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Sık sorulan sorular",
+            "source": "inline",
+            "items": [
+              {
+                "question": "Kurulum nasıl planlanır?",
+                "answer": {
+                  "markdown": "Kurulum kapsamı, ortam ve güvenlik gereksinimleri keşif görüşmesinde netleştirilir."
+                }
+              },
+              {
+                "question": "Mevcut sistemlerle bağlantı kurulabilir mi?",
+                "answer": {
+                  "markdown": "Uygun entegrasyon yolları teknik değerlendirme sonrasında belirlenir."
+                }
+              },
+              {
+                "question": "Lisanslama nasıl yapılır?",
+                "answer": {
+                  "markdown": "Lisans kapsamı kullanım ihtiyacına göre teklif sürecinde belirlenir."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans seçenekleri için ekibimizle görüşün.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Akış tasarımı",
+            "description": "Adımları görsel ve anlaşılır biçimde düzenleyin."
+          },
+          {
+            "title": "Rol yönetimi",
+            "description": "Görevleri uygun sorumlulara atayın."
+          },
+          {
+            "title": "İşlem geçmişi",
+            "description": "İşlemleri merkezi kayıtlardan izleyin."
+          },
+          {
+            "title": "Uyarlanabilir kurallar",
+            "description": "Kuralları ihtiyaçlarınıza göre yapılandırın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          },
+          {
+            "group": "Platform",
+            "label": "Entegrasyon",
+            "value": "API seçenekleri"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı ve internet bağlantısı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı kurumsal ağ"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 8
+      },
+      "en": {
+        "slug": "sistem-nobeti",
+        "title": "Sistem Nöbeti",
+        "tagline": "Make infrastructure component status visible.",
+        "summary": "Make infrastructure component status visible.",
+        "family": "guvenli-altyapi",
+        "layout": [
+          {
+            "blockType": "hero",
+            "heading": "Sistem Nöbeti",
+            "eyebrow": "SAMPLE PRODUCT",
+            "subheading": "Make infrastructure component status visible."
+          },
+          {
+            "blockType": "featureGrid",
+            "heading": "Key features",
+            "columns": "3",
+            "items": [
+              {
+                "title": "Flow design",
+                "description": "Arrange steps in a clear, visual way."
+              },
+              {
+                "title": "Role management",
+                "description": "Assign tasks to the appropriate roles."
+              },
+              {
+                "title": "Activity history",
+                "description": "Track activity through centralized records."
+              },
+              {
+                "title": "Adaptable rules",
+                "description": "Configure rules to fit your needs."
+              }
+            ]
+          },
+          {
+            "blockType": "specTable",
+            "heading": "Technical specifications and requirements",
+            "groups": [
+              {
+                "title": "Technical specifications",
+                "rows": [
+                  {
+                    "label": "Deployment",
+                    "value": "Web-based / on-premises options assessed"
+                  },
+                  {
+                    "label": "Authentication",
+                    "value": "Depends on enterprise configuration"
+                  },
+                  {
+                    "label": "Integration",
+                    "value": "API and file transfer options"
+                  }
+                ]
+              },
+              {
+                "title": "System requirements",
+                "rows": [
+                  {
+                    "label": "Client",
+                    "value": "Current web browser"
+                  },
+                  {
+                    "label": "Server",
+                    "value": "Sizing and supported environment confirmed during proposal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "blockType": "faq",
+            "heading": "Frequently asked questions",
+            "source": "inline",
+            "items": [
+              {
+                "question": "How is installation planned?",
+                "answer": {
+                  "markdown": "Scope, environment, and security requirements are confirmed during discovery."
+                }
+              },
+              {
+                "question": "Can it connect to existing systems?",
+                "answer": {
+                  "markdown": "Suitable integration options are determined after technical review."
+                }
+              },
+              {
+                "question": "How does licensing work?",
+                "answer": {
+                  "markdown": "License scope is defined during the proposal process based on usage needs."
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let us assess your needs",
+            "body": "Sample content. Contact our team to discuss scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "mailto:[COMPANY EMAIL]",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ],
+        "features": [
+          {
+            "title": "Flow design",
+            "description": "Arrange steps in a clear, visual way."
+          },
+          {
+            "title": "Role management",
+            "description": "Assign tasks to the appropriate roles."
+          },
+          {
+            "title": "Activity history",
+            "description": "Track activity through centralized records."
+          },
+          {
+            "title": "Adaptable rules",
+            "description": "Configure rules to fit your needs."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          },
+          {
+            "group": "Platform",
+            "label": "Integration",
+            "value": "API options"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser and internet connection"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable enterprise network"
+            }
+          }
+        ],
+        "industries": [
+          "finans",
+          "uretim",
+          "kamu",
+          "profesyonel-hizmetler"
+        ],
+        "sortOrder": 8
+      }
+    }
+  ],
+  "editions": [
+    {
+      "tr": {
+        "sku": "TEAM-AKIS-MERKEZI",
+        "title": "Ekip",
+        "product": "akis-merkezi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-AKIS-MERKEZI",
+        "title": "Team",
+        "product": "akis-merkezi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-AKIS-MERKEZI",
+        "title": "Kurum",
+        "product": "akis-merkezi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-AKIS-MERKEZI",
+        "title": "Organization",
+        "product": "akis-merkezi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-BELGE-ROTASI",
+        "title": "Ekip",
+        "product": "belge-rotasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-BELGE-ROTASI",
+        "title": "Team",
+        "product": "belge-rotasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-BELGE-ROTASI",
+        "title": "Kurum",
+        "product": "belge-rotasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-BELGE-ROTASI",
+        "title": "Organization",
+        "product": "belge-rotasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-TALEP-MASASI",
+        "title": "Ekip",
+        "product": "talep-masasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-TALEP-MASASI",
+        "title": "Team",
+        "product": "talep-masasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-TALEP-MASASI",
+        "title": "Kurum",
+        "product": "talep-masasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-TALEP-MASASI",
+        "title": "Organization",
+        "product": "talep-masasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-VERI-PUSULASI",
+        "title": "Ekip",
+        "product": "veri-pusulasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-VERI-PUSULASI",
+        "title": "Team",
+        "product": "veri-pusulasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-VERI-PUSULASI",
+        "title": "Kurum",
+        "product": "veri-pusulasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-VERI-PUSULASI",
+        "title": "Organization",
+        "product": "veri-pusulasi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-RAPOR-ATOLYESI",
+        "title": "Ekip",
+        "product": "rapor-atolyesi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-RAPOR-ATOLYESI",
+        "title": "Team",
+        "product": "rapor-atolyesi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-RAPOR-ATOLYESI",
+        "title": "Kurum",
+        "product": "rapor-atolyesi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-RAPOR-ATOLYESI",
+        "title": "Organization",
+        "product": "rapor-atolyesi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-KALITE-IZLEYICI",
+        "title": "Ekip",
+        "product": "kalite-izleyici",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-KALITE-IZLEYICI",
+        "title": "Team",
+        "product": "kalite-izleyici",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-KALITE-IZLEYICI",
+        "title": "Kurum",
+        "product": "kalite-izleyici",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-KALITE-IZLEYICI",
+        "title": "Organization",
+        "product": "kalite-izleyici",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-ERISIM-KILIDI",
+        "title": "Ekip",
+        "product": "erisim-kilidi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-ERISIM-KILIDI",
+        "title": "Team",
+        "product": "erisim-kilidi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-ERISIM-KILIDI",
+        "title": "Kurum",
+        "product": "erisim-kilidi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-ERISIM-KILIDI",
+        "title": "Organization",
+        "product": "erisim-kilidi",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "TEAM-SISTEM-NOBETI",
+        "title": "Ekip",
+        "product": "sistem-nobeti",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "TEAM-SISTEM-NOBETI",
+        "title": "Team",
+        "product": "sistem-nobeti",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "sku": "ORG-SISTEM-NOBETI",
+        "title": "Kurum",
+        "product": "sistem-nobeti",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Kapsamı ihtiyaca göre belirlenen örnek lisans seçeneği.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          },
+          {
+            "text": "Standart destek kanalı"
+          }
+        ]
+      },
+      "en": {
+        "sku": "ORG-SISTEM-NOBETI",
+        "title": "Organization",
+        "product": "sistem-nobeti",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 50,
+        "description": "Sample license option with scope agreed to fit requirements.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          },
+          {
+            "text": "Standard support channel"
+          }
+        ]
+      }
+    }
+  ]
+}

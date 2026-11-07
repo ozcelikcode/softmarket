@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "globals": {
+    "header": {
+      "tr": {
+        "navItems": [
+          {
+            "megaMenu": "products"
+          },
+          {
+            "megaMenu": "solutions"
+          },
+          {
+            "link": {
+              "type": "internal",
+              "url": "/tr/destek",
+              "label": "Destek"
+            }
+          }
+        ]
+      },
+      "en": {
+        "navItems": [
+          {
+            "megaMenu": "products"
+          },
+          {
+            "megaMenu": "solutions"
+          },
+          {
+            "link": {
+              "type": "internal",
+              "url": "/en/support",
+              "label": "Support"
+            }
+          }
+        ]
+      }
+    },
+    "footer": {
+      "tr": {
+        "copyright": "© Örnek Kurumsal Yazılım — demo içerik",
+        "showNewsletter": false
+      },
+      "en": {
+        "copyright": "© Sample Enterprise Software — demo content",
+        "showNewsletter": false
+      }
+    },
+    "site-settings": {
+      "tr": {
+        "siteName": "Örnek Kurumsal Yazılım",
+        "tagline": "Kurumsal süreçler için yazılım çözümleri",
+        "company": {
+          "legalName": "[COMPANY LEGAL NAME]"
+        },
+        "contact": {
+          "phone": "[COMPANY PHONE]",
+          "address": "[ŞİRKET ADRESİ]",
+          "workingHours": "[ÇALIŞMA SAATLERİ]"
+        },
+        "commerce": {
+          "quoteForm": "softmarket-quote",
+          "demoForm": "softmarket-demo"
+        }
+      },
+      "en": {
+        "siteName": "Sample Enterprise Software",
+        "tagline": "Software solutions for enterprise operations",
+        "company": {
+          "legalName": "[COMPANY LEGAL NAME]"
+        },
+        "contact": {
+          "phone": "[COMPANY PHONE]",
+          "address": "[COMPANY ADDRESS]",
+          "workingHours": "[BUSINESS HOURS]"
+        },
+        "commerce": {
+          "quoteForm": "softmarket-quote",
+          "demoForm": "softmarket-demo"
+        }
+      }
+    }
+  }
+}

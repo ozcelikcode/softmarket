@@ -1,0 +1,92 @@
+import { expect, test } from '@playwright/test'
+
+for (const locale of ['tr', 'en'] as const) {
+  test(`${locale}: home SEO, skip link and branded share image`, async ({ page, request }) => {
+    const response = await page.goto(`/${locale}`)
+    expect(response?.status()).toBe(200)
+    await expect(page.locator('html')).toHaveAttribute('lang', locale)
+    await expect(page.locator('main h1')).toHaveCount(1)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`/${locale}$`))
+    await expect(page.locator('link[hreflang="x-default"]')).toHaveAttribute('href', /\/tr$/)
+    await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute('content', /opengraph-image/)
+    const image = await request.get(`/${locale}/opengraph-image`)
+    expect(image.status()).toBe(200)
+    expect(image.headers()['content-type']).toContain('image/png')
+    await page.keyboard.press('Tab')
+    const skip = page.locator('a[href="#main"]')
+    await expect(skip).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('main')).toBeFocused()
+  })
+
+  test(`${locale}: catalog → product → quote keeps product and edition`, async ({ page }) => {
+    await page.goto(locale === 'tr' ? '/tr/urunler' : '/en/products')
+    const productLink = page.locator(`main a[href^="/${locale}/${locale === 'tr' ? 'urunler' : 'products'}/"]`).filter({ has: page.locator('h2') }).first()
+    await expect(productLink).toBeVisible()
+    await productLink.click()
+    const quote = page.locator('#surumler a[href*="surum="]').first()
+    await expect(quote).toBeVisible()
+    const target = new URL((await quote.getAttribute('href'))!, 'http://127.0.0.1:3100')
+    await quote.click()
+    await expect(page.locator('select[name="product"]')).toHaveValue(target.searchParams.get('urun')!)
+    await expect(page.locator('select[name="sku"]')).toHaveValue(target.searchParams.get('surum')!)
+    await expect(page.locator('label[for="quote-product"]')).toBeVisible()
+    await expect(page.locator('label[for="quote-sku"]')).toBeVisible()
+  })
+}
+
+test('product language switch follows localized CMS slugs and returns to the same product', async ({ page }) => {
+  await page.goto('/tr/urunler')
+  await page.locator('main a[href^="/tr/urunler/"]').filter({ has: page.locator('h2') }).first().click()
+  const original = new URL(page.url()).pathname
+  const english = new URL((await page.locator('link[rel="alternate"][hreflang="en"]').getAttribute('href'))!).pathname
+  await page.getByRole('button', { name: /: EN$/ }).first().click()
+  await expect(page).toHaveURL(new RegExp(english + '$'))
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await page.getByRole('button', { name: /: TR$/ }).first().click()
+  await expect(page).toHaveURL(new RegExp(original + '$'))
+})
+
+test('support FAQ opens by keyboard; search is noindex and absent from sitemap', async ({ page, request }) => {
+  await page.goto('/tr/destek/sss')
+  const trigger = page.locator('main button[aria-expanded]').first()
+  await expect(trigger).toBeVisible()
+  await trigger.focus()
+  await page.keyboard.press('Enter')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  const panel = page.locator(`[id="${await trigger.getAttribute('aria-controls')}"]`)
+  await expect(panel).toBeVisible()
+  await page.goto('/en/search?q=software')
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
+  const sitemap = await request.get('/sitemap.xml')
+  const xml = await sitemap.text()
+  expect(xml).not.toMatch(/<loc>[^<]*\/(?:ara|search)(?:\?|<)/)
+  expect(xml).toContain('<lastmod>')
+})
+
+test('mobile menu keyboard trap, Escape, restored focus and navigation', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/tr')
+  const menu = page.locator('header button[aria-haspopup="dialog"]')
+  await menu.focus()
+  await page.keyboard.press('Enter')
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press('Tab')
+    expect(await dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true)
+  }
+  await page.keyboard.press('Escape')
+  await expect(dialog).not.toBeVisible()
+  await expect(menu).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(dialog).toBeVisible()
+  const summary = dialog.locator('summary').first()
+  await summary.focus()
+  await page.keyboard.press('Enter')
+  const catalog = dialog.locator('a[href="/tr/urunler"]').first()
+  await catalog.focus()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/\/tr\/urunler$/)
+  await expect(dialog).not.toBeVisible()
+})

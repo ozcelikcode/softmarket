@@ -1,0 +1,5103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$defs": {
+    "hero": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "variant": {
+          "enum": [
+            "default",
+            "centered",
+            "split"
+          ]
+        },
+        "eyebrow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subheading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "media": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "link": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "internal",
+                      "external"
+                    ]
+                  },
+                  "newTab": {
+                    "type": "boolean"
+                  },
+                  "reference": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "pages"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "products"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "product-families"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "solutions"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "industries"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "case-studies"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "posts"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "careers"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "docs"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      }
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "appearance": {
+                    "enum": [
+                      "primary",
+                      "secondary",
+                      "link"
+                    ]
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          },
+          "maxItems": 2
+        },
+        "blockType": {
+          "const": "hero"
+        }
+      },
+      "required": [
+        "heading",
+        "blockType"
+      ]
+    },
+    "featureGrid": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "columns": {
+          "enum": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "icon": {
+                "type": "string",
+                "minLength": 1
+              },
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title"
+            ]
+          },
+          "minItems": 1
+        },
+        "blockType": {
+          "const": "featureGrid"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "mediaText": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "media": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mediaPosition": {
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "markdown": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "markdown"
+          ]
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "link": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "internal",
+                      "external"
+                    ]
+                  },
+                  "newTab": {
+                    "type": "boolean"
+                  },
+                  "reference": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "pages"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "products"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "product-families"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "solutions"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "industries"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "case-studies"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "posts"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "careers"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "docs"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      }
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "appearance": {
+                    "enum": [
+                      "primary",
+                      "secondary",
+                      "link"
+                    ]
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          },
+          "maxItems": 2
+        },
+        "blockType": {
+          "const": "mediaText"
+        }
+      },
+      "required": [
+        "media",
+        "blockType"
+      ]
+    },
+    "specTable": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "value"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": []
+          },
+          "minItems": 1
+        },
+        "blockType": {
+          "const": "specTable"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "value",
+              "label"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 6
+        },
+        "blockType": {
+          "const": "stats"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "logoWall": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "manual",
+            "caseStudies",
+            "partners"
+          ]
+        },
+        "logos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "logo": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "logo",
+              "name"
+            ]
+          }
+        },
+        "caseStudies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "partners": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "blockType": {
+          "const": "logoWall"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "cta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "style": {
+          "enum": [
+            "banner",
+            "card"
+          ]
+        },
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "link": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "internal",
+                      "external"
+                    ]
+                  },
+                  "newTab": {
+                    "type": "boolean"
+                  },
+                  "reference": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "pages"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "products"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "product-families"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "solutions"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "industries"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "case-studies"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "posts"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "careers"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "relationTo": {
+                            "const": "docs"
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "relationTo",
+                          "value"
+                        ]
+                      }
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "appearance": {
+                    "enum": [
+                      "primary",
+                      "secondary",
+                      "link"
+                    ]
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "blockType": {
+          "const": "cta"
+        }
+      },
+      "required": [
+        "heading",
+        "blockType"
+      ]
+    },
+    "faq": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "collection",
+            "inline"
+          ]
+        },
+        "faqs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ]
+          }
+        },
+        "blockType": {
+          "const": "faq"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "richText": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "enum": [
+            "narrow",
+            "normal",
+            "wide"
+          ]
+        },
+        "content": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "markdown": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "markdown"
+          ]
+        },
+        "blockType": {
+          "const": "richText"
+        }
+      },
+      "required": [
+        "content",
+        "blockType"
+      ]
+    },
+    "videoEmbed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "poster": {
+          "type": "string",
+          "minLength": 1
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockType": {
+          "const": "videoEmbed"
+        }
+      },
+      "required": [
+        "url",
+        "blockType"
+      ]
+    }
+  },
+  "title": "SoftMarket bilingual content seed v1",
+  "description": "Records contain tr/en Payload fields. Relationships use the target TR slug (editions: SKU, forms: title, FAQs: TR slug, docs: product-slug/doc-slug). Rich text: {markdown: string}. Media references use a media/relative-file path. Shared field values and array order must match across locales.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    },
+    "product-families": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tagline": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1
+              },
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tagline": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1
+              },
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "industries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1
+              },
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "icon": {
+                "type": "string",
+                "minLength": 1
+              },
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tagline": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "heroImage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    }
+                  ]
+                }
+              },
+              "features": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "icon": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "title"
+                  ]
+                }
+              },
+              "specs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "group": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "value"
+                  ]
+                }
+              },
+              "systemRequirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "os": {
+                      "enum": [
+                        "windows",
+                        "macos",
+                        "linux",
+                        "web",
+                        "android",
+                        "ios",
+                        "other"
+                      ]
+                    },
+                    "minimum": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "markdown": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "markdown"
+                      ]
+                    },
+                    "recommended": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "markdown": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "markdown"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "os"
+                  ]
+                }
+              },
+              "gallery": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "brochure": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "family": {
+                "type": "string",
+                "minLength": 1
+              },
+              "industries": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "featured": {
+                "type": "boolean"
+              },
+              "sortOrder": {
+                "type": "number"
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug",
+              "family"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tagline": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "heroImage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    }
+                  ]
+                }
+              },
+              "features": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "icon": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "title"
+                  ]
+                }
+              },
+              "specs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "group": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "value"
+                  ]
+                }
+              },
+              "systemRequirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "os": {
+                      "enum": [
+                        "windows",
+                        "macos",
+                        "linux",
+                        "web",
+                        "android",
+                        "ios",
+                        "other"
+                      ]
+                    },
+                    "minimum": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "markdown": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "markdown"
+                      ]
+                    },
+                    "recommended": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "markdown": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "markdown"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "os"
+                  ]
+                }
+              },
+              "gallery": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "brochure": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "family": {
+                "type": "string",
+                "minLength": 1
+              },
+              "industries": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "featured": {
+                "type": "boolean"
+              },
+              "sortOrder": {
+                "type": "number"
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug",
+              "family"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "editions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sku": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9-]{1,63}$"
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "highlights": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ]
+                }
+              },
+              "licenseType": {
+                "enum": [
+                  "perpetual",
+                  "subscription"
+                ]
+              },
+              "durationMonths": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "seats": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "sku",
+              "product"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "licenseType": {
+                      "const": "subscription"
+                    }
+                  },
+                  "required": [
+                    "licenseType"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "durationMonths"
+                  ]
+                }
+              }
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sku": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9-]{1,63}$"
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "highlights": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ]
+                }
+              },
+              "licenseType": {
+                "enum": [
+                  "perpetual",
+                  "subscription"
+                ]
+              },
+              "durationMonths": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "seats": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "sku",
+              "product"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "licenseType": {
+                      "const": "subscription"
+                    }
+                  },
+                  "required": [
+                    "licenseType"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "durationMonths"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "solutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "heroImage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    }
+                  ]
+                }
+              },
+              "industries": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "caseStudies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "sortOrder": {
+                "type": "number"
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "heroImage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    }
+                  ]
+                }
+              },
+              "industries": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "caseStudies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "sortOrder": {
+                "type": "number"
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "faqs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "category": {
+                "enum": [
+                  "general",
+                  "licensing",
+                  "billing",
+                  "technical"
+                ]
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "slug",
+              "question",
+              "answer"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "category": {
+                "enum": [
+                  "general",
+                  "licensing",
+                  "billing",
+                  "technical"
+                ]
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "slug",
+              "question",
+              "answer"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "docs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "excerpt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "parent": {
+                "type": "string",
+                "minLength": 1
+              },
+              "appliesToVersions": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "product",
+              "slug"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "excerpt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "parent": {
+                "type": "string",
+                "minLength": 1
+              },
+              "appliesToVersions": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sortOrder": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "title",
+              "product",
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "releases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "channel": {
+                "enum": [
+                  "stable",
+                  "beta",
+                  "lts"
+                ]
+              },
+              "releaseDate": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "notes": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "new",
+                        "improved",
+                        "fixed",
+                        "security",
+                        "breaking"
+                      ]
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "description"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "product",
+              "version",
+              "releaseDate"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "product": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "channel": {
+                "enum": [
+                  "stable",
+                  "beta",
+                  "lts"
+                ]
+              },
+              "releaseDate": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "notes": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "new",
+                        "improved",
+                        "fixed",
+                        "security",
+                        "breaking"
+                      ]
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "description"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "product",
+              "version",
+              "releaseDate"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "posts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "excerpt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "coverImage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "category": {
+                "enum": [
+                  "news",
+                  "product-update",
+                  "event",
+                  "blog"
+                ]
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "excerpt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "coverImage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "category": {
+                "enum": [
+                  "news",
+                  "product-update",
+                  "event",
+                  "blog"
+                ]
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    }
+                  ]
+                }
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "pageType": {
+                "enum": [
+                  "standard",
+                  "legal",
+                  "landing"
+                ]
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    }
+                  ]
+                }
+              },
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "pageType": {
+                "enum": [
+                  "standard",
+                  "legal",
+                  "landing"
+                ]
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "title",
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "tr",
+          "en"
+        ]
+      }
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^media/(?!.*(?:^|/)\\.\\.(?:/|$)).+"
+          },
+          "alt": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tr": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "tr",
+              "en"
+            ]
+          },
+          "protected": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path",
+          "alt",
+          "protected"
+        ]
+      }
+    },
+    "globals": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "header": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tr": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "navItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "link": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "type": {
+                            "enum": [
+                              "internal",
+                              "external"
+                            ]
+                          },
+                          "newTab": {
+                            "type": "boolean"
+                          },
+                          "reference": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "pages"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "products"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "product-families"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "solutions"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "industries"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "case-studies"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "posts"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "careers"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "docs"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              }
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": []
+                      },
+                      "megaMenu": {
+                        "enum": [
+                          "products",
+                          "solutions"
+                        ]
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "link": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "type": {
+                                  "enum": [
+                                    "internal",
+                                    "external"
+                                  ]
+                                },
+                                "newTab": {
+                                  "type": "boolean"
+                                },
+                                "reference": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "pages"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "products"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "product-families"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "solutions"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "industries"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "case-studies"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "posts"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "careers"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "docs"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": []
+                            },
+                            "description": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": []
+                        }
+                      }
+                    },
+                    "required": []
+                  },
+                  "maxItems": 8
+                },
+                "cta": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "link": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "internal",
+                            "external"
+                          ]
+                        },
+                        "newTab": {
+                          "type": "boolean"
+                        },
+                        "reference": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "pages"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "products"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "product-families"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "solutions"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "industries"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "case-studies"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "posts"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "careers"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "docs"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            }
+                          ]
+                        },
+                        "url": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": []
+                    }
+                  },
+                  "required": []
+                }
+              },
+              "required": []
+            },
+            "en": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "navItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "link": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "type": {
+                            "enum": [
+                              "internal",
+                              "external"
+                            ]
+                          },
+                          "newTab": {
+                            "type": "boolean"
+                          },
+                          "reference": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "pages"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "products"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "product-families"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "solutions"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "industries"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "case-studies"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "posts"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "careers"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "docs"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              }
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": []
+                      },
+                      "megaMenu": {
+                        "enum": [
+                          "products",
+                          "solutions"
+                        ]
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "link": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "type": {
+                                  "enum": [
+                                    "internal",
+                                    "external"
+                                  ]
+                                },
+                                "newTab": {
+                                  "type": "boolean"
+                                },
+                                "reference": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "pages"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "products"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "product-families"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "solutions"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "industries"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "case-studies"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "posts"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "careers"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "docs"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": []
+                            },
+                            "description": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": []
+                        }
+                      }
+                    },
+                    "required": []
+                  },
+                  "maxItems": 8
+                },
+                "cta": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "link": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "internal",
+                            "external"
+                          ]
+                        },
+                        "newTab": {
+                          "type": "boolean"
+                        },
+                        "reference": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "pages"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "products"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "product-families"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "solutions"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "industries"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "case-studies"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "posts"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "careers"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "docs"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            }
+                          ]
+                        },
+                        "url": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": []
+                    }
+                  },
+                  "required": []
+                }
+              },
+              "required": []
+            }
+          },
+          "required": [
+            "tr",
+            "en"
+          ]
+        },
+        "footer": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tr": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "columns": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "links": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "link": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "type": {
+                                  "enum": [
+                                    "internal",
+                                    "external"
+                                  ]
+                                },
+                                "newTab": {
+                                  "type": "boolean"
+                                },
+                                "reference": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "pages"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "products"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "product-families"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "solutions"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "industries"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "case-studies"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "posts"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "careers"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "docs"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": []
+                            }
+                          },
+                          "required": []
+                        }
+                      }
+                    },
+                    "required": [
+                      "title"
+                    ]
+                  },
+                  "maxItems": 6
+                },
+                "legalLinks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "link": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "type": {
+                            "enum": [
+                              "internal",
+                              "external"
+                            ]
+                          },
+                          "newTab": {
+                            "type": "boolean"
+                          },
+                          "reference": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "pages"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "products"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "product-families"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "solutions"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "industries"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "case-studies"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "posts"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "careers"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "docs"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              }
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": []
+                      }
+                    },
+                    "required": []
+                  }
+                },
+                "copyright": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "showNewsletter": {
+                  "type": "boolean"
+                },
+                "newsletterForm": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": []
+            },
+            "en": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "columns": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "links": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "link": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "type": {
+                                  "enum": [
+                                    "internal",
+                                    "external"
+                                  ]
+                                },
+                                "newTab": {
+                                  "type": "boolean"
+                                },
+                                "reference": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "pages"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "products"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "product-families"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "solutions"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "industries"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "case-studies"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "posts"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "careers"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "relationTo": {
+                                          "const": "docs"
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "relationTo",
+                                        "value"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": []
+                            }
+                          },
+                          "required": []
+                        }
+                      }
+                    },
+                    "required": [
+                      "title"
+                    ]
+                  },
+                  "maxItems": 6
+                },
+                "legalLinks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "link": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "type": {
+                            "enum": [
+                              "internal",
+                              "external"
+                            ]
+                          },
+                          "newTab": {
+                            "type": "boolean"
+                          },
+                          "reference": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "pages"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "products"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "product-families"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "solutions"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "industries"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "case-studies"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "posts"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "careers"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "relationTo": {
+                                    "const": "docs"
+                                  },
+                                  "value": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "relationTo",
+                                  "value"
+                                ]
+                              }
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": []
+                      }
+                    },
+                    "required": []
+                  }
+                },
+                "copyright": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "showNewsletter": {
+                  "type": "boolean"
+                },
+                "newsletterForm": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": []
+            }
+          },
+          "required": [
+            "tr",
+            "en"
+          ]
+        },
+        "site-settings": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tr": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "siteName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tagline": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "logo": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "logoDark": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "defaultOgImage": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "company": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "legalName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "taxOffice": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "taxNumber": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mersisNo": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kepAddress": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "contact": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "salesEmail": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "supportEmail": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "address": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mapUrl": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "workingHours": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "social": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "platform": {
+                        "enum": [
+                          "linkedin",
+                          "x",
+                          "youtube",
+                          "instagram",
+                          "facebook",
+                          "github"
+                        ]
+                      },
+                      "url": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "platform",
+                      "url"
+                    ]
+                  }
+                },
+                "legal": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "kvkk": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "privacy": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cookies": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "distanceSales": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "preInformation": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "refund": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "terms": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "eula": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "commerce": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "quoteForm": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "demoForm": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                }
+              },
+              "required": []
+            },
+            "en": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "siteName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tagline": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "logo": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "logoDark": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "defaultOgImage": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "company": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "legalName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "taxOffice": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "taxNumber": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mersisNo": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kepAddress": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "contact": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "salesEmail": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "supportEmail": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phone": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "address": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mapUrl": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "workingHours": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "social": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "platform": {
+                        "enum": [
+                          "linkedin",
+                          "x",
+                          "youtube",
+                          "instagram",
+                          "facebook",
+                          "github"
+                        ]
+                      },
+                      "url": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "platform",
+                      "url"
+                    ]
+                  }
+                },
+                "legal": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "kvkk": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "privacy": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cookies": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "distanceSales": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "preInformation": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "refund": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "terms": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "eula": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "commerce": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "quoteForm": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "demoForm": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                }
+              },
+              "required": []
+            }
+          },
+          "required": [
+            "tr",
+            "en"
+          ]
+        }
+      },
+      "required": []
+    }
+  },
+  "required": [
+    "version"
+  ]
+}

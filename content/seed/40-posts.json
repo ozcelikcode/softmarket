@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "posts": [
+    {
+      "tr": {
+        "slug": "ornek-yayin-plani",
+        "title": "Örnek yayın planı",
+        "excerpt": "İçerik yayın akışına dair temsili bir not.",
+        "category": "blog",
+        "publishedAt": "2026-10-20T09:00:00.000Z",
+        "content": {
+          "markdown": "# Örnek yayın planı\n\nİçerik yayın akışına dair temsili bir not.\n\nBu içerik yalnızca demo amaçlıdır. Gerçek duyuru, müşteri sonucu veya ölçüm içermez."
+        }
+      },
+      "en": {
+        "slug": "ornek-yayin-plani",
+        "title": "Sample content roadmap",
+        "excerpt": "A representative note about content publishing workflows.",
+        "category": "blog",
+        "publishedAt": "2026-10-20T09:00:00.000Z",
+        "content": {
+          "markdown": "# Sample content roadmap\n\nA representative note about content publishing workflows.\n\nThis content is for demo purposes only. It contains no real announcement, customer outcome, or metric."
+        }
+      }
+    },
+    {
+      "tr": {
+        "slug": "veri-yonetiminde-ilkeler",
+        "title": "Veri yönetiminde temel ilkeler",
+        "excerpt": "Kurumsal veri süreçlerini tasarlarken dikkate alınabilecek örnek ilkeler.",
+        "category": "blog",
+        "publishedAt": "2026-10-16T09:00:00.000Z",
+        "content": {
+          "markdown": "# Veri yönetiminde temel ilkeler\n\nKurumsal veri süreçlerini tasarlarken dikkate alınabilecek örnek ilkeler.\n\nBu içerik yalnızca demo amaçlıdır. Gerçek duyuru, müşteri sonucu veya ölçüm içermez."
+        }
+      },
+      "en": {
+        "slug": "veri-yonetiminde-ilkeler",
+        "title": "Principles for data management",
+        "excerpt": "Sample principles to consider when designing enterprise data processes.",
+        "category": "blog",
+        "publishedAt": "2026-10-16T09:00:00.000Z",
+        "content": {
+          "markdown": "# Principles for data management\n\nSample principles to consider when designing enterprise data processes.\n\nThis content is for demo purposes only. It contains no real announcement, customer outcome, or metric."
+        }
+      }
+    },
+    {
+      "tr": {
+        "slug": "urun-guncelleme-yaklasimi",
+        "title": "Ürün güncellemelerine yaklaşım",
+        "excerpt": "Sürüm notlarının anlaşılır ve izlenebilir hazırlanmasına dair örnek yaklaşım.",
+        "category": "blog",
+        "publishedAt": "2026-10-12T09:00:00.000Z",
+        "content": {
+          "markdown": "# Ürün güncellemelerine yaklaşım\n\nSürüm notlarının anlaşılır ve izlenebilir hazırlanmasına dair örnek yaklaşım.\n\nBu içerik yalnızca demo amaçlıdır. Gerçek duyuru, müşteri sonucu veya ölçüm içermez."
+        }
+      },
+      "en": {
+        "slug": "urun-guncelleme-yaklasimi",
+        "title": "An approach to product updates",
+        "excerpt": "A sample approach to clear and traceable release notes.",
+        "category": "blog",
+        "publishedAt": "2026-10-12T09:00:00.000Z",
+        "content": {
+          "markdown": "# An approach to product updates\n\nA sample approach to clear and traceable release notes.\n\nThis content is for demo purposes only. It contains no real announcement, customer outcome, or metric."
+        }
+      }
+    }
+  ]
+}

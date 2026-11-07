@@ -1,0 +1,8 @@
+storeDir: node_modules/.pnpm-store
+
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  sharp: true
+  esbuild: true
+  unrs-resolver: true

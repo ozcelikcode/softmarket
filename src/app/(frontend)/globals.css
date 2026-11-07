@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Single source of truth for brand colors: change here only.
+ * Dark is the site default; sections switch with data-theme="light" (see <Section theme>).
+ * Contrast (WCAG AA, measured): text/bg >= 16:1, muted >= 5.4:1, accent text >= 5.1:1 on bg,
+ * accent-contrast on accent >= 5.2:1, form borders (border-strong) >= 3:1.
+ */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0d10;
+  --surface: #13161b;
+  --surface-2: #1b1f26;
+  --border: #262b33;
+  --border-strong: #5b6572;
+  --text: #e7e9ec;
+  --text-muted: #9aa2ad;
+  --accent: #4c7dff;
+  --accent-hover: #6b93ff;
+  --accent-contrast: #0b0d10;
+  --success: #2fb37a;
+  --warning: #e0a63b;
+  --danger: #e5574f;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #e3e6ea;
+  --border-strong: #858e9b;
+  --text: #12161c;
+  --text-muted: #5a6370;
+  --accent: #2f5fe0;
+  --accent-hover: #244cc0;
+  --accent-contrast: #ffffff;
+  --success: #12794d;
+  --warning: #8a5a00;
+  --danger: #b3261e;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  --container-narrow: 46rem;
+  --container-content: 75rem;
+  --container-wide: 85rem;
+
+  /* Type scale: size / line-height / tracking / weight */
+  --text-display: clamp(2.75rem, 1.6rem + 5vw, 5.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 600;
+  --text-h1: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+  --text-h1--line-height: 1.08;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 600;
+  --text-h2: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  --text-h2--line-height: 1.15;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h2--font-weight: 600;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.3;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 600;
+  --text-h4: 1.0625rem;
+  --text-h4--line-height: 1.4;
+  --text-h4--letter-spacing: -0.005em;
+  --text-h4--font-weight: 600;
+  --text-lead: 1.1875rem;
+  --text-lead--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.14em;
+  --text-eyebrow--font-weight: 600;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  * {
+    border-color: var(--border);
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Subtle ambient glow used by dark showcase sections (one accent only) */
+@utility bg-glow {
+  background-image:
+    radial-gradient(60rem 28rem at 70% -10%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 70%),
+    linear-gradient(to bottom, transparent 60%, var(--bg));
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--text) 5%, transparent) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 20%, transparent 75%);
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes mega-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Lexical rich text output (no typography plugin): tokens only, works on dark and light sections. */
+@layer components {
+  .rich-text { color: var(--text); font-size: var(--text-body); line-height: 1.75; }
+  .rich-text > * + * { margin-top: 1.1em; }
+  .rich-text h1, .rich-text h2, .rich-text h3, .rich-text h4 { color: var(--text); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-top: 1.9em; }
+  .rich-text h1 { font-size: var(--text-h1); }
+  .rich-text h2 { font-size: var(--text-h2); }
+  .rich-text h3 { font-size: var(--text-h3); }
+  .rich-text h4 { font-size: var(--text-h4); }
+  .rich-text.text-small :is(h1, h2, h3, h4) { font-size: var(--text-h4); margin-top: 1em; }
+  .rich-text > :first-child { margin-top: 0; }
+  .rich-text p, .rich-text li { color: color-mix(in oklab, var(--text) 86%, var(--text-muted)); }
+  .rich-text a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .rich-text a:hover { color: var(--accent-hover); }
+  .rich-text ul { list-style: disc; padding-left: 1.4em; }
+  .rich-text ol { list-style: decimal; padding-left: 1.4em; }
+  .rich-text li + li { margin-top: 0.4em; }
+  .rich-text blockquote { border-left: 3px solid var(--accent); padding-left: 1.1em; color: var(--text-muted); font-style: italic; }
+  .rich-text hr { border-color: var(--border); margin-block: 2em; }
+  .rich-text img { border-radius: var(--radius-lg); border: 1px solid var(--border); }
+  .rich-text code { font-family: var(--font-mono); font-size: 0.9em; background: var(--surface-2); border-radius: 4px; padding: 0.1em 0.35em; }
+  .rich-text pre { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1em; }
+  .rich-text table { width: 100%; border-collapse: collapse; font-size: var(--text-small); }
+  .rich-text th, .rich-text td { border: 1px solid var(--border); padding: 0.55em 0.8em; text-align: left; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] { transition: opacity 600ms cubic-bezier(.22,1,.36,1) var(--reveal-delay), transform 600ms cubic-bezier(.22,1,.36,1) var(--reveal-delay); }
+  [data-reveal="pending"] { opacity: 0; transform: translateY(var(--reveal-y)); }
+  [data-reveal="visible"] { opacity: 1; transform: translateY(0); }
+}
+#main { scroll-margin-top: 4.5rem; }

@@ -1,0 +1,17 @@
+[Unit]
+Description=Litestream SQLite replication
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=softmarket
+Group=softmarket
+EnvironmentFile=/etc/softmarket.env
+ExecStart=/usr/bin/litestream replicate -config /etc/litestream.yml
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/softmarket/shared/data /opt/softmarket/replica
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+{$DOMAIN} {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    header /api/media/file/* Cache-Control "private, no-store, max-age=0"
+    request_body {
+        max_size 512MB
+    }
+    reverse_proxy 127.0.0.1:3000 {
+        header_up X-Softmarket-Client-IP {remote_host}
+        header_up X-Softmarket-Proxy-Secret {$FORM_PROXY_SECRET}
+    }
+}

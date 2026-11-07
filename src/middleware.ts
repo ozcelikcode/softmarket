@@ -7,6 +7,7 @@ import { routing } from './i18n/routing'
 import { contentSecurityPolicy, usesNonce } from './lib/csp'
 
 const localize = createMiddleware(routing)
+const DRAFT_COOKIE = '__prerender_bypass'
 
 export default function middleware(request: NextRequest) {
   if (forbiddenActionOrigin(request.method, request.headers)) {
@@ -61,7 +62,9 @@ export default function middleware(request: NextRequest) {
   }
   const response = localize(request)
   if (enabled) response.headers.set(process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only', policy)
-  if (dynamic) response.headers.set('Cache-Control', 'private, no-store, max-age=0')
+  // F8: a draft-mode request (Next's bypass cookie; validated by Next, drafts additionally need a staff session)
+  // is rendered per request and must never be stored by a browser, proxy or CDN.
+  if (dynamic || request.cookies.has(DRAFT_COOKIE)) response.headers.set('Cache-Control', 'private, no-store, max-age=0')
   return response
 }
 

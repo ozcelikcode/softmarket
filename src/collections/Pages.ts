@@ -1,10 +1,12 @@
 import type { Access, CollectionConfig, TextFieldSingleValidation, Where } from 'payload'
 
 import { isAdminOrEditor, isAdminOrEditorUser } from '@/access'
-import { draftVersions, pageLayoutField, publishedAtField } from '@/fields/common'
+import { pageLayoutField, publishedAtField } from '@/fields/common'
 import { linkField } from '@/fields/link'
 import { slugField } from '@/fields/slug'
 import { HOME_SLUG, isReservedSlug, isSystemKey, LANDING_PAGE_TYPES, SYSTEM_KEYS, SYSTEM_PAGES } from '@/lib/system-pages'
+
+export const PAGES_AUTOSAVE_INTERVAL = 2000
 
 const L = (tr: string, en: string) => ({ tr, en })
 const opt = (value: string, tr: string, en: string) => ({ value, label: L(tr, en) })
@@ -58,7 +60,9 @@ export const Pages: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
-  versions: draftVersions,
+  // F8: autosave (~2 s) drives Live Preview. Autosaved drafts only write `_pages_v`; the revalidation hook
+  // skips them (src/lib/revalidate.ts), so they never purge the ISR cache.
+  versions: { maxPerDoc: 50, drafts: { autosave: { interval: PAGES_AUTOSAVE_INTERVAL } } },
   fields: [
     {
       type: 'tabs',

@@ -11,8 +11,8 @@ import * as migration_20261107_120000_hero_video_delete from './20261107_120000_
 import * as migration_20261107_130000_blocks_dynamic_set from './20261107_130000_blocks_dynamic_set';
 import * as migration_20261107_141523_globals_editable from './20261107_141523_globals_editable';
 import * as migration_20261107_144850_page_builder_pages from './20261107_144850_page_builder_pages';
-
 import * as migration_20261107_160000_globals_media_delete from './20261107_160000_globals_media_delete';
+import * as migration_20261107_190342_pages_autosave from './20261107_190342_pages_autosave';
 
 export const migrations = [
   {
@@ -78,11 +78,16 @@ export const migrations = [
   {
     up: migration_20261107_144850_page_builder_pages.up,
     down: migration_20261107_144850_page_builder_pages.down,
-    name: '20261107_144850_page_builder_pages'
+    name: '20261107_144850_page_builder_pages',
   },
   {
     up: migration_20261107_160000_globals_media_delete.up,
     down: migration_20261107_160000_globals_media_delete.down,
     name: '20261107_160000_globals_media_delete',
+  },
+  {
+    up: migration_20261107_190342_pages_autosave.up,
+    down: migration_20261107_190342_pages_autosave.down,
+    name: '20261107_190342_pages_autosave'
   },
 ];

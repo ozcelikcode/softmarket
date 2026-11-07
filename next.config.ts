@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
       { source: '/:path*', headers: [
         { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()' },
         { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+        { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
       ] },
       ...(process.env.CSP_ENABLED === 'false' ? [] : [{ source: '/admin/:path*', headers: [{
         key: process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',

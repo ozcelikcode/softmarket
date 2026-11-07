@@ -81,6 +81,11 @@ describe(`migration ${NAME}`, () => {
 })
 
 describe('F6 pages through Payload', () => {
+  // F8 adds `_pages_v.autosave` (independent of F6): applied for writes through the current config.
+  beforeAll(async () => {
+    const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
+    await migrations.find((m) => m.name === '20261107_190342_pages_autosave')!.up(args())
+  })
   const seed = JSON.parse(readFileSync(resolve('content/seed/05-pages.json'), 'utf8'))
   const importSeed = async (dryRun = false) => {
     const { importContent } = await import('../../src/lib/content-import/importer')

@@ -7,6 +7,7 @@ import { searchPlugin } from '@payloadcms/plugin-search'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { mcpOptions } from './lib/mcp'
 import { withPublicRevalidation, withGlobalRevalidation } from './lib/revalidate'
+import { LIVE_PREVIEW_BREAKPOINTS, LIVE_PREVIEW_COLLECTIONS, livePreviewURL } from './lib/preview-url'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
@@ -72,6 +73,12 @@ export default buildConfig({
     meta: { icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/icon.svg' }] },
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    // F8: staff-only draft preview (iframe -> /api/preview -> locale path). See src/lib/preview-url.ts.
+    livePreview: {
+      collections: [...LIVE_PREVIEW_COLLECTIONS],
+      breakpoints: LIVE_PREVIEW_BREAKPOINTS,
+      url: livePreviewURL,
     },
   },
   // Admin UI language (separate from content localization). TR first; editors may switch to EN.

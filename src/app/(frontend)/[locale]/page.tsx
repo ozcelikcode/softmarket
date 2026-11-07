@@ -1,7 +1,8 @@
 import { routing } from '@/i18n/routing'
 export function generateStaticParams() { return routing.locales.map((locale) => ({ locale })) }
 
-export const dynamic = 'error'
+// Static (SSG + ISR from the locale layout). Not `dynamic = 'error'`: F8 draft mode must read the staff session
+// (headers) per request, which `error` forbids even in draft mode. Outside draft mode no request API is read.
 
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'

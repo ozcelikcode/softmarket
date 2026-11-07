@@ -11,9 +11,11 @@ import type { CSSProperties, ReactNode } from 'react'
 import { CloudflareAnalytics } from '@/components/analytics/cloudflare'
 import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
+import { LivePreviewRefresh } from '@/components/preview/live-preview-refresh'
 import { routing } from '@/i18n/routing'
 import { AlternatesProvider } from '@/lib/alternates-store'
 import { accentStyle } from '@/lib/brand'
+import { getPreviewUser } from '@/lib/preview'
 import { siteUrl } from '@/lib/seo'
 import { getSiteSettings, siteIdentity } from '@/lib/site'
 
@@ -61,7 +63,9 @@ export default async function LocaleLayout({
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
-  const [t, settings] = await Promise.all([getTranslations({ locale, namespace: 'common' }), getSiteSettings(locale)])
+  const [t, settings, previewUser] = await Promise.all([
+    getTranslations({ locale, namespace: 'common' }), getSiteSettings(locale), getPreviewUser(),
+  ])
   const site = siteIdentity(settings, t('siteName'))
 
   return (
@@ -91,7 +95,9 @@ export default async function LocaleLayout({
             <Footer locale={locale} />
           </AlternatesProvider>
         </NextIntlClientProvider>
-        {process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN && (
+        {/* F8: only in draft mode with a re-validated staff session; never part of a cached render. */}
+        {previewUser && <LivePreviewRefresh label={t('exitPreview')} />}
+        {!previewUser && process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN && (
           <CloudflareAnalytics token={process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN} />
         )}
       </body>

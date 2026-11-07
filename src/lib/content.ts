@@ -3,6 +3,7 @@ import type { Where } from 'payload'
 
 import type { Locale } from '@/i18n/routing'
 import { routing } from '@/i18n/routing'
+import { readAs } from '@/lib/preview'
 import { getPayloadClient, safe } from '@/lib/site'
 import { HOME_SLUG, isLandingPage, isReservedSlug, LANDING_PAGE_TYPES, type SystemKey } from '@/lib/system-pages'
 import { safeHref } from '@/lib/utils'
@@ -14,6 +15,9 @@ import type {
  * Anonymous, published-only reads for public pages. Same pattern as lib/site.ts:
  * overrideAccess:false + user:null + draft:false, field selection, bounded depth,
  * and every call degrades to an empty value instead of throwing.
+ * F8: single-document loaders (pages, families, products, solutions, case studies, posts) use `readAs()`:
+ * a re-validated staff session in Next draft mode reads drafts (`draft: true`, staff user, access on);
+ * everyone else gets the anonymous published read. Listing/related queries stay anonymous.
  */
 
 export const anon = (locale: Locale) => ({
@@ -98,7 +102,7 @@ export const getCatalogProducts = (locale: Locale, opts: { familyId?: number; fe
 
 export const getFamily = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'product-families', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
+    collection: 'product-families', ...(await readAs(locale)), limit: 1, depth: 2, where: bySlug(slug),
     select: { title: true, slug: true, tagline: true, description: true, icon: true, image: true, meta: true, layout: true },
     populate,
   }).then((r) => (r.docs[0] as ProductFamily | undefined) ?? null), null))
@@ -109,7 +113,7 @@ export const getProductDetail = cache(async (locale: Locale, familySlug: string,
     const family = await getFamily(locale, familySlug)
     if (!family) return null
     const found = await payload.find({
-      collection: 'products', ...anon(locale), limit: 1, depth: 2,
+      collection: 'products', ...(await readAs(locale)), limit: 1, depth: 2,
       where: { and: [bySlug(productSlug), { family: { equals: family.id } }] },
       select: {
         title: true, slug: true, tagline: true, summary: true, heroImage: true, layout: true, features: true,
@@ -156,7 +160,7 @@ export const getSolutions = cache((locale: Locale, limit = 24) =>
 
 export const getSolution = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'solutions', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
+    collection: 'solutions', ...(await readAs(locale)), limit: 1, depth: 2, where: bySlug(slug),
     select: {
       title: true, slug: true, summary: true, heroImage: true, layout: true, industries: true,
       products: true, caseStudies: true, meta: true,
@@ -179,7 +183,7 @@ export const getCaseStudies = (locale: Locale, opts: { limit?: number; featured?
 
 export const getCaseStudy = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'case-studies', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
+    collection: 'case-studies', ...(await readAs(locale)), limit: 1, depth: 2, where: bySlug(slug),
     select: {
       title: true, slug: true, customerName: true, customerLogo: true, summary: true, challenge: true,
       solution: true, results: true, testimonial: true, layout: true, industry: true, products: true,
@@ -204,7 +208,7 @@ export const getPosts = (locale: Locale, opts: { limit?: number; page?: number }
 
 export const getPost = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'posts', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
+    collection: 'posts', ...(await readAs(locale)), limit: 1, depth: 2, where: bySlug(slug),
     select: {
       title: true, slug: true, excerpt: true, coverImage: true, content: true, category: true,
       products: true, meta: true, publishedAt: true, updatedAt: true,
@@ -240,7 +244,7 @@ const getPageCached = cache((locale: Locale, serializedSlugs: string, legalOnly:
     const and: Where[] = [{ slug: { in: list } }]
     if (legalOnly) and.push({ pageType: { equals: 'legal' } })
     return (await getPayloadClient()).find({
-      collection: 'pages', ...anon(locale), limit: 1, depth: 2, where: { and },
+      collection: 'pages', ...(await readAs(locale)), limit: 1, depth: 2, where: { and },
       select: { title: true, slug: true, layout: true, meta: true, pageType: true, updatedAt: true },
       populate,
     }).then((r) => (r.docs[0] as Page | undefined) ?? null)
@@ -283,7 +287,7 @@ export const getHomePage = cache((locale: Locale) =>
   safe(async () => {
     const id = await getHomePageId()
     const found = await (await getPayloadClient()).find({
-      collection: 'pages', ...anon(locale), limit: 2, depth: 2, pagination: false,
+      collection: 'pages', ...(await readAs(locale)), limit: 2, depth: 2, pagination: false,
       where: { and: [homeCandidate, { or: [...(id ? [{ id: { equals: id } }] : []), { slug: { equals: HOME_SLUG } }] }] },
       select: pageSelect, populate,
     })
@@ -294,7 +298,7 @@ export const getHomePage = cache((locale: Locale) =>
 /** The page bound to a fixed route (pages.systemKey), published only. */
 export const getSystemPage = cache((locale: Locale, key: SystemKey) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'pages', ...anon(locale), limit: 1, depth: 2,
+    collection: 'pages', ...(await readAs(locale)), limit: 1, depth: 2,
     where: { and: [{ systemKey: { equals: key } }, { pageType: { not_equals: 'template' } }] },
     select: pageSelect, populate,
   }).then((r) => (r.docs[0] as CmsPage | undefined) ?? null), null))
@@ -304,7 +308,7 @@ export const getLandingPage = cache((locale: Locale, slug: string) =>
   safe(async () => {
     if (!slug || slug === HOME_SLUG || isReservedSlug(slug)) return null
     const page = await (await getPayloadClient()).find({
-      collection: 'pages', ...anon(locale), limit: 1, depth: 2,
+      collection: 'pages', ...(await readAs(locale)), limit: 1, depth: 2,
       where: { and: [
         { slug: { equals: slug } },
         { or: [{ pageType: { in: [...LANDING_PAGE_TYPES] } }, { pageType: { exists: false } }] },

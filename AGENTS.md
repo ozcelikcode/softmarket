@@ -92,3 +92,11 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
   2. `layout` dizisinin **tamamını** yeni sırayla gönder (blokların `id`'lerini koru, eksik blok silinir): `updatePages` `id`, `locale: "tr"`, `data: { layout: [...], _status: "published" }`. Blok yapısı dilden bağımsızdır; yalnız metin değiştirirken EN için `locale: "en"` ile aynı sırayı ve `id`'leri gönder.
   3. Ana sayfayı başka kayda çevirmek: `updateSiteSettings` `data: { homePage: <pageId> }`.
 - Toplu/idempotent içerik için `pnpm content:import` (slug/TR kimliği); MCP create upsert değildir.
+
+## Live Preview + taslak modu (F8)
+
+- Admin'de Live Preview: `pages, products, product-families, solutions, case-studies, posts` (390/768/1440). iframe `/api/preview?redirect=/<tr|en>/…` açar; `pages` autosave ~2 sn, kayıt/autosave sonrası iframe `RefreshRouteOnSave` ile yenilenir.
+- `/api/preview` yalnız oturum açmış staff (users admin/editor) için draft modunu açar; anonim 401, customer 403, cross-site 403, redirect yalnız `/tr|/en` + slug segmentleri (aksi 400). Gizli token yok. Çıkış: `/api/exit-preview?redirect=/tr/…`.
+- Taslak yalnız draft modu **ve** her istekte yeniden doğrulanan staff oturumu ile okunur (`src/lib/preview.ts` `readAs`); yeni tekil sayfa yükleyicisi eklerken `...(await readAs(locale))` kullan, liste sorguları anonim kalsın. Frontend rotalarında `dynamic = 'error'|'force-static'` kullanma (draft okumayı kapatır; testle yasak).
+- Draft yanıtları `private, no-store`, ISR'a yazılmaz; taslak/autosave önbelleği yenilemez (yalnız yayın).
+

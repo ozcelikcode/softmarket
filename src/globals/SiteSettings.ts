@@ -77,9 +77,6 @@ export const SiteSettings: GlobalConfig = {
                 'kvkk',
                 'privacy',
                 'cookies',
-                'distanceSales',
-                'preInformation',
-                'refund',
                 'terms',
                 'eula',
               ].map((name) => ({

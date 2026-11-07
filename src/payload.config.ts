@@ -1,3 +1,4 @@
+import { searchFields } from './lib/search-index'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
@@ -195,9 +196,7 @@ export default buildConfig({
       },
       beforeSync: ({ originalDoc, searchDoc }) => ({
         ...searchDoc,
-        title: originalDoc.title ?? originalDoc.question ?? searchDoc.title,
-        slug: originalDoc.slug ?? null,
-        excerpt: originalDoc.summary ?? originalDoc.excerpt ?? null,
+        ...searchFields(originalDoc),
       }),
     }),
   ],

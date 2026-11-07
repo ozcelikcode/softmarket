@@ -59,6 +59,7 @@
     "privacy": "Privacy policy",
     "cookies": "Cookie policy",
     "terms": "Terms of use",
+    "eula": "End user license agreement (EULA)",
     "rights": "All rights reserved.",
     "social": "Social media"
   },
@@ -233,7 +234,11 @@
     "title": "Page not found",
     "lead": "The page you are looking for may have moved or never existed.",
     "home": "Back to home",
-    "products": "Browse products"
+    "products": "Browse products",
+    "searchLabel": "Search the site",
+    "searchPlaceholder": "Search products, docs or topics",
+    "search": "Search",
+    "popular": "Popular pages"
   },
   "supportCenter": {
     "title": "Support center",
@@ -246,7 +251,8 @@
     "contact": "Contact",
     "search": "Search",
     "searchTitle": "Search",
-    "searchHint": "Enter between 2 and 120 characters.",
+    "searchEmpty": "No results found.",
+    "searchHint": "Search products, documentation or questions.",
     "searchLabel": "What are you looking for?",
     "product": "Product",
     "allProducts": "All products",
@@ -299,7 +305,13 @@
     "error": "Could not send your request. Please try again.",
     "unavailable": "This form is currently unavailable. Please use our contact details to reach us.",
     "website": "Leave this field blank",
-    "noScript": "JavaScript is required when security verification is enabled."
+    "noScript": "JavaScript is required when security verification is enabled.",
+    "required": "This field is required.",
+    "emailInvalid": "Enter a valid email address.",
+    "tooShort": "Too short; please add more detail.",
+    "consentRequired": "You must consent to continue.",
+    "pickProductFirst": "Select a product first",
+    "summary": "Fields to correct:"
   },
   "portal": {
     "signIn": "Sign in",

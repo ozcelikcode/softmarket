@@ -110,6 +110,17 @@ describe('search publication boundary', () => {
       ),
     ).toBe(true)
   })
+  it('matches ASCII product queries against localized slugs as well as titles', async () => {
+    client.find.mockImplementation(async ({ collection }) => ({
+      docs: collection === 'search' ? [{ id: 30, doc: { relationTo: 'products', value: 1 } }] : [{ id: 1 }],
+      totalPages: 1,
+    }))
+    client.findByID.mockResolvedValue({ id: 1, title: 'Akış Merkezi', slug: 'akis-merkezi', family: { slug: 'akis-yonetimi' } })
+    expect((await searchSite('tr', 'akis')).docs).toEqual([
+      { id: 30, title: 'Akış Merkezi', href: '/urunler/akis-yonetimi/akis-merkezi', kind: 'products' },
+    ])
+    expect(client.find.mock.calls.find(([o]) => o.collection === 'search')![0].where.or).toContainEqual({ slug: { contains: 'akis' } })
+  })
   it('does not query for blank/short/long searches or invalid page numbers', async () => {
     for (const q of ['', 'a', 'x'.repeat(121)]) expect((await searchSite('tr', q)).docs).toEqual([])
     expect((await searchSite('tr', 'valid', 1001)).docs).toEqual([])

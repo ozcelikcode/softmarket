@@ -33,6 +33,9 @@ beforeAll(async () => {
   await db.execute("INSERT INTO licenses(id,key,customer_id,edition_id,product_id,starts_at) VALUES(901,'EXISTING-LICENSE',901,901,901,'2026-01-01')")
   await db.execute("INSERT INTO payload_locked_documents(id) VALUES(901)")
   await db.execute("INSERT INTO payload_locked_documents_rels(parent_id,path,licenses_id) VALUES(901,'document',901)")
+  await db.execute("INSERT INTO site_settings(id,contact_email) VALUES(901,'preserve@example.test')")
+  await db.execute("INSERT INTO site_settings_locales(_parent_id,_locale,site_name,tagline) VALUES(901,'tr','Korunan','TR'),(901,'en','Preserved','EN')")
+  await db.execute("INSERT INTO site_settings_social(id,_parent_id,_order,platform,url) VALUES('preserved',901,1,'github','https://example.test')")
   await payload.db.migrate({ migrations: migrations as unknown as NonNullable<Parameters<typeof payload.db.migrate>[0]>['migrations'] })
 }, 30000)
 afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
@@ -53,6 +56,16 @@ describe('SQLite integrity', () => {
     const db = payload.db.drizzle.$client
     await expect(db.execute('INSERT INTO licenses(key,customer_id,edition_id,starts_at) SELECT key,customer_id,edition_id,starts_at FROM licenses LIMIT 1')).rejects.toThrow()
   })
+  it('removes sales legal fields while preserving global locale and social data', async () => {
+    const db = payload.db.drizzle.$client
+    expect((await db.execute('SELECT contact_email FROM site_settings WHERE id=901')).rows[0].contact_email).toBe('preserve@example.test')
+    expect((await db.execute('SELECT site_name FROM site_settings_locales WHERE _parent_id=901 ORDER BY _locale')).rows.map(r => r.site_name)).toEqual(['Preserved', 'Korunan'])
+    expect((await db.execute("SELECT url FROM site_settings_social WHERE id='preserved'")).rows[0].url).toBe('https://example.test')
+    const columns = (await db.execute('PRAGMA table_info(site_settings)')).rows.map(r => r.name)
+    expect(columns).not.toContain('legal_distance_sales_id')
+    expect(columns).not.toContain('legal_pre_information_id')
+    expect(columns).not.toContain('legal_refund_id')
+  })
   it('preserves existing licenses, their locks and foreign key integrity', async () => {
     const db = payload.db.drizzle.$client
     expect((await db.execute('SELECT key FROM licenses WHERE id=901')).rows[0].key).toBe('EXISTING-LICENSE')
@@ -71,6 +84,24 @@ describe('SQLite integrity', () => {
 
 
 describe('Phase 8a real SQLite import', () => {
+  it('syncs localized search title, slug and summary from published source documents', async () => {
+    const family = await payload.create({ collection: 'product-families', locale: 'tr', overrideAccess: true,
+      data: { title: 'Arama ailesi', slug: 'arama-test-ailesi' } })
+    const product = await payload.create({ collection: 'products', locale: 'tr', overrideAccess: true,
+      data: { title: 'Arama ürünü', slug: 'arama-test-urunu', summary: 'Türkçe özet', family: family.id, _status: 'published' } })
+    await payload.update({ collection: 'products', id: product.id, locale: 'en', overrideAccess: true,
+      data: { title: 'Search product', slug: 'search-test-product', summary: 'English summary', _status: 'published' } })
+    for (const [locale, title, slug, excerpt] of [
+      ['tr', 'Arama ürünü', 'arama-test-urunu', 'Türkçe özet'],
+      ['en', 'Search product', 'search-test-product', 'English summary'],
+    ] as const) {
+      const index = await payload.find({ collection: 'search', locale, fallbackLocale: false, overrideAccess: true,
+        where: { and: [{ 'doc.relationTo': { equals: 'products' } }, { 'doc.value': { equals: product.id } }] } })
+      expect(index.docs).toHaveLength(1)
+      expect(index.docs[0]).toMatchObject({ title, slug, excerpt })
+    }
+  })
+
   it('imports bilingual catalog and Markdown legal pages twice with stable IDs and block translations', async () => {
     validateSeed(example, 'example.json')
     const legal = await loadLegal(join(process.cwd(), 'content/legal'))

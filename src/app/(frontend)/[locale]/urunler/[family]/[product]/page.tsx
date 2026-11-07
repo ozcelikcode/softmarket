@@ -74,9 +74,14 @@ export default async function ProductPage({ params }: Props) {
     { label: product.title, href: path },
   ]
 
-  const hasOverview = Boolean(product.summary || product.layout?.length)
   const features = product.features ?? []
   const specs = product.specs ?? []
+  // Collection fields are the single source: page hero, features and specs come from them, so layout
+  // blocks only add extra content (a duplicate hero/feature grid/spec table would repeat the same text).
+  const extraBlocks = (product.layout ?? []).filter(
+    (b) => b.blockType !== 'hero' && !(b.blockType === 'featureGrid' && features.length) && !(b.blockType === 'specTable' && specs.length),
+  )
+  const hasOverview = Boolean(product.summary)
   const requirements = (product.systemRequirements ?? []).filter((r) => r.minimum || r.recommended)
   const groups = new Map<string, [string, string][]>()
   for (const s of specs) {
@@ -133,13 +138,16 @@ export default async function ProductPage({ params }: Props) {
 
       <Section theme="dark" spacing="none" className="sticky top-16 z-30 border-b border-border bg-bg/85 backdrop-blur lg:top-[4.5rem]">
         <Container>
-          <nav aria-label={t('nav')} className="-mx-1 flex gap-1 overflow-x-auto">
+          <div className="relative">
+          <nav aria-label={t('nav')} className="-mx-1 flex gap-1 overflow-x-auto pr-8 [scrollbar-width:none] lg:pr-0 [&::-webkit-scrollbar]:hidden">
             {sections.map((s) => (
-              <a key={s.id} href={`#${s.id}`} className="whitespace-nowrap rounded-md px-3 py-3.5 text-small font-medium text-muted transition-colors hover:text-text">
+              <a key={s.id} href={`#${s.id}`} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-3 py-3 text-small font-medium text-muted transition-colors hover:text-text">
                 {s.label}
               </a>
             ))}
           </nav>
+          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-bg to-transparent lg:hidden" />
+          </div>
         </Container>
       </Section>
 
@@ -150,7 +158,6 @@ export default async function ProductPage({ params }: Props) {
               <Container size="narrow"><p className="text-h3 font-normal text-text text-pretty">{product.summary}</p></Container>
             </Section>
           ) : null}
-          <RenderBlocks blocks={product.layout} locale={locale} />
         </div>
       ) : null}
 
@@ -189,6 +196,8 @@ export default async function ProductPage({ params }: Props) {
           </Container>
         </Section>
       ) : null}
+
+      {extraBlocks.length ? <RenderBlocks blocks={extraBlocks} locale={locale} /> : null}
 
       <Section id="surumler" theme="dark" spacing="lg" className="scroll-mt-32 overflow-hidden border-y border-border">
         <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />

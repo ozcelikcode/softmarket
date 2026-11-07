@@ -44,6 +44,12 @@ export async function LeadFormSection({
       'error',
       'website',
       'noScript',
+      'required',
+      'emailInvalid',
+      'tooShort',
+      'consentRequired',
+      'pickProductFirst',
+      'summary',
     ].map((k) => [k, t(k)]),
   )
   const fields = Object.fromEntries(

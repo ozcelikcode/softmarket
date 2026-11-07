@@ -20,12 +20,20 @@ export async function SupportFilters({
   path: string
   products: SupportProduct[]
   product?: string
-  releases?: { id: number; version: string }[]
+  releases?: { id: number; version: string; product?: number | { title?: string | null } | null }[]
   release?: string
   os?: string
   category?: string
 }) {
-  const t = await getTranslations({ locale, namespace: 'supportCenter' })
+  const [t, osNames] = await Promise.all([
+    getTranslations({ locale, namespace: 'supportCenter' }),
+    getTranslations({ locale, namespace: 'os' }),
+  ])
+  // Without a product filter the same version number repeats across products, so prefix the product title.
+  const releaseLabel = (r: NonNullable<typeof releases>[number]) =>
+    !product && r.product && typeof r.product === 'object' && r.product.title
+      ? `${r.product.title} ${r.version}`
+      : r.version
   return (
     <form
       method="get"
@@ -50,7 +58,7 @@ export async function SupportFilters({
             <option value="">{t('allReleases')}</option>
             {releases.map((r) => (
               <option key={r.id} value={String(r.id)}>
-                {r.version}
+                {releaseLabel(r)}
               </option>
             ))}
           </select>
@@ -61,9 +69,9 @@ export async function SupportFilters({
           {t('os')}
           <select name="os" defaultValue={os} className={inputClass}>
             <option value="">{t('allOs')}</option>
-            {['windows', 'macos', 'linux', 'web', 'android', 'ios', 'other'].map((v) => (
+            {(['windows', 'macos', 'linux', 'web', 'android', 'ios', 'other'] as const).map((v) => (
               <option key={v} value={v}>
-                {v}
+                {osNames(v)}
               </option>
             ))}
           </select>

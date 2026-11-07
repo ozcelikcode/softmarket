@@ -1,6 +1,8 @@
 import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { ValidationError } from 'payload'
 
+import { notifyLicenseAssigned } from '@/lib/email/license-assigned'
+
 import { isAdmin, isAdminOrOwnerCustomer } from '@/access'
 import { generateLicenseKey, isValidLicenseKeyFormat, normalizeLicenseKey } from '@/lib/licenses/generate'
 import { LICENSE_STATUSES, addMonths } from '@/lib/licenses/validity'
@@ -70,7 +72,7 @@ export const Licenses: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
-  hooks: { beforeValidate: [prepareLicense] },
+  hooks: { beforeValidate: [prepareLicense], afterChange: [notifyLicenseAssigned] },
   fields: [
     {
       name: 'key',

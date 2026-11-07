@@ -1,8 +1,23 @@
 # Aktif Bağlam
 
+- Güvenlik QA (2026-11-07): lisans e-postası HTTP yanıtı sonrası, bağımsız doğrulanmış kalıcı kayıt için gönderilir; SMTP yoksa anahtar konsola yazılmaz. İstek bağlamı dışındaki atamalarda bildirim zamanlanmaz. Uygulanmış `20261107_092304_remove_sales_legal_fields` üç eski ilişki değerini siler; down değerleri geri getirmez. Migration geçmişi değiştirilmedi.
+
 Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince güncelle.
 
-## Mevcut odak (2026-11-07)
+## Sıradaki büyük iş: page builder + animasyon/performans planı (2026-11-07)
+- Next 15.4.11: `(frontend)/[locale]` altında `notFound()` SSR'da `__next_error__` kabuğu üretir; yerelleştirilmiş 404 istemcide RSC payload'dan görünür. HTTP testi status 404 + HTML/RSC içeriğini, `smoke.spec.ts` görünür `<main>` 404'ü kontrol eder.
+- globalNotFound kapatma, sade layout, header/footer/error.tsx çıkarma, passthrough app/layout + app/not-found ve OG dosyası taşıma denendi, sonuç vermedi; page-builder fazında yeniden ele alınacak.
+- Plan: `docs/plan-page-builder-animation.md` (taslak, kod yok). Ana sayfa `pages` kaydına (SiteSettings.homePage) taşınır; bloklara ortak `appearance` (tema/boşluk/hizalama/animasyon/anchor), yeni katalog/kanıt blokları, sistem sayfası bağlama, Live Preview + draft, globals tam düzenlenebilir.
+- Performans: content.ts `cache()`, taslakta revalidation yok, tek IntersectionObserver (`Reveal` kaldırılır), kullanılmayan `motion` kaldırılır, Media `imageSizes`+webp srcset, Mono preload yok; bütçe LCP<2.0s/CLS<0.05/INP<200ms/LH≥90.
+- Fazlar F0 (ölçüm + görsel QA) → F1/F2/F9 → F3 → F4/F5/F7 → F6 → F8 → F10 → F11; G = kullanıcı görsel hata listesi turu. 5 açık soru plan §11'de; kullanıcı yanıtı bekleniyor.
+
+## Mevcut odak (2026-11-07, UX denetimi düzeltmeleri)
+- UX denetimi 13 madde uygulandı: dil değiştirici (CMS alternates + `<link hreflang>` yedeği, `hreflangPath`), footer yasal linkleri (`kvkk-aydinlatma`, `gizlilik-politikasi`, EULA; seed + fallback + form/kayıt KVKK bağlantısı), header seed (Ürünler/Çözümler mega + Destek + Şirket + CTA; seed linkleri `type: external` + site içi yol çünkü internal link yalnız `reference` çözer), buton kontrastı kök neden `cn()` (twMerge `text-small`'u renk sanıp `text-accent-contrast`'ı siliyordu → `extendTailwindMerge`), ürün detayı tek kaynak (seed'den hero/featureGrid/specTable blokları çıkarıldı + sayfa bu blokları filtreler, ek bloklar özelliklerden sonra), form sürüm listesi (yalnız seçili ürünün sürümleri, SKU görünmez, ürün seçilmeden devre dışı; sunucu `selectionErrors` ile eşleşmeyen ürün/SKU'yu `invalid` döner), istemci doğrulaması (noValidate + satır içi hata + role=alert özeti), `[locale]/[...notFound]` catch-all → header/footer'lı 404 (arama + popüler linkler; global-not-found yalnız geçersiz locale için), favicon (`src/app/favicon.ico`, `icon.svg`, `apple-icon.png`; middleware matcher `/icon` rotasını yakaladığı için statik dosya), mobil 44px hedefler, ürün sekme çubuğu fade, JSON-LD `suppressHydrationWarning` (tarayıcı nonce özniteliğini boşaltır; CSP değişmedi), indirmeler OS etiketi yerelleştirildi + sürüm seçeneği ürün adı önekli.
+- Scroll-reveal zaten ilerlemeli iyileştirmeydi (SSR'da opacity yok, reduced-motion'da kapalı); birim testle kilitlendi.
+- Doğrulama: typecheck, lint, 29 dosya/345 Vitest, `NEXT_DIST_DIR=.next-prod pnpm build` geçti. Playwright (3100): dil değiştirici header/footer, 404 chrome, form sürüm filtresi + boş gönderim hataları, indirme filtreleri, mobil menü, hydration konsolu temiz. Seed importları (01-globals, 10-families-products) idempotent çalıştı. Commit yok, dev sunucuya dokunulmadı.
+- Not: şu an tüm slug'lar TR=EN aynı; farklı slug'lı içerikle dil değiştirici yalnız birim testle (`hreflangPath`) doğrulandı.
+
+## Önceki odak (2026-11-07)
 - 404/güvenlik denetimi: statik medya varlık sorgusu erişim filtresiyle birleştirildi; erişilemeyen ve olmayan dosyalar 404. Geçici SQLite üzerinde gerçek sorgu ve 3200 izole prod HTTP doğrulandı. İki build'de doküman timeout tekrarlanmadı; kök neden doğrulanamadı.
 - 404 düzeltmesi: layout’suz kök `not-found.tsx` → `global-not-found.tsx`; Next 15.4 `experimental.globalNotFound=true` (deneysel). Çoklu kök layout + dinamik locale için bağımsız HTML 404; catch-all gerekmez, locale loading/not-found ve OG handler konumu korundu.
 - Statik medya isteklerinde kayıt yoksa `mediaRead` Payload NotFound (404) üretir; mevcut dosyalarda erişim filtresi korunur.

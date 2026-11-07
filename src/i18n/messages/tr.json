@@ -59,6 +59,7 @@
     "privacy": "Gizlilik politikası",
     "cookies": "Çerez politikası",
     "terms": "Kullanım koşulları",
+    "eula": "Son kullanıcı lisans sözleşmesi (EULA)",
     "rights": "Tüm hakları saklıdır.",
     "social": "Sosyal medya"
   },
@@ -233,7 +234,11 @@
     "title": "Sayfa bulunamadı",
     "lead": "Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir.",
     "home": "Ana sayfaya dön",
-    "products": "Ürünlere göz atın"
+    "products": "Ürünlere göz atın",
+    "searchLabel": "Sitede ara",
+    "searchPlaceholder": "Ürün, doküman veya konu arayın",
+    "search": "Ara",
+    "popular": "Popüler sayfalar"
   },
   "supportCenter": {
     "title": "Destek merkezi",
@@ -246,7 +251,8 @@
     "contact": "İletişim",
     "search": "Ara",
     "searchTitle": "Arama",
-    "searchHint": "En az 2, en fazla 120 karakter yazın.",
+    "searchEmpty": "Sonuç bulunamadı.",
+    "searchHint": "Ürün, doküman veya soru arayın.",
     "searchLabel": "Ne arıyorsunuz?",
     "product": "Ürün",
     "allProducts": "Tüm ürünler",
@@ -299,7 +305,13 @@
     "error": "Talep gönderilemedi. Lütfen tekrar deneyin.",
     "unavailable": "Form şu anda kullanılamıyor. Lütfen iletişim bilgilerimizden bize ulaşın.",
     "website": "Bu alanı boş bırakın",
-    "noScript": "Güvenlik doğrulaması etkinse JavaScript gereklidir."
+    "noScript": "Güvenlik doğrulaması etkinse JavaScript gereklidir.",
+    "required": "Bu alan zorunludur.",
+    "emailInvalid": "Geçerli bir e-posta adresi girin.",
+    "tooShort": "Çok kısa; daha ayrıntılı yazın.",
+    "consentRequired": "Devam etmek için onay vermelisiniz.",
+    "pickProductFirst": "Önce ürün seçin",
+    "summary": "Düzeltilmesi gereken alanlar:"
   },
   "portal": {
     "signIn": "Giriş yap",

@@ -3566,9 +3566,6 @@ export interface SiteSetting {
     kvkk?: (number | null) | Page;
     privacy?: (number | null) | Page;
     cookies?: (number | null) | Page;
-    distanceSales?: (number | null) | Page;
-    preInformation?: (number | null) | Page;
-    refund?: (number | null) | Page;
     terms?: (number | null) | Page;
     eula?: (number | null) | Page;
   };
@@ -3723,9 +3720,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         kvkk?: T;
         privacy?: T;
         cookies?: T;
-        distanceSales?: T;
-        preInformation?: T;
-        refund?: T;
         terms?: T;
         eula?: T;
       };

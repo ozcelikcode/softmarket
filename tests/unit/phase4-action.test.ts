@@ -91,6 +91,7 @@ describe('lead server action', () => {
     expect(mock.sendEmail.mock.calls[0][0]).toMatchObject({
       to: 'staff@example.com',
       subject: 'SoftMarket: quote request',
+      html: expect.stringContaining('<html lang="tr">'),
     })
     expect(mock.sendEmail.mock.calls[0][0]).not.toHaveProperty('replyTo')
   })
@@ -106,12 +107,11 @@ describe('lead server action', () => {
     expect((await submitLead({ status: 'idle' }, data())).status).toBe('rate')
     expect(mock.create).not.toHaveBeenCalled()
   })
-  it('ignores a SKU that does not belong to the selected public product', async () => {
-    await submitLead({ status: 'idle' }, data({ product: 'missing' }))
-    expect(mock.create.mock.calls[0][0].data.submissionData).toContainEqual({
-      field: 'sku',
-      value: '',
+  it('rejects a product/SKU pair that does not resolve to a public edition', async () => {
+    expect(await submitLead({ status: 'idle' }, data({ product: 'missing' }))).toEqual({
+      status: 'invalid', errors: { product: 'invalid', sku: 'invalid' },
     })
+    expect(mock.create).not.toHaveBeenCalled()
   })
   it('keeps a persisted submission successful when notification fails', async () => {
     mock.sendEmail.mockRejectedValue(new Error('SMTP down'))

@@ -2,7 +2,7 @@
 
 import Script from 'next/script'
 import { useNonce } from '@/components/security/nonce-provider'
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionState, useEffect, useRef, useState, type FormEvent } from 'react'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { submitLead } from '@/lib/forms/action'
@@ -48,6 +48,7 @@ export function LeadForm({
   const [ready, setReady] = useState(false)
   const [product, setProduct] = useState(initial.product)
   const [sku, setSku] = useState(initial.sku)
+  const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
   useEffect(() => {
     if (!ready || !siteKey || !widget.current || !window.turnstile) return
     widgetID.current = window.turnstile.render(widget.current, {
@@ -64,20 +65,57 @@ export function LeadForm({
     const invalid = ref.current?.querySelector<HTMLElement>('[aria-invalid="true"]')
     ;(invalid ?? ref.current?.querySelector<HTMLElement>('[data-status]'))?.focus()
   }, [state])
-  const error = (name: string) => state.errors?.[name]
+  useEffect(() => {
+    if (Object.keys(clientErrors).length)
+      ref.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+  }, [clientErrors])
+  // Client errors (specific messages) win while present; otherwise show the server's generic field error.
+  const hasClientErrors = Object.keys(clientErrors).length > 0
+  const errorText = (name: string) =>
+    hasClientErrors ? clientErrors[name] : state.errors?.[name] ? labels.fieldError : undefined
+  const error = (name: string) => errorText(name)
+  const invalidNames = ['name', 'email', 'company', 'phone', 'product', 'sku', 'message', 'consent'].filter((n) =>
+    Boolean(errorText(n)),
+  )
   const feedback = (name: string) =>
     error(name) ? (
       <p id={`${kind}-${name}-error`} className="mt-1 text-small text-danger">
-        {labels.fieldError}
+        {error(name)}
       </p>
     ) : null
+  const clearError = (name: string) =>
+    setClientErrors((prev) => {
+      if (!(name in prev)) return prev
+      const { [name]: _removed, ...rest } = prev
+      return rest
+    })
+  /** Native bubbles are replaced by visible inline messages; the server still validates everything. */
+  const validate = (event: FormEvent<HTMLFormElement>) => {
+    const form = event.currentTarget
+    const out: Record<string, string> = {}
+    for (const [name, min] of [['name', 2], ['email', 0], ['message', 10], ['consent', 0]] as const) {
+      const el = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | null
+      if (!el) continue
+      const value = el.value.trim()
+      if (name === 'consent' ? !(el as HTMLInputElement).checked : !value) {
+        out[name] = name === 'consent' ? labels.consentRequired : labels.required
+      } else if (name === 'email' && !el.validity.valid) out[name] = labels.emailInvalid
+      else if (min && value.length < min) out[name] = labels.tooShort
+    }
+    setClientErrors(out)
+    if (Object.keys(out).length) event.preventDefault()
+  }
   const attrs = (name: string) => ({
     id: `${kind}-${name}`,
     name,
     'aria-invalid': Boolean(error(name)),
+    onChange: () => clearError(name),
     'aria-describedby': error(name) ? `${kind}-${name}-error` : undefined,
   })
   const label = (name: string) => fields[name] || labels[name]
+  // The SKU stays the submitted value but is never shown; only the selected product's editions are listed.
+  const productId = products.find((p) => p.slug === product)?.id
+  const productEditions = editions.filter((e) => e.product === productId)
   if (state.status === 'success')
     return (
       <div
@@ -90,19 +128,33 @@ export function LeadForm({
       </div>
     )
   return (
-    <form ref={ref} action={action} className="space-y-5">
+    <form ref={ref} action={action} onSubmit={validate} noValidate className="space-y-5">
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="locale" value={locale} />
-      {state.status !== 'idle' ? (
-        <p
-          data-status
-          tabIndex={-1}
-          role="alert"
-          className="rounded-md border border-danger p-4 text-danger"
-        >
-          {labels[state.status]}
-        </p>
-      ) : null}
+      <div role="alert" aria-live="assertive" aria-atomic="true">
+        {state.status !== 'idle' || hasClientErrors ? (
+          <div
+            data-status
+            tabIndex={-1}
+            className="rounded-md border border-danger p-4 text-danger"
+          >
+            <p>{hasClientErrors ? labels.invalid : labels[state.status]}</p>
+            {invalidNames.length ? (
+              <ul className="mt-2 list-disc pl-5 text-small">
+                <li className="sr-only">{labels.summary}</li>
+                {invalidNames.map((n) => (
+                  <li key={n}>
+                    <a href={`#${kind}-${n}`} className="underline">
+                      {n === 'consent' ? labels.privacy : label(n)}
+                    </a>
+                    : {error(n)}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
       <div className="grid gap-5 sm:grid-cols-2">
         {(['name', 'email', 'company', 'phone'] as const).map((name) => (
           <div key={name}>
@@ -133,6 +185,8 @@ export function LeadForm({
             onChange={(e) => {
               setProduct(e.target.value)
               setSku('')
+              clearError('product')
+              clearError('sku')
             }}
             className={inputClass}
           >
@@ -150,17 +204,19 @@ export function LeadForm({
           <select
             {...attrs('sku')}
             value={sku}
-            onChange={(e) => setSku(e.target.value)}
+            onChange={(e) => {
+              setSku(e.target.value)
+              clearError('sku')
+            }}
+            disabled={!productId}
             className={inputClass}
           >
-            <option value="">{labels.none}</option>
-            {editions
-              .filter((e) => !product || e.product === products.find((p) => p.slug === product)?.id)
-              .map((e) => (
-                <option key={e.sku} value={e.sku}>
-                  {e.title} ({e.sku})
-                </option>
-              ))}
+            <option value="">{productId ? labels.none : labels.pickProductFirst}</option>
+            {productEditions.map((e) => (
+              <option key={e.sku} value={e.sku}>
+                {e.title}
+              </option>
+            ))}
           </select>
           {feedback('sku')}
         </div>
@@ -201,7 +257,7 @@ export function LeadForm({
           {label('consent')}
         </label>
         <AppLink
-          href="/yasal/kvkk"
+          href="/yasal/kvkk-aydinlatma"
           locale={locale}
           className="ml-7 text-small text-accent underline"
         >

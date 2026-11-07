@@ -27,7 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function DownloadsPage({ params, searchParams }: Props) {
   const locale = await initLocale(params)
-  const t = await getTranslations({ locale, namespace: 'supportCenter' })
+  const [t, osNames] = await Promise.all([
+    getTranslations({ locale, namespace: 'supportCenter' }),
+    getTranslations({ locale, namespace: 'os' }),
+  ])
   const q = await searchParams
   const products = await getSupportProducts(locale)
   const product = boundedQuery(q.urun),
@@ -64,8 +67,8 @@ async function DownloadsPage({ params, searchParams }: Props) {
             <article key={d.id} className="rounded-lg border border-border bg-surface p-6">
               <h2 className="text-h4">{d.title}</h2>
               <p className="mt-2 text-muted">
-                {relOf<Product>(d.product)?.title} · {relOf<Release>(d.release)?.version} · {d.os}{' '}
-                {d.arch}
+                {relOf<Product>(d.product)?.title} · {relOf<Release>(d.release)?.version} ·{' '}
+                {osNames.has(d.os) ? osNames(d.os) : d.os} {d.arch}
               </p>
               {d.description ? <p className="mt-2">{d.description}</p> : null}
               {file?.url ? (

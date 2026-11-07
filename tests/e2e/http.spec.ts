@@ -56,7 +56,11 @@ test('HTTP: search/noindex, sitemap, portal no-store, 404 and optimizer denial',
   for (const path of ['/tr/xyz', '/en/xyz', '/xyz', '/tr/nonexistent-audit-route', '/en/nonexistent-audit-route']) {
     const missing = await request.get(path)
     expect(missing.status()).toBe(404)
-    expect(await missing.text()).toMatch(/<main\b[^>]*>[\s\S]*?>404<\/[^>]+>/)
+    // Next 15.4.11: notFound() under the (frontend)/[locale] root layout SSRs the __next_error__ shell;
+    // the localized 404 renders client-side from the RSC payload. Visible <main> 404 is asserted in smoke.spec.ts (browser).
+    const html = await missing.text()
+    expect(html).toContain('<meta name="next-error" content="not-found"/>')
+    expect(html).toContain('NEXT_HTTP_ERROR_FALLBACK;404')
   }
   const missingMedia = await request.get('/api/media/file/yok')
   expect(missingMedia.status()).toBe(404)
@@ -74,4 +78,30 @@ test('HTTP: search/noindex, sitemap, portal no-store, 404 and optimizer denial',
   expect(missingApi.status()).toBe(404)
   expect(missingApi.headers()['content-type']).toContain('application/json')
   expect((await request.get('/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fprotected.png&w=640&q=75')).status()).toBe(400)
+})
+
+test('legacy search preserves queries and invalid dynamic content returns HTTP 404', async ({ request }) => {
+  const legacy = await request.get('/tr/arama?q=akis&page=1', { maxRedirects: 0 })
+  expect(legacy.status()).toBe(308)
+  expect(legacy.headers().location).toBe('/tr/ara?q=akis&page=1')
+  for (const path of ['/tr/yasal/olmayan', '/en/legal/missing-routine-check', '/tr/ara?q=%25', '/en/search?q=%25']) {
+    const response = await request.get(path)
+    expect(response.status(), path).toBe(404)
+  }
+  const empty = await request.get('/tr/ara?q=zzzzzznomatchingrecord')
+  expect(empty.status()).toBe(200)
+  expect(await empty.text()).toContain('Sonuç bulunamadı.')
+})
+
+test('foreign Server Action origins receive a controlled forbidden response', async ({ request, baseURL }) => {
+  const origin = new URL(baseURL!).origin
+  const denied = await request.post('/tr/iletisim', {
+    headers: { 'Next-Action': 'routine-check', Origin: 'https://foreign.example.test' }, data: '',
+  })
+  expect(denied.status()).toBe(403)
+  const allowed = await request.post('/tr/iletisim', {
+    headers: { 'Next-Action': 'routine-check', Origin: origin }, data: '',
+  })
+  // The fake action may be rejected by Next, but our origin guard must allow it through.
+  expect(allowed.status()).not.toBe(403)
 })

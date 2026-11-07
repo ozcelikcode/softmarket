@@ -1,6 +1,8 @@
 'use server'
 
+import { emailTemplate } from '@/lib/email/template'
 import { headers } from 'next/headers'
+import { selectionErrors } from '@/lib/forms/selection'
 import { getPayloadClient } from '@/lib/site'
 import { getContactSettings } from '@/lib/content'
 import { getSupportProducts, getSupportEditions } from '@/lib/support'
@@ -61,6 +63,8 @@ export async function submitLead(_previous: FormState, data: FormData): Promise<
     ])
     if (!form) return { status: 'error' }
     const selected = quoteSelection(products, editions, input.product, input.sku)
+    const mismatch = selectionErrors(products, editions, input.product, input.sku)
+    if (Object.keys(mismatch).length) return { status: 'invalid', errors: mismatch }
     const submissionData = Object.entries({
       name: input.name,
       email: input.email,
@@ -91,7 +95,11 @@ export async function submitLead(_previous: FormState, data: FormData): Promise<
         settings?.contact?.email
       const text = `Submission #${submission.id}\n${submissionData.map((row) => `${row.field}: ${row.value}`).join('\n')}`
       if (to && /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(to) && !to.startsWith('CHANGE_')) {
-        await payload.sendEmail({ to, subject: `SoftMarket: ${input.kind} request`, text })
+        const subject = `SoftMarket: ${input.kind} request`
+        await payload.sendEmail({ to, subject, text, html: emailTemplate({
+          locale: input.locale, title: subject, body: `Submission #${submission.id}`,
+          rows: submissionData.map(({ field, value }) => [field, value] as const),
+        }) })
       } else {
         payload.logger.info({
           msg: `Form notification (configure FORM_NOTIFICATION_EMAIL):\n${text}`,

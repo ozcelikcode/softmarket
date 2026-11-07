@@ -135,7 +135,7 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
             href="/ara"
             locale={locale}
             aria-label={labels.search}
-            className="inline-flex size-9 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-text"
+            className="inline-flex size-11 items-center justify-center rounded-md text-muted lg:size-9 transition-colors hover:bg-surface-2 hover:text-text"
           >
             <Search aria-hidden className="size-[18px]" />
           </AppLink>
@@ -152,7 +152,7 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
               <button
                 type="button"
                 aria-label={labels.menu}
-                className="inline-flex size-10 items-center justify-center rounded-md text-text hover:bg-surface-2 lg:hidden"
+                className="inline-flex size-11 items-center justify-center rounded-md text-text hover:bg-surface-2 lg:hidden"
               >
                 <Menu aria-hidden className="size-5" />
               </button>
@@ -178,7 +178,7 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
 
 function AccountMenu({ locale, labels }: { locale: string; labels: Labels }) {
   return (
-    <AppLink href="/hesap" locale={locale} aria-label={labels.account} className="hidden h-9 items-center gap-1.5 rounded-md px-2.5 text-small font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text md:inline-flex">
+    <AppLink href="/hesap" locale={locale} aria-label={labels.account} className="hidden h-11 items-center gap-1.5 rounded-md px-2.5 lg:h-9 text-small font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text md:inline-flex">
       <User aria-hidden className="size-4" />
       <span className="hidden xl:inline">{labels.account}</span>
     </AppLink>
@@ -227,7 +227,7 @@ function ProductsMega({
                   <AppLink
                     href={p.href}
                     locale={locale}
-                    className="block rounded-sm py-1 text-small text-muted hover:text-text"
+                    className="block rounded-sm py-1.5 text-small text-text/90 hover:text-accent"
                   >
                     {p.label}
                   </AppLink>
@@ -311,7 +311,7 @@ function MobileNav({
         ? mega.solutions
         : (item.children ?? [])
 
-  const row = 'flex w-full font-semibold items-center justify-between py-3.5 text-h4 text-text'
+  const row = 'flex min-h-11 w-full font-semibold items-center justify-between py-3.5 text-h4 text-text'
   return (
     <div className="flex h-full flex-col overflow-y-auto px-6 pb-8 pt-16">
       <nav aria-label={labels.menu} className="flex-1">
@@ -333,7 +333,7 @@ function MobileNav({
                       {item.href ? (
                         <li>
                           <SheetClose asChild>
-                            <AppLink href={item.href} locale={locale} onClick={onNavigate} className="block py-2 text-small font-medium text-accent">
+                            <AppLink href={item.href} locale={locale} onClick={onNavigate} className="block py-3 text-small font-medium text-accent">
                               {item.mega === 'products' ? labels.allProducts : item.mega === 'solutions' ? labels.allSolutions : item.label}
                             </AppLink>
                           </SheetClose>
@@ -342,7 +342,7 @@ function MobileNav({
                       {kids.map((k) => (
                         <li key={k.href + k.label}>
                           <SheetClose asChild>
-                            <AppLink href={k.href} locale={locale} target={k.newTab ? '_blank' : undefined} onClick={onNavigate} className="block py-2 text-small text-muted hover:text-text">
+                            <AppLink href={k.href} locale={locale} target={k.newTab ? '_blank' : undefined} onClick={onNavigate} className="block py-3 text-small text-muted hover:text-text">
                               {k.label}
                             </AppLink>
                           </SheetClose>
@@ -369,7 +369,7 @@ function MobileNav({
           </AppLink>
         </Button>
         <div className="flex items-center justify-between">
-          <AppLink href="/hesap" locale={locale} onClick={onNavigate} className="inline-flex items-center gap-2 text-small text-muted hover:text-text">
+          <AppLink href="/hesap" locale={locale} onClick={onNavigate} className="inline-flex min-h-11 items-center gap-2 text-small text-muted hover:text-text">
             <User aria-hidden className="size-4" />
             {labels.account}
           </AppLink>

@@ -4876,18 +4876,6 @@
                       "type": "string",
                       "minLength": 1
                     },
-                    "distanceSales": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "preInformation": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "refund": {
-                      "type": "string",
-                      "minLength": 1
-                    },
                     "terms": {
                       "type": "string",
                       "minLength": 1
@@ -5043,18 +5031,6 @@
                       "minLength": 1
                     },
                     "cookies": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "distanceSales": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "preInformation": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "refund": {
                       "type": "string",
                       "minLength": 1
                     },

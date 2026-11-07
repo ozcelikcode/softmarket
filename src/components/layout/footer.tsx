@@ -66,10 +66,11 @@ export async function Footer({ locale }: { locale: Locale }) {
   const legal = cms.legal.length
     ? cms.legal
     : l([
-        [t('kvkk'), '/yasal/kvkk'],
-        [t('privacy'), '/yasal/gizlilik'],
+        [t('kvkk'), '/yasal/kvkk-aydinlatma'],
+        [t('privacy'), '/yasal/gizlilik-politikasi'],
         [t('cookies'), '/yasal/cerez-politikasi'],
         [t('terms'), '/yasal/kullanim-kosullari'],
+        [t('eula'), '/yasal/eula'],
       ])
   const siteName = settings?.siteName || c('siteName')
   const year = new Date().getFullYear()
@@ -91,7 +92,7 @@ export async function Footer({ locale }: { locale: Locale }) {
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-small text-muted transition-colors hover:text-text"
+                      className="inline-flex min-h-11 items-center text-small text-muted transition-colors hover:text-text"
                     >
                       {SOCIAL[s.platform] ?? s.platform}
                     </a>
@@ -105,14 +106,14 @@ export async function Footer({ locale }: { locale: Locale }) {
             {columns.map((col) => (
               <nav key={col.title} aria-label={col.title}>
                 <h2 className="text-eyebrow font-semibold uppercase text-text/80">{col.title}</h2>
-                <ul className="mt-5 space-y-3">
+                <ul className="mt-3 space-y-0.5 lg:mt-4">
                   {col.links.map((link) => (
                     <li key={link.href + link.label}>
                       <AppLink
                         href={link.href}
                         locale={locale}
                         target={link.newTab ? '_blank' : undefined}
-                        className="text-small text-muted transition-colors hover:text-text"
+                        className="inline-flex min-h-11 items-center text-small text-muted transition-colors hover:text-text"
                       >
                         {link.label}
                       </AppLink>
@@ -127,10 +128,10 @@ export async function Footer({ locale }: { locale: Locale }) {
         <div className="mt-16 flex flex-col gap-6 border-t border-border pt-8 md:flex-row md:items-center md:justify-between">
           <p className="text-small text-muted">{copyright}</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            <ul className="flex flex-wrap gap-x-6">
               {legal.map((link) => (
                 <li key={link.href + link.label}>
-                  <AppLink href={link.href} locale={locale} className="text-small text-muted transition-colors hover:text-text">
+                  <AppLink href={link.href} locale={locale} className="inline-flex min-h-11 items-center text-small text-muted transition-colors hover:text-text">
                     {link.label}
                   </AppLink>
                 </li>

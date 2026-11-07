@@ -29,7 +29,7 @@ export function Breadcrumb({
                   <AppLink
                     href={item.href}
                     locale={locale}
-                    className={cn('rounded-sm hover:text-text')}
+                    className={cn('inline-flex min-h-11 items-center rounded-sm hover:text-text lg:min-h-0')}
                   >
                     {item.label}
                   </AppLink>

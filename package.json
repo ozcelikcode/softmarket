@@ -30,8 +30,9 @@
     "migrate": "payload migrate",
     "migrate:create": "node --import tsx node_modules/payload/bin.js --disable-transpile migrate:create",
     "migrate:status": "payload migrate:status",
-    "seed": "tsx scripts/seed.ts",
+    "seed": "pnpm ensure-forms && pnpm content:import",
     "ensure-forms": "tsx scripts/ensure-forms.ts",
+    "search:reindex": "tsx scripts/reindex-search.ts",
     "content:import": "tsx scripts/content-import.ts"
   },
   "dependencies": {

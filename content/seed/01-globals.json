@@ -5,46 +5,264 @@
       "tr": {
         "navItems": [
           {
+            "link": {
+              "type": "external",
+              "url": "/tr/urunler",
+              "label": "Ürünler"
+            },
             "megaMenu": "products"
           },
           {
+            "link": {
+              "type": "external",
+              "url": "/tr/cozumler",
+              "label": "Çözümler"
+            },
             "megaMenu": "solutions"
           },
           {
             "link": {
-              "type": "internal",
+              "type": "external",
               "url": "/tr/destek",
               "label": "Destek"
             }
+          },
+          {
+            "link": {
+              "type": "external",
+              "label": "Şirket"
+            },
+            "children": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/tr/sirket/hakkimizda",
+                  "label": "Hakkımızda"
+                },
+                "description": "Şirketimiz ve yaklaşımımız."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/tr/referanslar",
+                  "label": "Referanslar"
+                },
+                "description": "Müşterilerimizin başarı hikâyeleri."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/tr/haberler",
+                  "label": "Haberler"
+                },
+                "description": "Duyurular ve yazılar."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/tr/kariyer",
+                  "label": "Kariyer"
+                },
+                "description": "Ekibimize katılın."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/tr/is-ortaklari",
+                  "label": "İş ortakları"
+                },
+                "description": "Çözüm ortaklığı programı."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/tr/iletisim",
+                  "label": "İletişim"
+                }
+              }
+            ]
           }
-        ]
+        ],
+        "cta": {
+          "link": {
+            "type": "external",
+            "url": "/tr/demo-talep",
+            "label": "Demo İste"
+          }
+        }
       },
       "en": {
         "navItems": [
           {
+            "link": {
+              "type": "external",
+              "url": "/en/products",
+              "label": "Products"
+            },
             "megaMenu": "products"
           },
           {
+            "link": {
+              "type": "external",
+              "url": "/en/solutions",
+              "label": "Solutions"
+            },
             "megaMenu": "solutions"
           },
           {
             "link": {
-              "type": "internal",
+              "type": "external",
               "url": "/en/support",
               "label": "Support"
             }
+          },
+          {
+            "link": {
+              "type": "external",
+              "label": "Company"
+            },
+            "children": [
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/en/company/about",
+                  "label": "About us"
+                },
+                "description": "Our company and approach."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/en/customers",
+                  "label": "Customers"
+                },
+                "description": "Customer success stories."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/en/news",
+                  "label": "News"
+                },
+                "description": "Announcements and articles."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/en/careers",
+                  "label": "Careers"
+                },
+                "description": "Join our team."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/en/partners",
+                  "label": "Partners"
+                },
+                "description": "The partner program."
+              },
+              {
+                "link": {
+                  "type": "external",
+                  "url": "/en/contact",
+                  "label": "Contact"
+                }
+              }
+            ]
           }
-        ]
+        ],
+        "cta": {
+          "link": {
+            "type": "external",
+            "url": "/en/request-demo",
+            "label": "Request a demo"
+          }
+        }
       }
     },
     "footer": {
       "tr": {
         "copyright": "© Örnek Kurumsal Yazılım — demo içerik",
-        "showNewsletter": false
+        "showNewsletter": false,
+        "legalLinks": [
+          {
+            "link": {
+              "type": "external",
+              "url": "/tr/yasal/kvkk-aydinlatma",
+              "label": "KVKK aydınlatma metni"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/tr/yasal/gizlilik-politikasi",
+              "label": "Gizlilik politikası"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/tr/yasal/cerez-politikasi",
+              "label": "Çerez politikası"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/tr/yasal/kullanim-kosullari",
+              "label": "Kullanım koşulları"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/tr/yasal/eula",
+              "label": "Son kullanıcı lisans sözleşmesi (EULA)"
+            }
+          }
+        ]
       },
       "en": {
         "copyright": "© Sample Enterprise Software — demo content",
-        "showNewsletter": false
+        "showNewsletter": false,
+        "legalLinks": [
+          {
+            "link": {
+              "type": "external",
+              "url": "/en/legal/kvkk-aydinlatma",
+              "label": "Data protection notice"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/en/legal/gizlilik-politikasi",
+              "label": "Privacy policy"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/en/legal/cerez-politikasi",
+              "label": "Cookie policy"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/en/legal/kullanim-kosullari",
+              "label": "Terms of use"
+            }
+          },
+          {
+            "link": {
+              "type": "external",
+              "url": "/en/legal/eula",
+              "label": "End user license agreement (EULA)"
+            }
+          }
+        ]
       }
     },
     "site-settings": {

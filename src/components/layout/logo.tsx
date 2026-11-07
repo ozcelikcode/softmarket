@@ -7,7 +7,7 @@ export function Logo({ locale, label }: { locale: string; label: string }) {
       href="/"
       locale={locale}
       aria-label={label}
-      className="inline-flex items-center gap-2.5 text-text"
+      className="inline-flex min-h-11 items-center gap-2.5 text-text"
     >
       <span
         aria-hidden

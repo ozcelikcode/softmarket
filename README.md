@@ -40,7 +40,7 @@ Makefile hedefleri (`make <hedef>`):
 |---|---|
 | `make dev` | `pnpm dev` (port 3100) |
 | `make migrate` | `pnpm migrate` |
-| `make seed` | `pnpm seed` (`scripts/seed.ts`) |
+| `make seed` | `pnpm ensure-forms` + `pnpm content:import` (`pnpm seed` ile aynı) |
 | `make backup` | `scripts/backup.sh` |
 | `make restore BACKUP=<yedek-dizini>` | `scripts/restore.sh` ile geri yükleme |
 | `make deploy` | `scripts/deploy.sh` (`DEPLOY_HOST` gerekir) |

@@ -21,7 +21,7 @@ export async function searchSite(locale: Locale, query: string, page = 1) {
       page,
       sort: '-priority',
       select: { doc: true },
-      where: { or: [{ title: { contains: query } }, { excerpt: { contains: query } }] },
+      where: { or: [{ title: { contains: query } }, { excerpt: { contains: query } }, { slug: { contains: query } }] },
     })
     const products = await getSupportProducts(locale)
     const docs: SearchResult[] = []

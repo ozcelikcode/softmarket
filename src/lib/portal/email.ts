@@ -1,3 +1,4 @@
+import { emailLocale as localeOf, emailTemplate } from '@/lib/email/template'
 import { localizedHref } from '@/i18n/paths'
 
 type Locale = 'tr' | 'en'
@@ -9,10 +10,6 @@ const origin = () => {
     return 'http://127.0.0.1:3100'
   }
 }
-const escape = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
-const localeOf = (user: unknown): Locale =>
-  user && typeof user === 'object' && (user as { preferredLocale?: unknown }).preferredLocale === 'en' ? 'en' : 'tr'
 
 const COPY = {
   tr: {
@@ -35,7 +32,7 @@ const COPY = {
 
 function html(locale: Locale, path: string, token: string, body: string, action: string) {
   const link = `${origin()}${localizedHref(`${path}?token=${encodeURIComponent(token)}`, locale)}`
-  return `<p>${escape(body)}</p><p><a href="${escape(link)}">${escape(action)}</a></p><p>${escape(link)}</p>`
+  return emailTemplate({ locale, title: action, body, action: { label: action, url: link } })
 }
 
 type EmailArgs = { token?: string; user?: unknown } | undefined

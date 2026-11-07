@@ -33,7 +33,7 @@ export function SheetContent({
         {children}
         <DialogPrimitive.Close
           aria-label={closeLabel}
-          className="absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-text"
+          className="absolute right-4 top-4 inline-flex size-11 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-text"
         >
           <X className="size-5" />
         </DialogPrimitive.Close>

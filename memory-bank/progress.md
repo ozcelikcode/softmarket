@@ -1,5 +1,9 @@
 # İlerleme
 
+- Güvenlik QA (2026-11-07): lisans e-postası HTTP yanıtı sonrası, bağımsız doğrulanmış kalıcı kayıt için gönderilir; SMTP yoksa anahtar konsola yazılmaz. İstek bağlamı dışındaki atamalarda bildirim zamanlanmaz. Uygulanmış `20261107_092304_remove_sales_legal_fields` üç eski ilişki değerini siler; down değerleri geri getirmez. Migration geçmişi değiştirilmedi.
+
+- UX denetimi düzeltmeleri (13 madde) tamamlandı: dil değiştirici bağlamı, yasal/footer linkleri, header seed + CTA, buton kontrastı (cn/twMerge kök neden), ürün sayfası tek kaynak, form sürüm filtresi + satır içi hatalar, localized 404 (catch-all), favicon seti, mobil 44px, CSP nonce hydration uyarısı, indirme filtreleri. Typecheck/lint/345 test/izole build geçti; Playwright ile 3100'de doğrulandı. Yeni test: `tests/unit/ux-audit.test.tsx`.
+
 - 404/güvenlik QA: medya dosyası varlık kontrolü erişim filtresinden sonra yapılır; yetkisiz ve olmayan dosyalar 404. Geçici SQLite regresyon testi eklendi. İzole prod build başarılı; doküman sayfası timeout yeniden üretilemedi, kesin kök neden belirlenemedi.
 
 - Faz 8a güvenlik QA: MCP derinlik/dosya yolu ve medya boyutu/symlink düzeltildi; canlı HTTP erişim testleri ve 264 Vitest testi geçti; CLI medya dosyaları için artık aşağıdaki telafi temizliğini uygular.
@@ -35,6 +39,8 @@
 - Yok (portal Faz 6'da eklendi).
 
 ## Bilinen sorunlar / işletim girdileri
+- Next 15.4.11: `(frontend)/[locale]` kök layout altında `notFound()` SSR'da `__next_error__` kabuğu döndürür; yerelleştirilmiş 404 RSC payload'dan istemcide görünür. HTTP testi status 404 + HTML/RSC içeriğini, `smoke.spec.ts` tarayıcıda görünür `<main>` 404'ü kontrol eder.
+- Denenip sonuç vermeyenler: globalNotFound kapatma, sade layout, header/footer/error.tsx çıkarma, passthrough app/layout + app/not-found, OG dosyası taşıma. Page-builder fazında yeniden ele alınacak.
 - Canlı SMTP ve Turnstile site/secret anahtarları gerekli; gerçek dış servis testi yapılmadı.
 - `.env` canonical URL hâlâ `localhost:3100`; uygulama HTTP doğrulamaları `127.0.0.1:3100` üzerinden yapıldı. Mevcut localePrefix `always`: TR yolları `/tr` ile açılır, kök TR yolları yönlenir.
 - Yasal metin onayı ve gerçek içerik Faz 7–8'de. Git commit yok.

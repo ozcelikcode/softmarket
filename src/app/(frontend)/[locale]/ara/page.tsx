@@ -47,7 +47,7 @@ async function SearchPage({ params, searchParams }: Props) {
               </li>
             ))}
           </ul>
-          {!result.docs.length ? <p>{t('empty')}</p> : null}
+          {!result.docs.length ? <p role="status">{t('searchEmpty')}</p> : null}
           <nav aria-label={t('results')} className="mt-8 flex justify-between">
             {page > 1 ? (
               <AppLink

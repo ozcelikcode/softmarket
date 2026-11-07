@@ -51,7 +51,7 @@ export default async function RegisterPage({ params }: Props) {
           { name: 'email', label: t('fields.email'), type: 'email', autoComplete: 'email', required: true, maxLength: 254 },
           { name: 'password', label: t('fields.password'), type: 'password', autoComplete: 'new-password', required: true, minLength: 10, maxLength: 128, hint: t('fields.passwordHint') },
           { name: 'confirm', label: t('fields.confirm'), type: 'password', autoComplete: 'new-password', required: true, minLength: 10, maxLength: 128 },
-          { name: 'consent', label: t('register.consent'), type: 'checkbox', required: true, link: { href: '/yasal/kvkk', label: t('register.privacy') } },
+          { name: 'consent', label: t('register.consent'), type: 'checkbox', required: true, link: { href: '/yasal/kvkk-aydinlatma', label: t('register.privacy') } },
         ]}
         submitLabel={t('register.submit')}
         sendingLabel={f('sending')}

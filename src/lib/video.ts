@@ -7,21 +7,21 @@ export function toEmbedUrl(value: string | null | undefined): string | null {
   } catch {
     return null
   }
-  if (url.protocol !== 'https:') return null
+  if (url.protocol !== 'https:' || url.username || url.password || url.port) return null
   const host = url.hostname.replace(/^www\./, '')
-  const id = (s: string | null | undefined) => (s && /^[\w-]{6,20}$/.test(s) ? s : null)
+  const id = (s: string | null | undefined) => (s && /^[A-Za-z0-9_-]{11}$/.test(s) ? s : null)
   if (host === 'youtu.be') {
     const v = id(url.pathname.slice(1))
     return v ? `https://www.youtube-nocookie.com/embed/${v}` : null
   }
   if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
-    const parts = url.pathname.split('/').filter(Boolean)
-    const v = parts[0] === 'embed' ? id(parts[1]) : parts[0] === 'watch' ? id(url.searchParams.get('v')) : null
+    const embed = /^\/embed\/([A-Za-z0-9_-]{11})\/?$/.exec(url.pathname)
+    const v = embed ? id(embed[1]) : url.pathname === '/watch' ? id(url.searchParams.get('v')) : null
     return v ? `https://www.youtube-nocookie.com/embed/${v}` : null
   }
   if (host === 'vimeo.com' || host === 'player.vimeo.com') {
-    const parts = url.pathname.split('/').filter(Boolean)
-    const v = parts.find((p) => /^\d{5,12}$/.test(p))
+    const path = host === 'player.vimeo.com' ? /^\/video\/([1-9]\d{4,11})\/?$/ : /^\/([1-9]\d{4,11})\/?$/
+    const v = path.exec(url.pathname)?.[1]
     return v ? `https://player.vimeo.com/video/${v}?dnt=1` : null
   }
   return null

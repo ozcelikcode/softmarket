@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 
 import { blockSettings } from '@/fields/block-settings'
+import { toEmbedUrl } from '@/lib/video'
 
 import { L, blockMeta } from './meta'
 
@@ -29,15 +30,7 @@ export const VideoEmbed: Block = {
       admin: { description: L('Yalnız https YouTube veya Vimeo adresleri.', 'Only https YouTube or Vimeo URLs.') },
       validate: (value: string | null | undefined) => {
         if (!value) return 'URL is required.'
-        try {
-          const url = new URL(value)
-          if (url.protocol !== 'https:') return 'Only https URLs are allowed.'
-          return ALLOWED_VIDEO_HOSTS.includes(url.hostname)
-            ? true
-            : `Allowed hosts: ${ALLOWED_VIDEO_HOSTS.join(', ')}`
-        } catch {
-          return 'Invalid URL.'
-        }
+        return toEmbedUrl(value) ? true : 'Enter a valid https YouTube or Vimeo video URL.'
       },
     },
     { name: 'poster', type: 'upload', relationTo: 'media', label: L('Kapak görseli', 'Poster') },

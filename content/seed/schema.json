@@ -10,7 +10,8 @@
             "default",
             "split",
             "centered",
-            "minimal"
+            "minimal",
+            "mediaBackground"
           ]
         },
         "eyebrow": {
@@ -26,6 +27,10 @@
           "minLength": 1
         },
         "media": {
+          "type": "string",
+          "minLength": 1
+        },
+        "video": {
           "type": "string",
           "minLength": 1
         },
@@ -1531,6 +1536,412 @@
         "url",
         "blockType"
       ]
+    },
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "caption": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "image"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "aspect": {
+          "enum": [
+            "auto",
+            "16-9",
+            "4-3",
+            "1-1",
+            "21-9"
+          ]
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "media"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "testimonial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "photo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "logo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "testimonial"
+        }
+      },
+      "required": [
+        "quote",
+        "name",
+        "blockType"
+      ]
+    },
+    "tabs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "markdown": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              },
+              "media": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "label"
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 6
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "tabs"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "spacer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "size": {
+          "enum": [
+            "sm",
+            "md",
+            "lg",
+            "xl"
+          ]
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "spacer"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "divider": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "style": {
+          "enum": [
+            "line",
+            "accent"
+          ]
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "width": {
+              "enum": [
+                "narrow",
+                "normal",
+                "wide"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "divider"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
     }
   },
   "title": "SoftMarket bilingual content seed v1",
@@ -1809,6 +2220,21 @@
                     },
                     {
                       "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
                     }
                   ]
                 }
@@ -2005,6 +2431,21 @@
                     },
                     {
                       "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
                     }
                   ]
                 }
@@ -2381,6 +2822,21 @@
                     },
                     {
                       "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
                     }
                   ]
                 }
@@ -2472,6 +2928,21 @@
                     },
                     {
                       "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
                     }
                   ]
                 }
@@ -3070,6 +3541,21 @@
                     },
                     {
                       "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
                     }
                   ]
                 }
@@ -3136,6 +3622,21 @@
                     },
                     {
                       "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
                     }
                   ]
                 }

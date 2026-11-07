@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { Payload } from 'payload'
@@ -22,6 +22,8 @@ beforeAll(async () => {
   process.env.PAYLOAD_SECRET ||= 'test-secret-long-enough-for-payload'
   const { getPayload } = await import('payload')
   payload = await getPayload({ config: (await import('../../src/payload.config')).default })
+  expect(realpathSync(String((await run('PRAGMA database_list')).rows.find((r) => r.name === 'main')?.file)))
+    .toBe(realpathSync(join(dir, 'test.db')))
   const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
   const index = migrations.findIndex((m) => m.name === NAME)
   migration = migrations[index]
@@ -56,7 +58,16 @@ describe(`migration ${NAME}`, () => {
   })
 
   it('reads legacy rows through Payload with resolved defaults', async () => {
-    const product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
+    // Payload's schema now includes F4 tables/columns; apply that migration for the read and revert it after.
+    const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
+    const later = migrations.find((m) => m.name === '20261107_111754_blocks_static_set')!
+    await later.up(args())
+    let product
+    try {
+      product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
+    } finally {
+      await later.down(args())
+    }
     expect(product.layout?.[0]).toMatchObject({ blockType: 'cta', style: 'card', appearance: { theme: 'auto', spacing: 'md', align: 'center', hidden: false } })
   })
 

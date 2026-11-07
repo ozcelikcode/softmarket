@@ -55,7 +55,7 @@ describe('blockSettings appearance group', () => {
       expect(fields.animation.defaultValue).toBe('subtle')
       expect(fields.hidden.defaultValue).toBe(false)
       expect(fields.anchor.defaultValue).toBeUndefined()
-      expect(Boolean(fields.width)).toBe(block.slug !== 'richText')
+      expect(Boolean(fields.width)).toBe(!['richText', 'spacer'].includes(block.slug))
     }
     expect(BLOCK_DEFAULTS.hero.spacing).toBe('lg')
     expect(blockSettings('richText').fields).toHaveLength(1)

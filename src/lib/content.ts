@@ -20,7 +20,7 @@ const anon = (locale: Locale) => ({
 })
 
 // `filename` is required for Payload to compute `url`.
-const mediaPick = { url: true, filename: true, alt: true, width: true, height: true, mimeType: true } as const
+const mediaPick = { url: true, filename: true, alt: true, width: true, height: true, mimeType: true, protected: true, visibility: true } as const
 const familyPick = { title: true, slug: true, tagline: true } as const
 
 const populate = {
@@ -41,7 +41,7 @@ const populate = {
 const bySlug = (slug: string): Where => ({ slug: { equals: slug } })
 
 /** Media relation that was populated and is readable (otherwise it stays an ID). */
-export function mediaOf(value: unknown): Pick<Media, 'url' | 'alt' | 'width' | 'height'> | null {
+export function mediaOf(value: unknown): Pick<Media, 'url' | 'alt' | 'width' | 'height' | 'mimeType' | 'protected' | 'visibility'> | null {
   if (!value || typeof value !== 'object') return null
   const m = value as Media
   return typeof m.url === 'string' && safeHref(m.url) && /^(?:https?:\/\/|\/)/i.test(m.url) ? m : null

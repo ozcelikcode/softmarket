@@ -6,6 +6,9 @@ vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('payload', () => ({ getPayload: vi.fn() }))
 
 import { RichContent } from '@/components/blocks/rich-text'
+import { TabsBlock } from '@/components/blocks/tabs-block'
+import { planBlocks } from '@/lib/blocks/render-plan'
+import type { LayoutBlock } from '@/components/blocks/types'
 import { mediaOf } from '@/lib/content'
 import { editionHref } from '@/components/product/edition-card'
 import { MAX_PAGE, parsePage } from '@/lib/page-utils'
@@ -44,6 +47,19 @@ describe('CMS rendering boundary', () => {
     expect(html).not.toContain('javascript:')
     expect(html).toContain('href="/en/products"')
     expect(html).toContain('noopener noreferrer')
+  })
+  it('renders hostile rich text inside tabs as inert text and safe links', () => {
+    const data = { root: { type: 'root', children: [
+      { type: 'heading', tag: 'script', children: [text('<img src=x onerror=alert(1)>')] },
+      { type: 'link', fields: { url: 'javascript:alert(1)' }, children: [text('Unsafe link')] },
+    ] } }
+    const [planned] = planBlocks([{ blockType: 'tabs', items: [{ label: 'A', content: data }, { label: 'B', content: data }] } as unknown as LayoutBlock])
+    const html = renderToStaticMarkup(TabsBlock({ block: planned.block as never, locale: 'tr', ctx: planned.ctx }))
+    expect(html).not.toContain('<script')
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('javascript:')
+    expect(html).toContain('&lt;img')
+    expect(html.match(/Unsafe link/g)).toHaveLength(2)
   })
 
   it('ignores malformed rich text roots', () => {

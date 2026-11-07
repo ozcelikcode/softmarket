@@ -1,17 +1,22 @@
 import type { Block } from 'payload'
 
 import { CTA } from './CTA'
+import { Divider } from './Divider'
 import { FAQ } from './FAQ'
 import { FeatureGrid } from './FeatureGrid'
 import { Hero } from './Hero'
 import { LogoWall } from './LogoWall'
+import { Media } from './Media'
 import { MediaText } from './MediaText'
 import { RichText } from './RichText'
+import { Spacer } from './Spacer'
 import { SpecTable } from './SpecTable'
 import { Stats } from './Stats'
+import { Tabs } from './Tabs'
+import { Testimonial } from './Testimonial'
 import { VideoEmbed } from './VideoEmbed'
 
-export { CTA, FAQ, FeatureGrid, Hero, LogoWall, MediaText, RichText, SpecTable, Stats, VideoEmbed }
+export { CTA, Divider, FAQ, FeatureGrid, Hero, LogoWall, Media, MediaText, RichText, Spacer, SpecTable, Stats, Tabs, Testimonial, VideoEmbed }
 
 /** Full block set for free-form pages and product bodies. */
 export const layoutBlocks: Block[] = [
@@ -25,4 +30,9 @@ export const layoutBlocks: Block[] = [
   FAQ,
   RichText,
   VideoEmbed,
+  Media,
+  Testimonial,
+  Tabs,
+  Spacer,
+  Divider,
 ]

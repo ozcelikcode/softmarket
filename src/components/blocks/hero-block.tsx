@@ -1,5 +1,6 @@
 import { Actions } from '@/components/blocks/actions'
 import { BlockShell } from '@/components/blocks/block-shell'
+import { HeroVideo } from '@/components/blocks/hero-video'
 import type { BlockProps } from '@/components/blocks/types'
 import { Eyebrow, Heading } from '@/components/ui/heading'
 import { MediaImage } from '@/components/ui/media-image'
@@ -8,11 +9,11 @@ import { mediaOf } from '@/lib/content'
 import { cn } from '@/lib/utils'
 import type { HeroBlock as Block } from '@/payload-types'
 
-export type HeroVariant = 'cinematic' | 'split' | 'centered' | 'minimal'
+export type HeroVariant = 'cinematic' | 'split' | 'centered' | 'minimal' | 'mediaBackground'
 
 /** Stored value -> layout. `default` (and anything unknown/legacy) is the cinematic layout. */
 export function heroVariant(value: Block['variant']): HeroVariant {
-  return value === 'split' || value === 'centered' || value === 'minimal' ? value : 'cinematic'
+  return value === 'split' || value === 'centered' || value === 'minimal' || value === 'mediaBackground' ? value : 'cinematic'
 }
 
 /**
@@ -23,9 +24,13 @@ export function heroVariant(value: Block['variant']): HeroVariant {
 export function HeroBlock({ block, locale, ctx }: BlockProps<Block>) {
   const { appearance } = ctx
   const variant = heroVariant(block.variant)
-  const hasMedia = Boolean(mediaOf(block.media))
+  const hasMedia = Boolean(mediaOf(block.media)) && variant !== 'mediaBackground'
   const sideMedia = hasMedia && (variant === 'cinematic' || variant === 'split')
   const center = variant === 'centered' || appearance.align === 'center'
+  const bgPoster = variant === 'mediaBackground' ? mediaOf(block.media) : null
+  const video = mediaOf(block.video)
+  const bgVideo = bgPoster && video?.protected === false && video.visibility === 'public'
+    && (video.mimeType === 'video/mp4' || video.mimeType === 'video/webm') ? video.url : undefined
   const motion = appearance.animation !== 'none'
   const enter = (i: number, mode?: 'fade' | 'slide') => (motion ? heroIn(i, mode) : {})
   return (
@@ -33,8 +38,15 @@ export function HeroBlock({ block, locale, ctx }: BlockProps<Block>) {
       blockType="hero"
       appearance={appearance}
       animate="none"
-      className={cn('overflow-hidden', ctx.pageTop && 'pt-32 sm:pt-40')}
-      decor={variant === 'minimal' ? null : (
+      className={cn('overflow-hidden', ctx.pageTop && 'pt-32 sm:pt-40', variant === 'mediaBackground' && 'flex min-h-[32rem] items-center sm:min-h-[40rem]')}
+      decor={variant === 'mediaBackground' ? (
+        <>
+          {/* Poster = LCP image (server-rendered, priority). The video mounts only on desktop with motion allowed. */}
+          {bgPoster ? <MediaImage media={bgPoster} alt="" priority={ctx.pageTop} sizes="100vw" className="absolute inset-0" /> : <div aria-hidden className="bg-glow absolute inset-0" />}
+          {bgVideo ? <HeroVideo src={bgVideo} /> : null}
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-bg/30" />
+        </>
+      ) : variant === 'minimal' ? null : (
         <>
           <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />
           {variant === 'cinematic' ? <div aria-hidden className="bg-grid pointer-events-none absolute inset-0 opacity-70" /> : null}

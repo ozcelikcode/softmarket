@@ -397,6 +397,11 @@ export interface Product {
         | FAQBlock
         | RichTextBlock
         | VideoEmbedBlock
+        | MediaBlock
+        | TestimonialBlock
+        | TabsBlock
+        | SpacerBlock
+        | DividerBlock
       )[]
     | null;
   features?:
@@ -502,11 +507,18 @@ export interface HeroBlock {
   /**
    * The first hero on a page is the page title (h1); others become section headings (h2).
    */
-  variant?: ('default' | 'split' | 'centered' | 'minimal') | null;
+  variant?: ('default' | 'split' | 'centered' | 'minimal' | 'mediaBackground') | null;
   eyebrow?: string | null;
   heading: string;
   subheading?: string | null;
+  /**
+   * In the "Background" layout this image is the poster and LCP image; it is what shows when the video does not load (mobile, reduced motion).
+   */
   media?: (number | null) | Media;
+  /**
+   * Short (≤ 15 s), silent, looping MP4/WebM; upload publicly (protected off). Loads only on desktop with reduced motion off; otherwise the poster shows. A poster image is required.
+   */
+  video?: (number | null) | Media;
   actions?:
     | {
         link?: {
@@ -597,6 +609,11 @@ export interface Page {
         | FAQBlock
         | RichTextBlock
         | VideoEmbedBlock
+        | MediaBlock
+        | TestimonialBlock
+        | TabsBlock
+        | SpacerBlock
+        | DividerBlock
       )[]
     | null;
   meta?: {
@@ -795,6 +812,11 @@ export interface Solution {
         | FAQBlock
         | RichTextBlock
         | VideoEmbedBlock
+        | MediaBlock
+        | TestimonialBlock
+        | TabsBlock
+        | SpacerBlock
+        | DividerBlock
       )[]
     | null;
   industries?: (number | Industry)[] | null;
@@ -1001,6 +1023,11 @@ export interface CaseStudy {
         | FAQBlock
         | RichTextBlock
         | VideoEmbedBlock
+        | MediaBlock
+        | TestimonialBlock
+        | TabsBlock
+        | SpacerBlock
+        | DividerBlock
       )[]
     | null;
   industry?: (number | null) | Industry;
@@ -1621,6 +1648,189 @@ export interface VideoEmbedBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'videoEmbed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  heading?: string | null;
+  /**
+   * 1 image renders full width, 2-4 render as a grid.
+   */
+  items?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * A fixed ratio crops the image to fill; "Original ratio" never crops.
+   */
+  aspect?: ('auto' | '16-9' | '4-3' | '1-1' | '21-9') | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'media';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialBlock".
+ */
+export interface TestimonialBlock {
+  quote: string;
+  name: string;
+  role?: string | null;
+  company?: string | null;
+  photo?: (number | null) | Media;
+  logo?: (number | null) | Media;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonial';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TabsBlock".
+ */
+export interface TabsBlock {
+  heading?: string | null;
+  items?:
+    | {
+        label: string;
+        content?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        media?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'tabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpacerBlock".
+ */
+export interface SpacerBlock {
+  /**
+   * Adds empty space between blocks. Use Appearance > Theme for the background color.
+   */
+  size?: ('sm' | 'md' | 'lg' | 'xl') | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'spacer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DividerBlock".
+ */
+export interface DividerBlock {
+  style?: ('line' | 'accent') | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    width?: ('narrow' | 'normal' | 'wide') | null;
+    /**
+     * For in-page links, e.g. "features" → /page#features. Must be unique on the page.
+     */
+    anchor?: string | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'divider';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2467,6 +2677,11 @@ export interface ProductsSelect<T extends boolean = true> {
         faq?: T | FAQBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         videoEmbed?: T | VideoEmbedBlockSelect<T>;
+        media?: T | MediaBlockSelect<T>;
+        testimonial?: T | TestimonialBlockSelect<T>;
+        tabs?: T | TabsBlockSelect<T>;
+        spacer?: T | SpacerBlockSelect<T>;
+        divider?: T | DividerBlockSelect<T>;
       };
   features?:
     | T
@@ -2525,6 +2740,7 @@ export interface HeroBlockSelect<T extends boolean = true> {
   heading?: T;
   subheading?: T;
   media?: T;
+  video?: T;
   actions?:
     | T
     | {
@@ -2827,6 +3043,126 @@ export interface VideoEmbedBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock_select".
+ */
+export interface MediaBlockSelect<T extends boolean = true> {
+  heading?: T;
+  items?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  aspect?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialBlock_select".
+ */
+export interface TestimonialBlockSelect<T extends boolean = true> {
+  quote?: T;
+  name?: T;
+  role?: T;
+  company?: T;
+  photo?: T;
+  logo?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TabsBlock_select".
+ */
+export interface TabsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  items?:
+    | T
+    | {
+        label?: T;
+        content?: T;
+        media?: T;
+        id?: T;
+      };
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpacerBlock_select".
+ */
+export interface SpacerBlockSelect<T extends boolean = true> {
+  size?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DividerBlock_select".
+ */
+export interface DividerBlockSelect<T extends boolean = true> {
+  style?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        width?: T;
+        anchor?: T;
+        hidden?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "editions_select".
  */
 export interface EditionsSelect<T extends boolean = true> {
@@ -2868,6 +3204,11 @@ export interface SolutionsSelect<T extends boolean = true> {
         faq?: T | FAQBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         videoEmbed?: T | VideoEmbedBlockSelect<T>;
+        media?: T | MediaBlockSelect<T>;
+        testimonial?: T | TestimonialBlockSelect<T>;
+        tabs?: T | TabsBlockSelect<T>;
+        spacer?: T | SpacerBlockSelect<T>;
+        divider?: T | DividerBlockSelect<T>;
       };
   industries?: T;
   products?: T;
@@ -2946,6 +3287,11 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         faq?: T | FAQBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         videoEmbed?: T | VideoEmbedBlockSelect<T>;
+        media?: T | MediaBlockSelect<T>;
+        testimonial?: T | TestimonialBlockSelect<T>;
+        tabs?: T | TabsBlockSelect<T>;
+        spacer?: T | SpacerBlockSelect<T>;
+        divider?: T | DividerBlockSelect<T>;
       };
   industry?: T;
   products?: T;
@@ -3050,6 +3396,11 @@ export interface PagesSelect<T extends boolean = true> {
         faq?: T | FAQBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         videoEmbed?: T | VideoEmbedBlockSelect<T>;
+        media?: T | MediaBlockSelect<T>;
+        testimonial?: T | TestimonialBlockSelect<T>;
+        tabs?: T | TabsBlockSelect<T>;
+        spacer?: T | SpacerBlockSelect<T>;
+        divider?: T | DividerBlockSelect<T>;
       };
   meta?:
     | T

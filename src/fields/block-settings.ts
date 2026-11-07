@@ -58,6 +58,11 @@ export const BLOCK_DEFAULTS: Record<string, BlockDefaults> = {
   faq: { ...base, theme: 'light' },
   richText: { ...base, theme: 'light', width: false },
   videoEmbed: { ...base, theme: 'dark' },
+  media: { ...base, theme: 'light' },
+  testimonial: { ...base, theme: 'light', align: 'center' },
+  tabs: { ...base, theme: 'light' },
+  spacer: { ...base, theme: 'light', spacing: 'none', width: false },
+  divider: { ...base, theme: 'light', spacing: 'sm' },
 }
 const FALLBACK: BlockDefaults = { ...base, theme: 'light' }
 

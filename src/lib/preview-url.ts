@@ -18,6 +18,7 @@ export const LIVE_PREVIEW_COLLECTIONS = [
 ] as const
 export type LivePreviewCollection = (typeof LIVE_PREVIEW_COLLECTIONS)[number]
 
+// Payload 3.85 renders `label` as a plain React child (Toolbar/Controls), so it must stay a string: an { tr, en } object would crash the toolbar.
 export const LIVE_PREVIEW_BREAKPOINTS = [
   { name: 'mobile', label: 'Mobil / Mobile', width: 390, height: 844 },
   { name: 'tablet', label: 'Tablet', width: 768, height: 1024 },

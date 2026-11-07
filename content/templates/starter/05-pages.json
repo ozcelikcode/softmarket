@@ -1,0 +1,457 @@
+{
+  "version": 1,
+  "pages": [
+    {
+      "tr": {
+        "title": "Ana sayfa",
+        "slug": "home",
+        "pageType": "standard",
+        "layout": [
+          {
+            "blockType": "hero",
+            "variant": "default",
+            "aside": "families",
+            "eyebrow": "Şirket Adı",
+            "heading": "Şirketinizin ana mesajı burada.",
+            "subheading": "Bu başlangıç sayfasını Sayfalar bölümünden düzenleyin; blokları sürükleyerek sıralayın.",
+            "panelTitle": "Ürün aileleri",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "İletişime geçin",
+                  "appearance": "primary"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "urunler",
+                  "label": "Ürünleri keşfet",
+                  "appearance": "secondary"
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "productFamilies",
+            "eyebrow": "Ürünler",
+            "heading": "Ürün yapımız",
+            "description": "Ürün ailelerinizi ve ürünlerinizi Katalog bölümünden ekleyin.",
+            "source": "all",
+            "limit": 6,
+            "sort": "order",
+            "layout": "grid-3",
+            "showCount": true,
+            "showViewAll": true
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Birlikte çalışalım.",
+            "body": "İhtiyacınızı dinler, size uygun çözümü birlikte belirleriz.",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "İletişime geçin",
+                  "appearance": "primary"
+                }
+              }
+            ],
+            "appearance": {
+              "spacing": "lg"
+            }
+          }
+        ]
+      },
+      "en": {
+        "title": "Home",
+        "slug": "home",
+        "pageType": "standard",
+        "layout": [
+          {
+            "blockType": "hero",
+            "variant": "default",
+            "aside": "families",
+            "eyebrow": "Company Name",
+            "heading": "Your main message goes here.",
+            "subheading": "Edit this starter page in Pages; drag blocks to reorder them.",
+            "panelTitle": "Product families",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "Contact us",
+                  "appearance": "primary"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "urunler",
+                  "label": "Explore products",
+                  "appearance": "secondary"
+                }
+              }
+            ]
+          },
+          {
+            "blockType": "productFamilies",
+            "eyebrow": "Products",
+            "heading": "Our products",
+            "description": "Add your product families and products in Catalog.",
+            "source": "all",
+            "limit": 6,
+            "sort": "order",
+            "layout": "grid-3",
+            "showCount": true,
+            "showViewAll": true
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let's work together.",
+            "body": "We listen to your needs and find the right solution together.",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "Contact us",
+                  "appearance": "primary"
+                }
+              }
+            ],
+            "appearance": {
+              "spacing": "lg"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Ürünler",
+        "slug": "urunler",
+        "pageType": "standard",
+        "systemKey": "products",
+        "hero": {
+          "title": "Ürünler",
+          "lead": "Ürün ailelerimizi ve ailelerin altındaki ürünleri inceleyin."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "Products",
+        "slug": "products",
+        "pageType": "standard",
+        "systemKey": "products",
+        "hero": {
+          "title": "Products",
+          "lead": "Browse our product families and the products within them."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Çözümler",
+        "slug": "cozumler",
+        "pageType": "standard",
+        "systemKey": "solutions",
+        "hero": {
+          "title": "Çözümler",
+          "lead": "Sektör ve kullanım senaryolarına göre hazırlanmış çözümler."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "Solutions",
+        "slug": "solutions",
+        "pageType": "standard",
+        "systemKey": "solutions",
+        "hero": {
+          "title": "Solutions",
+          "lead": "Solutions shaped around industries and use cases."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Haberler",
+        "slug": "haberler",
+        "pageType": "standard",
+        "systemKey": "news",
+        "hero": {
+          "title": "Haberler",
+          "lead": "Duyurular, ürün güncellemeleri ve yazılar."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "News",
+        "slug": "news",
+        "pageType": "standard",
+        "systemKey": "news",
+        "hero": {
+          "title": "News",
+          "lead": "Announcements, product updates and articles."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Referanslar",
+        "slug": "referanslar",
+        "pageType": "standard",
+        "systemKey": "customers",
+        "hero": {
+          "title": "Referanslar",
+          "lead": "Müşterilerimizin ürünlerimizle elde ettiği sonuçlar."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "Customers",
+        "slug": "customers",
+        "pageType": "standard",
+        "systemKey": "customers",
+        "hero": {
+          "title": "Customers",
+          "lead": "The results our customers achieve with our products."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Kariyer",
+        "slug": "kariyer",
+        "pageType": "standard",
+        "systemKey": "careers",
+        "hero": {
+          "title": "Kariyer",
+          "lead": "Ekibimize katılın."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "Careers",
+        "slug": "careers",
+        "pageType": "standard",
+        "systemKey": "careers",
+        "hero": {
+          "title": "Careers",
+          "lead": "Join our team."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "İş ortakları",
+        "slug": "is-ortaklari",
+        "pageType": "standard",
+        "systemKey": "partners",
+        "hero": {
+          "title": "İş ortakları",
+          "lead": "Birlikte büyüdüğümüz teknoloji, çözüm ve satış ortakları."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İş ortağımız olun",
+            "body": "Ortaklık programımız hakkında bilgi almak için bizimle iletişime geçin.",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "İletişime geç",
+                  "appearance": "primary"
+                }
+              }
+            ],
+            "appearance": {
+              "spacing": "lg"
+            }
+          }
+        ]
+      },
+      "en": {
+        "title": "Partners",
+        "slug": "partners",
+        "pageType": "standard",
+        "systemKey": "partners",
+        "hero": {
+          "title": "Partners",
+          "lead": "The technology, solution and sales partners we grow with."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          },
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Become a partner",
+            "body": "Get in touch to learn about our partner program.",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "Contact us",
+                  "appearance": "primary"
+                }
+              }
+            ],
+            "appearance": {
+              "spacing": "lg"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Destek merkezi",
+        "slug": "destek",
+        "pageType": "standard",
+        "systemKey": "support",
+        "hero": {
+          "title": "Destek merkezi",
+          "lead": "Yazılımınız için dokümanları, güncellemeleri ve yardım seçeneklerini bulun."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "Support center",
+        "slug": "support",
+        "pageType": "standard",
+        "systemKey": "support",
+        "hero": {
+          "title": "Support center",
+          "lead": "Find documentation, updates and help for your software."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "İletişim",
+        "slug": "iletisim",
+        "pageType": "standard",
+        "systemKey": "contact",
+        "hero": {
+          "title": "İletişim",
+          "lead": "Satış, destek veya genel sorularınız için bize ulaşın."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      },
+      "en": {
+        "title": "Contact",
+        "slug": "contact",
+        "pageType": "standard",
+        "systemKey": "contact",
+        "hero": {
+          "title": "Contact",
+          "lead": "Reach us for sales, support or general questions."
+        },
+        "layout": [
+          {
+            "blockType": "listing"
+          }
+        ]
+      }
+    },
+    {
+      "tr": {
+        "title": "Hakkımızda",
+        "slug": "hakkimizda",
+        "pageType": "standard",
+        "systemKey": "about",
+        "hero": {
+          "title": "Hakkımızda",
+          "lead": "Şirketimiz ve yaklaşımımız.",
+          "eyebrow": "Şirket"
+        },
+        "layout": []
+      },
+      "en": {
+        "title": "About us",
+        "slug": "about",
+        "pageType": "standard",
+        "systemKey": "about",
+        "hero": {
+          "title": "About us",
+          "lead": "Our company and approach.",
+          "eyebrow": "Company"
+        },
+        "layout": []
+      }
+    }
+  ]
+}

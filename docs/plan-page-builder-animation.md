@@ -353,6 +353,7 @@ Bağımlılık: `F0 → (F1 ∥ F2 ∥ F9) → F3 → (F4 ∥ F5 ∥ F7) → F6 
 - **Kapsam:** tüm admin etiketleri ve açıklamaları TR/EN, blok galeri sayfası + önizleme görselleri, `content/templates/starter`, `docs/editor-guide.md`, `AGENTS.md`'ye page builder/MCP tarifi.
 - **Kabul:** admin TR'de İngilizce etiket kalmamış (test: config tarayıcısı), starter import boş DB'de çalışan site üretiyor, kılavuz her bloğu kapsıyor.
 - **Test:** label tarayıcı birim testi, starter import (izole SQLite).
+- **Kod kısmı uygulandı (2026-11-07):** [x] TR/EN etiketler (`src/lib/admin-i18n.ts` sözlüğü; şema değişmedi, `migrate:create` "No schema changes"), [x] `tests/unit/admin-labels.test.ts`, [x] `content/templates/starter` + `tests/unit/starter-template-db.test.ts`, [x] 21/21 blok önizleme görseli (wireframe; gerçek ekran görüntüsü yenileme F11'e kalabilir), [x] AGENTS.md starter bölümü. Not: Live Preview breakpoint `label` Payload'da React child olarak basıldığından `{tr,en}` nesnesi çökerdi; "Mobil / Mobile" string olarak kaldı. `docs/editor-guide.md` ayrı ajanda.
 
 ### F11 — Görsel QA turu 2 + perf kabul
 - **Kapsam:** F0 matrisinin tekrarı, kullanıcı hata listesinin kapanışı, bütçe kapıları, e2e (katalog → teklif, dil, blok sırası, preview).

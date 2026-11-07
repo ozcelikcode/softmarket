@@ -1,0 +1,265 @@
+{
+  "version": 1,
+  "globals": {
+    "header": {
+      "tr": {
+        "navItems": [
+          {
+            "link": {
+              "type": "route",
+              "route": "urunler",
+              "label": "Ürünler"
+            }
+          },
+          {
+            "link": {
+              "type": "route",
+              "route": "cozumler",
+              "label": "Çözümler"
+            }
+          },
+          {
+            "link": {
+              "type": "route",
+              "route": "destek",
+              "label": "Destek"
+            }
+          },
+          {
+            "link": {
+              "type": "route",
+              "route": "sirket_hakkimizda",
+              "label": "Hakkımızda"
+            }
+          }
+        ],
+        "cta": {
+          "link": {
+            "type": "route",
+            "route": "iletisim",
+            "label": "İletişime geçin"
+          }
+        },
+        "announcement": {
+          "enabled": false,
+          "dismissible": true,
+          "text": "Duyuru metnini buradan düzenleyin."
+        },
+        "utility": {
+          "links": [],
+          "showSearch": true,
+          "showLanguage": true,
+          "showAccount": false
+        }
+      },
+      "en": {
+        "navItems": [
+          {
+            "link": {
+              "type": "route",
+              "route": "urunler",
+              "label": "Products"
+            }
+          },
+          {
+            "link": {
+              "type": "route",
+              "route": "cozumler",
+              "label": "Solutions"
+            }
+          },
+          {
+            "link": {
+              "type": "route",
+              "route": "destek",
+              "label": "Support"
+            }
+          },
+          {
+            "link": {
+              "type": "route",
+              "route": "sirket_hakkimizda",
+              "label": "About"
+            }
+          }
+        ],
+        "cta": {
+          "link": {
+            "type": "route",
+            "route": "iletisim",
+            "label": "Contact us"
+          }
+        },
+        "announcement": {
+          "enabled": false,
+          "dismissible": true,
+          "text": "Edit the announcement text here."
+        },
+        "utility": {
+          "links": [],
+          "showSearch": true,
+          "showLanguage": true,
+          "showAccount": false
+        }
+      }
+    },
+    "footer": {
+      "tr": {
+        "columns": [
+          {
+            "title": "Ürünler",
+            "links": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "urunler",
+                  "label": "Tüm ürünler"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "cozumler",
+                  "label": "Çözümler"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Şirket",
+            "links": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "sirket_hakkimizda",
+                  "label": "Hakkımızda"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "İletişim"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Destek",
+            "links": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "destek",
+                  "label": "Destek merkezi"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "destek_dokumantasyon",
+                  "label": "Dokümantasyon"
+                }
+              }
+            ]
+          }
+        ],
+        "copyright": "© {year} {siteName}. Tüm hakları saklıdır.",
+        "showNewsletter": false,
+        "brandBlurb": "Kısa şirket tanıtımınızı Alt bilgi ayarlarından düzenleyin.",
+        "showContact": true,
+        "showSocial": false,
+        "legalLinks": []
+      },
+      "en": {
+        "columns": [
+          {
+            "title": "Products",
+            "links": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "urunler",
+                  "label": "All products"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "cozumler",
+                  "label": "Solutions"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Company",
+            "links": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "sirket_hakkimizda",
+                  "label": "About"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "iletisim",
+                  "label": "Contact"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Support",
+            "links": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "destek",
+                  "label": "Support center"
+                }
+              },
+              {
+                "link": {
+                  "type": "route",
+                  "route": "destek_dokumantasyon",
+                  "label": "Docs"
+                }
+              }
+            ]
+          }
+        ],
+        "copyright": "© {year} {siteName}. All rights reserved.",
+        "showNewsletter": false,
+        "brandBlurb": "Edit your short company blurb in the Footer settings.",
+        "showContact": true,
+        "showSocial": false,
+        "legalLinks": []
+      }
+    },
+    "site-settings": {
+      "tr": {
+        "siteName": "Şirket Adı",
+        "homePage": "home",
+        "tagline": "Şirketinizin kısa sloganı",
+        "commerce": {
+          "quoteForm": "softmarket-quote",
+          "demoForm": "softmarket-demo"
+        },
+        "motion": "subtle"
+      },
+      "en": {
+        "siteName": "Company Name",
+        "homePage": "home",
+        "tagline": "Your company tagline",
+        "commerce": {
+          "quoteForm": "softmarket-quote",
+          "demoForm": "softmarket-demo"
+        },
+        "motion": "subtle"
+      }
+    }
+  }
+}

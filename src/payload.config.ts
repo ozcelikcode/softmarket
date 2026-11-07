@@ -6,6 +6,7 @@ import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { mcpOptions } from './lib/mcp'
+import { ADMIN_GROUPS, COLLECTION_LABELS, loc, localizeCollection, localizeGlobal } from './lib/admin-i18n'
 import { withPublicRevalidation, withGlobalRevalidation } from './lib/revalidate'
 import { LIVE_PREVIEW_BREAKPOINTS, LIVE_PREVIEW_COLLECTIONS, livePreviewURL } from './lib/preview-url'
 import { seoPlugin } from '@payloadcms/plugin-seo'
@@ -50,6 +51,11 @@ const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
 const secret = process.env.PAYLOAD_SECRET || (isBuild ? 'build-only-placeholder' : '')
 if (!secret) {
   throw new Error('PAYLOAD_SECRET is required at runtime.')
+}
+
+const pluginLabels = (slug: string) => {
+  const l = COLLECTION_LABELS[slug]
+  return { singular: loc(l[0], l[1]), plural: loc(l[2], l[3]) }
 }
 
 const SITE_NAME = 'SoftMarket'
@@ -120,9 +126,9 @@ export default buildConfig({
     SupportTicketMessages,
     // License assignment
     Licenses,
-  ].map((collection) => ['users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages'].includes(collection.slug)
+  ].map(localizeCollection).map((collection) => ['users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages'].includes(collection.slug)
     ? collection : withPublicRevalidation(collection)),
-  globals: [Header, Footer, SiteSettings].map(withGlobalRevalidation),
+  globals: [Header, Footer, SiteSettings].map(localizeGlobal).map(withGlobalRevalidation),
   editor: lexicalEditor(),
   secret,
   ...(smtpConfigured
@@ -174,7 +180,8 @@ export default buildConfig({
       redirectRelationships: ['pages'],
       formOverrides: {
         hooks: { afterChange: [async ({ doc }) => { const { revalidatePublicContent } = await import('./lib/revalidate'); await revalidatePublicContent(); return doc }], afterDelete: [async ({ doc }) => { const { revalidatePublicContent } = await import('./lib/revalidate'); await revalidatePublicContent(); return doc }] },
-        admin: { group: 'Forms' },
+        labels: pluginLabels('forms'),
+        admin: { group: ADMIN_GROUPS.forms },
         access: {
           read: anyone,
           create: isAdminOrEditor,
@@ -183,7 +190,8 @@ export default buildConfig({
         },
       },
       formSubmissionOverrides: {
-        admin: { group: 'Forms' },
+        labels: pluginLabels('form-submissions'),
+        admin: { group: ADMIN_GROUPS.forms },
         access: {
           // Only the validated server action creates submissions.
           create: nobody,
@@ -200,7 +208,8 @@ export default buildConfig({
       deleteDrafts: true,
       defaultPriorities: { products: 40, docs: 30, faqs: 20, posts: 10 },
       searchOverrides: {
-        admin: { group: 'Content' },
+        labels: pluginLabels('search'),
+        admin: { group: ADMIN_GROUPS.content },
         access: {
           read: publicSearchRead,
           create: nobody,
@@ -209,8 +218,8 @@ export default buildConfig({
         },
         fields: ({ defaultFields }) => [
           ...defaultFields,
-          { name: 'slug', type: 'text', localized: true, admin: { readOnly: true } },
-          { name: 'excerpt', type: 'textarea', localized: true, admin: { readOnly: true } },
+          { name: 'slug', type: 'text', localized: true, label: loc('Slug (sayfa adresi)', 'Slug'), admin: { readOnly: true } },
+          { name: 'excerpt', type: 'textarea', localized: true, label: loc('Kısa özet', 'Excerpt'), admin: { readOnly: true } },
         ],
       },
       beforeSync: ({ originalDoc, searchDoc }) => ({

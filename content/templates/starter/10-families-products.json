@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "product-families": [
+    {
+      "tr": {
+        "slug": "ornek-aile",
+        "title": "Örnek Ürün Ailesi",
+        "tagline": "Ürün ailenizi tanıtan kısa cümle.",
+        "sortOrder": 1,
+        "description": {
+          "markdown": "Bu örnek kaydı kendi ürün ailenizle değiştirin."
+        }
+      },
+      "en": {
+        "slug": "ornek-aile",
+        "title": "Sample Product Family",
+        "tagline": "A short line introducing your product family.",
+        "sortOrder": 1,
+        "description": {
+          "markdown": "Replace this sample record with your own product family."
+        }
+      }
+    }
+  ],
+  "products": [
+    {
+      "tr": {
+        "slug": "ornek-urun",
+        "title": "Örnek Ürün",
+        "tagline": "Ürününüzü tanıtan kısa cümle.",
+        "summary": "Bu örnek ürünü kendi ürününüzle değiştirin.",
+        "family": "ornek-aile",
+        "sortOrder": 1,
+        "features": [
+          {
+            "title": "Özellik bir",
+            "description": "Özelliği bir cümleyle anlatın."
+          },
+          {
+            "title": "Özellik iki",
+            "description": "Özelliği bir cümleyle anlatın."
+          },
+          {
+            "title": "Özellik üç",
+            "description": "Özelliği bir cümleyle anlatın."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Arayüz",
+            "value": "Web tabanlı"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Güncel tarayıcı"
+            },
+            "recommended": {
+              "markdown": "Güncel tarayıcı ve kararlı bağlantı"
+            }
+          }
+        ],
+        "layout": [
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "İhtiyacınızı birlikte değerlendirelim",
+            "body": "Örnek içeriktir. Kapsam ve lisans için bizimle iletişime geçin.",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "teklif-iste",
+                  "label": "Teklif iste",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "en": {
+        "slug": "ornek-urun",
+        "title": "Sample Product",
+        "tagline": "A short line introducing your product.",
+        "summary": "Replace this sample product with your own.",
+        "family": "ornek-aile",
+        "sortOrder": 1,
+        "features": [
+          {
+            "title": "Feature one",
+            "description": "Describe the feature in one sentence."
+          },
+          {
+            "title": "Feature two",
+            "description": "Describe the feature in one sentence."
+          },
+          {
+            "title": "Feature three",
+            "description": "Describe the feature in one sentence."
+          }
+        ],
+        "specs": [
+          {
+            "group": "Platform",
+            "label": "Interface",
+            "value": "Web-based"
+          }
+        ],
+        "systemRequirements": [
+          {
+            "os": "web",
+            "minimum": {
+              "markdown": "Current browser"
+            },
+            "recommended": {
+              "markdown": "Current browser and stable connection"
+            }
+          }
+        ],
+        "layout": [
+          {
+            "blockType": "cta",
+            "style": "banner",
+            "heading": "Let's assess your needs together",
+            "body": "Sample content. Contact us about scope and licensing.",
+            "actions": [
+              {
+                "link": {
+                  "type": "route",
+                  "route": "teklif-iste",
+                  "label": "Request a quote",
+                  "appearance": "primary"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "editions": [
+    {
+      "tr": {
+        "sku": "STARTER-ORNEK-URUN",
+        "title": "Standart",
+        "product": "ornek-urun",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Örnek lisans seçeneği; kapsamı teklifle belirlenir.",
+        "highlights": [
+          {
+            "text": "Teklif ile kapsam belirleme"
+          }
+        ]
+      },
+      "en": {
+        "sku": "STARTER-ORNEK-URUN",
+        "title": "Standard",
+        "product": "ornek-urun",
+        "licenseType": "subscription",
+        "durationMonths": 12,
+        "seats": 10,
+        "description": "Sample license option; scope is agreed through a proposal.",
+        "highlights": [
+          {
+            "text": "Scope agreed through proposal"
+          }
+        ]
+      }
+    }
+  ]
+}

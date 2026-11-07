@@ -230,10 +230,19 @@ export interface PayloadMcpApiKeyAuthOperations {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * Admin: full access. Editor: content management.
+   */
   roles: ('admin' | 'editor')[];
   updatedAt: string;
   createdAt: string;
+  /**
+   * For MCP/integrations only; administrators only.
+   */
   enableAPIKey?: boolean | null;
+  /**
+   * Keep it secret; never commit it.
+   */
   apiKey?: string | null;
   apiKeyIndex?: string | null;
   email: string;
@@ -264,12 +273,15 @@ export interface Customer {
   phone?: string | null;
   taxNumber?: string | null;
   taxOffice?: string | null;
+  /**
+   * Language of emails sent to the customer.
+   */
   preferredLocale?: ('tr' | 'en') | null;
   marketingConsent?: boolean | null;
   kvkkConsentAt?: string | null;
   kvkkConsentVersion?: string | null;
   /**
-   * Internal staff notes. Not visible to the customer.
+   * Visible to staff only, never to the customer.
    */
   notes?: string | null;
   updatedAt: string;
@@ -300,6 +312,9 @@ export interface Customer {
 export interface ProductFamily {
   id: number;
   title: string;
+  /**
+   * Short line shown below the title.
+   */
   tagline?: string | null;
   description?: {
     root: {
@@ -317,10 +332,16 @@ export interface ProductFamily {
     [k: string]: unknown;
   } | null;
   /**
-   * Icon name (e.g. lucide icon id).
+   * Lucide icon name (e.g. package, shield).
    */
   icon?: string | null;
+  /**
+   * Used on the family page and cards.
+   */
   image?: (number | null) | Media;
+  /**
+   * Products in this family (chosen on the product record).
+   */
   products?: {
     docs?: (number | Product)[];
     hasNextPage?: boolean;
@@ -362,9 +383,12 @@ export interface ProductFamily {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -376,13 +400,16 @@ export interface ProductFamily {
 export interface Media {
   id: number;
   /**
-   * Stable content import path; managed by content:import.
+   * Managed by content:import; do not edit by hand.
    */
   seedPath?: string | null;
+  /**
+   * Short description of the image (required for accessibility and SEO).
+   */
   alt: string;
   caption?: string | null;
   /**
-   * Required for downloads. Permanent once enabled; disable at upload only for public content images.
+   * Required for downloads. Permanent once enabled; leave off at upload for public content images.
    */
   protected: boolean;
   visibility: 'public' | 'licensed';
@@ -443,9 +470,21 @@ export interface Media {
 export interface Product {
   id: number;
   title: string;
+  /**
+   * Short line shown below the title.
+   */
   tagline?: string | null;
+  /**
+   * Shown on catalog cards and in search results.
+   */
   summary?: string | null;
+  /**
+   * Used at the top of the page and on list cards.
+   */
   heroImage?: (number | null) | Media;
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?:
     | (
         | HeroBlock
@@ -472,6 +511,9 @@ export interface Product {
     | null;
   features?:
     | {
+        /**
+         * Lucide icon name (e.g. package, shield).
+         */
         icon?: string | null;
         title: string;
         description?: string | null;
@@ -480,6 +522,9 @@ export interface Product {
     | null;
   specs?:
     | {
+        /**
+         * Groups rows in the table (e.g. Performance).
+         */
         group?: string | null;
         label: string;
         value: string;
@@ -523,22 +568,37 @@ export interface Product {
       }[]
     | null;
   gallery?: (number | Media)[] | null;
+  /**
+   * Product brochure (PDF).
+   */
   brochure?: (number | null) | Media;
+  /**
+   * Editions of this product (linked from the edition record).
+   */
   editions?: {
     docs?: (number | Edition)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Release notes of this product (linked from the release record).
+   */
   releases?: {
     docs?: (number | Release)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Download files of this product.
+   */
   downloads?: {
     docs?: (number | Download)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Docs of this product.
+   */
   docs?: {
     docs?: (number | Doc)[];
     hasNextPage?: boolean;
@@ -553,13 +613,22 @@ export interface Product {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
   family: number | ProductFamily;
   industries?: (number | Industry)[] | null;
+  /**
+   * Highlights this item on the home page and in lists.
+   */
   featured?: boolean | null;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
+  /**
+   * Filled automatically on first publish.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -721,12 +790,18 @@ export interface HeroBlock {
  */
 export interface Page {
   id: number;
+  /**
+   * Shown in the browser tab and admin lists.
+   */
   title: string;
   /**
    * Top section of the system page. Empty fields fall back to the site default copy.
    */
   hero?: {
     eyebrow?: string | null;
+    /**
+     * Shown in the browser tab and admin lists.
+     */
     title?: string | null;
     lead?: string | null;
     actions?:
@@ -863,7 +938,7 @@ export interface Page {
     image?: (number | null) | Media;
   };
   /**
-   * Use "home" for the homepage. Generated from title when empty.
+   * Use "home" for the home page. Generated from the title when empty.
    */
   slug?: string | null;
   /**
@@ -875,6 +950,9 @@ export interface Page {
    */
   systemKey?:
     ('products' | 'solutions' | 'news' | 'customers' | 'careers' | 'partners' | 'support' | 'contact' | 'about') | null;
+  /**
+   * Filled automatically on first publish; editable.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -887,8 +965,17 @@ export interface Page {
 export interface Solution {
   id: number;
   title: string;
+  /**
+   * Short text shown on list cards and in search results.
+   */
   summary?: string | null;
+  /**
+   * Used at the top of the page and on list cards.
+   */
   heroImage?: (number | null) | Media;
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?:
     | (
         | HeroBlock
@@ -925,10 +1012,16 @@ export interface Solution {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
+  /**
+   * Filled automatically on first publish; editable.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -970,6 +1063,9 @@ export interface FeatureGridBlock {
             )
           | null;
         image?: (number | null) | Media;
+        /**
+         * Shown in the browser tab and admin lists.
+         */
         title: string;
         description?: string | null;
         id?: string | null;
@@ -1153,6 +1249,9 @@ export interface MediaTextBlock {
 export interface Industry {
   id: number;
   title: string;
+  /**
+   * Short text shown on list cards and in search results.
+   */
   summary?: string | null;
   description?: {
     root: {
@@ -1169,6 +1268,9 @@ export interface Industry {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Lucide icon name (e.g. package, shield).
+   */
   icon?: string | null;
   image?: (number | null) | Media;
   meta?: {
@@ -1180,9 +1282,12 @@ export interface Industry {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1196,6 +1301,9 @@ export interface CaseStudy {
   title: string;
   customerName: string;
   customerLogo?: (number | null) | Media;
+  /**
+   * Short text shown on list cards and in search results.
+   */
   summary?: string | null;
   challenge?: {
     root: {
@@ -1212,6 +1320,9 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * How the solution was applied.
+   */
   solution?: {
     root: {
       type: string;
@@ -1227,6 +1338,9 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Short results with numbers (e.g. 40%, faster).
+   */
   results?:
     | {
         value: string;
@@ -1239,6 +1353,9 @@ export interface CaseStudy {
     author?: string | null;
     role?: string | null;
   };
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?:
     | (
         | HeroBlock
@@ -1274,10 +1391,16 @@ export interface CaseStudy {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * Highlights this item on the home page and in lists.
+   */
   featured?: boolean | null;
+  /**
+   * Filled automatically on first publish; editable.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1291,6 +1414,9 @@ export interface SpecTableBlock {
   heading?: string | null;
   groups?:
     | {
+        /**
+         * Shown in the browser tab and admin lists.
+         */
         title?: string | null;
         rows?:
           | {
@@ -1430,11 +1556,17 @@ export interface Partner {
   tier?: ('technology' | 'solution' | 'reseller' | 'distributor') | null;
   country?: string | null;
   city?: string | null;
+  /**
+   * Shown on the partner card.
+   */
   description?: string | null;
   /**
-   * Boş bırakılırsa "name" alanından üretilir. / Generated from "name" when empty.
+   * Part of the page address. Generated from "name" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1576,6 +1708,9 @@ export interface CTABlock {
 export interface Post {
   id: number;
   title: string;
+  /**
+   * Shown in lists and search results.
+   */
   excerpt?: string | null;
   coverImage?: (number | null) | Media;
   content?: {
@@ -1602,12 +1737,21 @@ export interface Post {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * Filter in the news list.
+   */
   category?: ('news' | 'product-update' | 'event' | 'blog') | null;
+  /**
+   * Staff user who published the post.
+   */
   author?: (number | null) | User;
   products?: (number | Product)[] | null;
+  /**
+   * Filled automatically on first publish; editable.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1624,6 +1768,9 @@ export interface Career {
   location?: string | null;
   employmentType?: ('full-time' | 'part-time' | 'contract' | 'internship') | null;
   workMode?: ('onsite' | 'hybrid' | 'remote') | null;
+  /**
+   * Short text shown on list cards and in search results.
+   */
   summary?: string | null;
   description?: {
     root: {
@@ -1641,7 +1788,7 @@ export interface Career {
     [k: string]: unknown;
   } | null;
   /**
-   * Form-builder form used for applications.
+   * Form used for applications (Forms collection).
    */
   applicationForm?: (number | null) | Form;
   meta?: {
@@ -1653,10 +1800,16 @@ export interface Career {
     image?: (number | null) | Media;
   };
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
+  /**
+   * When off, the opening is not listed on the site.
+   */
   isOpen?: boolean | null;
+  /**
+   * Filled automatically on first publish; editable.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1847,6 +2000,9 @@ export interface Form {
 export interface Doc {
   id: number;
   title: string;
+  /**
+   * Shown in lists and search results.
+   */
   excerpt?: string | null;
   content?: {
     root: {
@@ -1871,9 +2027,12 @@ export interface Doc {
      */
     image?: (number | null) | Media;
   };
+  /**
+   * The slug is unique within this product and language.
+   */
   product: number | Product;
   /**
-   * Boş bırakılırsa "title" alanından üretilir. / Generated from "title" when empty.
+   * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
   /**
@@ -1881,9 +2040,12 @@ export interface Doc {
    */
   parent?: (number | null) | Doc;
   /**
-   * e.g. ">=3.0"
+   * E.g. ">=3.0".
    */
   appliesToVersions?: string | null;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1951,7 +2113,7 @@ export interface FAQBlock {
 export interface Faq {
   id: number;
   /**
-   * Boş bırakılırsa "question" alanından üretilir. / Generated from "question" when empty.
+   * Part of the page address. Generated from "question" when empty; lowercase letters, digits and hyphens only.
    */
   slug?: string | null;
   question: string;
@@ -1970,8 +2132,14 @@ export interface Faq {
     };
     [k: string]: unknown;
   };
+  /**
+   * Filter on the FAQ page.
+   */
   category?: ('general' | 'licensing' | 'billing' | 'technical') | null;
   product?: (number | null) | Product;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -2282,6 +2450,9 @@ export interface ProductFamiliesBlock {
    * "Manual selection order" only applies to a manual source.
    */
   sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list') | null;
   showViewAll?: boolean | null;
   /**
@@ -2338,6 +2509,9 @@ export interface ProductShowcaseBlock {
    * "Manual selection order" only applies to a manual source.
    */
   sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list' | 'alternating') | null;
   showViewAll?: boolean | null;
   /**
@@ -2393,6 +2567,9 @@ export interface SolutionsGridBlock {
    * "Manual selection order" only applies to a manual source.
    */
   sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list') | null;
   showViewAll?: boolean | null;
   /**
@@ -2493,6 +2670,9 @@ export interface NewsListBlock {
    * "Manual selection order" only applies to a manual source.
    */
   sort?: ('order' | 'newest' | 'oldest' | 'manual') | null;
+  /**
+   * Blocks that make up the page content; drag to reorder.
+   */
   layout?: ('grid-3' | 'grid-2' | 'grid-4' | 'list') | null;
   showViewAll?: boolean | null;
   /**
@@ -2565,12 +2745,18 @@ export interface ListingBlock {
  */
 export interface Edition {
   id: number;
+  /**
+   * Shown in quote forms and licenses (e.g. Pro - 1 year).
+   */
   title: string;
   /**
-   * Stable identifier used in quote requests and license assignment (e.g. ERP-PRO-1Y).
+   * Stable identifier used in quotes and license assignment (e.g. ERP-PRO-1Y). Do not change later.
    */
   sku: string;
   product: number | Product;
+  /**
+   * Short text shown on the edition card.
+   */
   description?: string | null;
   highlights?:
     | {
@@ -2579,8 +2765,17 @@ export interface Edition {
       }[]
     | null;
   licenseType: 'perpetual' | 'subscription';
+  /**
+   * Subscription length. Leave empty for perpetual licenses.
+   */
   durationMonths?: number | null;
+  /**
+   * Number of users/devices included.
+   */
   seats: number;
+  /**
+   * Lower numbers appear first in lists.
+   */
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -2593,11 +2788,14 @@ export interface Release {
   id: number;
   product: number | Product;
   /**
-   * Semantic version, e.g. 3.2.1
+   * Semantic version, e.g. 3.2.1.
    */
   version: string;
   channel?: ('stable' | 'beta' | 'lts') | null;
   releaseDate: string;
+  /**
+   * Optional release headline (e.g. "New interface").
+   */
   title?: string | null;
   notes?: {
     root: {
@@ -2621,6 +2819,9 @@ export interface Release {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Files attached to this release (linked from the download record).
+   */
   downloads?: {
     docs?: (number | Download)[];
     hasNextPage?: boolean;
@@ -2637,12 +2838,21 @@ export interface Download {
   id: number;
   title: string;
   description?: string | null;
+  /**
+   * Media record; its access level is synced from here.
+   */
   file: number | Media;
   product: number | Product;
   release?: (number | null) | Release;
   os: 'windows' | 'macos' | 'linux' | 'web' | 'android' | 'ios' | 'other';
   arch?: ('x64' | 'arm64' | 'x86' | 'universal') | null;
+  /**
+   * Licensed: only customers with a valid license can download.
+   */
   access: 'public' | 'licensed';
+  /**
+   * Lets users verify file integrity.
+   */
   checksumSha256?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -2658,6 +2868,9 @@ export interface SupportTicket {
   product?: (number | null) | Product;
   status: 'open' | 'pending' | 'resolved' | 'closed';
   priority: 'low' | 'normal' | 'high' | 'urgent';
+  /**
+   * Customers can only append new messages.
+   */
   messages?: {
     docs?: (number | SupportTicketMessage)[];
     hasNextPage?: boolean;
@@ -2691,18 +2904,27 @@ export interface License {
    */
   key: string;
   customer: number | Customer;
+  /**
+   * Product and seat count are taken from this edition.
+   */
   edition: number | Edition;
   /**
-   * Derived from edition.
+   * Derived from the edition.
    */
   product?: (number | null) | Product;
   startsAt: string;
   /**
-   * Empty = perpetual.
+   * Empty means the license does not expire.
    */
   expiresAt?: string | null;
+  /**
+   * Taken from the edition.
+   */
   seats?: number | null;
   status: 'active' | 'suspended' | 'revoked' | 'expired';
+  /**
+   * Visible to administrators only.
+   */
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -4949,6 +5171,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: number;
+  /**
+   * Drag to reorder.
+   */
   navItems?:
     | {
         link?: {
@@ -5243,6 +5468,9 @@ export interface Header {
               id?: string | null;
             }[]
           | null;
+        /**
+         * Highlights this item on the home page and in lists.
+         */
         featured?: {
           title?: string | null;
           description?: string | null;
@@ -5733,6 +5961,9 @@ export interface Header {
  */
 export interface Footer {
   id: number;
+  /**
+   * Link columns in the footer.
+   */
   columns?:
     | {
         title: string;
@@ -5834,6 +6065,9 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Shown in the footer bottom bar.
+   */
   legalLinks?:
     | {
         link?: {
@@ -5950,7 +6184,13 @@ export interface Footer {
  */
 export interface SiteSetting {
   id: number;
+  /**
+   * Used in titles, emails and the footer copyright.
+   */
   siteName: string;
+  /**
+   * Used in the footer and share texts.
+   */
   tagline?: string | null;
   /**
    * The home page blocks come from this page (must be published). Empty: the page with slug "home", else the built-in default home.
@@ -5964,6 +6204,9 @@ export interface SiteSetting {
    * For dark backgrounds (header/footer). Empty: "logo" is used.
    */
   logoDark?: (number | null) | Media;
+  /**
+   * Used when a page has no share image (public media).
+   */
   defaultOgImage?: (number | null) | Media;
   /**
    * Square PNG/SVG/ICO (public). Empty: default icon.
@@ -6002,6 +6245,9 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Legal text pages linked from the footer and forms.
+   */
   legal?: {
     kvkk?: (number | null) | Page;
     privacy?: (number | null) | Page;
@@ -6011,9 +6257,12 @@ export interface SiteSetting {
   };
   commerce?: {
     /**
-     * Form for all editions ("Teklif İste").
+     * Form used by "Request a quote" on every edition.
      */
     quoteForm?: (number | null) | Form;
+    /**
+     * Form used on the demo request page.
+     */
     demoForm?: (number | null) | Form;
   };
   updatedAt?: string | null;

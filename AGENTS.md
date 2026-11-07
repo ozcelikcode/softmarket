@@ -100,3 +100,11 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Taslak yalnız draft modu **ve** her istekte yeniden doğrulanan staff oturumu ile okunur (`src/lib/preview.ts` `readAs`); yeni tekil sayfa yükleyicisi eklerken `...(await readAs(locale))` kullan, liste sorguları anonim kalsın. Frontend rotalarında `dynamic = 'error'|'force-static'` kullanma (draft okumayı kapatır; testle yasak).
 - Draft yanıtları `private, no-store`, ISR'a yazılmaz; taslak/autosave önbelleği yenilemez (yalnız yayın).
 
+
+## Yeni şirket kurulumu (starter)
+
+- `content/templates/starter/` boş DB'de çalışan nötr site üretir: globals (header/footer/site-settings), ana sayfa (hero, productFamilies, cta), 9 sistem sayfası, 1 örnek aile + ürün + sürüm (`STARTER-ORNEK-URUN`). Yasal sayfa yoktur.
+- **Yalnız yeni/boş kurulum içindir.** Mevcut kurulu DB'de çalıştırmayın: import ekleme ile sınırlı değildir; aynı TR slug/SKU (`home`, sistem sayfaları, `ornek-aile`, `ornek-urun` dahil) kayıtlarının içeriğini günceller ve taslaklı koleksiyonları yayınlar; menü/footer/site ayarlarında gönderilen alanların üzerine yazar. İdempotans mevcut özelleştirmeleri korumaz. `--dry-run` da gerçek yazımları transaction içinde yapıp geri alır; kurulu siteyi incelemek için DB ve uploads kopyasını kullanın.
+- Sıra: `pnpm migrate` → `pnpm ensure-forms` → `pnpm content:import content/templates/starter --dry-run` → aynı komut `--dry-run`sız. İdempotenttir; sonra admin `Site ayarları`ndan ad, logo, vurgu rengi; örnek aile/ürünü kendi kayıtlarınla değiştir. Demo içerik (`content/seed`) ayrıdır; silme komutu yoktur.
+- Yasal metinler hazır olunca `--legal`. Starter izole SQLite testi: `tests/unit/starter-template-db.test.ts`.
+- Admin etiketleri (TR/EN) `src/lib/admin-i18n.ts` sözlüğünden gelir (`payload.config.ts` uygular); yeni koleksiyon/alan eklerken sözlüğe gir. `tests/unit/admin-labels.test.ts` eksik/İngilizce kalıntıyı yakalar. Live Preview breakpoint `label` düz string kalmalı (Payload React child olarak basar).

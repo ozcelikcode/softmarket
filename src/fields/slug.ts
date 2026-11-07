@@ -82,7 +82,10 @@ export const slugField = ({
   required: overrides.required,
   admin: overrides.admin ?? {
     position: 'sidebar',
-    description: `Boş bırakılırsa "${source}" alanından üretilir. / Generated from "${source}" when empty.`,
+    description: {
+      tr: `Sayfa adresinin parçası. Boş bırakılırsa "${source}" alanından üretilir; yalnız küçük harf, rakam ve tire.`,
+      en: `Part of the page address. Generated from "${source}" when empty; lowercase letters, digits and hyphens only.`,
+    },
   },
   hooks: {
     beforeValidate: [formatSlug(source)],

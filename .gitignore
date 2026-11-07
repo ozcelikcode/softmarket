@@ -3,6 +3,7 @@ node_modules/
 .cache/
 .next/
 .next-prod/
+.next-perf/
 out/
 coverage/
 playwright-report/

@@ -1,5 +1,13 @@
 # Plan — Sayfa Kurucu (Page Builder) + Dengeli Animasyon + Performans
 
+## Kullanıcı kararları (2026-11-07)
+
+- Her şirket için ayrı kurulum; multi-tenant yok.
+- Logo ve tek vurgu rengi admin'den değiştirilebilir; kontrast otomatik kontrol edilir.
+- Liste sayfalarında listenin kendisi de taşınabilir bloktur.
+- Hero'da opsiyonel kısa, sessiz döngü video: poster ve lazy yükleme; mobilde ve reduced-motion durumunda kapalı.
+- Live Preview autosave varsayılan açık (yaklaşık 2 saniye).
+
 > Durum: TASLAK PLAN (2026-11-07). Kod değişikliği yok. Uygulama `takim-lideri` kurallarıyla, fazlar halinde.
 > Kaynak: `memory-bank/*`, `AGENTS.md`, `docs/implementation-plan.md`, mevcut kod (aşağıda dosya:satır kanıtlarıyla).
 

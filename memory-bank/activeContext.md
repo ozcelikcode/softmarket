@@ -1,5 +1,7 @@
 # Aktif Bağlam
 
+- F0 tarayıcısız ölçüm kısmi (2026-11-07): `docs/perf/baseline.md`, `scripts/perf-isr.ts`; 144 sitemap URL iki GET, 122 HIT/HIT, 22 cache başlıksız, tümü 200. Üç izole build: biri `/500` prerender hatası, ikisi başarılı; doküman timeout tekrarlanmadı, kök neden doğrulanmadı. SQLite istek sayacı/testi ve sorgu ölçümü eksik. 3300 kapatıldı, 3100'e dokunulmadı.
+
 - Güvenlik QA (2026-11-07): lisans e-postası HTTP yanıtı sonrası, bağımsız doğrulanmış kalıcı kayıt için gönderilir; SMTP yoksa anahtar konsola yazılmaz. İstek bağlamı dışındaki atamalarda bildirim zamanlanmaz. Uygulanmış `20261107_092304_remove_sales_legal_fields` üç eski ilişki değerini siler; down değerleri geri getirmez. Migration geçmişi değiştirilmedi.
 
 Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince güncelle.

@@ -1,0 +1,24 @@
+{
+  "baseUrl": "http://127.0.0.1:3200",
+  "runs": 1,
+  "urls": [
+    "/tr",
+    "/en",
+    "/tr/urunler",
+    "/tr/urunler/akis-yonetimi/akis-merkezi",
+    "/tr/cozumler",
+    "/tr/destek",
+    "/tr/haberler"
+  ],
+  "presets": ["mobile", "desktop"],
+  "budgets": {
+    "performance": 0.9,
+    "accessibility": 0.95,
+    "best-practices": 0.95,
+    "seo": 0.95,
+    "lcpMs": 2000,
+    "cls": 0.05,
+    "tbtMs": 150,
+    "jsGzipKb": 130
+  }
+}

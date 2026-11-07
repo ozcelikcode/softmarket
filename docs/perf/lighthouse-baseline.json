@@ -1,0 +1,288 @@
+[
+ {
+  "preset": "mobile",
+  "path": "/tr",
+  "perf": 92,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1123.356,
+  "cls": 0,
+  "tbt": 323.096,
+  "fcp": 1123.356,
+  "ttfb": 5,
+  "jsTransferKb": 192.5634765625,
+  "jsRawKb": 579.169921875,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Karmaşık işler için sade yazılım.\"",
+  "lcpRenderDelay": 881.621,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/en",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1055.3384999999998,
+  "cls": 0,
+  "tbt": 9.999999999999773,
+  "fcp": 1055.3384999999998,
+  "ttfb": 2,
+  "jsTransferKb": 192.5634765625,
+  "jsRawKb": 579.169921875,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Simple software for complex work.\"",
+  "lcpRenderDelay": 49.628,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/urunler",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1207.7730000000001,
+  "cls": 0,
+  "tbt": 7.499999999999773,
+  "fcp": 1207.7730000000001,
+  "ttfb": 31,
+  "jsTransferKb": 200.0654296875,
+  "jsRawKb": 594.7587890625,
+  "lcpEl": "section.relative > div.mx-auto > div > p.mt-5 \"Ürün ailelerimizi ve ailelerin altındaki\"",
+  "lcpRenderDelay": 40.237000015258786,
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/urunler/akis-yonetimi/akis-merkezi",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1055.2109999999998,
+  "cls": 0,
+  "tbt": 8,
+  "fcp": 1055.2109999999998,
+  "ttfb": 2,
+  "jsTransferKb": 200.3896484375,
+  "jsRawKb": 595.890625,
+  "lcpEl": "div#genel-bakis > section.relative > div.mx-auto > p.text-h3 \"Akışları tek noktadan tasarlayın ve izle\"",
+  "lcpRenderDelay": 48.46500001525879,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/cozumler",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1206.1634999999999,
+  "cls": 0,
+  "tbt": 12,
+  "fcp": 1206.1634999999999,
+  "ttfb": 12,
+  "jsTransferKb": 200.0654296875,
+  "jsRawKb": 594.7587890625,
+  "lcpEl": "section.relative > div.mx-auto > div > p.mt-5 \"Sektör ve kullanım senaryolarına göre ha\"",
+  "lcpRenderDelay": 36.16,
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/destek",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1057.9560000000001,
+  "cls": 0,
+  "tbt": 6,
+  "fcp": 1057.9560000000001,
+  "ttfb": 2,
+  "jsTransferKb": 193.765625,
+  "jsRawKb": 580.412109375,
+  "lcpEl": "section.relative > div.mx-auto > div > p.mt-5 \"Yazılımınız için dokümanları, güncelleme\"",
+  "lcpRenderDelay": 46.082,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/haberler",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1206.9360000000001,
+  "cls": 0,
+  "tbt": 13.5,
+  "fcp": 1206.9360000000001,
+  "ttfb": 12,
+  "jsTransferKb": 195.1708984375,
+  "jsRawKb": 583.3623046875,
+  "lcpEl": "section.relative > div.mx-auto > div > p.mt-5 \"Duyurular, ürün güncellemeleri ve yazıla\"",
+  "lcpRenderDelay": 59.974,
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 285.5365,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 285.5365,
+  "ttfb": 1,
+  "jsTransferKb": 197.0009765625,
+  "jsRawKb": 586.4833984375,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Karmaşık işler için sade yazılım.\"",
+  "lcpRenderDelay": 44.313,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/en",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 287.596,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 287.596,
+  "ttfb": 2,
+  "jsTransferKb": 197.0009765625,
+  "jsRawKb": 586.4833984375,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Simple software for complex work.\"",
+  "lcpRenderDelay": 46.904,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/urunler",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 326.102,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 326.102,
+  "ttfb": 13,
+  "jsTransferKb": 204.5029296875,
+  "jsRawKb": 602.072265625,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Ürünler\"",
+  "lcpRenderDelay": 41.36799998474121,
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/urunler/akis-yonetimi/akis-merkezi",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 286.207,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 286.207,
+  "ttfb": 2,
+  "jsTransferKb": 204.8271484375,
+  "jsRawKb": 603.2041015625,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Akış Merkezi\"",
+  "lcpRenderDelay": 48.72599998474121,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/cozumler",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 326.102,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 326.102,
+  "ttfb": 11,
+  "jsTransferKb": 204.5029296875,
+  "jsRawKb": 602.072265625,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Çözümler\"",
+  "lcpRenderDelay": 38.134,
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/destek",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 287.149,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 287.149,
+  "ttfb": 2,
+  "jsTransferKb": 208.4560546875,
+  "jsRawKb": 610.3095703125,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Destek merkezi\"",
+  "lcpRenderDelay": 38.607,
+  "failed": [
+   "canonical"
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/haberler",
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 325.718,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 325.718,
+  "ttfb": 11,
+  "jsTransferKb": 214.298828125,
+  "jsRawKb": 620.5732421875,
+  "lcpEl": "section.relative > div.mx-auto > div > h1.text-balance \"Haberler\"",
+  "lcpRenderDelay": 47.101,
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ]
+ }
+]

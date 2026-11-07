@@ -31,7 +31,7 @@ const eslintConfig = [
     },
   },
   {
-    ignores: ['.cache/', 'node_modules/', 'playwright-report/', 'test-results/', '.next/', '.next-prod/', 'src/payload-types.ts', 'src/payload-generated-schema.ts', 'src/migrations/'],
+    ignores: ['.cache/', 'node_modules/', 'playwright-report/', 'test-results/', '.next/', '.next-prod/', '.next-perf/', '.next-*/','src/payload-types.ts', 'src/payload-generated-schema.ts', 'src/migrations/'],
   },
 ]
 

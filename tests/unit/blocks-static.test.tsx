@@ -164,7 +164,7 @@ describe('hero mediaBackground + video', () => {
       <RenderBlocks blocks={[base as unknown as LayoutBlock]} locale="tr" firstHeroH1 />,
     )
     expect(out).toContain('poster.png')
-    expect(out).toContain('rel="preload" as="image" href="/api/media/file/poster.png"')
+    expect(out).toMatch(/<link(?=[^>]*rel="preload")(?=[^>]*as="image")(?=[^>]*href="\/api\/media\/file\/poster.png")[^>]*>/)
     expect(out).not.toContain('loading="lazy"')
     expect(out).toContain('<h1')
     expect(out).not.toContain('<video')

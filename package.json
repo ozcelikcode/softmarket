@@ -33,7 +33,8 @@
     "seed": "pnpm ensure-forms && pnpm content:import",
     "ensure-forms": "tsx scripts/ensure-forms.ts",
     "search:reindex": "tsx scripts/reindex-search.ts",
-    "content:import": "tsx scripts/content-import.ts"
+    "content:import": "tsx scripts/content-import.ts",
+    "media:regenerate": "tsx scripts/media-regenerate.ts"
   },
   "dependencies": {
     "@payloadcms/db-sqlite": "3.85.1",

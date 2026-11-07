@@ -163,8 +163,8 @@ Kurallar:
 - **`content.ts` yükleyicilerinin tamamı `cache()` ile sarılır.** Metadata ve sayfa aynı sorguyu paylaşır.
 - **ISR:** 3600 sn ve on-demand korunur. Draft atlama kuralı eklenir (§2.5). Tag tabanlı ince revalidation **ölçüm sonrası** değerlendirilir: layout invalidation küçük sitede yeterli kabul edilir.
 - **Görseller:**
-  - `Media.upload.imageSizes`: `sm 480`, `md 960`, `lg 1600`, `xl 2400` (genişlik, `withoutEnlargement`). `formatOptions: webp q≈78`, `focalPoint: true`, `adminThumbnail: 'sm'`.
-  - `MediaImage` boyut URL'lerinden `srcSet` ve doğru `sizes` üretir. Güvenlik gereği `unoptimized` korunur (optimizer cache'ine protected bayt girmez). Her boyut aynı `/api/media/file` erişim kuralından geçer; bu testle doğrulanır.
+  - `Media.upload.imageSizes`: `thumb 400`, `card 768`, `hero 1280`, `wide 1920` (genişlik, büyütme yok; Payload varsayılanı büyük hedefi atlar). `formatOptions: webp q74`, `focalPoint: true`, `crop: true`, `adminThumbnail: 'thumb'`.
+  - `MediaImage` boyut URL'lerinden `srcSet` ve doğru `sizes` üretir. Native `img` ile optimizer atlanır (optimizer cache'ine protected bayt girmez). Her boyut aynı `/api/media/file` erişim kuralından geçer; bu testle doğrulanır.
   - LCP: yalnız ilk hero görseline `priority` + `fetchPriority="high"`. Diğer görseller `loading="lazy"`. `width/height` her zaman verilir (CLS).
   - AVIF yalnız ölçüm hero'da anlamlı kazanç gösterirse eklenir (ek depolama ve sharp süresi).
   - Mevcut medya için `pnpm media:regenerate` betiği: dosyayı yeniden işler, kimliği ve `seedPath`'i korur.
@@ -345,6 +345,9 @@ Bağımlılık: `F0 → (F1 ∥ F2 ∥ F9) → F3 → (F4 ∥ F5 ∥ F7) → F6 
 - **Kabul:** mobil hero ≤ 180 KB, `sizes` doğru seçiliyor, protected boyut URL'leri yetkisiz kullanıcıya 404/403 dönüyor, LCP hedefi tutuyor.
 - **Test:** srcset üretimi, boyut URL erişim testleri (anon/customer/staff), regenerate idempotent.
 - **Risk:** disk kullanımı (~4×) ve sharp süresi. Çözüm: `withoutEnlargement` ve gereksiz boyutları atlamak.
+- [x] **Uygulandı (2026-11-07).** `20261107_192347_media_image_sizes`: up 24 ADD COLUMN + 4 indeks; down yalnız kendi indeks/kolonları, yeniden kurulum yok. Kopya DB → transaction down/up veri koruma testi → canlı DB/WAL/SHM + snapshot yedeği → canlı migration. Native MediaImage: responsive srcset/sizes + CLS ölçüleri, lazy varsayılanı, hero eager/high + responsive preload, focal CSS; tüm img tüketicileri ortak bileşende. `mediaRead` orijinal ve boyut dosya adlarını aynı kayda ve mevcut lisans filtresine bağlar. `media:regenerate` idempotent; kopyada 3 → 0 işlem.
+  - Güvenlik: 45 production HTTP dosya/rol kontrolü, protected/licensed anon/customer 404, staff 200; tümü private/no-store. Geçerli lisans ve iptali gerçek handler/SQLite testinde. F8 staff+draft protected srcset görür; anon/customer/draft çerezi tek başına yalnız yayınlı/public görür.
+  - Doğrulama: typecheck/lint, 47 dosya/591 test, `.next-prod` production build ve 3200 duman geçti. Mobil fixture 390px/DPR 1–3 için 1.24/23.28/171.17 KB (kalite 74); gerçek tarayıcı aday seçimi yerine HTML sözleşmesinden hesaplandı. **LCP/CLS regresyon ölçümü açık:** Chromium MachPort 1100, Lighthouse debugging port ve browser host erişim engeli. Yeni ölçüm olmadan LCP kabulü doğrulandı sayılmadı. Ayrıntı: `docs/perf/f9-media-pipeline.md`.
 
 ### F10 — Editör deneyimi
 - **Kapsam:** tüm admin etiketleri ve açıklamaları TR/EN, blok galeri sayfası + önizleme görselleri, `content/templates/starter`, `docs/editor-guide.md`, `AGENTS.md`'ye page builder/MCP tarifi.

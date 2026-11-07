@@ -57,6 +57,7 @@ Diğer pnpm betikleri:
 | `pnpm migrate:status` | Migration durumunu gösterir |
 | `pnpm generate:types` | `payload-types.ts` dosyasını yeniden üretir |
 | `pnpm generate:importmap` | Payload import map dosyasını yeniden üretir |
+| `pnpm media:regenerate` | Mevcut raster medyanın eksik WebP boyutlarını tamamlar; kimlik, dosya adı, izinler ve TR/EN metinleri korunur. İkinci çalıştırmada hazır kayıtlar atlanır. |
 | `pnpm ensure-forms` | Form tanımlarını TR/EN olarak oluşturur veya günceller |
 | `pnpm test:e2e` | Build alır ve Playwright testlerini çalıştırır (Chromium gerekir) |
 

@@ -20,7 +20,7 @@ export type LinkGroup = {
 } | null | undefined
 
 export type NavLink = { label: string; href: string; newTab?: boolean; description?: string }
-export type PublicImage = { url: string; alt: string; width?: number | null; height?: number | null }
+export type PublicImage = { url: string; alt: string; width?: number | null; height?: number | null; sizes?: import('@/payload-types').Media['sizes']; focalX?: number | null; focalY?: number | null }
 export type MegaColumn = { title?: string; links: NavLink[] }
 export type MegaFeatured = { title: string; description?: string; image?: PublicImage; link?: NavLink }
 export type NavItem = {
@@ -133,15 +133,15 @@ export async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-const mediaSelect = { url: true, filename: true, alt: true, width: true, height: true, mimeType: true, protected: true } as const
+const mediaSelect = { sizes: true, focalX: true, focalY: true, url: true, filename: true, alt: true, width: true, height: true, mimeType: true, protected: true } as const
 
 /** Public (unprotected, anonymously readable) image or null. */
 export function publicImage(value: unknown, fallbackAlt = ''): PublicImage | null {
   if (!value || typeof value !== 'object') return null
-  const m = value as { url?: unknown; alt?: unknown; width?: number | null; height?: number | null; protected?: unknown; mimeType?: unknown }
+  const m = value as { url?: unknown; alt?: unknown; width?: number | null; height?: number | null; protected?: unknown; mimeType?: unknown; sizes?: PublicImage['sizes']; focalX?: number | null; focalY?: number | null }
   if (m.protected !== false || typeof m.url !== 'string' || !safeHref(m.url) || !/^(?:https?:\/\/|\/)/i.test(m.url)) return null
   if (typeof m.mimeType !== 'string' || !m.mimeType.startsWith('image/')) return null
-  return { url: m.url, alt: typeof m.alt === 'string' && m.alt ? m.alt : fallbackAlt, width: m.width ?? null, height: m.height ?? null }
+  return { sizes: m.sizes, focalX: m.focalX, focalY: m.focalY, url: m.url, alt: typeof m.alt === 'string' && m.alt ? m.alt : fallbackAlt, width: m.width ?? null, height: m.height ?? null }
 }
 
 const getPublicMedia = cache(async (id: number | string, locale: Locale) =>

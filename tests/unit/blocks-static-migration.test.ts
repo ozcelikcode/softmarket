@@ -46,6 +46,8 @@ beforeAll(async () => {
   await migrations.find((m) => m.name === '20261107_144850_page_builder_pages')!.up(args())
   // F8 adds `_pages_v.autosave` (independent of F4): keep applied for reads.
   await migrations.find((m) => m.name === '20261107_190342_pages_autosave')!.up(args())
+  // F9 media size columns are needed by the current Payload upload schema.
+  await migrations.find((m) => m.name === '20261107_192347_media_image_sizes')!.up(args())
 }, 60000)
 afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
 

@@ -1,3 +1,4 @@
+import { MediaImage } from '@/components/ui/media-image'
 import {
   RichText as PayloadRichText,
   type JSXConvertersFunction,
@@ -91,14 +92,7 @@ export function RichContent({
           )
         }
         return (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={media.url!}
-            alt={typeof node.fields?.alt === 'string' ? node.fields.alt : (media.alt ?? '')}
-            width={media.width ?? undefined}
-            height={media.height ?? undefined}
-            loading="lazy"
-          />
+          <MediaImage media={media} alt={typeof node.fields?.alt === 'string' ? node.fields.alt : (media.alt ?? '')} sizes="(min-width: 1024px) 960px, 100vw" className="h-auto" />
         )
       },
     } as ReturnType<JSXConvertersFunction>

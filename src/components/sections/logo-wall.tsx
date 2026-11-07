@@ -1,6 +1,7 @@
+import { MediaImage } from '@/components/ui/media-image'
 import { cn } from '@/lib/utils'
 
-export type Logo = { name: string; src?: string; alt?: string }
+export type Logo = { name: string; src?: string; media?: unknown; alt?: string }
 
 /** Logo wall skeleton: renders images when provided, otherwise name placeholders. */
 export function LogoWall({ logos, className }: { logos: Logo[]; className?: string }) {
@@ -13,13 +14,8 @@ export function LogoWall({ logos, className }: { logos: Logo[]; className?: stri
     >
       {logos.map((logo) => (
         <li key={logo.name} className="flex h-12 items-center justify-center">
-          {logo.src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logo.src}
-              alt={logo.alt ?? logo.name}
-              className="max-h-8 w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-            />
+          {logo.media || logo.src ? (
+            <MediaImage media={logo.media ?? { url: logo.src }} alt={logo.alt ?? logo.name} sizes="160px" className="max-h-8 w-auto object-contain opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0" />
           ) : (
             <span className="text-h4 tracking-tight text-muted/80">{logo.name}</span>
           )}

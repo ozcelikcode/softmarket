@@ -1,3 +1,4 @@
+import { MediaImage } from '@/components/ui/media-image'
 import { AppLink } from '@/components/ui/app-link'
 import type { PublicImage } from '@/lib/site'
 
@@ -25,16 +26,7 @@ export function Logo({
       className="inline-flex min-h-11 shrink-0 items-center gap-2.5 text-text"
     >
       {image ? (
-        // Plain <img>: Payload media URLs are served unoptimized (see MediaImage); fixed height avoids CLS.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={image.url}
-          alt=""
-          width={image.width && image.height ? Math.round((image.width / image.height) * 32) : undefined}
-          height={32}
-          className="h-8 w-auto max-w-[10rem] object-contain"
-          decoding="async"
-        />
+        <MediaImage media={image} alt="" sizes="160px" className="h-8 w-auto max-w-[10rem] object-contain" />
       ) : (
         <>
           <span

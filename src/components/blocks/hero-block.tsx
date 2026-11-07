@@ -9,6 +9,7 @@ import { AppLink } from '@/components/ui/app-link'
 import { Eyebrow, Heading } from '@/components/ui/heading'
 import { NamedIcon } from '@/components/ui/icon'
 import { MediaImage } from '@/components/ui/media-image'
+import { containerImageSizes } from '@/lib/media-layout'
 import { heroIn } from '@/lib/anim'
 import { HERO_PANEL_FAMILIES, loadHeroFamilies } from '@/lib/blocks/data'
 import { mediaOf } from '@/lib/content'
@@ -125,7 +126,7 @@ export function HeroBlock({ block, locale, ctx }: BlockProps<Block>) {
             <MediaImage
               media={block.media}
               priority={ctx.pageTop}
-              sizes={sideMedia ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1280px) 75rem, 100vw'}
+              sizes={containerImageSizes(appearance.width, sideMedia ? 2 : 1, cinematic ? 64 : 48)}
               className={cn('aspect-[16/10]', variant === 'cinematic' && 'rounded-lg')}
             />
           </div>

@@ -1,5 +1,7 @@
 import { NotFound, type Access, type FieldAccess, type PayloadRequest, type Where } from 'payload'
 
+import { MEDIA_IMAGE_WIDTHS } from '@/lib/media-sizes'
+
 import { getLicensedProductIds } from './licenses'
 import { isAdminOrEditorUser, isAdminUser, isCustomerUser, isStaffUser } from './roles'
 
@@ -93,10 +95,17 @@ export const mediaRead: Access = async ({ req, data, isReadingStaticFile }) => {
   // for either when an access filter does not match.
   const checkStatic = async (access: true | Where) => {
     if (!isReadingStaticFile || typeof data?.filename !== 'string') return access
+    const filename: Where = { or: ['filename', ...Object.keys(MEDIA_IMAGE_WIDTHS).map(name => `sizes.${name}.filename`)]
+      .map(field => ({ [field]: { equals: data.filename } })) }
+    // Legacy derivatives could share a filename with a different media record.
+    // A public match must never authorize bytes belonging to a protected match.
+    const matches = await req.payload.find({
+      collection: 'media', where: filename, depth: 0, limit: 2,
+      overrideAccess: true, req, select: { filename: true },
+    })
+    if (matches.docs.length !== 1 || matches.totalDocs !== 1) throw new NotFound(req.t)
     const { docs } = await req.payload.find({
-      collection: 'media', where: access === true
-        ? { filename: { equals: data.filename } }
-        : { and: [{ filename: { equals: data.filename } }, access] },
+      collection: 'media', where: access === true ? filename : { and: [filename, access] },
       depth: 0, limit: 1, pagination: false, overrideAccess: true, req,
       select: { filename: true },
     })

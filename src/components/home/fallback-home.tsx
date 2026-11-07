@@ -40,8 +40,8 @@ export async function FallbackHome({ locale }: { locale: Locale }) {
   ])
 
   const logos: Logo[] = [
-    ...partners.filter((p) => mediaOf(p.logo)).map((p) => ({ name: p.name, src: mediaOf(p.logo)!.url! })),
-    ...cases.filter((cs) => mediaOf(cs.customerLogo)).map((cs) => ({ name: cs.customerName, src: mediaOf(cs.customerLogo)!.url! })),
+    ...partners.filter((p) => mediaOf(p.logo)).map((p) => ({ name: p.name, media: mediaOf(p.logo) })),
+    ...cases.filter((cs) => mediaOf(cs.customerLogo)).map((cs) => ({ name: cs.customerName, media: mediaOf(cs.customerLogo) })),
   ].filter((l, i, a) => a.findIndex((x) => x.name === l.name) === i).slice(0, 12)
 
   const featured = cases.find((cs) => cs.featured) ?? cases[0]

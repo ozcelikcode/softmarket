@@ -1,5 +1,7 @@
 'use client'
 
+import { MediaImage } from '@/components/ui/media-image'
+
 import { ArrowRight, ChevronDown, Menu, Search, User } from 'lucide-react'
 import { NavigationMenu } from 'radix-ui'
 import { usePathname } from 'next/navigation'
@@ -357,16 +359,7 @@ function FeaturedCard({ featured, locale }: { featured: NonNullable<NavItem['fea
   const body = (
     <>
       {featured.image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={featured.image.url}
-          alt={featured.image.alt}
-          width={featured.image.width ?? undefined}
-          height={featured.image.height ?? undefined}
-          loading="lazy"
-          decoding="async"
-          className="mb-5 aspect-[16/9] w-full rounded-md border border-border object-cover"
-        />
+        <MediaImage media={featured.image} sizes="360px" className="mb-5 aspect-[16/9] w-full rounded-md border border-border object-cover" />
       ) : null}
       <span className="text-h4 text-text">{featured.title}</span>
       {featured.description ? <span className="mt-2 block text-small text-muted">{featured.description}</span> : null}

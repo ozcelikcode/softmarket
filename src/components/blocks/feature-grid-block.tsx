@@ -27,7 +27,7 @@ export function FeatureGridBlock({ block, ctx }: BlockProps<Block>) {
           title: it.title,
           description: it.description ?? undefined,
           icon: mediaOf(it.image)
-            ? <MediaImage media={it.image} className="size-10 rounded-md object-contain" />
+            ? <MediaImage media={it.image} sizes="40px" className="size-10 rounded-md object-contain" />
             : it.icon ? <NamedIcon name={it.icon} /> : undefined,
         }))}
       />

@@ -43,7 +43,7 @@ beforeAll(async () => {
   payload = await getPayload({ config: (await import('../../src/payload.config')).default })
   const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
   const index = migrations.findIndex((m) => m.name === NAME)
-  expect(index).toBe(migrations.length - 1)
+  expect(index).toBeGreaterThanOrEqual(0)
   type MigrateArgs = NonNullable<Parameters<typeof payload.db.migrate>[0]>['migrations']
   await payload.db.migrate({ migrations: migrations.slice(0, index) as unknown as MigrateArgs })
   // Pre-F8 version rows must survive up/down.

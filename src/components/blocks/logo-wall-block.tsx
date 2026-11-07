@@ -11,7 +11,7 @@ export async function LogoWallBlock({ block, locale, ctx }: BlockProps<Block>) {
   const push = (name: string | undefined, media: unknown) => {
     if (!name) return
     const m = mediaOf(media)
-    logos.push({ name, src: m?.url ?? undefined, alt: name })
+    logos.push({ name, media: m, alt: name })
   }
   if (block.source === 'allPartners' || block.source === 'allCaseStudies' || block.source === 'partnersAndCaseStudies' || block.source === 'caseStudies' || block.source === 'partners') {
     // Selected legacy sources also re-read IDs with anonymous access. Keep their text-only logos.

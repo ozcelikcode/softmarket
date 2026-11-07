@@ -1,16 +1,10 @@
-import Image from 'next/image'
-
-import { mediaOf } from '@/lib/content'
+import { preload } from 'react-dom'
+import { CARD_IMAGE_SIZES, containerImageSizes } from '@/lib/media-layout'
+import { imageCandidates, mediaOf } from '@/lib/media-image'
 import { cn } from '@/lib/utils'
 
-/** Renders a populated CMS media relation; renders nothing when it is an ID or not readable. */
-export function MediaImage({
-  media,
-  className,
-  sizes,
-  priority,
-  alt,
-}: {
+/** Native responsive images keep every request behind Payload access, without optimizer caching. */
+export function MediaImage({ media, className, sizes, priority, alt }: {
   media: unknown
   className?: string
   sizes?: string
@@ -19,19 +13,24 @@ export function MediaImage({
 }) {
   const m = mediaOf(media)
   if (!m) return null
+  const candidates = imageCandidates(m)
+  const src = candidates.at(-1)?.url ?? m.url!
+  const srcSet = candidates.length ? candidates.map(s => `${s.url} ${s.width}w`).join(', ') : undefined
+  const imageSizes = sizes ?? (priority ? containerImageSizes('normal', 2) : CARD_IMAGE_SIZES)
+  if (priority) preload(src, { as: 'image', imageSrcSet: srcSet, imageSizes, fetchPriority: 'high' })
   return (
-    <Image
-      src={m.url!}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      srcSet={srcSet}
       alt={alt ?? m.alt ?? ''}
       width={m.width || 1600}
       height={m.height || 900}
-      sizes={sizes ?? '(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw'}
-      priority={priority}
-      // Payload access can change at the same URL. Never retain protected bytes in
-      // the optimizer's shared cache (including files that were previously public).
-      unoptimized
-      loading={priority ? undefined : 'lazy'}
+      sizes={imageSizes}
+      fetchPriority={priority ? 'high' : undefined}
+      loading={priority ? 'eager' : 'lazy'}
       decoding="async"
+      style={m.focalX != null && m.focalY != null ? { objectPosition: `${m.focalX}% ${m.focalY}%` } : undefined}
       className={cn('h-full w-full object-cover', className)}
     />
   )

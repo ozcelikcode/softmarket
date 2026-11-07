@@ -67,6 +67,7 @@ describe('licensed file access', () => {
     const req = makeReq(null)
     const find = vi.fn(async ({ collection }: { collection: string }) => ({
       docs: collection === 'media' ? [{ id: 10 }] : [{ file: 10, product: 3, access: 'licensed' }],
+      totalDocs: 1,
     }))
     req.payload.find = find as never
     const filter = { and: [
@@ -77,7 +78,7 @@ describe('licensed file access', () => {
       req, data: { filename: 'protected.zip' }, isReadingStaticFile: true,
     } as never)).toEqual(filter)
     expect(find).toHaveBeenCalledWith(expect.objectContaining({
-      collection: 'media', where: { and: [{ filename: { equals: 'protected.zip' } }, filter] },
+      collection: 'media', where: { and: [{ or: ['filename', 'sizes.thumb.filename', 'sizes.card.filename', 'sizes.hero.filename', 'sizes.wide.filename'].map(field => ({ [field]: { equals: 'protected.zip' } })) }, filter] },
     }))
   })
 

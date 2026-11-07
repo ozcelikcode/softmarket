@@ -6,9 +6,8 @@ import { routing } from '@/i18n/routing'
 import { readAs } from '@/lib/preview'
 import { getPayloadClient, safe } from '@/lib/site'
 import { HOME_SLUG, isLandingPage, isReservedSlug, LANDING_PAGE_TYPES, type SystemKey } from '@/lib/system-pages'
-import { safeHref } from '@/lib/utils'
 import type {
-  CaseStudy, Career, Doc, Download, Edition, Media, Page, Partner, Post, Product, ProductFamily, Solution,
+  CaseStudy, Career, Doc, Download, Edition, Page, Partner, Post, Product, ProductFamily, Solution,
 } from '@/payload-types'
 
 /*
@@ -25,7 +24,7 @@ export const anon = (locale: Locale) => ({
 })
 
 // `filename` is required for Payload to compute `url`.
-const mediaPick = { url: true, filename: true, alt: true, width: true, height: true, mimeType: true, protected: true, visibility: true } as const
+const mediaPick = { sizes: true, focalX: true, focalY: true, url: true, filename: true, alt: true, width: true, height: true, mimeType: true, protected: true, visibility: true } as const
 const familyPick = { title: true, slug: true, tagline: true } as const
 
 export const populate = {
@@ -45,12 +44,7 @@ export const populate = {
 
 const bySlug = (slug: string): Where => ({ slug: { equals: slug } })
 
-/** Media relation that was populated and is readable (otherwise it stays an ID). */
-export function mediaOf(value: unknown): Pick<Media, 'url' | 'alt' | 'width' | 'height' | 'mimeType' | 'protected' | 'visibility'> | null {
-  if (!value || typeof value !== 'object') return null
-  const m = value as Media
-  return typeof m.url === 'string' && safeHref(m.url) && /^(?:https?:\/\/|\/)/i.test(m.url) ? m : null
-}
+export { mediaOf } from '@/lib/media-image'
 
 export function relOf<T extends object>(value: unknown): T | null {
   return value && typeof value === 'object' ? (value as T) : null

@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import path from 'path'
+import { randomUUID } from 'node:crypto'
+import { MEDIA_IMAGE_WIDTHS } from '@/lib/media-sizes'
+import { sanitizeMediaUpload } from '@/lib/media-upload'
 
 import { isAdminField, isAdminOrEditor, isAdminOrEditorField, mediaRead } from '@/access'
 
@@ -21,6 +24,7 @@ export const Media: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
+  hooks: { beforeOperation: [sanitizeMediaUpload] },
   fields: [
     {
       name: 'seedPath', type: 'text', unique: true,
@@ -72,6 +76,26 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
+    focalPoint: true,
+    crop: true,
+    adminThumbnail: 'thumb',
+    // Payload omits targets larger than the source when withoutEnlargement is
+    // undefined. true would write redundant copies of the original for every target.
+    imageSizes: Object.entries(MEDIA_IMAGE_WIDTHS).map(([name, width]) => ({
+      name, width,
+      withoutEnlargement: undefined,
+      formatOptions: { format: 'webp', options: { quality: 74 } },
+      // Payload unlinks an existing derivative before writing it. A name based on
+      // the stem alone can overwrite another upload (photo.jpg vs photo.png).
+      generateImageName: ({ sizeName, extension }) => `sm-${randomUUID()}-${sizeName}.${extension}`,
+    })),
     staticDir: process.env.UPLOADS_DIR || path.resolve(process.cwd(), 'uploads'),
+    modifyResponseHeaders: ({ headers }) => {
+      headers.set('X-Content-Type-Options', 'nosniff')
+      if (headers.get('Content-Type') === 'image/svg+xml') {
+        headers.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox")
+      }
+      return headers
+    },
   },
 }

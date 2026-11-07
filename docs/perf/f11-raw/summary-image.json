@@ -1,0 +1,126 @@
+[
+ {
+  "preset": "mobile",
+  "path": "/tr",
+  "runs": 3,
+  "perf": 94,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 3008.5679999999993,
+  "cls": 0,
+  "tbt": 75,
+  "fcp": 1058.568,
+  "ttfb": 3,
+  "jsTransferKb": 190.623046875,
+  "jsRawKb": 577.0751953125,
+  "lcpRenderDelay": 60.722,
+  "lcpEl": "div.mx-auto > div.min-w-0 > div.overflow-hidden > img.h-full \"Test hero\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   3013,
+   3009,
+   3007
+  ],
+  "perfRuns": [
+   94,
+   94,
+   94
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/f11-gorsel-test",
+  "runs": 3,
+  "perf": 94,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 3006.734999999999,
+  "cls": 0,
+  "tbt": 73,
+  "fcp": 1056.7350000000001,
+  "ttfb": 3,
+  "jsTransferKb": 192.0419921875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 33.896,
+  "lcpEl": "div.mx-auto > div.min-w-0 > div.overflow-hidden > img.h-full \"Test hero\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   3007,
+   3007,
+   3009
+  ],
+  "perfRuns": [
+   94,
+   94,
+   94
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 648.8019999999998,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 288.802,
+  "ttfb": 2,
+  "jsTransferKb": 192.0419921875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 52.518,
+  "lcpEl": "div.mx-auto > div.min-w-0 > div.overflow-hidden > img.h-full \"Test hero\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   649,
+   649,
+   649
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/f11-gorsel-test",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 649.5849999999999,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 289.585,
+  "ttfb": 2,
+  "jsTransferKb": 193.296875,
+  "jsRawKb": 579.5224609375,
+  "lcpRenderDelay": 35.304,
+  "lcpEl": "div.mx-auto > div.min-w-0 > div.overflow-hidden > img.h-full \"Test hero\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   652,
+   650,
+   650
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ }
+]

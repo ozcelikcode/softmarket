@@ -1,4 +1,5 @@
 import { searchFields } from './lib/search-index'
+import { assertIsolatedE2E } from './lib/e2e-isolation'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { withDbQueryLogging } from './lib/db-query-log'
@@ -46,6 +47,10 @@ import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+// A missing test DB/uploads variable must never fall back to the live defaults or .env values.
+// 3400 is reserved for this runner, including when all isolation variables were lost.
+if (process.env.PORT === '3400' || process.env.E2E_ISOLATED !== undefined || process.env.E2E_ISOLATED_DIR !== undefined) assertIsolatedE2E()
 
 const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
 const secret = process.env.PAYLOAD_SECRET || (isBuild ? 'build-only-placeholder' : '')

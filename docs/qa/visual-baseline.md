@@ -18,8 +18,8 @@ Not: Sadece TR sayfaları göz ile incelendi (TR ve EN aynı bileşenleri kullan
 
 | # | Sayfa / genişlik | Sorun | Öneri | Görüntü |
 |---|---|---|---|---|
-| Y1 | `/tr/iletisim`, `/en/contact` · tüm | Ham yer tutucular görünür: `[ŞİRKET ADRESİ]`, `[COMPANY PHONE]`, `[ÇALIŞMA SAATLERİ]`. | Gerçek veri girilene kadar kartı gizle ya da SiteSettings boşsa render etme. | `tr__iletisim--1440.png`, `tr__iletisim--390.png` |
-| Y2 | Tüm sayfalar · tüm | Marka tutarsız: header "SoftMarket", footer ve ana sayfa "Örnek Kurumsal Yazılım" ("— demo içerik" telif satırı). | Tek kaynak (SiteSettings.siteName + logo); "demo içerik" ifadesini canlıda kaldır. | `tr--1440.png` (footer), `tr--390.png` |
+| ~~Y1~~ ✅ (kısmen) | `/tr/iletisim`, `/en/contact` · tüm | Ham yer tutucular görünür: `[ŞİRKET ADRESİ]`, `[COMPANY PHONE]`, `[ÇALIŞMA SAATLERİ]`. | Gerçek veri girilene kadar kartı gizle ya da SiteSettings boşsa render etme. | `tr__iletisim--1440.png`, `tr__iletisim--390.png` |
+| ~~Y2~~ ✅ | Tüm sayfalar · tüm | Marka tutarsız: header "SoftMarket", footer ve ana sayfa "Örnek Kurumsal Yazılım" ("— demo içerik" telif satırı). | Tek kaynak (SiteSettings.siteName + logo); "demo içerik" ifadesini canlıda kaldır. | `tr--1440.png` (footer), `tr--390.png` |
 | Y3 | `/tr/sirket/hakkimizda`, `/tr/referanslar`, `/tr/kariyer`, `/tr/is-ortaklari` · 1440 | Boş durum kartları ("İçerik hazırlanıyor", "Vaka çalışmaları yakında", "Ortak listesi yakında") menüde ve footer'da yayında; sayfa boşluğu ~600 px, CTA yok. | Boş durumları sayfa kurucu blokla doldur ya da menüden çıkar; boş durum kartına CTA (iletişim) ekle. | `tr__sirket__hakkimizda--1440.png`, `tr__referanslar--1440.png`, `tr__kariyer--1440.png` |
 | ~~Y4~~ ✅ | `/tr/haberler`, ana sayfa haberler bölümü · tüm | Haber kartlarında görsel yok; gri boş alan (~140 px) kartın yarısı, rozet gri zemin üstünde kayboluyor. | Görseli yoksa kapak alanını kaldır ya da markalı yer tutucu (gradient + ikon) kullan. | `tr__haberler--1440.png`, `tr--1440.png` |
 | ~~Y5~~ ✅ | `/tr/urunler/*/*` (ürün detayı) · 1440 | Bölüm hizası tutarsız: genel bakış paragrafı ve SSS ~600 px dar ve ortada; Özellikler/Teknik/Sürümler tam kapsayıcıda sola dayalı; sistem gereksinimleri kartı 1/2 genişlik. Aynı sayfada üç farklı sütun ızgarası. | Tek kapsayıcı genişliği + açık "narrow" varyantı kuralı; gereksinim kartı tam genişlik. | `tr__urunler__akis-yonetimi__akis-merkezi--1440.png` |
@@ -37,7 +37,7 @@ Not: Sadece TR sayfaları göz ile incelendi (TR ve EN aynı bileşenleri kullan
 | ~~O4~~ ✅ | `/tr/destek/surum-notlari` · 1440 | Tipografi hiyerarşisi ters: küçük "1.1.0 — Örnek bakım ve iyileştirme sürümü" satırı üstte, altında daha büyük "Bakım ve iyileştirme" başlığı; 8 kartta aynı başlık tekrar eder, sayfa ~6000 px. | Sürüm numarası + tarih büyük başlık; özet metni gövde; sayfalama/daraltma. | `tr__destek__surum-notlari--1440.png` |
 | O5 | `/tr/cozumler/*` · 1440 | Çözüm detayı iskelet: yalnız "İlgili ürünler" (2 kart sol 2/3), ~600 px hero + boş alt; CTA yok. Ana sayfadaki çözüm kartları üç yerde aynı jenerik metni içerir ("X için yazılım bileşenlerini birlikte değerlendiren örnek çözüm"). | Çözüm sayfasına problem/fayda blokları ve CTA; kart özetlerini farklılaştır. | `tr__cozumler__surec-otomasyonu--1440.png`, `tr--1440.png` |
 | O6 | Ürün/çözüm/ürün listesi · 1440 | Son satırda öksüz kart (8 üründe 3+3+2; 2 sürüm kartı sol 2/3) sağda boşluk bırakır. Kartların tek eylemi küçük ok ikonu; tıklanabilirlik ipucu zayıf. | `auto-fit` ızgara + ortalama, kartta "İncele" metin bağlantısı. | `tr__urunler--1440.png` |
-| O7 | `/tr/iletisim`, `/tr/teklif-iste` · 1440 | Formlarda zorunlu alan işareti yok, giriş alanları zemine yakın (border kontrastı düşük); gönder düğmesi sola dayalı küçük. | Zorunlu `*`, border kontrastı ≥ 3:1, düğmeyi tam sütun. | `tr__iletisim--1440.png`, `tr__teklif-iste--1440.png` |
+| ~~O7~~ ✅ (kısmen) | `/tr/iletisim`, `/tr/teklif-iste` · 1440 | Formlarda zorunlu alan işareti yok, giriş alanları zemine yakın (border kontrastı düşük); gönder düğmesi sola dayalı küçük. | Zorunlu `*`, border kontrastı ≥ 3:1, düğmeyi tam sütun. | `tr__iletisim--1440.png`, `tr__teklif-iste--1440.png` |
 | ~~O8~~ ✅ | Mobil menü · 390 | Açık menüde logo yok (yalnız kapat düğmesi), alt-menü öğeleri (Ürünler/Çözümler/Şirket) kapalı gelir, panelin solunda sayfadan ince şerit görünüyor; ortada büyük boş alan. | Panele logo, tam genişlik, alt linkleri aç/kapa animasyonuyla göster. | `ix-mobile-menu-390.png` |
 
 ## Düşük
@@ -79,3 +79,43 @@ Not: Sadece TR sayfaları göz ile incelendi (TR ve EN aynı bileşenleri kullan
 
 Kalanlar: Y1, Y2, Y3, Y5 (SSS bloğu dar; FAQ bileşeni Terra kapsamında), O3, O5, O6, O7, D3-D6 yok/ertelendi; Y1-Y3 içerik/marka (F6/F7). Kullanıcının bildirdiği hatalar bölümü boş.
 Sonrası ekran görüntüleri: `.../scratchpad/visual-after/` (10 sayfa x 390/768/1440), kırpılmış: `.../scratchpad/crops/`.
+
+
+## F11 turu 2 (2026-11-07)
+
+Kapsam: sitemap'teki 144 URL x 390/768/1440 = 432 tam sayfa ekran görüntüsü, prod build (3200). Ekran görüntüleri: `/private/tmp/claude-501/-Users-ozcelik-dev-softmarket/86cb568c-5f6b-4b21-b0fe-e6a5de07c79f/scratchpad/f11/shots/` (+ `probe.json`). Gözle incelenen: 1440 x 12 sayfa tipi, 390 x 4, 768 x 5 (TR). Otomatik yoklama (432/432): HTTP 200 hepsi, konsol hatası 0, kırık görsel 0, belge taşması 0, CLS ≤ 0.02, takılı gizli reveal 0. Yatay kırpılma uyarısı yalnız ürün detayında kaydırılabilir sekme şeridi (beklenen, fade var).
+
+### Kapanan / durum
+
+| # | Durum | Not |
+|---|---|---|
+| K1, K2 | ✓ kapalı | 390'da hero taşması yok; teklif/demo sayfaları koyu hero + okunur header |
+| Y1 | ✓ kısmen | Köşeli yer tutucular (`[ŞİRKET ADRESİ]` …) kalktı; kartta sahte değerler (`+90 212 000 00 00`, "İstanbul, Türkiye") duruyor: gerçek iletişim bilgisi içerik işi |
+| Y2 | ✓ kapalı | Header, footer, telif "SoftMarket"; "demo içerik" ifadesi yok |
+| Y3 | AÇIK | `/tr/sirket/hakkimizda` ("İçerik hazırlanıyor"), `/tr/referanslar`, `/tr/kariyer` hâlâ boş durum kartı, ~600 px boşluk, CTA yok (menü/footer'da yayında). `/tr/is-ortaklari` artık "İş ortağımız olun" CTA'lı. Neden: içerik (editör) işi |
+| Y4-Y8, O1, O2, O4, O8, D1, D2 | ✓ kapalı | G turu düzeltmeleri 1440/390/768'de doğrulandı. O4: sürüm numarası büyük başlık ✓; sayfa hâlâ ~6400 px (sayfalama yok) |
+| O3 | AÇIK | Destek: Ara ve Uygula satırları hâlâ farklı genişlik; arama girişinde placeholder yok (yalnız altında yardımcı metin). Küçük, F11 kapsamı dışı bırakıldı |
+| O5 | AÇIK | Çözüm detayı iskelet (yalnız "İlgili ürünler", CTA yok); kart özetleri jenerik. İçerik + blok işi (F6 blok sistemiyle doldurulabilir) |
+| O6 | AÇIK | `/tr/urunler` 3+3+2 öksüz kart; ana sayfada 3+... Kartta yalnız küçük ok. Tasarım kararı |
+| O7 | ✓ kısmen (F11) | Zorunlu alanlara `*`, giriş kenarlığı `border-strong` (≥ 3:1); gönder düğmesi hâlâ küçük/sola dayalı |
+| D3 | AÇIK | Footer: dil seçici yasal bağlantıların altında ayrı satırda ve sola kaymış; telif metni 1440'ta dar sütunda iki satıra kırılıyor (390, 768, 1440) |
+| D4 | AÇIK | Ana sayfa hero panelinin ağırlığı zayıf (metin listesi); CMS'te görsel verilince çözülür (görselli hero test sayfası 1440'ta düzgün) |
+| D5 | AÇIK | Yasal sayfalarda "Bu sayfada" yok (4900-5500 px) |
+| D6 | KISMEN | Ürün sekme çubuğu hero'dan koyu bantla ayrışıyor; SSS/ürün detay SSS genişliği ayrıca kontrol edilmedi |
+
+### Yeni bulgular (önem sırasına göre)
+
+1. **Yüksek, içerik/hukuk:** `/tr/yasal/eula`, `/en/legal/*` ve diğer yasal sayfalar sitemap'te yayında ve gövdede "TASLAK — Yayın öncesi hukuk danışmanı tarafından incelenmelidir" uyarısı ile `[ŞİRKET UNVANI]`, `[YÜRÜRLÜK TARİHİ]`, `[KVKK İLETİŞİM E-POSTASI]` gibi yer tutucular görünüyor. Alan adı verilmeden önce ya taslağa alınmalı ya doldurulmalı.
+2. **Yüksek, perf:** Metin LCP 1.06 s ama görselli hero LCP 3.0 s (mobil Lantern); JS 192 KB gzip (bütçe 130); font 2 x 70 KB. Ayrıntı: `docs/perf/f11-acceptance.md`.
+3. **Orta, dönüşüm:** Ürün detayı hero'sunun tek birincil eylemi "Sürümler" (sayfa içi çapa); asıl dönüşüm olan "Teklif İste" hero'da yok (yalnız header'da ve Sürümler kartlarında).
+4. **Orta, tipografi/ritim:** Ürün detayında breadcrumb ile eyebrow ("AKIŞ YÖNETİMİ") ve başlık arası çok dar; ürün hero'sunun üst boşluğu başlık sayfalarından belirgin dar.
+5. **Orta, içerik:** Sürüm notları: 8 kartta aynı "Bakım ve iyileştirme" başlığı/metni; sayfalama ya da ürün başına gruplama yok (6400 px).
+6. **Orta, içerik:** Çözüm kartları ana sayfada ve `/tr/cozumler`'de aynı jenerik cümleyi tekrar ediyor ("X için yazılım bileşenlerini birlikte değerlendiren örnek çözüm"); haber kartları aynı yer tutucu kapakla.
+7. **Düşük, footer:** 768'de alt satır (telif + 5 bağlantı + dil seçici) kademeli ve hizasız kırılıyor.
+8. **Düşük, admin:** Sayfalar liste "Sütunlar" seçicisinde SEO eklentisi etiketleri İngilizce (SEO > Overview/Title/Description/Meta Image/Preview); blok ekle düğmesi "Layout ekle" idi (F11'de "Blok ekle" yapıldı).
+
+### F11'de yapılan küçük düzeltmeler
+
+- Lead formu: zorunlu alan işareti (`*`, aria-hidden; `required` zaten var) ve `border-strong` giriş kenarlığı (`src/components/forms/lead-form.tsx`).
+- Admin: `layout` blok alanı etiketi "Blok/Bloklar" (`src/lib/admin-i18n.ts`) → "Blok ekle".
+- Sonrası görüntü: `.../scratchpad/f11/after/` (3100 dev, `/tr/teklif-iste`, `/en/contact`).

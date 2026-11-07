@@ -18,7 +18,15 @@ declare global {
   }
 }
 const inputClass =
-  'mt-1 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-text aria-[invalid=true]:border-danger'
+  'mt-1 w-full rounded-md border border-border-strong bg-surface px-3 py-2.5 text-text aria-[invalid=true]:border-danger'
+/** Visual-only marker; the inputs carry the real `required` attribute for assistive tech. */
+const RequiredMark = () => (
+  <span aria-hidden="true" className="text-danger">
+    {' '}
+    *
+  </span>
+)
+
 export function LeadForm({
   kind,
   locale,
@@ -160,6 +168,7 @@ export function LeadForm({
           <div key={name}>
             <label htmlFor={`${kind}-${name}`} className="font-medium">
               {label(name)}
+              {(name === 'name' || name === 'email') && <RequiredMark />}
             </label>
             <input
               {...attrs(name)}
@@ -224,6 +233,7 @@ export function LeadForm({
       <div>
         <label htmlFor={`${kind}-message`} className="font-medium">
           {label('message')}
+          <RequiredMark />
         </label>
         <textarea
           {...attrs('message')}
@@ -255,6 +265,7 @@ export function LeadForm({
             required
           />
           {label('consent')}
+          <RequiredMark />
         </label>
         <AppLink
           href="/yasal/kvkk-aydinlatma"

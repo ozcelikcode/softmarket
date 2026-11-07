@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // DB-writing specs live in tests/e2e/isolated and run via playwright.isolated.config.ts (temp DB copy).
+  testIgnore: '**/isolated/**',
   timeout: 60_000,
   workers: 1,
   use: { baseURL: 'http://127.0.0.1:3100', trace: 'retain-on-failure' },

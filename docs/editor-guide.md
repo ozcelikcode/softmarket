@@ -42,21 +42,22 @@ Ana sayfanın ilk **Giriş (Hero)** bloğu sayfanın başlığıdır. Bu bloğu 
 
 ### 2.2 Blok ekleme
 
-1. **Blok ekle** düğmesine tıklayın.
-2. Blok seçici, blokları gruplara ayırır: **Giriş, İçerik, Katalog, Kanıt, Dönüşüm, Yardımcı**.
+1. Blok listesinin altındaki **Blok ekle** düğmesine tıklayın. Belirli bir bloğun hemen altına eklemek için o bloğun sağındaki **···** menüsünden **Altına ekle** seçin.
+2. Açılan pencere blokları gruplara ayırır: **Giriş, İçerik, Katalog, Kanıt, Dönüşüm, Yardımcı**.
 3. İstediğiniz bloğu seçin. Bloğun önizleme görseli ve kısa açıklaması görünür.
-4. Yeni blok, listenin sonuna eklenir. Sonra sürükleyerek yerini değiştirin.
+4. Alttaki düğmeyle eklenen blok listenin sonuna, **Altına ekle** ile eklenen blok seçtiğiniz bloğun altına gelir. Sonra sürükleyerek yerini değiştirebilirsiniz.
 
 ### 2.3 Sıralama (sürükle-bırak)
 
 - Her bloğun sol tarafındaki tutamaktan (altı nokta simgesi) tutun.
-- Bloğu istediğiniz yere sürükleyip bırakın.
+- Bloğu istediğiniz yere sürükleyip bırakın. Sürüklemek zor geliyorsa bloğun **···** menüsündeki **Yukarı taşı** / **Aşağı taşı** seçeneklerini kullanın.
 - Sıra değişikliği de taslak olarak kaydedilir. Yayınlamadan canlı siteye gitmez.
 
 ### 2.4 Blok silme ve kopyalama
 
-- Bloğun sağındaki menüden **Sil** veya **Kopyala** seçin.
-- Silinen blok geri alınamaz. Emin değilseniz önce **Gizle** kullanın (aşağıda).
+- Bloğun sağındaki **···** menüsünde şu seçenekler vardır: **Yukarı taşı**, **Aşağı taşı**, **Altına ekle**, **Çoğalt**, **Satırı kopyala**, **Satırı yapıştır**, **Kaldır**.
+- **Çoğalt** bloğun bir kopyasını hemen altına ekler. **Kaldır** bloğu siler (menüde "Sil" yoktur).
+- Sayfa ~2 saniyede otomatik taslak kaydettiği için kaldırılan blok kaydedilmiş olur. Geri almak için sayfanın **Sürümler** sekmesinden önceki sürümü geri yükleyin. Emin değilseniz önce **Bloğu gizle** kullanın (aşağıda).
 
 ### 2.5 Bloğu gizleme
 
@@ -97,10 +98,12 @@ SoftMarket'te iki durum vardır:
 
 Kurallar:
 
-1. **Taslak olarak kaydet** düğmesi değişikliği saklar. Canlı siteye etkisi yoktur.
-2. **Yayınla** düğmesi değişikliği siteye çıkarır.
-3. Yayınlanmamış bir sayfa, yayında olan sürümün yerine geçmez. Siteye yalnız yayınlanmış hali gider.
-4. Yayınladığınızda site önbelleği yenilenir. Değişiklik genellikle hemen görünür (bölüm 9'a bakın).
+1. **Sayfalar** koleksiyonunda "Taslağı kaydet" düğmesi yoktur: değişiklikler zaten otomatik taslak olarak kaydedilir (bölüm 2.8) ve canlı siteye etkisi yoktur. Ürünler, Çözümler gibi otomatik kayıtsız taslaklı koleksiyonlarda ayrıca **Taslağı kaydet** düğmesi bulunur.
+2. Sağ üstteki **Değişiklikleri yayınla** düğmesi değişikliği siteye çıkarır. Yanındaki ok **Türkçe dilinde yayınlayın** gibi yalnız geçerli dili yayınlama seçeneğini açar.
+3. Yayına çıkmış bir sayfada yapılan taslak değişiklik, üst çubukta **Durum: Değişiklik yapıldı** olarak görünür. Taslağı atıp yayındaki hale dönmek için **Yayınlanana geri döndür** bağlantısını kullanın.
+4. Sayfayı siteden tamamen kaldırmak için sağ üstteki **⋮** menüsünden **Yayından Kaldır** seçin.
+5. Yayınlanmamış bir sayfa, yayında olan sürümün yerine geçmez. Siteye yalnız yayınlanmış hali gider.
+6. Yayınladığınızda site önbelleği yenilenir. Değişiklik genellikle hemen görünür (bölüm 9'a bakın).
 
 ### 2.8 Otomatik kayıt
 
@@ -110,15 +113,17 @@ Kurallar:
 
 ### 2.9 Live Preview (canlı önizleme)
 
-Live Preview, değişikliğinizi sitenin gerçek görünümünde gösterir. Sayfa düzenleme ekranında **Önizleme** sekmesini açın.
+Live Preview, değişikliğinizi sitenin gerçek görünümünde gösterir. Sayfa düzenleme ekranında, sağ üstte **Değişiklikleri yayınla** düğmesinin solundaki **göz simgesine** (Önizleme) tıklayın. Ekran ikiye bölünür: solda form, sağda canlı önizleme. Göz simgesine yeniden tıklayınca önizleme kapanır. Yukarıdaki **Düzenle / Sürümler / API** sekmeleri önizleme açmaz; **Önizleme** adlı ayrı bir sekme yoktur.
 
 1. Önizleme, sayfanın taslak halini gösterir. Yayında olmayan değişiklikler de görünür.
-2. Üst kısımdaki düğmelerle ekran boyutunu seçin:
-   - **Mobil** (telefon)
+2. Önizlemenin üstündeki çubukta **Responsive** açılır listesinden ekran boyutunu seçin:
+   - **Mobil / Mobile** (telefon)
    - **Tablet**
-   - **Masaüstü**
-3. Kaydettiğinizde önizleme yaklaşık 2 saniye içinde yenilenir.
-4. Önizlemeyi kapatmak için **Önizlemeden çık** düğmesine basın. Bu düğme, önizleme sayfasını açık tutarken de görünür.
+   - **Masaüstü / Desktop**
+
+   Yanındaki genişlik × yükseklik kutularından özel boyut girebilir, yakınlaştırma oranını (%50-%200) değiştirebilir ve en sağdaki simgeyle önizlemeyi yeni sekmede açabilirsiniz.
+3. Yazdıkça önizleme yaklaşık 2 saniye içinde (otomatik kayıtla) yenilenir.
+4. Sitede taslak modundayken görünen şeritteki **Önizlemeden çık** düğmesi taslak modunu kapatır. Live Preview panelini kapatmak için göz simgesini kullanın.
 
 Önizleme yalnız giriş yapmış editör ve yönetici için açılır. Ziyaretçiler taslakları göremez.
 Live Preview; sayfalar, ürünler, ürün aileleri, çözümler, referanslar ve haberlerde vardır. **Şablon** sayfalarında public önizleme yoktur. İlişkili içerik listeleri önizlemede de yalnız yayınlı kayıtları gösterir. Yaklaşık 2 saniyelik otomatik kayıt yalnız **Sayfalar** için açıktır; diğer koleksiyonlarda kaydetmeniz gerekir.
@@ -352,12 +357,12 @@ Kural: Üst bölüm alanlarından birini boş bırakırsanız o alanda çeviri d
 
 Landing sayfası, kampanya veya ürün tanıtımı için yeni bir sayfadır.
 
-1. **Sayfalar** bölümünde **Yeni** düğmesine basın.
+1. **Sayfalar** bölümünde **Yeni oluştur** düğmesine basın.
 2. Sayfa türünü **Landing** seçin.
 3. Başlık ve slug (adres) girin.
 4. Türkçe ve İngilizce alanlarını doldurun (bölüm 8).
 5. Blokları ekleyin ve sıralayın.
-6. **Yayınla** düğmesine basın.
+6. **Değişiklikleri yayınla** düğmesine basın.
 
 Adres:
 
@@ -378,7 +383,7 @@ Ayrılmış adların tam listesi teknik ekipte bulunur.
 Hazır bir sayfa yapısını tekrar kullanmak için:
 
 1. Sayfa türü **Şablon** olan bir kaydı açın. Şablonlar sitede **asla görünmez**.
-2. Üst menüden **Çoğalt (Duplicate)** seçin.
+2. Sağ üstteki **⋮** menüsünden **Çoğalt** seçin. "Sayfa başarıyla kopyalandı." iletisi görünür.
 3. Yeni kopya açılır. Kopyanın sistem sayfası bağlantısı boş gelir.
 4. Sayfa türünü **Şablon** yerine **Standart** veya **Landing sayfası** yapın; kopya aksi halde yayınlansa da sitede görünmez.
 5. Başlığı ve her iki dilde slug değerini değiştirin, sonra yayınlayın.
@@ -480,7 +485,8 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 ### 6.1 Yükleme
 
 1. Sol menüden **Medya** bölümüne girin.
-2. **Yeni yükle** düğmesine basın ve dosyayı seçin.
+2. **Yeni oluştur** düğmesine basın, ardından **Dosya seç** ile dosyayı seçin (ya da dosyayı sürükleyip bırakın; **URL yapıştır** ile adresten de alınabilir). Sayfa/ürün formlarındaki görsel alanlarında aynı işlem **Yeni oluştur** ve **Varolanlardan seç** düğmeleriyle yapılır.
+   Yükleme sonrası **Kaydet** düğmesine basın.
 3. Görsel yüklendikten sonra alanları doldurun.
 
 ### 6.2 Alt metin (zorunlu)
@@ -592,7 +598,7 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 
 ### Değişiklik görünmüyor
 
-1. **Yayınladınız mı?** Taslak olarak kaydetmek siteye yansımaz. Sayfanın üstündeki **Yayınla** düğmesine basın.
+1. **Yayınladınız mı?** Taslak (otomatik kayıt dahil) siteye yansımaz. Sağ üstteki **Değişiklikleri yayınla** düğmesine basın.
 2. **Doğru dili mi açtınız?** Türkçe sitede yaptığınız değişiklik İngilizce sayfada görünmez. Dil değiştirip aynı değişikliği İngilizcede de yapın.
 3. **Taslağa mı baktınız?** Canlı site yalnız yayınlanmış halini gösterir. Önizleme taslağı gösterir.
 4. **Tarayıcı önbelleği:** Sayfayı yenileyin (Mac: `Cmd + Shift + R`, Windows: `Ctrl + F5`).
@@ -631,5 +637,5 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 ## Özet
 
 1. Ana sayfa ve sayfalar bloklardan oluşur. Blok ekleyin, sürükleyin, gerekirse gizleyin.
-2. Taslak destekleyen içerikleri önizlemede kontrol edip **Yayınla** deyin. Menü, footer, Site ayarları ve taslak desteği olmayan koleksiyonlarda **Kaydet** doğrudan siteye uygulanır.
+2. Taslak destekleyen içerikleri önizlemede kontrol edip **Değişiklikleri yayınla** deyin. Menü, footer, Site ayarları ve taslak desteği olmayan koleksiyonlarda **Kaydet** doğrudan siteye uygulanır.
 3. Görseller korumasız, alt metinli ve çevirileri tamam olmalı. Renk ve görsel kuralları reddedilirse mesaja bakın.

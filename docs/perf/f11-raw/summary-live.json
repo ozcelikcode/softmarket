@@ -1,0 +1,442 @@
+[
+ {
+  "preset": "mobile",
+  "path": "/tr",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1056.861,
+  "cls": 0,
+  "tbt": 80.99999999999955,
+  "fcp": 1056.861,
+  "ttfb": 2,
+  "jsTransferKb": 192.04296875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 93.633,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Karmaşık işler için sade yazılım.\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   1060,
+   1057,
+   1057
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/en",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1058.028,
+  "cls": 0,
+  "tbt": 80.00000000000045,
+  "fcp": 1058.028,
+  "ttfb": 3,
+  "jsTransferKb": 192.04296875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 88.34700000190735,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Simple software for complex work.\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   1058,
+   1057,
+   1058
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/urunler",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1207.02,
+  "cls": 0,
+  "tbt": 87,
+  "fcp": 1207.02,
+  "ttfb": 32,
+  "jsTransferKb": 193.328125,
+  "jsRawKb": 579.552734375,
+  "lcpRenderDelay": 77.793,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > p.mt-5 \"Ürün ailelerimizi ve ailelerin altındaki\"",
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ],
+  "lcpRuns": [
+   1208,
+   1207,
+   1206
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/urunler/akis-yonetimi/akis-merkezi",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1056.978,
+  "cls": 0,
+  "tbt": 81,
+  "fcp": 1056.978,
+  "ttfb": 3,
+  "jsTransferKb": 192.04296875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 87.132,
+  "lcpEl": "div#genel-bakis > section.relative > div.mx-auto > p.max-w-3xl \"Akışları tek noktadan tasarlayın ve izle\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   1057,
+   1061,
+   1057
+  ],
+  "perfRuns": [
+   100,
+   99,
+   100
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/cozumler",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1208.76,
+  "cls": 0,
+  "tbt": 89,
+  "fcp": 1208.76,
+  "ttfb": 29,
+  "jsTransferKb": 193.328125,
+  "jsRawKb": 579.552734375,
+  "lcpRenderDelay": 86.8,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > p.mt-5 \"Sektör ve kullanım senaryolarına göre ha\"",
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ],
+  "lcpRuns": [
+   1209,
+   1207,
+   1209
+  ],
+  "perfRuns": [
+   100,
+   99,
+   100
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/destek",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1056.135,
+  "cls": 0,
+  "tbt": 81,
+  "fcp": 1056.135,
+  "ttfb": 2,
+  "jsTransferKb": 190.6240234375,
+  "jsRawKb": 577.0751953125,
+  "lcpRenderDelay": 75.67400000190734,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > p.mt-5 \"Yazılımınız için dokümanları, güncelleme\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   1056,
+   1056,
+   1057
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "mobile",
+  "path": "/tr/haberler",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 1206.723,
+  "cls": 0,
+  "tbt": 88,
+  "fcp": 1206.723,
+  "ttfb": 28,
+  "jsTransferKb": 196.9111328125,
+  "jsRawKb": 586.689453125,
+  "lcpRenderDelay": 92.58299999809265,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > p.mt-5 \"Duyurular, ürün güncellemeleri ve yazıla\"",
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ],
+  "lcpRuns": [
+   1205,
+   1207,
+   1207
+  ],
+  "perfRuns": [
+   100,
+   100,
+   99
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 288.76,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 288.76,
+  "ttfb": 2,
+  "jsTransferKb": 192.04296875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 98.476,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Karmaşık işler için sade yazılım.\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   291,
+   287,
+   289
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/en",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 294.70599999999996,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 294.70599999999996,
+  "ttfb": 3,
+  "jsTransferKb": 192.04296875,
+  "jsRawKb": 578.89453125,
+  "lcpRenderDelay": 144.54599999809264,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Simple software for complex work.\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   288,
+   295,
+   326
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/urunler",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 331.33099999999996,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 331.33099999999996,
+  "ttfb": 34,
+  "jsTransferKb": 194.5830078125,
+  "jsRawKb": 580.1806640625,
+  "lcpRenderDelay": 78.302,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Ürünler\"",
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ],
+  "lcpRuns": [
+   331,
+   336,
+   331
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/urunler/akis-yonetimi/akis-merkezi",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 329.2305,
+  "cls": 0,
+  "tbt": 4.999999999999886,
+  "fcp": 329.2305,
+  "ttfb": 3,
+  "jsTransferKb": 193.2978515625,
+  "jsRawKb": 579.5224609375,
+  "lcpRenderDelay": 122.62699999809266,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Akış Merkezi\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   422,
+   329,
+   290
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/cozumler",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 328.28,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 328.28,
+  "ttfb": 31,
+  "jsTransferKb": 194.5830078125,
+  "jsRawKb": 580.1806640625,
+  "lcpRenderDelay": 86.339,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Çözümler\"",
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ],
+  "lcpRuns": [
+   331,
+   327,
+   328
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/destek",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 285.67150000000004,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 285.67150000000004,
+  "ttfb": 2,
+  "jsTransferKb": 190.6240234375,
+  "jsRawKb": 577.0751953125,
+  "lcpRenderDelay": 63.459,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Destek merkezi\"",
+  "failed": [
+   "canonical"
+  ],
+  "lcpRuns": [
+   286,
+   286,
+   285
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ },
+ {
+  "preset": "desktop",
+  "path": "/tr/haberler",
+  "runs": 3,
+  "perf": 100,
+  "a11y": 100,
+  "bp": 100,
+  "seo": 92,
+  "lcp": 327.998,
+  "cls": 0,
+  "tbt": 0,
+  "fcp": 327.998,
+  "ttfb": 27,
+  "jsTransferKb": 198.166015625,
+  "jsRawKb": 587.3173828125,
+  "lcpRenderDelay": 85.97899999809265,
+  "lcpEl": "section.relative > div.mx-auto > div.min-w-0 > h1.text-balance \"Haberler\"",
+  "failed": [
+   "canonical",
+   "bf-cache"
+  ],
+  "lcpRuns": [
+   326,
+   328,
+   333
+  ],
+  "perfRuns": [
+   100,
+   100,
+   100
+  ]
+ }
+]

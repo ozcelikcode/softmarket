@@ -104,6 +104,7 @@ const ROWS: Record<string, RowEntry> = {
   links: ['Bağlantı', 'Link', 'Bağlantılar', 'Links'],
   legalLinks: ['Yasal bağlantı', 'Legal link', 'Yasal bağlantılar', 'Legal links'],
   actions: ['Buton', 'Action', 'Butonlar', 'Actions'],
+  layout: ['Blok', 'Block', 'Bloklar', 'Blocks'],
 }
 
 const SLUG_DESC: Entry = [
@@ -473,7 +474,7 @@ function localizeFields(slug: string, fields: AnyField[], path: string[]): AnyFi
       }
     }
     const row = ROWS[f.name]
-    if (f.type === 'array' && row) {
+    if ((f.type === 'array' || f.type === 'blocks') && row) {
       const labels = f.labels as { singular?: unknown; plural?: unknown } | undefined
       if (!isLoc(labels?.singular) || !isLoc(labels?.plural)) {
         f.labels = { singular: loc(row[0], row[1]), plural: loc(row[2], row[3]) }

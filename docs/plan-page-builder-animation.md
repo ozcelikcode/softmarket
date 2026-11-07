@@ -358,6 +358,7 @@ Bağımlılık: `F0 → (F1 ∥ F2 ∥ F9) → F3 → (F4 ∥ F5 ∥ F7) → F6 
 ### F11 — Görsel QA turu 2 + perf kabul
 - **Kapsam:** F0 matrisinin tekrarı, kullanıcı hata listesinin kapanışı, bütçe kapıları, e2e (katalog → teklif, dil, blok sırası, preview).
 - **Kabul:** §7 bütçesinin tamamı yeşil, `docs/qa/visual-baseline.md` maddeleri kapalı.
+- **Uygulandı (2026-11-07), kabul KARŞILANMADI:** [x] 432 ekran görüntüsü turu 2 + `visual-baseline.md` güncellemesi (K1/K2/Y2/Y4-Y8/O1/O2/O4/O8/D1/D2 kapalı; Y1/O7 kısmen; Y3/O3/O5/O6/D3-D6 açık), [x] 3 koşu medyan Lighthouse + Playwright INP vekili + DB sorgu/ISR ölçümü (`docs/perf/f11-acceptance.md`), [x] e2e: `tests/e2e/f11-flows.spec.ts` (katalog→ürün→Teklif İste formu, anonim preview reddi; canlı DB'ye yazmaz) ve `tests/e2e/isolated/block-order.spec.ts` (DB kopyası + 3400; `pnpm test:e2e:isolated`; blok sırası API'siyle değişince ana sayfa sırası + preview staff/anon), [x] editör kılavuzu admin UI'siyle hizalandı. **Kırmızı bütçeler:** görselli hero mobil LCP 3.0 s (Lantern; gerçek throttling'te LCP=FCP), SEO 92 (canonical, alan adı bekliyor), JS 192 KB gzip (>130), font 70 KB (>60). Takip: ayrı faz "JS/font diyeti" (mega menü Radix, istemci ICU ayrıştırıcı, tailwind-merge, mono font) + yasal sayfa yer tutucuları + boş durum sayfaları.
 
 ### G — Görsel hata düzeltme turu (kullanıcı listesi gelince, F0 sonrası)
 - Her madde için sayfa, ekran genişliği, beklenen ve gerçekleşen kaydedilir. Düzeltmeler küçük ve madde başına commit'lenir. Önce/sonra ekran görüntüsü alınır.

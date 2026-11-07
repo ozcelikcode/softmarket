@@ -62,12 +62,15 @@ describe(`migration ${NAME}`, () => {
     const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
     const later = migrations.find((m) => m.name === '20261107_111754_blocks_static_set')!
     const dynamic = migrations.find((m) => m.name === '20261107_130000_blocks_dynamic_set')!
+    const globalsEditable = migrations.find((m) => m.name === '20261107_141523_globals_editable')!
     await later.up(args())
     await dynamic.up(args())
+    await globalsEditable.up(args())
     let product
     try {
       product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
     } finally {
+      await globalsEditable.down(args())
       await dynamic.down(args())
       await later.down(args())
     }

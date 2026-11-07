@@ -25,7 +25,8 @@ const contrast = (a: string, b: string) => {
   return (hi + 0.05) / (lo + 0.05)
 }
 const token = (block: string, name: string) =>
-  new RegExp(`${block}[^{]*\\{[^}]*--${name}:\\s*(#[0-9a-fA-F]{6})`).exec(css)![1]
+  // F7: tokens may be `var(--brand-*, #default)`; the default palette is what is measured here.
+  new RegExp(`${block}[^{]*\\{[^}]*--${name}:\\s*(?:var\\(--[a-z-]+,\\s*)?(#[0-9a-fA-F]{6})`).exec(css)![1]
 
 describe('primary button contrast and class merging', () => {
   it('keeps the contrast color when a custom font-size token follows', () => {
@@ -122,10 +123,15 @@ describe('seed navigation and legal links', () => {
     const { header, footer } = seed('01-globals.json').globals
     const nav = header[l].navItems
     expect(nav.some((n: { megaMenu?: string }) => n.megaMenu === 'products')).toBe(true)
-    expect(nav.some((n: { children?: unknown[] }) => (n.children?.length ?? 0) >= 5)).toBe(true)
-    expect(header[l].cta.link.url).toMatch(l === 'en' ? /request-demo$/ : /demo-talep$/)
-    const urls: string[] = footer[l].legalLinks.map((x: { link: { url: string } }) => x.link.url)
-    expect(urls.map((u) => u.split('/').pop())).toEqual(legalSlugs)
+    // F7: company = custom mega (columns + featured card); every link is a locale-independent route.
+    const company = nav.find((n: { megaMenu?: string }) => n.megaMenu === 'custom')
+    expect(company.columns.flatMap((c: { links: unknown[] }) => c.links).length).toBeGreaterThanOrEqual(5)
+    expect(company.featured.link).toMatchObject({ type: 'route', route: 'demo-talep' })
+    expect(header[l].cta.link).toMatchObject({ type: 'route', route: 'demo-talep' })
+    const legal = footer[l].legalLinks.map((x: { link: { type: string; route: string; routeParam: string } }) => x.link)
+    expect(legal.every((x: { type: string; route: string }) => x.type === 'route' && x.route === 'yasal_slug')).toBe(true)
+    expect(legal.map((x: { routeParam: string }) => x.routeParam)).toEqual(legalSlugs)
+    expect(JSON.stringify({ header: header[l], footer: footer[l] })).not.toMatch(/"\/(tr|en)(\/|")/)
   })
   it('product seed has no layout blocks duplicating collection fields', () => {
     for (const p of seed('10-families-products.json').products) for (const l of ['tr', 'en']) {

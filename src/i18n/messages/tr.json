@@ -28,6 +28,7 @@
     "allProducts": "Tüm ürünler",
     "allSolutions": "Tüm çözümler",
     "catalogSoon": "Ürün kataloğu yakında burada.",
+    "utility": "Hızlı bağlantılar",
     "downloads": "İndirmeler",
     "documentation": "Dokümantasyon",
     "releaseNotes": "Sürüm notları",
@@ -62,7 +63,8 @@
     "terms": "Kullanım koşulları",
     "eula": "Son kullanıcı lisans sözleşmesi (EULA)",
     "rights": "Tüm hakları saklıdır.",
-    "social": "Sosyal medya"
+    "social": "Sosyal medya",
+    "contact": "İletişim"
   },
   "home": {
     "eyebrow": "Kurumsal yazılım",

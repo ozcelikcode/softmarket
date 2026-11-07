@@ -68,6 +68,8 @@ export default buildConfig({
   admin: {
     // Only `users` (admin/editor) can enter the panel; `customers` is portal-only.
     user: Users.slug,
+    // Site icons live in public/ (F7: the frontend favicon is CMS-configurable, file-based app icons would override it).
+    meta: { icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/icon.svg' }] },
     importMap: {
       baseDir: path.resolve(dirname),
     },

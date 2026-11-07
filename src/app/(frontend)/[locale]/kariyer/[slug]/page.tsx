@@ -20,7 +20,7 @@ import { Section } from '@/components/ui/section'
 import { getCareer, getContactSettings, getSlugVariants, mediaOf } from '@/lib/content'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
 import { absoluteUrl, breadcrumbJsonLd, buildMetadata, seoText } from '@/lib/seo'
-import { safeHref } from '@/lib/utils'
+import { publicText, safeHref } from '@/lib/utils'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
@@ -62,7 +62,7 @@ export default async function CareerPage({ params }: Props) {
     description: job.summary || job.title, datePosted: job.publishedAt || undefined,
     employmentType: { 'full-time': 'FULL_TIME', 'part-time': 'PART_TIME', contract: 'CONTRACTOR', internship: 'INTERN' }[job.employmentType ?? 'full-time'],
     jobLocationType: job.workMode === 'remote' ? 'TELECOMMUTE' : undefined,
-    hiringOrganization: { '@type': 'Organization', name: settings?.siteName || c('siteName') },
+    hiringOrganization: { '@type': 'Organization', name: publicText(settings?.siteName) ?? c('siteName') },
     url: absoluteUrl(`/kariyer/${enc(slug)}`, locale),
   }
   return (

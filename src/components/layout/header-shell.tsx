@@ -16,7 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import type { MegaData, NavItem, NavLink } from '@/lib/site'
+import type { MegaData, NavItem, NavLink, PublicImage } from '@/lib/site'
 import { cn } from '@/lib/utils'
 
 import { LanguageSwitcher } from './language-switcher'
@@ -34,20 +34,28 @@ type Labels = {
   allProducts: string
   allSolutions: string
   catalogSoon: string
+  utility?: string
 }
+
+type Utility = { links: NavLink[]; search: boolean; language: boolean; account: boolean }
 
 type Props = {
   locale: string
   items: NavItem[]
   cta: NavLink
+  secondaryCta?: NavLink | null
   mega: MegaData
+  logo?: { dark: PublicImage | null; light: PublicImage | null }
+  utility?: Utility
   labels: Labels
 }
+
+const DEFAULT_UTILITY: Utility = { links: [], search: true, language: true, account: true }
 
 const triggerCls =
   'group inline-flex h-10 items-center gap-1 rounded-md px-3 text-small font-medium text-muted transition-colors hover:text-text data-[state=open]:text-text'
 
-export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
+export function HeaderShell({ locale, items, cta, secondaryCta, mega, logo, utility = DEFAULT_UTILITY, labels }: Props) {
   const pathname = usePathname()
   // Only portal pages open on a light surface (no hero): the transparent header must switch to light tokens there.
   // Every other page starts with a dark hero (PageHero default), so one rule keeps header and hero consistent.
@@ -80,7 +88,7 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
       )}
     >
       <Container className="flex h-16 items-center gap-6 lg:h-[4.5rem]">
-        <Logo locale={locale} label={labels.siteName} />
+        <Logo locale={locale} label={labels.siteName} image={light ? logo?.light : logo?.dark} />
 
         <NavigationMenu.Root aria-label={labels.menu} className="hidden flex-1 lg:block [&>div]:!static" style={{ position: 'static' }} delayDuration={80}>
           <NavigationMenu.List className="flex items-center gap-0.5">
@@ -105,6 +113,8 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
                               locale={locale}
                               labels={labels}
                             />
+                          ) : item.mega === 'custom' ? (
+                            <CustomMega item={item} locale={locale} />
                           ) : item.mega === 'solutions' ? (
                             <SimpleMega
                               item={item}
@@ -132,16 +142,25 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
         </NavigationMenu.Root>
 
         <div className="ml-auto flex items-center gap-1 lg:ml-0">
-          <AppLink
-            href="/ara"
-            locale={locale}
-            aria-label={labels.search}
-            className="inline-flex size-11 items-center justify-center rounded-md text-muted lg:size-9 transition-colors hover:bg-surface-2 hover:text-text"
-          >
-            <Search aria-hidden className="size-[18px]" />
-          </AppLink>
-          <LanguageSwitcher className="hidden sm:inline-flex" />
-          <AccountMenu locale={locale} labels={labels} />
+          {utility.search ? (
+            <AppLink
+              href="/ara"
+              locale={locale}
+              aria-label={labels.search}
+              className="inline-flex size-11 items-center justify-center rounded-md text-muted lg:size-9 transition-colors hover:bg-surface-2 hover:text-text"
+            >
+              <Search aria-hidden className="size-[18px]" />
+            </AppLink>
+          ) : null}
+          {utility.language ? <LanguageSwitcher className="hidden sm:inline-flex" /> : null}
+          {utility.account ? <AccountMenu locale={locale} labels={labels} /> : null}
+          {secondaryCta ? (
+            <Button asChild size="sm" variant="secondary" className="ml-2 hidden xl:inline-flex">
+              <AppLink href={secondaryCta.href} locale={locale} target={secondaryCta.newTab ? '_blank' : undefined}>
+                {secondaryCta.label}
+              </AppLink>
+            </Button>
+          ) : null}
           <Button asChild size="sm" className="ml-2 hidden sm:inline-flex">
             <AppLink href={cta.href} locale={locale} target={cta.newTab ? '_blank' : undefined}>
               {cta.label}
@@ -164,6 +183,9 @@ export function HeaderShell({ locale, items, cta, mega, labels }: Props) {
               <MobileNav
                 items={items}
                 cta={cta}
+                secondaryCta={secondaryCta}
+                logo={logo?.dark}
+                utility={utility}
                 mega={mega}
                 locale={locale}
                 labels={labels}
@@ -297,9 +319,88 @@ function SimpleMega({
   )
 }
 
+function CustomMega({ item, locale }: { item: NavItem; locale: string }) {
+  const columns = item.columns ?? []
+  const featured = item.featured
+  return (
+    <div className={cn('grid gap-10', featured && 'lg:grid-cols-[minmax(0,1fr)_19rem]')}>
+      <div className={cn('grid gap-x-10 gap-y-8', columns.length > 2 ? 'md:grid-cols-3' : 'md:grid-cols-2')}>
+        {columns.map((col, i) => (
+          <div key={(col.title ?? '') + i}>
+            {col.title ? <p className="text-eyebrow font-semibold uppercase text-muted">{col.title}</p> : null}
+            <ul className={cn('space-y-1', col.title && 'mt-3 border-t border-border pt-3')}>
+              {col.links.map((l) => (
+                <li key={l.href + l.label}>
+                  <NavigationMenu.Link asChild>
+                    <AppLink
+                      href={l.href}
+                      locale={locale}
+                      target={l.newTab ? '_blank' : undefined}
+                      className="group block rounded-md px-2 py-2 -mx-2 transition-colors hover:bg-surface-2"
+                    >
+                      <span className="text-small font-medium text-text group-hover:text-accent">{l.label}</span>
+                      {l.description ? <span className="mt-0.5 block text-small text-muted">{l.description}</span> : null}
+                    </AppLink>
+                  </NavigationMenu.Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      {featured ? <FeaturedCard featured={featured} locale={locale} /> : null}
+    </div>
+  )
+}
+
+function FeaturedCard({ featured, locale }: { featured: NonNullable<NavItem['featured']>; locale: string }) {
+  const body = (
+    <>
+      {featured.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={featured.image.url}
+          alt={featured.image.alt}
+          width={featured.image.width ?? undefined}
+          height={featured.image.height ?? undefined}
+          loading="lazy"
+          decoding="async"
+          className="mb-5 aspect-[16/9] w-full rounded-md border border-border object-cover"
+        />
+      ) : null}
+      <span className="text-h4 text-text">{featured.title}</span>
+      {featured.description ? <span className="mt-2 block text-small text-muted">{featured.description}</span> : null}
+      {featured.link ? (
+        <span className="mt-4 inline-flex items-center gap-1 text-small font-medium text-accent">
+          {featured.link.label}
+          <ArrowRight aria-hidden className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </span>
+      ) : null}
+    </>
+  )
+  const cls = 'bg-brand-pattern group relative flex flex-col overflow-hidden rounded-lg border border-border p-6'
+  return featured.link ? (
+    <NavigationMenu.Link asChild>
+      <AppLink
+        href={featured.link.href}
+        locale={locale}
+        target={featured.link.newTab ? '_blank' : undefined}
+        className={cn(cls, 'card-hover hover:border-border-strong')}
+      >
+        {body}
+      </AppLink>
+    </NavigationMenu.Link>
+  ) : (
+    <div className={cls}>{body}</div>
+  )
+}
+
 function MobileNav({
   items,
   cta,
+  secondaryCta,
+  logo,
+  utility,
   mega,
   locale,
   labels,
@@ -307,6 +408,9 @@ function MobileNav({
 }: {
   items: NavItem[]
   cta: NavLink
+  secondaryCta?: NavLink | null
+  logo?: PublicImage | null
+  utility: Utility
   mega: MegaData
   locale: string
   labels: Labels
@@ -317,13 +421,18 @@ function MobileNav({
       ? mega.families.map((f) => ({ label: f.title, href: f.href }))
       : item.mega === 'solutions'
         ? mega.solutions
-        : (item.children ?? [])
+        : item.mega === 'custom'
+          ? [
+              ...(item.columns ?? []).flatMap((col) => col.links),
+              ...(item.featured?.link ? [{ ...item.featured.link, label: item.featured.title }] : []),
+            ]
+          : (item.children ?? [])
 
   const row = 'flex min-h-11 w-full font-semibold items-center justify-between py-3.5 text-h4 text-text'
   return (
     <div className="flex h-full flex-col overflow-y-auto px-6 pb-8 pt-4">
       <div className="mb-4 flex h-12 items-center pr-14">
-        <Logo locale={locale} label={labels.siteName} onClick={onNavigate} />
+        <Logo locale={locale} label={labels.siteName} image={logo} onClick={onNavigate} />
       </div>
       <nav aria-label={labels.menu} className="flex-1">
         <ul className="divide-y divide-border">
@@ -379,12 +488,34 @@ function MobileNav({
             {cta.label}
           </AppLink>
         </Button>
+        {secondaryCta ? (
+          <Button asChild size="lg" variant="secondary" className="w-full">
+            <AppLink href={secondaryCta.href} locale={locale} target={secondaryCta.newTab ? '_blank' : undefined} onClick={onNavigate}>
+              {secondaryCta.label}
+            </AppLink>
+          </Button>
+        ) : null}
+        {utility.links.length ? (
+          <nav aria-label={labels.utility}>
+            <ul className="flex flex-wrap gap-x-5">
+              {utility.links.map((l) => (
+                <li key={l.href + l.label}>
+                  <AppLink href={l.href} locale={locale} target={l.newTab ? '_blank' : undefined} onClick={onNavigate} className="inline-flex min-h-11 items-center text-small text-muted hover:text-text">
+                    {l.label}
+                  </AppLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : null}
         <div className="flex items-center justify-between">
-          <AppLink href="/hesap" locale={locale} onClick={onNavigate} className="inline-flex min-h-11 items-center gap-2 text-small text-muted hover:text-text">
-            <User aria-hidden className="size-4" />
-            {labels.account}
-          </AppLink>
-          <LanguageSwitcher onNavigate={onNavigate} />
+          {utility.account ? (
+            <AppLink href="/hesap" locale={locale} onClick={onNavigate} className="inline-flex min-h-11 items-center gap-2 text-small text-muted hover:text-text">
+              <User aria-hidden className="size-4" />
+              {labels.account}
+            </AppLink>
+          ) : <span />}
+          {utility.language ? <LanguageSwitcher onNavigate={onNavigate} /> : null}
         </div>
 
       </div>

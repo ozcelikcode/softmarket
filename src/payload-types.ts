@@ -527,7 +527,7 @@ export interface HeroBlock {
   actions?:
     | {
         link?: {
-          type?: ('internal' | 'external') | null;
+          type?: ('internal' | 'external' | 'route') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -566,6 +566,52 @@ export interface HeroBlock {
                 relationTo: 'docs';
                 value: number | Doc;
               } | null);
+          /**
+           * No locale prefix: the EN address is resolved automatically.
+           */
+          route?:
+            | (
+                | 'home'
+                | 'urunler'
+                | 'urunler_family'
+                | 'cozumler'
+                | 'cozumler_slug'
+                | 'destek'
+                | 'destek_indirmeler'
+                | 'destek_dokumantasyon'
+                | 'destek_dokumantasyon_product'
+                | 'destek_surum-notlari'
+                | 'destek_sss'
+                | 'destek_talep'
+                | 'destek_iletisim'
+                | 'sirket_hakkimizda'
+                | 'referanslar'
+                | 'referanslar_slug'
+                | 'haberler'
+                | 'haberler_slug'
+                | 'kariyer'
+                | 'kariyer_slug'
+                | 'is-ortaklari'
+                | 'iletisim'
+                | 'demo-talep'
+                | 'teklif-iste'
+                | 'hesap'
+                | 'hesap_lisanslar'
+                | 'hesap_indirmeler'
+                | 'hesap_talepler'
+                | 'hesap_talepler_yeni'
+                | 'hesap_giris'
+                | 'hesap_kayit'
+                | 'hesap_sifremi-unuttum'
+                | 'hesap_profil'
+                | 'ara'
+                | 'yasal_slug'
+              )
+            | null;
+          /**
+           * e.g. kvkk-aydinlatma
+           */
+          routeParam?: string | null;
           url?: string | null;
           label?: string | null;
           appearance?: ('primary' | 'secondary' | 'link') | null;
@@ -733,7 +779,7 @@ export interface MediaTextBlock {
   actions?:
     | {
         link?: {
-          type?: ('internal' | 'external') | null;
+          type?: ('internal' | 'external' | 'route') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -772,6 +818,52 @@ export interface MediaTextBlock {
                 relationTo: 'docs';
                 value: number | Doc;
               } | null);
+          /**
+           * No locale prefix: the EN address is resolved automatically.
+           */
+          route?:
+            | (
+                | 'home'
+                | 'urunler'
+                | 'urunler_family'
+                | 'cozumler'
+                | 'cozumler_slug'
+                | 'destek'
+                | 'destek_indirmeler'
+                | 'destek_dokumantasyon'
+                | 'destek_dokumantasyon_product'
+                | 'destek_surum-notlari'
+                | 'destek_sss'
+                | 'destek_talep'
+                | 'destek_iletisim'
+                | 'sirket_hakkimizda'
+                | 'referanslar'
+                | 'referanslar_slug'
+                | 'haberler'
+                | 'haberler_slug'
+                | 'kariyer'
+                | 'kariyer_slug'
+                | 'is-ortaklari'
+                | 'iletisim'
+                | 'demo-talep'
+                | 'teklif-iste'
+                | 'hesap'
+                | 'hesap_lisanslar'
+                | 'hesap_indirmeler'
+                | 'hesap_talepler'
+                | 'hesap_talepler_yeni'
+                | 'hesap_giris'
+                | 'hesap_kayit'
+                | 'hesap_sifremi-unuttum'
+                | 'hesap_profil'
+                | 'ara'
+                | 'yasal_slug'
+              )
+            | null;
+          /**
+           * e.g. kvkk-aydinlatma
+           */
+          routeParam?: string | null;
           url?: string | null;
           label?: string | null;
           appearance?: ('primary' | 'secondary' | 'link') | null;
@@ -1085,7 +1177,7 @@ export interface CTABlock {
   actions?:
     | {
         link?: {
-          type?: ('internal' | 'external') | null;
+          type?: ('internal' | 'external' | 'route') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -1124,6 +1216,52 @@ export interface CTABlock {
                 relationTo: 'docs';
                 value: number | Doc;
               } | null);
+          /**
+           * No locale prefix: the EN address is resolved automatically.
+           */
+          route?:
+            | (
+                | 'home'
+                | 'urunler'
+                | 'urunler_family'
+                | 'cozumler'
+                | 'cozumler_slug'
+                | 'destek'
+                | 'destek_indirmeler'
+                | 'destek_dokumantasyon'
+                | 'destek_dokumantasyon_product'
+                | 'destek_surum-notlari'
+                | 'destek_sss'
+                | 'destek_talep'
+                | 'destek_iletisim'
+                | 'sirket_hakkimizda'
+                | 'referanslar'
+                | 'referanslar_slug'
+                | 'haberler'
+                | 'haberler_slug'
+                | 'kariyer'
+                | 'kariyer_slug'
+                | 'is-ortaklari'
+                | 'iletisim'
+                | 'demo-talep'
+                | 'teklif-iste'
+                | 'hesap'
+                | 'hesap_lisanslar'
+                | 'hesap_indirmeler'
+                | 'hesap_talepler'
+                | 'hesap_talepler_yeni'
+                | 'hesap_giris'
+                | 'hesap_kayit'
+                | 'hesap_sifremi-unuttum'
+                | 'hesap_profil'
+                | 'ara'
+                | 'yasal_slug'
+              )
+            | null;
+          /**
+           * e.g. kvkk-aydinlatma
+           */
+          routeParam?: string | null;
           url?: string | null;
           label?: string | null;
           appearance?: ('primary' | 'secondary' | 'link') | null;
@@ -3025,6 +3163,8 @@ export interface HeroBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
+              routeParam?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -3095,6 +3235,8 @@ export interface MediaTextBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
+              routeParam?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -3225,6 +3367,8 @@ export interface CTABlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
+              routeParam?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -4375,7 +4519,7 @@ export interface Header {
   navItems?:
     | {
         link?: {
-          type?: ('internal' | 'external') | null;
+          type?: ('internal' | 'external' | 'route') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -4414,17 +4558,63 @@ export interface Header {
                 relationTo: 'docs';
                 value: number | Doc;
               } | null);
+          /**
+           * No locale prefix: the EN address is resolved automatically.
+           */
+          route?:
+            | (
+                | 'home'
+                | 'urunler'
+                | 'urunler_family'
+                | 'cozumler'
+                | 'cozumler_slug'
+                | 'destek'
+                | 'destek_indirmeler'
+                | 'destek_dokumantasyon'
+                | 'destek_dokumantasyon_product'
+                | 'destek_surum-notlari'
+                | 'destek_sss'
+                | 'destek_talep'
+                | 'destek_iletisim'
+                | 'sirket_hakkimizda'
+                | 'referanslar'
+                | 'referanslar_slug'
+                | 'haberler'
+                | 'haberler_slug'
+                | 'kariyer'
+                | 'kariyer_slug'
+                | 'is-ortaklari'
+                | 'iletisim'
+                | 'demo-talep'
+                | 'teklif-iste'
+                | 'hesap'
+                | 'hesap_lisanslar'
+                | 'hesap_indirmeler'
+                | 'hesap_talepler'
+                | 'hesap_talepler_yeni'
+                | 'hesap_giris'
+                | 'hesap_kayit'
+                | 'hesap_sifremi-unuttum'
+                | 'hesap_profil'
+                | 'ara'
+                | 'yasal_slug'
+              )
+            | null;
+          /**
+           * e.g. kvkk-aydinlatma
+           */
+          routeParam?: string | null;
           url?: string | null;
           label?: string | null;
         };
         /**
-         * Auto-generated mega menu instead of manual children.
+         * Automatic (products/solutions) or custom column mega menu. Empty: children become a dropdown.
          */
-        megaMenu?: ('products' | 'solutions') | null;
+        megaMenu?: ('products' | 'solutions' | 'custom') | null;
         children?:
           | {
               link?: {
-                type?: ('internal' | 'external') | null;
+                type?: ('internal' | 'external' | 'route') | null;
                 newTab?: boolean | null;
                 reference?:
                   | ({
@@ -4463,6 +4653,52 @@ export interface Header {
                       relationTo: 'docs';
                       value: number | Doc;
                     } | null);
+                /**
+                 * No locale prefix: the EN address is resolved automatically.
+                 */
+                route?:
+                  | (
+                      | 'home'
+                      | 'urunler'
+                      | 'urunler_family'
+                      | 'cozumler'
+                      | 'cozumler_slug'
+                      | 'destek'
+                      | 'destek_indirmeler'
+                      | 'destek_dokumantasyon'
+                      | 'destek_dokumantasyon_product'
+                      | 'destek_surum-notlari'
+                      | 'destek_sss'
+                      | 'destek_talep'
+                      | 'destek_iletisim'
+                      | 'sirket_hakkimizda'
+                      | 'referanslar'
+                      | 'referanslar_slug'
+                      | 'haberler'
+                      | 'haberler_slug'
+                      | 'kariyer'
+                      | 'kariyer_slug'
+                      | 'is-ortaklari'
+                      | 'iletisim'
+                      | 'demo-talep'
+                      | 'teklif-iste'
+                      | 'hesap'
+                      | 'hesap_lisanslar'
+                      | 'hesap_indirmeler'
+                      | 'hesap_talepler'
+                      | 'hesap_talepler_yeni'
+                      | 'hesap_giris'
+                      | 'hesap_kayit'
+                      | 'hesap_sifremi-unuttum'
+                      | 'hesap_profil'
+                      | 'ara'
+                      | 'yasal_slug'
+                    )
+                  | null;
+                /**
+                 * e.g. kvkk-aydinlatma
+                 */
+                routeParam?: string | null;
                 url?: string | null;
                 label?: string | null;
               };
@@ -4470,15 +4706,210 @@ export interface Header {
               id?: string | null;
             }[]
           | null;
+        columns?:
+          | {
+              title?: string | null;
+              links?:
+                | {
+                    link?: {
+                      type?: ('internal' | 'external' | 'route') | null;
+                      newTab?: boolean | null;
+                      reference?:
+                        | ({
+                            relationTo: 'pages';
+                            value: number | Page;
+                          } | null)
+                        | ({
+                            relationTo: 'products';
+                            value: number | Product;
+                          } | null)
+                        | ({
+                            relationTo: 'product-families';
+                            value: number | ProductFamily;
+                          } | null)
+                        | ({
+                            relationTo: 'solutions';
+                            value: number | Solution;
+                          } | null)
+                        | ({
+                            relationTo: 'industries';
+                            value: number | Industry;
+                          } | null)
+                        | ({
+                            relationTo: 'case-studies';
+                            value: number | CaseStudy;
+                          } | null)
+                        | ({
+                            relationTo: 'posts';
+                            value: number | Post;
+                          } | null)
+                        | ({
+                            relationTo: 'careers';
+                            value: number | Career;
+                          } | null)
+                        | ({
+                            relationTo: 'docs';
+                            value: number | Doc;
+                          } | null);
+                      /**
+                       * No locale prefix: the EN address is resolved automatically.
+                       */
+                      route?:
+                        | (
+                            | 'home'
+                            | 'urunler'
+                            | 'urunler_family'
+                            | 'cozumler'
+                            | 'cozumler_slug'
+                            | 'destek'
+                            | 'destek_indirmeler'
+                            | 'destek_dokumantasyon'
+                            | 'destek_dokumantasyon_product'
+                            | 'destek_surum-notlari'
+                            | 'destek_sss'
+                            | 'destek_talep'
+                            | 'destek_iletisim'
+                            | 'sirket_hakkimizda'
+                            | 'referanslar'
+                            | 'referanslar_slug'
+                            | 'haberler'
+                            | 'haberler_slug'
+                            | 'kariyer'
+                            | 'kariyer_slug'
+                            | 'is-ortaklari'
+                            | 'iletisim'
+                            | 'demo-talep'
+                            | 'teklif-iste'
+                            | 'hesap'
+                            | 'hesap_lisanslar'
+                            | 'hesap_indirmeler'
+                            | 'hesap_talepler'
+                            | 'hesap_talepler_yeni'
+                            | 'hesap_giris'
+                            | 'hesap_kayit'
+                            | 'hesap_sifremi-unuttum'
+                            | 'hesap_profil'
+                            | 'ara'
+                            | 'yasal_slug'
+                          )
+                        | null;
+                      /**
+                       * e.g. kvkk-aydinlatma
+                       */
+                      routeParam?: string | null;
+                      url?: string | null;
+                      label?: string | null;
+                    };
+                    description?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        featured?: {
+          title?: string | null;
+          description?: string | null;
+          image?: (number | null) | Media;
+          link?: {
+            type?: ('internal' | 'external' | 'route') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'products';
+                  value: number | Product;
+                } | null)
+              | ({
+                  relationTo: 'product-families';
+                  value: number | ProductFamily;
+                } | null)
+              | ({
+                  relationTo: 'solutions';
+                  value: number | Solution;
+                } | null)
+              | ({
+                  relationTo: 'industries';
+                  value: number | Industry;
+                } | null)
+              | ({
+                  relationTo: 'case-studies';
+                  value: number | CaseStudy;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'careers';
+                  value: number | Career;
+                } | null)
+              | ({
+                  relationTo: 'docs';
+                  value: number | Doc;
+                } | null);
+            /**
+             * No locale prefix: the EN address is resolved automatically.
+             */
+            route?:
+              | (
+                  | 'home'
+                  | 'urunler'
+                  | 'urunler_family'
+                  | 'cozumler'
+                  | 'cozumler_slug'
+                  | 'destek'
+                  | 'destek_indirmeler'
+                  | 'destek_dokumantasyon'
+                  | 'destek_dokumantasyon_product'
+                  | 'destek_surum-notlari'
+                  | 'destek_sss'
+                  | 'destek_talep'
+                  | 'destek_iletisim'
+                  | 'sirket_hakkimizda'
+                  | 'referanslar'
+                  | 'referanslar_slug'
+                  | 'haberler'
+                  | 'haberler_slug'
+                  | 'kariyer'
+                  | 'kariyer_slug'
+                  | 'is-ortaklari'
+                  | 'iletisim'
+                  | 'demo-talep'
+                  | 'teklif-iste'
+                  | 'hesap'
+                  | 'hesap_lisanslar'
+                  | 'hesap_indirmeler'
+                  | 'hesap_talepler'
+                  | 'hesap_talepler_yeni'
+                  | 'hesap_giris'
+                  | 'hesap_kayit'
+                  | 'hesap_sifremi-unuttum'
+                  | 'hesap_profil'
+                  | 'ara'
+                  | 'yasal_slug'
+                )
+              | null;
+            /**
+             * e.g. kvkk-aydinlatma
+             */
+            routeParam?: string | null;
+            url?: string | null;
+            label?: string | null;
+          };
+        };
         id?: string | null;
       }[]
     | null;
   /**
-   * Primary header button (e.g. "Demo İste").
+   * Primary button (e.g. "Request a demo") and an optional second button.
    */
   cta?: {
     link?: {
-      type?: ('internal' | 'external') | null;
+      type?: ('internal' | 'external' | 'route') | null;
       newTab?: boolean | null;
       reference?:
         | ({
@@ -4517,9 +4948,340 @@ export interface Header {
             relationTo: 'docs';
             value: number | Doc;
           } | null);
+      /**
+       * No locale prefix: the EN address is resolved automatically.
+       */
+      route?:
+        | (
+            | 'home'
+            | 'urunler'
+            | 'urunler_family'
+            | 'cozumler'
+            | 'cozumler_slug'
+            | 'destek'
+            | 'destek_indirmeler'
+            | 'destek_dokumantasyon'
+            | 'destek_dokumantasyon_product'
+            | 'destek_surum-notlari'
+            | 'destek_sss'
+            | 'destek_talep'
+            | 'destek_iletisim'
+            | 'sirket_hakkimizda'
+            | 'referanslar'
+            | 'referanslar_slug'
+            | 'haberler'
+            | 'haberler_slug'
+            | 'kariyer'
+            | 'kariyer_slug'
+            | 'is-ortaklari'
+            | 'iletisim'
+            | 'demo-talep'
+            | 'teklif-iste'
+            | 'hesap'
+            | 'hesap_lisanslar'
+            | 'hesap_indirmeler'
+            | 'hesap_talepler'
+            | 'hesap_talepler_yeni'
+            | 'hesap_giris'
+            | 'hesap_kayit'
+            | 'hesap_sifremi-unuttum'
+            | 'hesap_profil'
+            | 'ara'
+            | 'yasal_slug'
+          )
+        | null;
+      /**
+       * e.g. kvkk-aydinlatma
+       */
+      routeParam?: string | null;
       url?: string | null;
       label?: string | null;
     };
+    secondary?: {
+      type?: ('internal' | 'external' | 'route') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'products';
+            value: number | Product;
+          } | null)
+        | ({
+            relationTo: 'product-families';
+            value: number | ProductFamily;
+          } | null)
+        | ({
+            relationTo: 'solutions';
+            value: number | Solution;
+          } | null)
+        | ({
+            relationTo: 'industries';
+            value: number | Industry;
+          } | null)
+        | ({
+            relationTo: 'case-studies';
+            value: number | CaseStudy;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'careers';
+            value: number | Career;
+          } | null)
+        | ({
+            relationTo: 'docs';
+            value: number | Doc;
+          } | null);
+      /**
+       * No locale prefix: the EN address is resolved automatically.
+       */
+      route?:
+        | (
+            | 'home'
+            | 'urunler'
+            | 'urunler_family'
+            | 'cozumler'
+            | 'cozumler_slug'
+            | 'destek'
+            | 'destek_indirmeler'
+            | 'destek_dokumantasyon'
+            | 'destek_dokumantasyon_product'
+            | 'destek_surum-notlari'
+            | 'destek_sss'
+            | 'destek_talep'
+            | 'destek_iletisim'
+            | 'sirket_hakkimizda'
+            | 'referanslar'
+            | 'referanslar_slug'
+            | 'haberler'
+            | 'haberler_slug'
+            | 'kariyer'
+            | 'kariyer_slug'
+            | 'is-ortaklari'
+            | 'iletisim'
+            | 'demo-talep'
+            | 'teklif-iste'
+            | 'hesap'
+            | 'hesap_lisanslar'
+            | 'hesap_indirmeler'
+            | 'hesap_talepler'
+            | 'hesap_talepler_yeni'
+            | 'hesap_giris'
+            | 'hesap_kayit'
+            | 'hesap_sifremi-unuttum'
+            | 'hesap_profil'
+            | 'ara'
+            | 'yasal_slug'
+          )
+        | null;
+      /**
+       * e.g. kvkk-aydinlatma
+       */
+      routeParam?: string | null;
+      url?: string | null;
+      label?: string | null;
+    };
+  };
+  announcement?: {
+    enabled?: boolean | null;
+    text?: string | null;
+    /**
+     * The bar reappears when the text changes.
+     */
+    dismissible?: boolean | null;
+    link?: {
+      type?: ('internal' | 'external' | 'route') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'products';
+            value: number | Product;
+          } | null)
+        | ({
+            relationTo: 'product-families';
+            value: number | ProductFamily;
+          } | null)
+        | ({
+            relationTo: 'solutions';
+            value: number | Solution;
+          } | null)
+        | ({
+            relationTo: 'industries';
+            value: number | Industry;
+          } | null)
+        | ({
+            relationTo: 'case-studies';
+            value: number | CaseStudy;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'careers';
+            value: number | Career;
+          } | null)
+        | ({
+            relationTo: 'docs';
+            value: number | Doc;
+          } | null);
+      /**
+       * No locale prefix: the EN address is resolved automatically.
+       */
+      route?:
+        | (
+            | 'home'
+            | 'urunler'
+            | 'urunler_family'
+            | 'cozumler'
+            | 'cozumler_slug'
+            | 'destek'
+            | 'destek_indirmeler'
+            | 'destek_dokumantasyon'
+            | 'destek_dokumantasyon_product'
+            | 'destek_surum-notlari'
+            | 'destek_sss'
+            | 'destek_talep'
+            | 'destek_iletisim'
+            | 'sirket_hakkimizda'
+            | 'referanslar'
+            | 'referanslar_slug'
+            | 'haberler'
+            | 'haberler_slug'
+            | 'kariyer'
+            | 'kariyer_slug'
+            | 'is-ortaklari'
+            | 'iletisim'
+            | 'demo-talep'
+            | 'teklif-iste'
+            | 'hesap'
+            | 'hesap_lisanslar'
+            | 'hesap_indirmeler'
+            | 'hesap_talepler'
+            | 'hesap_talepler_yeni'
+            | 'hesap_giris'
+            | 'hesap_kayit'
+            | 'hesap_sifremi-unuttum'
+            | 'hesap_profil'
+            | 'ara'
+            | 'yasal_slug'
+          )
+        | null;
+      /**
+       * e.g. kvkk-aydinlatma
+       */
+      routeParam?: string | null;
+      url?: string | null;
+      label?: string | null;
+    };
+  };
+  utility?: {
+    links?:
+      | {
+          link?: {
+            type?: ('internal' | 'external' | 'route') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'products';
+                  value: number | Product;
+                } | null)
+              | ({
+                  relationTo: 'product-families';
+                  value: number | ProductFamily;
+                } | null)
+              | ({
+                  relationTo: 'solutions';
+                  value: number | Solution;
+                } | null)
+              | ({
+                  relationTo: 'industries';
+                  value: number | Industry;
+                } | null)
+              | ({
+                  relationTo: 'case-studies';
+                  value: number | CaseStudy;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'careers';
+                  value: number | Career;
+                } | null)
+              | ({
+                  relationTo: 'docs';
+                  value: number | Doc;
+                } | null);
+            /**
+             * No locale prefix: the EN address is resolved automatically.
+             */
+            route?:
+              | (
+                  | 'home'
+                  | 'urunler'
+                  | 'urunler_family'
+                  | 'cozumler'
+                  | 'cozumler_slug'
+                  | 'destek'
+                  | 'destek_indirmeler'
+                  | 'destek_dokumantasyon'
+                  | 'destek_dokumantasyon_product'
+                  | 'destek_surum-notlari'
+                  | 'destek_sss'
+                  | 'destek_talep'
+                  | 'destek_iletisim'
+                  | 'sirket_hakkimizda'
+                  | 'referanslar'
+                  | 'referanslar_slug'
+                  | 'haberler'
+                  | 'haberler_slug'
+                  | 'kariyer'
+                  | 'kariyer_slug'
+                  | 'is-ortaklari'
+                  | 'iletisim'
+                  | 'demo-talep'
+                  | 'teklif-iste'
+                  | 'hesap'
+                  | 'hesap_lisanslar'
+                  | 'hesap_indirmeler'
+                  | 'hesap_talepler'
+                  | 'hesap_talepler_yeni'
+                  | 'hesap_giris'
+                  | 'hesap_kayit'
+                  | 'hesap_sifremi-unuttum'
+                  | 'hesap_profil'
+                  | 'ara'
+                  | 'yasal_slug'
+                )
+              | null;
+            /**
+             * e.g. kvkk-aydinlatma
+             */
+            routeParam?: string | null;
+            url?: string | null;
+            label?: string | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    showSearch?: boolean | null;
+    showLanguage?: boolean | null;
+    showAccount?: boolean | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -4536,7 +5298,7 @@ export interface Footer {
         links?:
           | {
               link?: {
-                type?: ('internal' | 'external') | null;
+                type?: ('internal' | 'external' | 'route') | null;
                 newTab?: boolean | null;
                 reference?:
                   | ({
@@ -4575,6 +5337,52 @@ export interface Footer {
                       relationTo: 'docs';
                       value: number | Doc;
                     } | null);
+                /**
+                 * No locale prefix: the EN address is resolved automatically.
+                 */
+                route?:
+                  | (
+                      | 'home'
+                      | 'urunler'
+                      | 'urunler_family'
+                      | 'cozumler'
+                      | 'cozumler_slug'
+                      | 'destek'
+                      | 'destek_indirmeler'
+                      | 'destek_dokumantasyon'
+                      | 'destek_dokumantasyon_product'
+                      | 'destek_surum-notlari'
+                      | 'destek_sss'
+                      | 'destek_talep'
+                      | 'destek_iletisim'
+                      | 'sirket_hakkimizda'
+                      | 'referanslar'
+                      | 'referanslar_slug'
+                      | 'haberler'
+                      | 'haberler_slug'
+                      | 'kariyer'
+                      | 'kariyer_slug'
+                      | 'is-ortaklari'
+                      | 'iletisim'
+                      | 'demo-talep'
+                      | 'teklif-iste'
+                      | 'hesap'
+                      | 'hesap_lisanslar'
+                      | 'hesap_indirmeler'
+                      | 'hesap_talepler'
+                      | 'hesap_talepler_yeni'
+                      | 'hesap_giris'
+                      | 'hesap_kayit'
+                      | 'hesap_sifremi-unuttum'
+                      | 'hesap_profil'
+                      | 'ara'
+                      | 'yasal_slug'
+                    )
+                  | null;
+                /**
+                 * e.g. kvkk-aydinlatma
+                 */
+                routeParam?: string | null;
                 url?: string | null;
                 label?: string | null;
               };
@@ -4587,7 +5395,7 @@ export interface Footer {
   legalLinks?:
     | {
         link?: {
-          type?: ('internal' | 'external') | null;
+          type?: ('internal' | 'external' | 'route') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -4626,15 +5434,70 @@ export interface Footer {
                 relationTo: 'docs';
                 value: number | Doc;
               } | null);
+          /**
+           * No locale prefix: the EN address is resolved automatically.
+           */
+          route?:
+            | (
+                | 'home'
+                | 'urunler'
+                | 'urunler_family'
+                | 'cozumler'
+                | 'cozumler_slug'
+                | 'destek'
+                | 'destek_indirmeler'
+                | 'destek_dokumantasyon'
+                | 'destek_dokumantasyon_product'
+                | 'destek_surum-notlari'
+                | 'destek_sss'
+                | 'destek_talep'
+                | 'destek_iletisim'
+                | 'sirket_hakkimizda'
+                | 'referanslar'
+                | 'referanslar_slug'
+                | 'haberler'
+                | 'haberler_slug'
+                | 'kariyer'
+                | 'kariyer_slug'
+                | 'is-ortaklari'
+                | 'iletisim'
+                | 'demo-talep'
+                | 'teklif-iste'
+                | 'hesap'
+                | 'hesap_lisanslar'
+                | 'hesap_indirmeler'
+                | 'hesap_talepler'
+                | 'hesap_talepler_yeni'
+                | 'hesap_giris'
+                | 'hesap_kayit'
+                | 'hesap_sifremi-unuttum'
+                | 'hesap_profil'
+                | 'ara'
+                | 'yasal_slug'
+              )
+            | null;
+          /**
+           * e.g. kvkk-aydinlatma
+           */
+          routeParam?: string | null;
           url?: string | null;
           label?: string | null;
         };
         id?: string | null;
       }[]
     | null;
+  /**
+   * Supports {year} and {siteName}. Empty: "© {year} {siteName}. All rights reserved."
+   */
   copyright?: string | null;
   showNewsletter?: boolean | null;
   newsletterForm?: (number | null) | Form;
+  /**
+   * Short text under the logo. Empty: the site tagline.
+   */
+  brandBlurb?: string | null;
+  showContact?: boolean | null;
+  showSocial?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4646,9 +5509,29 @@ export interface SiteSetting {
   id: number;
   siteName: string;
   tagline?: string | null;
+  /**
+   * For light backgrounds (public media). Empty: default mark + site name.
+   */
   logo?: (number | null) | Media;
+  /**
+   * For dark backgrounds (header/footer). Empty: "logo" is used.
+   */
   logoDark?: (number | null) | Media;
   defaultOgImage?: (number | null) | Media;
+  /**
+   * Square PNG/SVG/ICO (public). Empty: default icon.
+   */
+  favicon?: (number | null) | Media;
+  brand?: {
+    /**
+     * Single accent color. Dark/light, hover and button text tones are derived; saving is rejected below WCAG AA (4.5:1). Empty: default palette.
+     */
+    accent?: string | null;
+  };
+  /**
+   * "None" turns off all site animations.
+   */
+  motion?: ('subtle' | 'none') | null;
   company?: {
     legalName?: string | null;
     taxOffice?: string | null;
@@ -4703,6 +5586,8 @@ export interface HeaderSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
+              routeParam?: T;
               url?: T;
               label?: T;
             };
@@ -4716,11 +5601,54 @@ export interface HeaderSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    route?: T;
+                    routeParam?: T;
                     url?: T;
                     label?: T;
                   };
               description?: T;
               id?: T;
+            };
+        columns?:
+          | T
+          | {
+              title?: T;
+              links?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          route?: T;
+                          routeParam?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        featured?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    route?: T;
+                    routeParam?: T;
+                    url?: T;
+                    label?: T;
+                  };
             };
         id?: T;
       };
@@ -4733,9 +5661,63 @@ export interface HeaderSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
+              routeParam?: T;
               url?: T;
               label?: T;
             };
+        secondary?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              route?: T;
+              routeParam?: T;
+              url?: T;
+              label?: T;
+            };
+      };
+  announcement?:
+    | T
+    | {
+        enabled?: T;
+        text?: T;
+        dismissible?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              route?: T;
+              routeParam?: T;
+              url?: T;
+              label?: T;
+            };
+      };
+  utility?:
+    | T
+    | {
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    route?: T;
+                    routeParam?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
+            };
+        showSearch?: T;
+        showLanguage?: T;
+        showAccount?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -4759,6 +5741,8 @@ export interface FooterSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    route?: T;
+                    routeParam?: T;
                     url?: T;
                     label?: T;
                   };
@@ -4775,6 +5759,8 @@ export interface FooterSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
+              routeParam?: T;
               url?: T;
               label?: T;
             };
@@ -4783,6 +5769,9 @@ export interface FooterSelect<T extends boolean = true> {
   copyright?: T;
   showNewsletter?: T;
   newsletterForm?: T;
+  brandBlurb?: T;
+  showContact?: T;
+  showSocial?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -4797,6 +5786,13 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   logo?: T;
   logoDark?: T;
   defaultOgImage?: T;
+  favicon?: T;
+  brand?:
+    | T
+    | {
+        accent?: T;
+      };
+  motion?: T;
   company?:
     | T
     | {

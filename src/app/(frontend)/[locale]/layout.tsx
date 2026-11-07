@@ -6,14 +6,16 @@ import { GeistSans } from 'geist/font/sans'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import { CloudflareAnalytics } from '@/components/analytics/cloudflare'
 import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
 import { routing } from '@/i18n/routing'
 import { AlternatesProvider } from '@/lib/alternates-store'
+import { accentStyle } from '@/lib/brand'
 import { siteUrl } from '@/lib/seo'
+import { getSiteSettings, siteIdentity } from '@/lib/site'
 
 import '../globals.css'
 
@@ -28,10 +30,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) return {}
-  const t = await getTranslations({ locale, namespace: 'common' })
+  const [t, settings] = await Promise.all([getTranslations({ locale, namespace: 'common' }), getSiteSettings(locale)])
+  const site = siteIdentity(settings, t('siteName'))
+  const tagline = site.tagline ?? t('tagline')
+  // Icons live in public/ (not app/ file conventions, which would override a CMS favicon).
+  const favicon = site.favicon
   return {
-    title: { default: `${t('siteName')} | ${t('tagline')}`, template: `%s | ${t('siteName')}` },
-    description: t('tagline'),
+    title: { default: `${site.name} | ${tagline}`, template: `%s | ${site.name}` },
+    description: tagline,
+    applicationName: site.name,
+    icons: favicon
+      ? { icon: [{ url: favicon.url }], apple: [{ url: favicon.url }] }
+      : {
+          icon: [{ url: '/favicon.ico', sizes: 'any' }, { url: '/icon.svg', type: 'image/svg+xml' }],
+          apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
+        },
     metadataBase: new URL(siteUrl()),
     openGraph: { images: [`/${locale}/opengraph-image`] },
     twitter: { card: 'summary_large_image', images: [`/${locale}/opengraph-image`] },
@@ -48,12 +61,17 @@ export default async function LocaleLayout({
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
-  const t = await getTranslations({ locale, namespace: 'common' })
+  const [t, settings] = await Promise.all([getTranslations({ locale, namespace: 'common' }), getSiteSettings(locale)])
+  const site = siteIdentity(settings, t('siteName'))
 
   return (
     <html
       lang={locale}
       data-theme="dark"
+      // SiteSettings.motion=none: globals.css + MotionObserver keep everything static.
+      data-motion={site.motion === 'none' ? 'none' : undefined}
+      // SiteSettings.brand.accent: validated/derived tones as CSS variables (inline style attribute, CSP style-src allows it).
+      style={accentStyle(site.accent) as CSSProperties}
       className={`${GeistSans.variable} ${GeistMono.variable}`}
       suppressHydrationWarning
     >

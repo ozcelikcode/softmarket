@@ -40,6 +40,8 @@ beforeAll(async () => {
   await payload.db.migrate({ migrations: migrations.slice(0, index + 1) as unknown as MigrateArgs })
   // Payload's schema also contains the F5 tables; they are independent of F4, so keep them applied for reads.
   await migrations.find((m) => m.name === '20261107_130000_blocks_dynamic_set')!.up(args())
+  // F7 adds link route columns to hero/CTA action tables (independent of F4): keep applied for reads.
+  await migrations.find((m) => m.name === '20261107_141523_globals_editable')!.up(args())
 }, 60000)
 afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
 

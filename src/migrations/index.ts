@@ -9,6 +9,7 @@ import * as migration_20261107_110012_blocks_appearance from './20261107_110012_
 import * as migration_20261107_111754_blocks_static_set from './20261107_111754_blocks_static_set';
 import * as migration_20261107_120000_hero_video_delete from './20261107_120000_hero_video_delete';
 import * as migration_20261107_130000_blocks_dynamic_set from './20261107_130000_blocks_dynamic_set';
+import * as migration_20261107_141523_globals_editable from './20261107_141523_globals_editable';
 
 export const migrations = [
   {
@@ -59,11 +60,16 @@ export const migrations = [
   {
     up: migration_20261107_120000_hero_video_delete.up,
     down: migration_20261107_120000_hero_video_delete.down,
-    name: '20261107_120000_hero_video_delete'
+    name: '20261107_120000_hero_video_delete',
   },
   {
     up: migration_20261107_130000_blocks_dynamic_set.up,
     down: migration_20261107_130000_blocks_dynamic_set.down,
     name: '20261107_130000_blocks_dynamic_set',
+  },
+  {
+    up: migration_20261107_141523_globals_editable.up,
+    down: migration_20261107_141523_globals_editable.down,
+    name: '20261107_141523_globals_editable'
   },
 ];

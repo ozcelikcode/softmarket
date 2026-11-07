@@ -16,9 +16,10 @@
   --border-strong: #5b6572;
   --text: #e7e9ec;
   --text-muted: #9aa2ad;
-  --accent: #4c7dff;
-  --accent-hover: #6b93ff;
-  --accent-contrast: #0b0d10;
+  /* --brand-dark-* come from SiteSettings.brand.accent (html inline style, src/lib/brand.ts). */
+  --accent: var(--brand-dark-accent, #4c7dff);
+  --accent-hover: var(--brand-dark-accent-hover, #6b93ff);
+  --accent-contrast: var(--brand-dark-accent-contrast, #0b0d10);
   --success: #2fb37a;
   --warning: #e0a63b;
   --danger: #e5574f;
@@ -33,9 +34,9 @@
   --border-strong: #858e9b;
   --text: #12161c;
   --text-muted: #5a6370;
-  --accent: #2f5fe0;
-  --accent-hover: #244cc0;
-  --accent-contrast: #ffffff;
+  --accent: var(--brand-light-accent, #2f5fe0);
+  --accent-hover: var(--brand-light-accent-hover, #244cc0);
+  --accent-contrast: var(--brand-light-accent-contrast, #ffffff);
   --success: #12794d;
   --warning: #8a5a00;
   --danger: #b3261e;

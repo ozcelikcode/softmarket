@@ -27,15 +27,16 @@ import { anim, heroIn } from '@/lib/anim'
 import { formatDate } from '@/lib/format'
 import { initLocale } from '@/lib/page-utils'
 import { absoluteUrl, buildMetadata, siteUrl } from '@/lib/seo'
-import { safeHref } from '@/lib/utils'
+import { publicImage, publicContact } from '@/lib/site'
+import { publicText, safeHref } from '@/lib/utils'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
   const [t, settings] = await Promise.all([getTranslations({ locale, namespace: 'common' }), getContactSettings(locale)])
-  const name = settings?.siteName || t('siteName')
-  const tagline = settings?.tagline || t('tagline')
+  const name = publicText(settings?.siteName) ?? t('siteName')
+  const tagline = publicText(settings?.tagline) ?? t('tagline')
   return buildMetadata({
     locale, path: '/', title: `${name} | ${tagline}`, description: tagline,
     image: mediaOf(settings?.defaultOgImage)?.url,
@@ -64,10 +65,10 @@ export default async function HomePage({ params }: Props) {
   ].filter((l, i, a) => a.findIndex((x) => x.name === l.name) === i).slice(0, 12)
 
   const featured = cases.find((cs) => cs.featured) ?? cases[0]
-  const siteName = settings?.siteName || c('siteName')
+  const siteName = publicText(settings?.siteName) ?? c('siteName')
   const social = (settings?.social ?? []).map((s) => safeHref(s.url)).filter((u): u is string => Boolean(u))
-  const logo = mediaOf(settings?.logo)?.url
-  const contact = settings?.contact
+  const logo = publicImage(settings?.logo)?.url
+  const contact = publicContact(settings)
 
   const organization = {
     '@context': 'https://schema.org',
@@ -76,8 +77,9 @@ export default async function HomePage({ params }: Props) {
     url: absoluteUrl('/', locale),
     ...(logo ? { logo: logo.startsWith('http') ? logo : `${siteUrl()}${logo}` } : {}),
     ...(social.length ? { sameAs: social } : {}),
-    ...(contact?.email || contact?.phone
-      ? { contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', ...(contact.email ? { email: contact.email } : {}), ...(contact.phone ? { telephone: contact.phone } : {}) }] }
+    ...(contact.address ? { address: contact.address } : {}),
+    ...(contact.email || contact.phone
+      ? { contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', ...(contact.email ? { email: contact.email } : {}), ...(contact.phone ? { telephone: contact.phone.label } : {}) }] }
       : {}),
   }
 

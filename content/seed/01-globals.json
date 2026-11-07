@@ -6,260 +6,408 @@
         "navItems": [
           {
             "link": {
-              "type": "external",
-              "url": "/tr/urunler",
+              "type": "route",
+              "route": "urunler",
               "label": "Ürünler"
             },
             "megaMenu": "products"
           },
           {
             "link": {
-              "type": "external",
-              "url": "/tr/cozumler",
+              "type": "route",
+              "route": "cozumler",
               "label": "Çözümler"
             },
             "megaMenu": "solutions"
           },
           {
             "link": {
-              "type": "external",
-              "url": "/tr/destek",
+              "type": "route",
+              "route": "destek",
               "label": "Destek"
             }
           },
           {
             "link": {
-              "type": "external",
-              "label": "Şirket"
+              "type": "route",
+              "label": "Şirket",
+              "route": "sirket_hakkimizda"
             },
-            "children": [
+            "megaMenu": "custom",
+            "children": [],
+            "columns": [
               {
-                "link": {
-                  "type": "external",
-                  "url": "/tr/sirket/hakkimizda",
-                  "label": "Hakkımızda"
-                },
-                "description": "Şirketimiz ve yaklaşımımız."
+                "title": "Kurumsal",
+                "links": [
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "sirket_hakkimizda",
+                      "label": "Hakkımızda"
+                    },
+                    "description": "Şirketimiz ve yaklaşımımız."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "kariyer",
+                      "label": "Kariyer"
+                    },
+                    "description": "Ekibimize katılın."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "is-ortaklari",
+                      "label": "İş ortakları"
+                    },
+                    "description": "Çözüm ortaklığı programı."
+                  }
+                ]
               },
               {
-                "link": {
-                  "type": "external",
-                  "url": "/tr/referanslar",
-                  "label": "Referanslar"
-                },
-                "description": "Müşterilerimizin başarı hikâyeleri."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/tr/haberler",
-                  "label": "Haberler"
-                },
-                "description": "Duyurular ve yazılar."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/tr/kariyer",
-                  "label": "Kariyer"
-                },
-                "description": "Ekibimize katılın."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/tr/is-ortaklari",
-                  "label": "İş ortakları"
-                },
-                "description": "Çözüm ortaklığı programı."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/tr/iletisim",
-                  "label": "İletişim"
-                }
+                "title": "Kaynaklar",
+                "links": [
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "referanslar",
+                      "label": "Referanslar"
+                    },
+                    "description": "Müşterilerimizin başarı hikâyeleri."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "haberler",
+                      "label": "Haberler"
+                    },
+                    "description": "Duyurular ve yazılar."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "iletisim",
+                      "label": "İletişim"
+                    },
+                    "description": "Satış ve destek ekibine ulaşın."
+                  }
+                ]
               }
-            ]
+            ],
+            "featured": {
+              "title": "Ürünlerimizi canlı görün",
+              "description": "İhtiyacınıza uygun sürümü birlikte belirleyelim; kısa bir demo planlayalım.",
+              "link": {
+                "type": "route",
+                "route": "demo-talep",
+                "label": "Demo planla"
+              }
+            }
           }
         ],
         "cta": {
           "link": {
-            "type": "external",
-            "url": "/tr/demo-talep",
+            "type": "route",
+            "route": "demo-talep",
             "label": "Demo İste"
+          },
+          "secondary": {
+            "type": "route",
+            "route": "teklif-iste",
+            "label": "Teklif iste"
           }
+        },
+        "announcement": {
+          "enabled": false,
+          "dismissible": true,
+          "text": "Yeni sürüm notları yayında.",
+          "link": {
+            "type": "route",
+            "route": "destek_surum-notlari",
+            "label": "İncele"
+          }
+        },
+        "utility": {
+          "links": [
+            {
+              "link": {
+                "type": "route",
+                "route": "destek_dokumantasyon",
+                "label": "Dokümantasyon"
+              }
+            },
+            {
+              "link": {
+                "type": "route",
+                "route": "destek_surum-notlari",
+                "label": "Sürüm notları"
+              }
+            },
+            {
+              "link": {
+                "type": "route",
+                "route": "iletisim",
+                "label": "İletişim"
+              }
+            }
+          ],
+          "showSearch": true,
+          "showLanguage": true,
+          "showAccount": true
         }
       },
       "en": {
         "navItems": [
           {
             "link": {
-              "type": "external",
-              "url": "/en/products",
+              "type": "route",
+              "route": "urunler",
               "label": "Products"
             },
             "megaMenu": "products"
           },
           {
             "link": {
-              "type": "external",
-              "url": "/en/solutions",
+              "type": "route",
+              "route": "cozumler",
               "label": "Solutions"
             },
             "megaMenu": "solutions"
           },
           {
             "link": {
-              "type": "external",
-              "url": "/en/support",
+              "type": "route",
+              "route": "destek",
               "label": "Support"
             }
           },
           {
             "link": {
-              "type": "external",
-              "label": "Company"
+              "type": "route",
+              "label": "Company",
+              "route": "sirket_hakkimizda"
             },
-            "children": [
+            "megaMenu": "custom",
+            "children": [],
+            "columns": [
               {
-                "link": {
-                  "type": "external",
-                  "url": "/en/company/about",
-                  "label": "About us"
-                },
-                "description": "Our company and approach."
+                "title": "Company",
+                "links": [
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "sirket_hakkimizda",
+                      "label": "About us"
+                    },
+                    "description": "Our company and approach."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "kariyer",
+                      "label": "Careers"
+                    },
+                    "description": "Join our team."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "is-ortaklari",
+                      "label": "Partners"
+                    },
+                    "description": "The partner program."
+                  }
+                ]
               },
               {
-                "link": {
-                  "type": "external",
-                  "url": "/en/customers",
-                  "label": "Customers"
-                },
-                "description": "Customer success stories."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/en/news",
-                  "label": "News"
-                },
-                "description": "Announcements and articles."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/en/careers",
-                  "label": "Careers"
-                },
-                "description": "Join our team."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/en/partners",
-                  "label": "Partners"
-                },
-                "description": "The partner program."
-              },
-              {
-                "link": {
-                  "type": "external",
-                  "url": "/en/contact",
-                  "label": "Contact"
-                }
+                "title": "Resources",
+                "links": [
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "referanslar",
+                      "label": "Customers"
+                    },
+                    "description": "Customer success stories."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "haberler",
+                      "label": "News"
+                    },
+                    "description": "Announcements and articles."
+                  },
+                  {
+                    "link": {
+                      "type": "route",
+                      "route": "iletisim",
+                      "label": "Contact"
+                    },
+                    "description": "Reach our sales and support teams."
+                  }
+                ]
               }
-            ]
+            ],
+            "featured": {
+              "title": "See our products live",
+              "description": "Let us find the right edition together in a short, tailored demo.",
+              "link": {
+                "type": "route",
+                "route": "demo-talep",
+                "label": "Schedule a demo"
+              }
+            }
           }
         ],
         "cta": {
           "link": {
-            "type": "external",
-            "url": "/en/request-demo",
+            "type": "route",
+            "route": "demo-talep",
             "label": "Request a demo"
+          },
+          "secondary": {
+            "type": "route",
+            "route": "teklif-iste",
+            "label": "Request a quote"
           }
+        },
+        "announcement": {
+          "enabled": false,
+          "dismissible": true,
+          "text": "New release notes are out.",
+          "link": {
+            "type": "route",
+            "route": "destek_surum-notlari",
+            "label": "Read more"
+          }
+        },
+        "utility": {
+          "links": [
+            {
+              "link": {
+                "type": "route",
+                "route": "destek_dokumantasyon",
+                "label": "Documentation"
+              }
+            },
+            {
+              "link": {
+                "type": "route",
+                "route": "destek_surum-notlari",
+                "label": "Release notes"
+              }
+            },
+            {
+              "link": {
+                "type": "route",
+                "route": "iletisim",
+                "label": "Contact"
+              }
+            }
+          ],
+          "showSearch": true,
+          "showLanguage": true,
+          "showAccount": true
         }
       }
     },
     "footer": {
       "tr": {
-        "copyright": "© Örnek Kurumsal Yazılım — demo içerik",
+        "copyright": "© {year} {siteName}. Tüm hakları saklıdır.",
         "showNewsletter": false,
+        "brandBlurb": "İş süreçlerinizi uçtan uca yöneten kurumsal yazılımlar: ürünler, uygulama ve destek tek ekipten.",
+        "showContact": true,
+        "showSocial": true,
         "legalLinks": [
           {
             "link": {
-              "type": "external",
-              "url": "/tr/yasal/kvkk-aydinlatma",
-              "label": "KVKK aydınlatma metni"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "KVKK aydınlatma metni",
+              "routeParam": "kvkk-aydinlatma"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/tr/yasal/gizlilik-politikasi",
-              "label": "Gizlilik politikası"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Gizlilik politikası",
+              "routeParam": "gizlilik-politikasi"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/tr/yasal/cerez-politikasi",
-              "label": "Çerez politikası"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Çerez politikası",
+              "routeParam": "cerez-politikasi"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/tr/yasal/kullanim-kosullari",
-              "label": "Kullanım koşulları"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Kullanım koşulları",
+              "routeParam": "kullanim-kosullari"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/tr/yasal/eula",
-              "label": "Son kullanıcı lisans sözleşmesi (EULA)"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Son kullanıcı lisans sözleşmesi (EULA)",
+              "routeParam": "eula"
             }
           }
         ]
       },
       "en": {
-        "copyright": "© Sample Enterprise Software — demo content",
+        "copyright": "© {year} {siteName}. All rights reserved.",
         "showNewsletter": false,
+        "brandBlurb": "Enterprise software that runs your operations end to end: products, rollout and support from one team.",
+        "showContact": true,
+        "showSocial": true,
         "legalLinks": [
           {
             "link": {
-              "type": "external",
-              "url": "/en/legal/kvkk-aydinlatma",
-              "label": "Data protection notice"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Data protection notice",
+              "routeParam": "kvkk-aydinlatma"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/en/legal/gizlilik-politikasi",
-              "label": "Privacy policy"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Privacy policy",
+              "routeParam": "gizlilik-politikasi"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/en/legal/cerez-politikasi",
-              "label": "Cookie policy"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Cookie policy",
+              "routeParam": "cerez-politikasi"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/en/legal/kullanim-kosullari",
-              "label": "Terms of use"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "Terms of use",
+              "routeParam": "kullanim-kosullari"
             }
           },
           {
             "link": {
-              "type": "external",
-              "url": "/en/legal/eula",
-              "label": "End user license agreement (EULA)"
+              "type": "route",
+              "route": "yasal_slug",
+              "label": "End user license agreement (EULA)",
+              "routeParam": "eula"
             }
           }
         ]
@@ -267,36 +415,38 @@
     },
     "site-settings": {
       "tr": {
-        "siteName": "Örnek Kurumsal Yazılım",
+        "siteName": "SoftMarket",
         "tagline": "Kurumsal süreçler için yazılım çözümleri",
         "company": {
-          "legalName": "[COMPANY LEGAL NAME]"
+          "legalName": "SoftMarket Yazılım A.Ş."
         },
         "contact": {
-          "phone": "[COMPANY PHONE]",
-          "address": "[ŞİRKET ADRESİ]",
-          "workingHours": "[ÇALIŞMA SAATLERİ]"
+          "phone": "+90 212 000 00 00",
+          "address": "İstanbul, Türkiye",
+          "workingHours": "Hafta içi 09:00–18:00"
         },
         "commerce": {
           "quoteForm": "softmarket-quote",
           "demoForm": "softmarket-demo"
-        }
+        },
+        "motion": "subtle"
       },
       "en": {
-        "siteName": "Sample Enterprise Software",
+        "siteName": "SoftMarket",
         "tagline": "Software solutions for enterprise operations",
         "company": {
-          "legalName": "[COMPANY LEGAL NAME]"
+          "legalName": "SoftMarket Yazılım A.Ş."
         },
         "contact": {
-          "phone": "[COMPANY PHONE]",
-          "address": "[COMPANY ADDRESS]",
-          "workingHours": "[BUSINESS HOURS]"
+          "phone": "+90 212 000 00 00",
+          "address": "Istanbul, Türkiye",
+          "workingHours": "Weekdays 09:00–18:00 (GMT+3)"
         },
         "commerce": {
           "quoteForm": "softmarket-quote",
           "demoForm": "softmarket-demo"
-        }
+        },
+        "motion": "subtle"
       }
     }
   }

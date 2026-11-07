@@ -17,6 +17,7 @@ import { Section } from '@/components/ui/section'
 import { getContactSettings } from '@/lib/content'
 import { initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
+import { publicContact } from '@/lib/site'
 import { safeHref } from '@/lib/utils'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -56,13 +57,13 @@ async function ContactPage({ params }: Props) {
     { label: c('home'), href: '/' },
     { label: t('title'), href: '/iletisim' },
   ]
-  const ct = settings?.contact
+  // Empty and template placeholder values ([ŞİRKET ADRESİ] …) are dropped: their rows hide.
+  const ct = publicContact(settings)
   const mail = (addr?: string | null) =>
     addr && safeHref(`mailto:${addr}`) ? <a href={`mailto:${addr}`}>{addr}</a> : null
-  const map = safeHref(ct?.mapUrl)
+  const map = safeHref(ct.mapUrl)
   const hasAny = Boolean(
-    ct &&
-    (ct.email || ct.salesEmail || ct.supportEmail || ct.phone || ct.address || ct.workingHours),
+    ct.address || mail(ct.email) || mail(ct.salesEmail) || mail(ct.supportEmail) || ct.phone || ct.workingHours,
   )
   return (
     <>
@@ -79,7 +80,7 @@ async function ContactPage({ params }: Props) {
           <div>
             {hasAny ? (
               <dl className="rounded-lg border border-border bg-surface px-6">
-                {ct?.address ? (
+                {ct.address ? (
                   <Row icon={<MapPin aria-hidden />} label={t('address')}>
                     <span className="whitespace-pre-line">{ct.address}</span>
                     {map && /^https?:/.test(map) ? (
@@ -94,27 +95,27 @@ async function ContactPage({ params }: Props) {
                     ) : null}
                   </Row>
                 ) : null}
-                {ct?.email && mail(ct.email) ? (
+                {mail(ct.email) ? (
                   <Row icon={<Mail aria-hidden />} label={t('email')}>
                     {mail(ct.email)}
                   </Row>
                 ) : null}
-                {ct?.salesEmail && mail(ct.salesEmail) ? (
+                {mail(ct.salesEmail) ? (
                   <Row icon={<Mail aria-hidden />} label={t('sales')}>
                     {mail(ct.salesEmail)}
                   </Row>
                 ) : null}
-                {ct?.supportEmail && mail(ct.supportEmail) ? (
+                {mail(ct.supportEmail) ? (
                   <Row icon={<Mail aria-hidden />} label={t('support')}>
                     {mail(ct.supportEmail)}
                   </Row>
                 ) : null}
-                {ct?.phone && safeHref(`tel:${ct.phone.replace(/[^\d+]/g, '')}`) ? (
+                {ct.phone ? (
                   <Row icon={<Phone aria-hidden />} label={t('phone')}>
-                    <a href={`tel:${ct.phone.replace(/[^\d+]/g, '')}`}>{ct.phone}</a>
+                    <a href={ct.phone.href}>{ct.phone.label}</a>
                   </Row>
                 ) : null}
-                {ct?.workingHours ? (
+                {ct.workingHours ? (
                   <Row icon={<Clock aria-hidden />} label={t('hours')}>
                     {ct.workingHours}
                   </Row>

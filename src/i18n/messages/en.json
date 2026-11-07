@@ -28,6 +28,7 @@
     "allProducts": "All products",
     "allSolutions": "All solutions",
     "catalogSoon": "The product catalog is coming soon.",
+    "utility": "Quick links",
     "downloads": "Downloads",
     "documentation": "Documentation",
     "releaseNotes": "Release notes",
@@ -62,7 +63,8 @@
     "terms": "Terms of use",
     "eula": "End user license agreement (EULA)",
     "rights": "All rights reserved.",
-    "social": "Social media"
+    "social": "Social media",
+    "contact": "Contact"
   },
   "home": {
     "eyebrow": "Enterprise software",

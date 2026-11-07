@@ -31,3 +31,18 @@ export function safeHref(value: string | null | undefined): string | null {
     return null
   }
 }
+
+/** CMS template placeholders such as "[ŞİRKET ADRESİ]" or "[COMPANY PHONE]" are never rendered. */
+const PLACEHOLDER = /\[\p{Lu}[\p{Lu}\d _-]+\]/u
+
+/** Trimmed public CMS text, or null when empty or a template placeholder (section is hidden). */
+export function publicText(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const text = value.trim()
+  return text && !PLACEHOLDER.test(text) ? text : null
+}
+
+/** Footer copyright with {year} / {siteName} placeholders. */
+export function formatCopyright(template: string, values: { year: number; siteName: string }): string {
+  return template.replace(/\{(year|siteName)\}/g, (_, key: 'year' | 'siteName') => String(values[key]))
+}

@@ -21,9 +21,15 @@ describe('anonymous frontend Local API', () => {
     await getFooterData('tr')
     expect(client.findGlobal).toHaveBeenCalledTimes(3)
     for (const [options] of client.findGlobal.mock.calls) {
-      expect(options).toMatchObject({overrideAccess: false, user: null, draft: false, depth: 0})
+      expect(options).toMatchObject({overrideAccess: false, user: null, draft: false})
     }
-    expect(client.findGlobal.mock.calls[0][0].select).toEqual({siteName: true, tagline: true, social: true})
+    // Site settings: depth 1 only for logo/favicon media, populated with a public projection (F7).
+    expect(client.findGlobal.mock.calls[0][0]).toMatchObject({depth: 1, populate: {media: {url: true, alt: true, protected: true}}})
+    expect(Object.keys(client.findGlobal.mock.calls[0][0].select).sort()).toEqual(
+      ['brand', 'contact', 'favicon', 'logo', 'logoDark', 'motion', 'siteName', 'social', 'tagline'])
+    expect(client.findGlobal.mock.calls[0][0].select).not.toHaveProperty('company')
+    expect(client.findGlobal.mock.calls[1][0].depth).toBe(0)
+    expect(client.findGlobal.mock.calls[2][0].depth).toBe(0)
   })
 
   it('enforces publication and avoids loading product layouts, users or commerce records', async () => {
@@ -66,8 +72,13 @@ describe('anonymous frontend Local API', () => {
     client.find.mockRejectedValue(new Error('DB offline'))
     client.findGlobal.mockRejectedValue(new Error('DB offline'))
     expect(await getSiteSettings('tr')).toBeNull()
-    expect(await getHeaderNav('tr')).toEqual({items: [], cta: null})
-    expect(await getFooterData('tr')).toEqual({columns: [], legal: [], copyright: null})
+    expect(await getHeaderNav('tr')).toEqual({
+      items: [], cta: null, secondaryCta: null, announcement: null,
+      utility: {links: [], showSearch: true, showLanguage: true, showAccount: true},
+    })
+    expect(await getFooterData('tr')).toEqual({
+      columns: [], legal: [], copyright: null, brandBlurb: null, showContact: true, showSocial: true,
+    })
     expect(await getMegaData('tr')).toEqual({families: [], solutions: []})
   })
 

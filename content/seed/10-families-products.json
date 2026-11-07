@@ -186,8 +186,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -284,8 +284,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -384,8 +384,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -482,8 +482,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -582,8 +582,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -680,8 +680,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -780,8 +780,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -878,8 +878,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -978,8 +978,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -1076,8 +1076,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -1176,8 +1176,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -1274,8 +1274,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -1374,8 +1374,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -1472,8 +1472,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }
@@ -1572,8 +1572,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Teklif iste",
                   "appearance": "primary"
                 }
@@ -1670,8 +1670,8 @@
             "actions": [
               {
                 "link": {
-                  "type": "external",
-                  "url": "mailto:[COMPANY EMAIL]",
+                  "type": "route",
+                  "route": "teklif-iste",
                   "label": "Request a quote",
                   "appearance": "primary"
                 }

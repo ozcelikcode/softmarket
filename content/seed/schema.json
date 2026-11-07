@@ -47,7 +47,8 @@
                   "type": {
                     "enum": [
                       "internal",
-                      "external"
+                      "external",
+                      "route"
                     ]
                   },
                   "newTab": {
@@ -209,6 +210,49 @@
                         ]
                       }
                     ]
+                  },
+                  "route": {
+                    "enum": [
+                      "home",
+                      "urunler",
+                      "urunler_family",
+                      "cozumler",
+                      "cozumler_slug",
+                      "destek",
+                      "destek_indirmeler",
+                      "destek_dokumantasyon",
+                      "destek_dokumantasyon_product",
+                      "destek_surum-notlari",
+                      "destek_sss",
+                      "destek_talep",
+                      "destek_iletisim",
+                      "sirket_hakkimizda",
+                      "referanslar",
+                      "referanslar_slug",
+                      "haberler",
+                      "haberler_slug",
+                      "kariyer",
+                      "kariyer_slug",
+                      "is-ortaklari",
+                      "iletisim",
+                      "demo-talep",
+                      "teklif-iste",
+                      "hesap",
+                      "hesap_lisanslar",
+                      "hesap_indirmeler",
+                      "hesap_talepler",
+                      "hesap_talepler_yeni",
+                      "hesap_giris",
+                      "hesap_kayit",
+                      "hesap_sifremi-unuttum",
+                      "hesap_profil",
+                      "ara",
+                      "yasal_slug"
+                    ]
+                  },
+                  "routeParam": {
+                    "type": "string",
+                    "minLength": 1
                   },
                   "url": {
                     "type": "string",
@@ -460,7 +504,8 @@
                   "type": {
                     "enum": [
                       "internal",
-                      "external"
+                      "external",
+                      "route"
                     ]
                   },
                   "newTab": {
@@ -622,6 +667,49 @@
                         ]
                       }
                     ]
+                  },
+                  "route": {
+                    "enum": [
+                      "home",
+                      "urunler",
+                      "urunler_family",
+                      "cozumler",
+                      "cozumler_slug",
+                      "destek",
+                      "destek_indirmeler",
+                      "destek_dokumantasyon",
+                      "destek_dokumantasyon_product",
+                      "destek_surum-notlari",
+                      "destek_sss",
+                      "destek_talep",
+                      "destek_iletisim",
+                      "sirket_hakkimizda",
+                      "referanslar",
+                      "referanslar_slug",
+                      "haberler",
+                      "haberler_slug",
+                      "kariyer",
+                      "kariyer_slug",
+                      "is-ortaklari",
+                      "iletisim",
+                      "demo-talep",
+                      "teklif-iste",
+                      "hesap",
+                      "hesap_lisanslar",
+                      "hesap_indirmeler",
+                      "hesap_talepler",
+                      "hesap_talepler_yeni",
+                      "hesap_giris",
+                      "hesap_kayit",
+                      "hesap_sifremi-unuttum",
+                      "hesap_profil",
+                      "ara",
+                      "yasal_slug"
+                    ]
+                  },
+                  "routeParam": {
+                    "type": "string",
+                    "minLength": 1
                   },
                   "url": {
                     "type": "string",
@@ -1045,7 +1133,8 @@
                   "type": {
                     "enum": [
                       "internal",
-                      "external"
+                      "external",
+                      "route"
                     ]
                   },
                   "newTab": {
@@ -1207,6 +1296,49 @@
                         ]
                       }
                     ]
+                  },
+                  "route": {
+                    "enum": [
+                      "home",
+                      "urunler",
+                      "urunler_family",
+                      "cozumler",
+                      "cozumler_slug",
+                      "destek",
+                      "destek_indirmeler",
+                      "destek_dokumantasyon",
+                      "destek_dokumantasyon_product",
+                      "destek_surum-notlari",
+                      "destek_sss",
+                      "destek_talep",
+                      "destek_iletisim",
+                      "sirket_hakkimizda",
+                      "referanslar",
+                      "referanslar_slug",
+                      "haberler",
+                      "haberler_slug",
+                      "kariyer",
+                      "kariyer_slug",
+                      "is-ortaklari",
+                      "iletisim",
+                      "demo-talep",
+                      "teklif-iste",
+                      "hesap",
+                      "hesap_lisanslar",
+                      "hesap_indirmeler",
+                      "hesap_talepler",
+                      "hesap_talepler_yeni",
+                      "hesap_giris",
+                      "hesap_kayit",
+                      "hesap_sifremi-unuttum",
+                      "hesap_profil",
+                      "ara",
+                      "yasal_slug"
+                    ]
+                  },
+                  "routeParam": {
+                    "type": "string",
+                    "minLength": 1
                   },
                   "url": {
                     "type": "string",
@@ -4422,7 +4554,8 @@
                           "type": {
                             "enum": [
                               "internal",
-                              "external"
+                              "external",
+                              "route"
                             ]
                           },
                           "newTab": {
@@ -4585,6 +4718,49 @@
                               }
                             ]
                           },
+                          "route": {
+                            "enum": [
+                              "home",
+                              "urunler",
+                              "urunler_family",
+                              "cozumler",
+                              "cozumler_slug",
+                              "destek",
+                              "destek_indirmeler",
+                              "destek_dokumantasyon",
+                              "destek_dokumantasyon_product",
+                              "destek_surum-notlari",
+                              "destek_sss",
+                              "destek_talep",
+                              "destek_iletisim",
+                              "sirket_hakkimizda",
+                              "referanslar",
+                              "referanslar_slug",
+                              "haberler",
+                              "haberler_slug",
+                              "kariyer",
+                              "kariyer_slug",
+                              "is-ortaklari",
+                              "iletisim",
+                              "demo-talep",
+                              "teklif-iste",
+                              "hesap",
+                              "hesap_lisanslar",
+                              "hesap_indirmeler",
+                              "hesap_talepler",
+                              "hesap_talepler_yeni",
+                              "hesap_giris",
+                              "hesap_kayit",
+                              "hesap_sifremi-unuttum",
+                              "hesap_profil",
+                              "ara",
+                              "yasal_slug"
+                            ]
+                          },
+                          "routeParam": {
+                            "type": "string",
+                            "minLength": 1
+                          },
                           "url": {
                             "type": "string",
                             "minLength": 1
@@ -4599,7 +4775,8 @@
                       "megaMenu": {
                         "enum": [
                           "products",
-                          "solutions"
+                          "solutions",
+                          "custom"
                         ]
                       },
                       "children": {
@@ -4615,7 +4792,8 @@
                                 "type": {
                                   "enum": [
                                     "internal",
-                                    "external"
+                                    "external",
+                                    "route"
                                   ]
                                 },
                                 "newTab": {
@@ -4778,6 +4956,49 @@
                                     }
                                   ]
                                 },
+                                "route": {
+                                  "enum": [
+                                    "home",
+                                    "urunler",
+                                    "urunler_family",
+                                    "cozumler",
+                                    "cozumler_slug",
+                                    "destek",
+                                    "destek_indirmeler",
+                                    "destek_dokumantasyon",
+                                    "destek_dokumantasyon_product",
+                                    "destek_surum-notlari",
+                                    "destek_sss",
+                                    "destek_talep",
+                                    "destek_iletisim",
+                                    "sirket_hakkimizda",
+                                    "referanslar",
+                                    "referanslar_slug",
+                                    "haberler",
+                                    "haberler_slug",
+                                    "kariyer",
+                                    "kariyer_slug",
+                                    "is-ortaklari",
+                                    "iletisim",
+                                    "demo-talep",
+                                    "teklif-iste",
+                                    "hesap",
+                                    "hesap_lisanslar",
+                                    "hesap_indirmeler",
+                                    "hesap_talepler",
+                                    "hesap_talepler_yeni",
+                                    "hesap_giris",
+                                    "hesap_kayit",
+                                    "hesap_sifremi-unuttum",
+                                    "hesap_profil",
+                                    "ara",
+                                    "yasal_slug"
+                                  ]
+                                },
+                                "routeParam": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
                                 "url": {
                                   "type": "string",
                                   "minLength": 1
@@ -4796,6 +5017,505 @@
                           },
                           "required": []
                         }
+                      },
+                      "columns": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "links": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "link": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "type": {
+                                        "enum": [
+                                          "internal",
+                                          "external",
+                                          "route"
+                                        ]
+                                      },
+                                      "newTab": {
+                                        "type": "boolean"
+                                      },
+                                      "reference": {
+                                        "oneOf": [
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "pages"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "products"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "product-families"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "solutions"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "industries"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "case-studies"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "posts"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "careers"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "docs"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "route": {
+                                        "enum": [
+                                          "home",
+                                          "urunler",
+                                          "urunler_family",
+                                          "cozumler",
+                                          "cozumler_slug",
+                                          "destek",
+                                          "destek_indirmeler",
+                                          "destek_dokumantasyon",
+                                          "destek_dokumantasyon_product",
+                                          "destek_surum-notlari",
+                                          "destek_sss",
+                                          "destek_talep",
+                                          "destek_iletisim",
+                                          "sirket_hakkimizda",
+                                          "referanslar",
+                                          "referanslar_slug",
+                                          "haberler",
+                                          "haberler_slug",
+                                          "kariyer",
+                                          "kariyer_slug",
+                                          "is-ortaklari",
+                                          "iletisim",
+                                          "demo-talep",
+                                          "teklif-iste",
+                                          "hesap",
+                                          "hesap_lisanslar",
+                                          "hesap_indirmeler",
+                                          "hesap_talepler",
+                                          "hesap_talepler_yeni",
+                                          "hesap_giris",
+                                          "hesap_kayit",
+                                          "hesap_sifremi-unuttum",
+                                          "hesap_profil",
+                                          "ara",
+                                          "yasal_slug"
+                                        ]
+                                      },
+                                      "routeParam": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "url": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "label": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": []
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": []
+                              },
+                              "maxItems": 8
+                            }
+                          },
+                          "required": []
+                        },
+                        "maxItems": 4
+                      },
+                      "featured": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "image": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "link": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "enum": [
+                                  "internal",
+                                  "external",
+                                  "route"
+                                ]
+                              },
+                              "newTab": {
+                                "type": "boolean"
+                              },
+                              "reference": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "pages"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "products"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "product-families"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "solutions"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "industries"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "case-studies"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "posts"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "careers"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "docs"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "route": {
+                                "enum": [
+                                  "home",
+                                  "urunler",
+                                  "urunler_family",
+                                  "cozumler",
+                                  "cozumler_slug",
+                                  "destek",
+                                  "destek_indirmeler",
+                                  "destek_dokumantasyon",
+                                  "destek_dokumantasyon_product",
+                                  "destek_surum-notlari",
+                                  "destek_sss",
+                                  "destek_talep",
+                                  "destek_iletisim",
+                                  "sirket_hakkimizda",
+                                  "referanslar",
+                                  "referanslar_slug",
+                                  "haberler",
+                                  "haberler_slug",
+                                  "kariyer",
+                                  "kariyer_slug",
+                                  "is-ortaklari",
+                                  "iletisim",
+                                  "demo-talep",
+                                  "teklif-iste",
+                                  "hesap",
+                                  "hesap_lisanslar",
+                                  "hesap_indirmeler",
+                                  "hesap_talepler",
+                                  "hesap_talepler_yeni",
+                                  "hesap_giris",
+                                  "hesap_kayit",
+                                  "hesap_sifremi-unuttum",
+                                  "hesap_profil",
+                                  "ara",
+                                  "yasal_slug"
+                                ]
+                              },
+                              "routeParam": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "url": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": []
+                          }
+                        },
+                        "required": []
                       }
                     },
                     "required": []
@@ -4813,7 +5533,8 @@
                         "type": {
                           "enum": [
                             "internal",
-                            "external"
+                            "external",
+                            "route"
                           ]
                         },
                         "newTab": {
@@ -4976,6 +5697,49 @@
                             }
                           ]
                         },
+                        "route": {
+                          "enum": [
+                            "home",
+                            "urunler",
+                            "urunler_family",
+                            "cozumler",
+                            "cozumler_slug",
+                            "destek",
+                            "destek_indirmeler",
+                            "destek_dokumantasyon",
+                            "destek_dokumantasyon_product",
+                            "destek_surum-notlari",
+                            "destek_sss",
+                            "destek_talep",
+                            "destek_iletisim",
+                            "sirket_hakkimizda",
+                            "referanslar",
+                            "referanslar_slug",
+                            "haberler",
+                            "haberler_slug",
+                            "kariyer",
+                            "kariyer_slug",
+                            "is-ortaklari",
+                            "iletisim",
+                            "demo-talep",
+                            "teklif-iste",
+                            "hesap",
+                            "hesap_lisanslar",
+                            "hesap_indirmeler",
+                            "hesap_talepler",
+                            "hesap_talepler_yeni",
+                            "hesap_giris",
+                            "hesap_kayit",
+                            "hesap_sifremi-unuttum",
+                            "hesap_profil",
+                            "ara",
+                            "yasal_slug"
+                          ]
+                        },
+                        "routeParam": {
+                          "type": "string",
+                          "minLength": 1
+                        },
                         "url": {
                           "type": "string",
                           "minLength": 1
@@ -4986,6 +5750,725 @@
                         }
                       },
                       "required": []
+                    },
+                    "secondary": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "internal",
+                            "external",
+                            "route"
+                          ]
+                        },
+                        "newTab": {
+                          "type": "boolean"
+                        },
+                        "reference": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "pages"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "products"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "product-families"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "solutions"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "industries"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "case-studies"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "posts"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "careers"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "docs"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            }
+                          ]
+                        },
+                        "route": {
+                          "enum": [
+                            "home",
+                            "urunler",
+                            "urunler_family",
+                            "cozumler",
+                            "cozumler_slug",
+                            "destek",
+                            "destek_indirmeler",
+                            "destek_dokumantasyon",
+                            "destek_dokumantasyon_product",
+                            "destek_surum-notlari",
+                            "destek_sss",
+                            "destek_talep",
+                            "destek_iletisim",
+                            "sirket_hakkimizda",
+                            "referanslar",
+                            "referanslar_slug",
+                            "haberler",
+                            "haberler_slug",
+                            "kariyer",
+                            "kariyer_slug",
+                            "is-ortaklari",
+                            "iletisim",
+                            "demo-talep",
+                            "teklif-iste",
+                            "hesap",
+                            "hesap_lisanslar",
+                            "hesap_indirmeler",
+                            "hesap_talepler",
+                            "hesap_talepler_yeni",
+                            "hesap_giris",
+                            "hesap_kayit",
+                            "hesap_sifremi-unuttum",
+                            "hesap_profil",
+                            "ara",
+                            "yasal_slug"
+                          ]
+                        },
+                        "routeParam": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": []
+                    }
+                  },
+                  "required": []
+                },
+                "announcement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "dismissible": {
+                      "type": "boolean"
+                    },
+                    "link": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "internal",
+                            "external",
+                            "route"
+                          ]
+                        },
+                        "newTab": {
+                          "type": "boolean"
+                        },
+                        "reference": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "pages"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "products"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "product-families"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "solutions"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "industries"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "case-studies"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "posts"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "careers"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "docs"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            }
+                          ]
+                        },
+                        "route": {
+                          "enum": [
+                            "home",
+                            "urunler",
+                            "urunler_family",
+                            "cozumler",
+                            "cozumler_slug",
+                            "destek",
+                            "destek_indirmeler",
+                            "destek_dokumantasyon",
+                            "destek_dokumantasyon_product",
+                            "destek_surum-notlari",
+                            "destek_sss",
+                            "destek_talep",
+                            "destek_iletisim",
+                            "sirket_hakkimizda",
+                            "referanslar",
+                            "referanslar_slug",
+                            "haberler",
+                            "haberler_slug",
+                            "kariyer",
+                            "kariyer_slug",
+                            "is-ortaklari",
+                            "iletisim",
+                            "demo-talep",
+                            "teklif-iste",
+                            "hesap",
+                            "hesap_lisanslar",
+                            "hesap_indirmeler",
+                            "hesap_talepler",
+                            "hesap_talepler_yeni",
+                            "hesap_giris",
+                            "hesap_kayit",
+                            "hesap_sifremi-unuttum",
+                            "hesap_profil",
+                            "ara",
+                            "yasal_slug"
+                          ]
+                        },
+                        "routeParam": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": []
+                    }
+                  },
+                  "required": []
+                },
+                "utility": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "link": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "enum": [
+                                  "internal",
+                                  "external",
+                                  "route"
+                                ]
+                              },
+                              "newTab": {
+                                "type": "boolean"
+                              },
+                              "reference": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "pages"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "products"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "product-families"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "solutions"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "industries"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "case-studies"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "posts"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "careers"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "docs"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "route": {
+                                "enum": [
+                                  "home",
+                                  "urunler",
+                                  "urunler_family",
+                                  "cozumler",
+                                  "cozumler_slug",
+                                  "destek",
+                                  "destek_indirmeler",
+                                  "destek_dokumantasyon",
+                                  "destek_dokumantasyon_product",
+                                  "destek_surum-notlari",
+                                  "destek_sss",
+                                  "destek_talep",
+                                  "destek_iletisim",
+                                  "sirket_hakkimizda",
+                                  "referanslar",
+                                  "referanslar_slug",
+                                  "haberler",
+                                  "haberler_slug",
+                                  "kariyer",
+                                  "kariyer_slug",
+                                  "is-ortaklari",
+                                  "iletisim",
+                                  "demo-talep",
+                                  "teklif-iste",
+                                  "hesap",
+                                  "hesap_lisanslar",
+                                  "hesap_indirmeler",
+                                  "hesap_talepler",
+                                  "hesap_talepler_yeni",
+                                  "hesap_giris",
+                                  "hesap_kayit",
+                                  "hesap_sifremi-unuttum",
+                                  "hesap_profil",
+                                  "ara",
+                                  "yasal_slug"
+                                ]
+                              },
+                              "routeParam": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "url": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": []
+                          }
+                        },
+                        "required": []
+                      },
+                      "maxItems": 4
+                    },
+                    "showSearch": {
+                      "type": "boolean"
+                    },
+                    "showLanguage": {
+                      "type": "boolean"
+                    },
+                    "showAccount": {
+                      "type": "boolean"
                     }
                   },
                   "required": []
@@ -5010,7 +6493,8 @@
                           "type": {
                             "enum": [
                               "internal",
-                              "external"
+                              "external",
+                              "route"
                             ]
                           },
                           "newTab": {
@@ -5173,6 +6657,49 @@
                               }
                             ]
                           },
+                          "route": {
+                            "enum": [
+                              "home",
+                              "urunler",
+                              "urunler_family",
+                              "cozumler",
+                              "cozumler_slug",
+                              "destek",
+                              "destek_indirmeler",
+                              "destek_dokumantasyon",
+                              "destek_dokumantasyon_product",
+                              "destek_surum-notlari",
+                              "destek_sss",
+                              "destek_talep",
+                              "destek_iletisim",
+                              "sirket_hakkimizda",
+                              "referanslar",
+                              "referanslar_slug",
+                              "haberler",
+                              "haberler_slug",
+                              "kariyer",
+                              "kariyer_slug",
+                              "is-ortaklari",
+                              "iletisim",
+                              "demo-talep",
+                              "teklif-iste",
+                              "hesap",
+                              "hesap_lisanslar",
+                              "hesap_indirmeler",
+                              "hesap_talepler",
+                              "hesap_talepler_yeni",
+                              "hesap_giris",
+                              "hesap_kayit",
+                              "hesap_sifremi-unuttum",
+                              "hesap_profil",
+                              "ara",
+                              "yasal_slug"
+                            ]
+                          },
+                          "routeParam": {
+                            "type": "string",
+                            "minLength": 1
+                          },
                           "url": {
                             "type": "string",
                             "minLength": 1
@@ -5187,7 +6714,8 @@
                       "megaMenu": {
                         "enum": [
                           "products",
-                          "solutions"
+                          "solutions",
+                          "custom"
                         ]
                       },
                       "children": {
@@ -5203,7 +6731,8 @@
                                 "type": {
                                   "enum": [
                                     "internal",
-                                    "external"
+                                    "external",
+                                    "route"
                                   ]
                                 },
                                 "newTab": {
@@ -5366,6 +6895,49 @@
                                     }
                                   ]
                                 },
+                                "route": {
+                                  "enum": [
+                                    "home",
+                                    "urunler",
+                                    "urunler_family",
+                                    "cozumler",
+                                    "cozumler_slug",
+                                    "destek",
+                                    "destek_indirmeler",
+                                    "destek_dokumantasyon",
+                                    "destek_dokumantasyon_product",
+                                    "destek_surum-notlari",
+                                    "destek_sss",
+                                    "destek_talep",
+                                    "destek_iletisim",
+                                    "sirket_hakkimizda",
+                                    "referanslar",
+                                    "referanslar_slug",
+                                    "haberler",
+                                    "haberler_slug",
+                                    "kariyer",
+                                    "kariyer_slug",
+                                    "is-ortaklari",
+                                    "iletisim",
+                                    "demo-talep",
+                                    "teklif-iste",
+                                    "hesap",
+                                    "hesap_lisanslar",
+                                    "hesap_indirmeler",
+                                    "hesap_talepler",
+                                    "hesap_talepler_yeni",
+                                    "hesap_giris",
+                                    "hesap_kayit",
+                                    "hesap_sifremi-unuttum",
+                                    "hesap_profil",
+                                    "ara",
+                                    "yasal_slug"
+                                  ]
+                                },
+                                "routeParam": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
                                 "url": {
                                   "type": "string",
                                   "minLength": 1
@@ -5384,6 +6956,505 @@
                           },
                           "required": []
                         }
+                      },
+                      "columns": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "links": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "link": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "type": {
+                                        "enum": [
+                                          "internal",
+                                          "external",
+                                          "route"
+                                        ]
+                                      },
+                                      "newTab": {
+                                        "type": "boolean"
+                                      },
+                                      "reference": {
+                                        "oneOf": [
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "pages"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "products"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "product-families"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "solutions"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "industries"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "case-studies"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "posts"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "careers"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          },
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "relationTo": {
+                                                "const": "docs"
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "relationTo",
+                                              "value"
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "route": {
+                                        "enum": [
+                                          "home",
+                                          "urunler",
+                                          "urunler_family",
+                                          "cozumler",
+                                          "cozumler_slug",
+                                          "destek",
+                                          "destek_indirmeler",
+                                          "destek_dokumantasyon",
+                                          "destek_dokumantasyon_product",
+                                          "destek_surum-notlari",
+                                          "destek_sss",
+                                          "destek_talep",
+                                          "destek_iletisim",
+                                          "sirket_hakkimizda",
+                                          "referanslar",
+                                          "referanslar_slug",
+                                          "haberler",
+                                          "haberler_slug",
+                                          "kariyer",
+                                          "kariyer_slug",
+                                          "is-ortaklari",
+                                          "iletisim",
+                                          "demo-talep",
+                                          "teklif-iste",
+                                          "hesap",
+                                          "hesap_lisanslar",
+                                          "hesap_indirmeler",
+                                          "hesap_talepler",
+                                          "hesap_talepler_yeni",
+                                          "hesap_giris",
+                                          "hesap_kayit",
+                                          "hesap_sifremi-unuttum",
+                                          "hesap_profil",
+                                          "ara",
+                                          "yasal_slug"
+                                        ]
+                                      },
+                                      "routeParam": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "url": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "label": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": []
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": []
+                              },
+                              "maxItems": 8
+                            }
+                          },
+                          "required": []
+                        },
+                        "maxItems": 4
+                      },
+                      "featured": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "image": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "link": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "enum": [
+                                  "internal",
+                                  "external",
+                                  "route"
+                                ]
+                              },
+                              "newTab": {
+                                "type": "boolean"
+                              },
+                              "reference": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "pages"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "products"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "product-families"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "solutions"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "industries"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "case-studies"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "posts"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "careers"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "docs"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "route": {
+                                "enum": [
+                                  "home",
+                                  "urunler",
+                                  "urunler_family",
+                                  "cozumler",
+                                  "cozumler_slug",
+                                  "destek",
+                                  "destek_indirmeler",
+                                  "destek_dokumantasyon",
+                                  "destek_dokumantasyon_product",
+                                  "destek_surum-notlari",
+                                  "destek_sss",
+                                  "destek_talep",
+                                  "destek_iletisim",
+                                  "sirket_hakkimizda",
+                                  "referanslar",
+                                  "referanslar_slug",
+                                  "haberler",
+                                  "haberler_slug",
+                                  "kariyer",
+                                  "kariyer_slug",
+                                  "is-ortaklari",
+                                  "iletisim",
+                                  "demo-talep",
+                                  "teklif-iste",
+                                  "hesap",
+                                  "hesap_lisanslar",
+                                  "hesap_indirmeler",
+                                  "hesap_talepler",
+                                  "hesap_talepler_yeni",
+                                  "hesap_giris",
+                                  "hesap_kayit",
+                                  "hesap_sifremi-unuttum",
+                                  "hesap_profil",
+                                  "ara",
+                                  "yasal_slug"
+                                ]
+                              },
+                              "routeParam": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "url": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": []
+                          }
+                        },
+                        "required": []
                       }
                     },
                     "required": []
@@ -5401,7 +7472,8 @@
                         "type": {
                           "enum": [
                             "internal",
-                            "external"
+                            "external",
+                            "route"
                           ]
                         },
                         "newTab": {
@@ -5564,6 +7636,49 @@
                             }
                           ]
                         },
+                        "route": {
+                          "enum": [
+                            "home",
+                            "urunler",
+                            "urunler_family",
+                            "cozumler",
+                            "cozumler_slug",
+                            "destek",
+                            "destek_indirmeler",
+                            "destek_dokumantasyon",
+                            "destek_dokumantasyon_product",
+                            "destek_surum-notlari",
+                            "destek_sss",
+                            "destek_talep",
+                            "destek_iletisim",
+                            "sirket_hakkimizda",
+                            "referanslar",
+                            "referanslar_slug",
+                            "haberler",
+                            "haberler_slug",
+                            "kariyer",
+                            "kariyer_slug",
+                            "is-ortaklari",
+                            "iletisim",
+                            "demo-talep",
+                            "teklif-iste",
+                            "hesap",
+                            "hesap_lisanslar",
+                            "hesap_indirmeler",
+                            "hesap_talepler",
+                            "hesap_talepler_yeni",
+                            "hesap_giris",
+                            "hesap_kayit",
+                            "hesap_sifremi-unuttum",
+                            "hesap_profil",
+                            "ara",
+                            "yasal_slug"
+                          ]
+                        },
+                        "routeParam": {
+                          "type": "string",
+                          "minLength": 1
+                        },
                         "url": {
                           "type": "string",
                           "minLength": 1
@@ -5574,6 +7689,725 @@
                         }
                       },
                       "required": []
+                    },
+                    "secondary": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "internal",
+                            "external",
+                            "route"
+                          ]
+                        },
+                        "newTab": {
+                          "type": "boolean"
+                        },
+                        "reference": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "pages"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "products"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "product-families"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "solutions"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "industries"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "case-studies"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "posts"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "careers"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "docs"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            }
+                          ]
+                        },
+                        "route": {
+                          "enum": [
+                            "home",
+                            "urunler",
+                            "urunler_family",
+                            "cozumler",
+                            "cozumler_slug",
+                            "destek",
+                            "destek_indirmeler",
+                            "destek_dokumantasyon",
+                            "destek_dokumantasyon_product",
+                            "destek_surum-notlari",
+                            "destek_sss",
+                            "destek_talep",
+                            "destek_iletisim",
+                            "sirket_hakkimizda",
+                            "referanslar",
+                            "referanslar_slug",
+                            "haberler",
+                            "haberler_slug",
+                            "kariyer",
+                            "kariyer_slug",
+                            "is-ortaklari",
+                            "iletisim",
+                            "demo-talep",
+                            "teklif-iste",
+                            "hesap",
+                            "hesap_lisanslar",
+                            "hesap_indirmeler",
+                            "hesap_talepler",
+                            "hesap_talepler_yeni",
+                            "hesap_giris",
+                            "hesap_kayit",
+                            "hesap_sifremi-unuttum",
+                            "hesap_profil",
+                            "ara",
+                            "yasal_slug"
+                          ]
+                        },
+                        "routeParam": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": []
+                    }
+                  },
+                  "required": []
+                },
+                "announcement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "dismissible": {
+                      "type": "boolean"
+                    },
+                    "link": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "internal",
+                            "external",
+                            "route"
+                          ]
+                        },
+                        "newTab": {
+                          "type": "boolean"
+                        },
+                        "reference": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "pages"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "products"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "product-families"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "solutions"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "industries"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "case-studies"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "posts"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "careers"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "relationTo": {
+                                  "const": "docs"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "relationTo",
+                                "value"
+                              ]
+                            }
+                          ]
+                        },
+                        "route": {
+                          "enum": [
+                            "home",
+                            "urunler",
+                            "urunler_family",
+                            "cozumler",
+                            "cozumler_slug",
+                            "destek",
+                            "destek_indirmeler",
+                            "destek_dokumantasyon",
+                            "destek_dokumantasyon_product",
+                            "destek_surum-notlari",
+                            "destek_sss",
+                            "destek_talep",
+                            "destek_iletisim",
+                            "sirket_hakkimizda",
+                            "referanslar",
+                            "referanslar_slug",
+                            "haberler",
+                            "haberler_slug",
+                            "kariyer",
+                            "kariyer_slug",
+                            "is-ortaklari",
+                            "iletisim",
+                            "demo-talep",
+                            "teklif-iste",
+                            "hesap",
+                            "hesap_lisanslar",
+                            "hesap_indirmeler",
+                            "hesap_talepler",
+                            "hesap_talepler_yeni",
+                            "hesap_giris",
+                            "hesap_kayit",
+                            "hesap_sifremi-unuttum",
+                            "hesap_profil",
+                            "ara",
+                            "yasal_slug"
+                          ]
+                        },
+                        "routeParam": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": []
+                    }
+                  },
+                  "required": []
+                },
+                "utility": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "link": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "enum": [
+                                  "internal",
+                                  "external",
+                                  "route"
+                                ]
+                              },
+                              "newTab": {
+                                "type": "boolean"
+                              },
+                              "reference": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "pages"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "products"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "product-families"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "solutions"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "industries"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "case-studies"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "posts"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "careers"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "relationTo": {
+                                        "const": "docs"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "relationTo",
+                                      "value"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "route": {
+                                "enum": [
+                                  "home",
+                                  "urunler",
+                                  "urunler_family",
+                                  "cozumler",
+                                  "cozumler_slug",
+                                  "destek",
+                                  "destek_indirmeler",
+                                  "destek_dokumantasyon",
+                                  "destek_dokumantasyon_product",
+                                  "destek_surum-notlari",
+                                  "destek_sss",
+                                  "destek_talep",
+                                  "destek_iletisim",
+                                  "sirket_hakkimizda",
+                                  "referanslar",
+                                  "referanslar_slug",
+                                  "haberler",
+                                  "haberler_slug",
+                                  "kariyer",
+                                  "kariyer_slug",
+                                  "is-ortaklari",
+                                  "iletisim",
+                                  "demo-talep",
+                                  "teklif-iste",
+                                  "hesap",
+                                  "hesap_lisanslar",
+                                  "hesap_indirmeler",
+                                  "hesap_talepler",
+                                  "hesap_talepler_yeni",
+                                  "hesap_giris",
+                                  "hesap_kayit",
+                                  "hesap_sifremi-unuttum",
+                                  "hesap_profil",
+                                  "ara",
+                                  "yasal_slug"
+                                ]
+                              },
+                              "routeParam": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "url": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": []
+                          }
+                        },
+                        "required": []
+                      },
+                      "maxItems": 4
+                    },
+                    "showSearch": {
+                      "type": "boolean"
+                    },
+                    "showLanguage": {
+                      "type": "boolean"
+                    },
+                    "showAccount": {
+                      "type": "boolean"
                     }
                   },
                   "required": []
@@ -5618,7 +8452,8 @@
                                 "type": {
                                   "enum": [
                                     "internal",
-                                    "external"
+                                    "external",
+                                    "route"
                                   ]
                                 },
                                 "newTab": {
@@ -5781,6 +8616,49 @@
                                     }
                                   ]
                                 },
+                                "route": {
+                                  "enum": [
+                                    "home",
+                                    "urunler",
+                                    "urunler_family",
+                                    "cozumler",
+                                    "cozumler_slug",
+                                    "destek",
+                                    "destek_indirmeler",
+                                    "destek_dokumantasyon",
+                                    "destek_dokumantasyon_product",
+                                    "destek_surum-notlari",
+                                    "destek_sss",
+                                    "destek_talep",
+                                    "destek_iletisim",
+                                    "sirket_hakkimizda",
+                                    "referanslar",
+                                    "referanslar_slug",
+                                    "haberler",
+                                    "haberler_slug",
+                                    "kariyer",
+                                    "kariyer_slug",
+                                    "is-ortaklari",
+                                    "iletisim",
+                                    "demo-talep",
+                                    "teklif-iste",
+                                    "hesap",
+                                    "hesap_lisanslar",
+                                    "hesap_indirmeler",
+                                    "hesap_talepler",
+                                    "hesap_talepler_yeni",
+                                    "hesap_giris",
+                                    "hesap_kayit",
+                                    "hesap_sifremi-unuttum",
+                                    "hesap_profil",
+                                    "ara",
+                                    "yasal_slug"
+                                  ]
+                                },
+                                "routeParam": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
                                 "url": {
                                   "type": "string",
                                   "minLength": 1
@@ -5816,7 +8694,8 @@
                           "type": {
                             "enum": [
                               "internal",
-                              "external"
+                              "external",
+                              "route"
                             ]
                           },
                           "newTab": {
@@ -5979,6 +8858,49 @@
                               }
                             ]
                           },
+                          "route": {
+                            "enum": [
+                              "home",
+                              "urunler",
+                              "urunler_family",
+                              "cozumler",
+                              "cozumler_slug",
+                              "destek",
+                              "destek_indirmeler",
+                              "destek_dokumantasyon",
+                              "destek_dokumantasyon_product",
+                              "destek_surum-notlari",
+                              "destek_sss",
+                              "destek_talep",
+                              "destek_iletisim",
+                              "sirket_hakkimizda",
+                              "referanslar",
+                              "referanslar_slug",
+                              "haberler",
+                              "haberler_slug",
+                              "kariyer",
+                              "kariyer_slug",
+                              "is-ortaklari",
+                              "iletisim",
+                              "demo-talep",
+                              "teklif-iste",
+                              "hesap",
+                              "hesap_lisanslar",
+                              "hesap_indirmeler",
+                              "hesap_talepler",
+                              "hesap_talepler_yeni",
+                              "hesap_giris",
+                              "hesap_kayit",
+                              "hesap_sifremi-unuttum",
+                              "hesap_profil",
+                              "ara",
+                              "yasal_slug"
+                            ]
+                          },
+                          "routeParam": {
+                            "type": "string",
+                            "minLength": 1
+                          },
                           "url": {
                             "type": "string",
                             "minLength": 1
@@ -6004,6 +8926,16 @@
                 "newsletterForm": {
                   "type": "string",
                   "minLength": 1
+                },
+                "brandBlurb": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "showContact": {
+                  "type": "boolean"
+                },
+                "showSocial": {
+                  "type": "boolean"
                 }
               },
               "required": []
@@ -6035,7 +8967,8 @@
                                 "type": {
                                   "enum": [
                                     "internal",
-                                    "external"
+                                    "external",
+                                    "route"
                                   ]
                                 },
                                 "newTab": {
@@ -6198,6 +9131,49 @@
                                     }
                                   ]
                                 },
+                                "route": {
+                                  "enum": [
+                                    "home",
+                                    "urunler",
+                                    "urunler_family",
+                                    "cozumler",
+                                    "cozumler_slug",
+                                    "destek",
+                                    "destek_indirmeler",
+                                    "destek_dokumantasyon",
+                                    "destek_dokumantasyon_product",
+                                    "destek_surum-notlari",
+                                    "destek_sss",
+                                    "destek_talep",
+                                    "destek_iletisim",
+                                    "sirket_hakkimizda",
+                                    "referanslar",
+                                    "referanslar_slug",
+                                    "haberler",
+                                    "haberler_slug",
+                                    "kariyer",
+                                    "kariyer_slug",
+                                    "is-ortaklari",
+                                    "iletisim",
+                                    "demo-talep",
+                                    "teklif-iste",
+                                    "hesap",
+                                    "hesap_lisanslar",
+                                    "hesap_indirmeler",
+                                    "hesap_talepler",
+                                    "hesap_talepler_yeni",
+                                    "hesap_giris",
+                                    "hesap_kayit",
+                                    "hesap_sifremi-unuttum",
+                                    "hesap_profil",
+                                    "ara",
+                                    "yasal_slug"
+                                  ]
+                                },
+                                "routeParam": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
                                 "url": {
                                   "type": "string",
                                   "minLength": 1
@@ -6233,7 +9209,8 @@
                           "type": {
                             "enum": [
                               "internal",
-                              "external"
+                              "external",
+                              "route"
                             ]
                           },
                           "newTab": {
@@ -6396,6 +9373,49 @@
                               }
                             ]
                           },
+                          "route": {
+                            "enum": [
+                              "home",
+                              "urunler",
+                              "urunler_family",
+                              "cozumler",
+                              "cozumler_slug",
+                              "destek",
+                              "destek_indirmeler",
+                              "destek_dokumantasyon",
+                              "destek_dokumantasyon_product",
+                              "destek_surum-notlari",
+                              "destek_sss",
+                              "destek_talep",
+                              "destek_iletisim",
+                              "sirket_hakkimizda",
+                              "referanslar",
+                              "referanslar_slug",
+                              "haberler",
+                              "haberler_slug",
+                              "kariyer",
+                              "kariyer_slug",
+                              "is-ortaklari",
+                              "iletisim",
+                              "demo-talep",
+                              "teklif-iste",
+                              "hesap",
+                              "hesap_lisanslar",
+                              "hesap_indirmeler",
+                              "hesap_talepler",
+                              "hesap_talepler_yeni",
+                              "hesap_giris",
+                              "hesap_kayit",
+                              "hesap_sifremi-unuttum",
+                              "hesap_profil",
+                              "ara",
+                              "yasal_slug"
+                            ]
+                          },
+                          "routeParam": {
+                            "type": "string",
+                            "minLength": 1
+                          },
                           "url": {
                             "type": "string",
                             "minLength": 1
@@ -6421,6 +9441,16 @@
                 "newsletterForm": {
                   "type": "string",
                   "minLength": 1
+                },
+                "brandBlurb": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "showContact": {
+                  "type": "boolean"
+                },
+                "showSocial": {
+                  "type": "boolean"
                 }
               },
               "required": []
@@ -6458,6 +9488,27 @@
                 "defaultOgImage": {
                   "type": "string",
                   "minLength": 1
+                },
+                "favicon": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "brand": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "accent": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "motion": {
+                  "enum": [
+                    "subtle",
+                    "none"
+                  ]
                 },
                 "company": {
                   "type": "object",
@@ -6616,6 +9667,27 @@
                 "defaultOgImage": {
                   "type": "string",
                   "minLength": 1
+                },
+                "favicon": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "brand": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "accent": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": []
+                },
+                "motion": {
+                  "enum": [
+                    "subtle",
+                    "none"
+                  ]
                 },
                 "company": {
                   "type": "object",

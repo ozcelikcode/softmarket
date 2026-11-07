@@ -80,6 +80,30 @@ export const CANONICAL_PATHS = [
   '/yasal/[slug]',
 ] as const
 
+/*
+ * CMS link `route` targets. Values are stable keys (never paths: select values also become
+ * GraphQL enum names). Only canonical routes with at most one dynamic segment are offered;
+ * token/ID-based portal pages are excluded. Add new keys only: stored links reference them.
+ */
+const ROUTE_EXCLUDED = new Set<string>(['/hesap/sifre-sifirla', '/hesap/dogrula', '/hesap/talepler/[id]'])
+export const LINK_ROUTES = CANONICAL_PATHS.filter(
+  (p) => !ROUTE_EXCLUDED.has(p) && (p.match(/\[/g)?.length ?? 0) <= 1,
+)
+export const routeKey = (path: string) =>
+  path === '/' ? 'home' : path.slice(1).replace(/\[([^\]]+)\]/g, '$1').replace(/\//g, '_')
+export const ROUTE_BY_KEY: Record<string, string> = Object.fromEntries(LINK_ROUTES.map((p) => [routeKey(p), p]))
+export const ROUTE_PARAM_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+export const routeHasParam = (key: unknown) => typeof key === 'string' && Boolean(ROUTE_BY_KEY[key]?.includes('['))
+
+/** Locale-independent canonical (Turkish) path for a CMS route key; AppLink/localizedHref localizes it. */
+export function routePath(key: unknown, param?: unknown): string | null {
+  if (typeof key !== 'string' || !Object.hasOwn(ROUTE_BY_KEY, key)) return null
+  const path = ROUTE_BY_KEY[key]
+  if (!path.includes('[')) return path
+  const value = typeof param === 'string' ? param.trim() : ''
+  return ROUTE_PARAM_PATTERN.test(value) ? path.replace(/\[[^\]]+\]/, value) : null
+}
+
 const translate = (path: string, locale: string) =>
   locale === 'en'
     ? path
@@ -87,6 +111,10 @@ const translate = (path: string, locale: string) =>
         .map((s) => SEGMENTS_EN[s] ?? s)
         .join('/')
     : path
+
+/** Admin labels: the TR canonical path in TR, the public EN path in EN. */
+export const routeOptions = () =>
+  LINK_ROUTES.map((p) => ({ value: routeKey(p), label: { tr: p, en: translate(p, 'en') } }))
 
 export const buildPathnames = () =>
   Object.fromEntries(CANONICAL_PATHS.map((p) => [p, { tr: p, en: translate(p, 'en') }])) as Record<

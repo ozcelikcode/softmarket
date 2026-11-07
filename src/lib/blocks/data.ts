@@ -126,6 +126,13 @@ const loadFamiliesCached = cache((locale: Locale, serialized: string, withCounts
 export const loadFamilies = (locale: string, block: object) =>
   loadFamiliesCached(locale as Locale, key(familiesSpec(block as Raw)), (block as Raw).showCount !== false)
 
+/**
+ * Hero side panel (aside: families): first 5 of the default family list. Same spec as a default
+ * productFamilies block (all, 6, order, with counts), so a home page with both shares one query.
+ */
+export const HERO_PANEL_FAMILIES = 5
+export const loadHeroFamilies = (locale: string) => loadFamilies(locale, {})
+
 export type ShowcaseProduct = Pick<Product, 'id' | 'title' | 'slug' | 'tagline' | 'summary' | 'heroImage' | 'family' | 'featured'>
 const loadProductsCached = cache((locale: Locale, serialized: string) =>
   safe(async (): Promise<ShowcaseProduct[]> => {
@@ -266,6 +273,7 @@ export function preloadBlockData(blocks: readonly object[] | null | undefined, l
     if (!block || block.appearance?.hidden === true) continue
     switch (block.blockType) {
       case 'productFamilies': void loadFamilies(locale, item); break
+      case 'hero': if ((item as { aside?: unknown }).aside === 'families') void loadHeroFamilies(locale); break
       case 'productShowcase': void loadProducts(locale, item); break
       case 'solutionsGrid': void loadSolutions(locale, item); break
       case 'caseStudy': void loadCaseStudy(locale, item); break

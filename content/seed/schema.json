@@ -30,6 +30,16 @@
           "type": "string",
           "minLength": 1
         },
+        "aside": {
+          "enum": [
+            "media",
+            "families"
+          ]
+        },
+        "panelTitle": {
+          "type": "string",
+          "minLength": 1
+        },
         "video": {
           "type": "string",
           "minLength": 1
@@ -247,7 +257,8 @@
                       "hesap_sifremi-unuttum",
                       "hesap_profil",
                       "ara",
-                      "yasal_slug"
+                      "yasal_slug",
+                      "slug"
                     ]
                   },
                   "routeParam": {
@@ -313,6 +324,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -441,6 +458,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -704,7 +727,8 @@
                       "hesap_sifremi-unuttum",
                       "hesap_profil",
                       "ara",
-                      "yasal_slug"
+                      "yasal_slug",
+                      "slug"
                     ]
                   },
                   "routeParam": {
@@ -770,6 +794,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -874,6 +904,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -963,6 +999,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -1081,6 +1123,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -1333,7 +1381,8 @@
                       "hesap_sifremi-unuttum",
                       "hesap_profil",
                       "ara",
-                      "yasal_slug"
+                      "yasal_slug",
+                      "slug"
                     ]
                   },
                   "routeParam": {
@@ -1400,6 +1449,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -1509,6 +1564,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -1579,6 +1640,12 @@
               "enum": [
                 "start",
                 "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -1656,6 +1723,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -1754,6 +1827,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -1836,6 +1915,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -1938,6 +2023,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -1997,6 +2088,12 @@
               "enum": [
                 "start",
                 "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -2063,6 +2160,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -2183,6 +2286,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -2314,6 +2423,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -2436,6 +2551,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -2528,6 +2649,12 @@
                 "narrow",
                 "normal",
                 "wide"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
               ]
             },
             "anchor": {
@@ -2656,6 +2783,12 @@
                 "wide"
               ]
             },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
             "anchor": {
               "type": "string",
               "minLength": 1
@@ -2668,6 +2801,65 @@
         },
         "blockType": {
           "const": "newsList"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "listing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "listing"
         }
       },
       "required": [
@@ -2724,6 +2916,73 @@
                 "type": "string",
                 "minLength": 1
               },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
+                    }
+                  ]
+                }
+              },
               "slug": {
                 "type": "string",
                 "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
@@ -2768,6 +3027,73 @@
               "image": {
                 "type": "string",
                 "minLength": 1
+              },
+              "layout": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/hero"
+                    },
+                    {
+                      "$ref": "#/$defs/featureGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/mediaText"
+                    },
+                    {
+                      "$ref": "#/$defs/specTable"
+                    },
+                    {
+                      "$ref": "#/$defs/stats"
+                    },
+                    {
+                      "$ref": "#/$defs/logoWall"
+                    },
+                    {
+                      "$ref": "#/$defs/cta"
+                    },
+                    {
+                      "$ref": "#/$defs/faq"
+                    },
+                    {
+                      "$ref": "#/$defs/richText"
+                    },
+                    {
+                      "$ref": "#/$defs/videoEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/media"
+                    },
+                    {
+                      "$ref": "#/$defs/testimonial"
+                    },
+                    {
+                      "$ref": "#/$defs/tabs"
+                    },
+                    {
+                      "$ref": "#/$defs/spacer"
+                    },
+                    {
+                      "$ref": "#/$defs/divider"
+                    },
+                    {
+                      "$ref": "#/$defs/productFamilies"
+                    },
+                    {
+                      "$ref": "#/$defs/productShowcase"
+                    },
+                    {
+                      "$ref": "#/$defs/solutionsGrid"
+                    },
+                    {
+                      "$ref": "#/$defs/caseStudy"
+                    },
+                    {
+                      "$ref": "#/$defs/newsList"
+                    }
+                  ]
+                }
               },
               "slug": {
                 "type": "string",
@@ -4299,6 +4625,269 @@
                 "type": "string",
                 "minLength": 1
               },
+              "hero": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "eyebrow": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lead": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "actions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "internal",
+                                "external",
+                                "route"
+                              ]
+                            },
+                            "newTab": {
+                              "type": "boolean"
+                            },
+                            "reference": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "pages"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "products"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "product-families"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "solutions"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "industries"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "case-studies"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "posts"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "careers"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "docs"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                }
+                              ]
+                            },
+                            "route": {
+                              "enum": [
+                                "home",
+                                "urunler",
+                                "urunler_family",
+                                "cozumler",
+                                "cozumler_slug",
+                                "destek",
+                                "destek_indirmeler",
+                                "destek_dokumantasyon",
+                                "destek_dokumantasyon_product",
+                                "destek_surum-notlari",
+                                "destek_sss",
+                                "destek_talep",
+                                "destek_iletisim",
+                                "sirket_hakkimizda",
+                                "referanslar",
+                                "referanslar_slug",
+                                "haberler",
+                                "haberler_slug",
+                                "kariyer",
+                                "kariyer_slug",
+                                "is-ortaklari",
+                                "iletisim",
+                                "demo-talep",
+                                "teklif-iste",
+                                "hesap",
+                                "hesap_lisanslar",
+                                "hesap_indirmeler",
+                                "hesap_talepler",
+                                "hesap_talepler_yeni",
+                                "hesap_giris",
+                                "hesap_kayit",
+                                "hesap_sifremi-unuttum",
+                                "hesap_profil",
+                                "ara",
+                                "yasal_slug",
+                                "slug"
+                              ]
+                            },
+                            "routeParam": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "url": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "appearance": {
+                              "enum": [
+                                "primary",
+                                "secondary",
+                                "link"
+                              ]
+                            }
+                          },
+                          "required": []
+                        }
+                      },
+                      "required": []
+                    },
+                    "maxItems": 2
+                  }
+                },
+                "required": []
+              },
               "layout": {
                 "type": "array",
                 "items": {
@@ -4362,6 +4951,9 @@
                     },
                     {
                       "$ref": "#/$defs/newsList"
+                    },
+                    {
+                      "$ref": "#/$defs/listing"
                     }
                   ]
                 }
@@ -4374,7 +4966,21 @@
                 "enum": [
                   "standard",
                   "legal",
-                  "landing"
+                  "landing",
+                  "template"
+                ]
+              },
+              "systemKey": {
+                "enum": [
+                  "products",
+                  "solutions",
+                  "news",
+                  "customers",
+                  "careers",
+                  "partners",
+                  "support",
+                  "contact",
+                  "about"
                 ]
               },
               "publishedAt": {
@@ -4395,6 +5001,269 @@
                 "type": "string",
                 "minLength": 1
               },
+              "hero": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "eyebrow": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lead": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "actions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "internal",
+                                "external",
+                                "route"
+                              ]
+                            },
+                            "newTab": {
+                              "type": "boolean"
+                            },
+                            "reference": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "pages"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "products"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "product-families"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "solutions"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "industries"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "case-studies"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "posts"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "careers"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "relationTo": {
+                                      "const": "docs"
+                                    },
+                                    "value": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "relationTo",
+                                    "value"
+                                  ]
+                                }
+                              ]
+                            },
+                            "route": {
+                              "enum": [
+                                "home",
+                                "urunler",
+                                "urunler_family",
+                                "cozumler",
+                                "cozumler_slug",
+                                "destek",
+                                "destek_indirmeler",
+                                "destek_dokumantasyon",
+                                "destek_dokumantasyon_product",
+                                "destek_surum-notlari",
+                                "destek_sss",
+                                "destek_talep",
+                                "destek_iletisim",
+                                "sirket_hakkimizda",
+                                "referanslar",
+                                "referanslar_slug",
+                                "haberler",
+                                "haberler_slug",
+                                "kariyer",
+                                "kariyer_slug",
+                                "is-ortaklari",
+                                "iletisim",
+                                "demo-talep",
+                                "teklif-iste",
+                                "hesap",
+                                "hesap_lisanslar",
+                                "hesap_indirmeler",
+                                "hesap_talepler",
+                                "hesap_talepler_yeni",
+                                "hesap_giris",
+                                "hesap_kayit",
+                                "hesap_sifremi-unuttum",
+                                "hesap_profil",
+                                "ara",
+                                "yasal_slug",
+                                "slug"
+                              ]
+                            },
+                            "routeParam": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "url": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "appearance": {
+                              "enum": [
+                                "primary",
+                                "secondary",
+                                "link"
+                              ]
+                            }
+                          },
+                          "required": []
+                        }
+                      },
+                      "required": []
+                    },
+                    "maxItems": 2
+                  }
+                },
+                "required": []
+              },
               "layout": {
                 "type": "array",
                 "items": {
@@ -4458,6 +5327,9 @@
                     },
                     {
                       "$ref": "#/$defs/newsList"
+                    },
+                    {
+                      "$ref": "#/$defs/listing"
                     }
                   ]
                 }
@@ -4470,7 +5342,21 @@
                 "enum": [
                   "standard",
                   "legal",
-                  "landing"
+                  "landing",
+                  "template"
+                ]
+              },
+              "systemKey": {
+                "enum": [
+                  "products",
+                  "solutions",
+                  "news",
+                  "customers",
+                  "careers",
+                  "partners",
+                  "support",
+                  "contact",
+                  "about"
                 ]
               },
               "publishedAt": {
@@ -4754,7 +5640,8 @@
                               "hesap_sifremi-unuttum",
                               "hesap_profil",
                               "ara",
-                              "yasal_slug"
+                              "yasal_slug",
+                              "slug"
                             ]
                           },
                           "routeParam": {
@@ -4992,7 +5879,8 @@
                                     "hesap_sifremi-unuttum",
                                     "hesap_profil",
                                     "ara",
-                                    "yasal_slug"
+                                    "yasal_slug",
+                                    "slug"
                                   ]
                                 },
                                 "routeParam": {
@@ -5241,7 +6129,8 @@
                                           "hesap_sifremi-unuttum",
                                           "hesap_profil",
                                           "ara",
-                                          "yasal_slug"
+                                          "yasal_slug",
+                                          "slug"
                                         ]
                                       },
                                       "routeParam": {
@@ -5496,7 +6385,8 @@
                                   "hesap_sifremi-unuttum",
                                   "hesap_profil",
                                   "ara",
-                                  "yasal_slug"
+                                  "yasal_slug",
+                                  "slug"
                                 ]
                               },
                               "routeParam": {
@@ -5733,7 +6623,8 @@
                             "hesap_sifremi-unuttum",
                             "hesap_profil",
                             "ara",
-                            "yasal_slug"
+                            "yasal_slug",
+                            "slug"
                           ]
                         },
                         "routeParam": {
@@ -5958,7 +6849,8 @@
                             "hesap_sifremi-unuttum",
                             "hesap_profil",
                             "ara",
-                            "yasal_slug"
+                            "yasal_slug",
+                            "slug"
                           ]
                         },
                         "routeParam": {
@@ -6200,7 +7092,8 @@
                             "hesap_sifremi-unuttum",
                             "hesap_profil",
                             "ara",
-                            "yasal_slug"
+                            "yasal_slug",
+                            "slug"
                           ]
                         },
                         "routeParam": {
@@ -6438,7 +7331,8 @@
                                   "hesap_sifremi-unuttum",
                                   "hesap_profil",
                                   "ara",
-                                  "yasal_slug"
+                                  "yasal_slug",
+                                  "slug"
                                 ]
                               },
                               "routeParam": {
@@ -6693,7 +7587,8 @@
                               "hesap_sifremi-unuttum",
                               "hesap_profil",
                               "ara",
-                              "yasal_slug"
+                              "yasal_slug",
+                              "slug"
                             ]
                           },
                           "routeParam": {
@@ -6931,7 +7826,8 @@
                                     "hesap_sifremi-unuttum",
                                     "hesap_profil",
                                     "ara",
-                                    "yasal_slug"
+                                    "yasal_slug",
+                                    "slug"
                                   ]
                                 },
                                 "routeParam": {
@@ -7180,7 +8076,8 @@
                                           "hesap_sifremi-unuttum",
                                           "hesap_profil",
                                           "ara",
-                                          "yasal_slug"
+                                          "yasal_slug",
+                                          "slug"
                                         ]
                                       },
                                       "routeParam": {
@@ -7435,7 +8332,8 @@
                                   "hesap_sifremi-unuttum",
                                   "hesap_profil",
                                   "ara",
-                                  "yasal_slug"
+                                  "yasal_slug",
+                                  "slug"
                                 ]
                               },
                               "routeParam": {
@@ -7672,7 +8570,8 @@
                             "hesap_sifremi-unuttum",
                             "hesap_profil",
                             "ara",
-                            "yasal_slug"
+                            "yasal_slug",
+                            "slug"
                           ]
                         },
                         "routeParam": {
@@ -7897,7 +8796,8 @@
                             "hesap_sifremi-unuttum",
                             "hesap_profil",
                             "ara",
-                            "yasal_slug"
+                            "yasal_slug",
+                            "slug"
                           ]
                         },
                         "routeParam": {
@@ -8139,7 +9039,8 @@
                             "hesap_sifremi-unuttum",
                             "hesap_profil",
                             "ara",
-                            "yasal_slug"
+                            "yasal_slug",
+                            "slug"
                           ]
                         },
                         "routeParam": {
@@ -8377,7 +9278,8 @@
                                   "hesap_sifremi-unuttum",
                                   "hesap_profil",
                                   "ara",
-                                  "yasal_slug"
+                                  "yasal_slug",
+                                  "slug"
                                 ]
                               },
                               "routeParam": {
@@ -8652,7 +9554,8 @@
                                     "hesap_sifremi-unuttum",
                                     "hesap_profil",
                                     "ara",
-                                    "yasal_slug"
+                                    "yasal_slug",
+                                    "slug"
                                   ]
                                 },
                                 "routeParam": {
@@ -8894,7 +9797,8 @@
                               "hesap_sifremi-unuttum",
                               "hesap_profil",
                               "ara",
-                              "yasal_slug"
+                              "yasal_slug",
+                              "slug"
                             ]
                           },
                           "routeParam": {
@@ -9167,7 +10071,8 @@
                                     "hesap_sifremi-unuttum",
                                     "hesap_profil",
                                     "ara",
-                                    "yasal_slug"
+                                    "yasal_slug",
+                                    "slug"
                                   ]
                                 },
                                 "routeParam": {
@@ -9409,7 +10314,8 @@
                               "hesap_sifremi-unuttum",
                               "hesap_profil",
                               "ara",
-                              "yasal_slug"
+                              "yasal_slug",
+                              "slug"
                             ]
                           },
                           "routeParam": {
@@ -9474,6 +10380,10 @@
                   "minLength": 1
                 },
                 "tagline": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "homePage": {
                   "type": "string",
                   "minLength": 1
                 },
@@ -9653,6 +10563,10 @@
                   "minLength": 1
                 },
                 "tagline": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "homePage": {
                   "type": "string",
                   "minLength": 1
                 },

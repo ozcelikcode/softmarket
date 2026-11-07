@@ -10,11 +10,10 @@ import type { ReactNode } from 'react'
 
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
-import { PageHero } from '@/components/sections/page-hero'
+import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
 import { Container } from '@/components/ui/container'
 import { LeadFormSection } from '@/components/forms/lead-form-section'
-import { Section } from '@/components/ui/section'
-import { getContactSettings } from '@/lib/content'
+import { getContactSettings, getSystemPage, mediaOf } from '@/lib/content'
 import { initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
 import { publicContact } from '@/lib/site'
@@ -24,8 +23,8 @@ type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
-  const t = await getTranslations({ locale, namespace: 'contact' })
-  return buildMetadata({ locale, path: '/iletisim', title: t('title'), description: t('lead') })
+  const [t, page] = await Promise.all([getTranslations({ locale, namespace: 'contact' }), getSystemPage(locale, 'contact')])
+  return buildMetadata({ locale, path: '/iletisim', ...systemMeta(page, { title: t('title'), lead: t('lead') }), image: mediaOf(page?.meta?.image)?.url })
 }
 
 const Row = ({
@@ -48,10 +47,11 @@ const Row = ({
 
 async function ContactPage({ params }: Props) {
   const locale = await initLocale(params)
-  const [t, c, settings] = await Promise.all([
+  const [t, c, settings, page] = await Promise.all([
     getTranslations({ locale, namespace: 'contact' }),
     getTranslations({ locale, namespace: 'common' }),
     getContactSettings(locale),
+    getSystemPage(locale, 'contact'),
   ])
   const trail = [
     { label: c('home'), href: '/' },
@@ -68,14 +68,8 @@ async function ContactPage({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <PageHero
-        locale={locale}
-        crumbLabel={c('breadcrumb')}
-        crumbs={trail}
-        title={t('title')}
-        lead={t('lead')}
-      />
-      <Section theme="light" spacing="md">
+      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody locale={locale} page={page} listing={
         <Container className="grid gap-12 lg:grid-cols-[1fr_1.1fr]">
           <div>
             {hasAny ? (
@@ -129,7 +123,7 @@ async function ContactPage({ params }: Props) {
             <LeadFormSection kind="contact" locale={locale} />
           </div>
         </Container>
-      </Section>
+      } />
     </>
   )
 }

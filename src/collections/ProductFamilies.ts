@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdminOrEditor } from '@/access'
-import { sortOrderField } from '@/fields/common'
+import { layoutField, sortOrderField } from '@/fields/common'
 import { slugField } from '@/fields/slug'
 
 export const ProductFamilies: CollectionConfig = {
@@ -34,6 +34,14 @@ export const ProductFamilies: CollectionConfig = {
               on: 'family',
               defaultSort: 'sortOrder',
             },
+            layoutField({
+              admin: {
+                description: {
+                  tr: 'Aile sayfasında ürün listesinin altında gösterilen bloklar (sürükle-bırak ile sıralanır).',
+                  en: 'Blocks shown below the product list on the family page (drag to reorder).',
+                },
+              },
+            }),
           ],
         },
       ],

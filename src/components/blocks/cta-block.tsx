@@ -40,8 +40,9 @@ export async function CTABlock({ block, locale, ctx }: BlockProps<Block>) {
     >
       <div className={cn(card && 'rounded-xl border border-border bg-surface p-8 sm:p-12', center && 'text-center')}>
         <Heading as="h2" size={card ? 'h2' : 'h1'}>{block.heading}</Heading>
-        {block.body ? <p className={cn('mt-4 max-w-xl text-lead text-muted text-pretty', center && 'mx-auto')}>{block.body}</p> : null}
-        <div className={cn(center && '[&>div]:justify-center')}>{actions}</div>
+        {/* Banner spacing equals the closing CtaBand (pre-F6 home): lead mt-5, buttons mt-9. */}
+        {block.body ? <p className={cn(card ? 'mt-4' : 'mt-5', 'max-w-xl text-lead text-muted text-pretty', center && 'mx-auto')}>{block.body}</p> : null}
+        <div className={cn(center && '[&>div]:justify-center')}>{card ? actions : <Actions actions={block.actions} locale={locale} className="mt-9" fallback={{ label: c('requestQuote'), href: '/teklif-iste' }} />}</div>
       </div>
     </BlockShell>
   )

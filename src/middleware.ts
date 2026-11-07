@@ -13,6 +13,11 @@ export default function middleware(request: NextRequest) {
     return new NextResponse('Forbidden', { status: 403 })
   }
   const { pathname } = request.nextUrl
+  if (pathname === '/home' || pathname === '/home/') {
+    const url = new URL(request.url)
+    url.pathname = '/'
+    return NextResponse.redirect(url, 308)
+  }
   const legacy = legacySearchPath(pathname)
   if (legacy) {
     // NextURL normalizes loopback hosts even with skipMiddlewareUrlNormalize.

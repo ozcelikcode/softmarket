@@ -4,6 +4,7 @@ import type { Where } from 'payload'
 import type { Locale } from '@/i18n/routing'
 import { routing } from '@/i18n/routing'
 import { getPayloadClient, safe } from '@/lib/site'
+import { HOME_SLUG, isLandingPage, isReservedSlug, LANDING_PAGE_TYPES, type SystemKey } from '@/lib/system-pages'
 import { safeHref } from '@/lib/utils'
 import type {
   CaseStudy, Career, Doc, Download, Edition, Media, Page, Partner, Post, Product, ProductFamily, Solution,
@@ -30,7 +31,7 @@ export const populate = {
   'case-studies': { title: true, slug: true, customerName: true, customerLogo: true, summary: true },
   partners: { name: true, logo: true, website: true, tier: true },
   faqs: { question: true, answer: true },
-  pages: { slug: true, pageType: true },
+  pages: { slug: true, pageType: true, systemKey: true },
   solutions: { slug: true },
   industries: { slug: true, title: true },
   posts: { slug: true },
@@ -97,8 +98,8 @@ export const getCatalogProducts = (locale: Locale, opts: { familyId?: number; fe
 
 export const getFamily = cache((locale: Locale, slug: string) =>
   safe(async () => (await getPayloadClient()).find({
-    collection: 'product-families', ...anon(locale), limit: 1, depth: 1, where: bySlug(slug),
-    select: { title: true, slug: true, tagline: true, description: true, icon: true, image: true, meta: true },
+    collection: 'product-families', ...anon(locale), limit: 1, depth: 2, where: bySlug(slug),
+    select: { title: true, slug: true, tagline: true, description: true, icon: true, image: true, meta: true, layout: true },
     populate,
   }).then((r) => (r.docs[0] as ProductFamily | undefined) ?? null), null))
 
@@ -248,6 +249,72 @@ const getPageCached = cache((locale: Locale, serializedSlugs: string, legalOnly:
 export const getPage = (locale: Locale, slugs: string | string[], opts: { legalOnly?: boolean } = {}) =>
   getPageCached(locale, JSON.stringify(Array.isArray(slugs) ? slugs : [slugs]), Boolean(opts.legalOnly))
 
+/* -------------------------------------------------------------- CMS pages (F6) */
+
+const pageSelect = {
+  title: true, slug: true, layout: true, hero: true, meta: true, pageType: true, systemKey: true, updatedAt: true,
+} as const
+export type CmsPage = Pick<Page, 'id' | 'title' | 'slug' | 'layout' | 'hero' | 'meta' | 'pageType' | 'systemKey' | 'updatedAt'>
+
+/** SiteSettings.homePage as an ID (no population: the page is read below with anonymous access). */
+export const getHomePageId = cache(() =>
+  safe(async () => {
+    const settings = await (await getPayloadClient()).findGlobal({
+      slug: 'site-settings', depth: 0, overrideAccess: false, user: null, draft: false, select: { homePage: true },
+    })
+    const ref = (settings as { homePage?: unknown }).homePage
+    const id = ref && typeof ref === 'object' ? (ref as { id?: unknown }).id : ref
+    return typeof id === 'number' ? id : null
+  }, null))
+
+/** Pages that can be a home page: not legal, not a template, no system key. */
+const homeCandidate: Where = {
+  and: [
+    { or: [{ pageType: { not_in: ['legal', 'template'] } }, { pageType: { exists: false } }] },
+    { systemKey: { exists: false } },
+  ],
+}
+
+/**
+ * Home resolution order: SiteSettings.homePage -> page with slug `home` -> null (built-in fallback home).
+ * Both candidates come from one anonymous, published-only query; an unpublished/draft home page is skipped.
+ */
+export const getHomePage = cache((locale: Locale) =>
+  safe(async () => {
+    const id = await getHomePageId()
+    const found = await (await getPayloadClient()).find({
+      collection: 'pages', ...anon(locale), limit: 2, depth: 2, pagination: false,
+      where: { and: [homeCandidate, { or: [...(id ? [{ id: { equals: id } }] : []), { slug: { equals: HOME_SLUG } }] }] },
+      select: pageSelect, populate,
+    })
+    const docs = found.docs as CmsPage[]
+    return (id ? docs.find((d) => d.id === id) : undefined) ?? docs.find((d) => d.slug === HOME_SLUG) ?? null
+  }, null))
+
+/** The page bound to a fixed route (pages.systemKey), published only. */
+export const getSystemPage = cache((locale: Locale, key: SystemKey) =>
+  safe(async () => (await getPayloadClient()).find({
+    collection: 'pages', ...anon(locale), limit: 1, depth: 2,
+    where: { and: [{ systemKey: { equals: key } }, { pageType: { not_equals: 'template' } }] },
+    select: pageSelect, populate,
+  }).then((r) => (r.docs[0] as CmsPage | undefined) ?? null), null))
+
+/** Landing page served at `/[slug]`: standard/landing type, no system key, not reserved, not the home slug. */
+export const getLandingPage = cache((locale: Locale, slug: string) =>
+  safe(async () => {
+    if (!slug || slug === HOME_SLUG || isReservedSlug(slug)) return null
+    const page = await (await getPayloadClient()).find({
+      collection: 'pages', ...anon(locale), limit: 1, depth: 2,
+      where: { and: [
+        { slug: { equals: slug } },
+        { or: [{ pageType: { in: [...LANDING_PAGE_TYPES] } }, { pageType: { exists: false } }] },
+        { systemKey: { exists: false } },
+      ] },
+      select: pageSelect, populate,
+    }).then((r) => (r.docs[0] as CmsPage | undefined) ?? null)
+    return page && isLandingPage(page) ? page : null
+  }, null))
+
 /** Public company/contact settings (explicit field selection: no tax or KEP data). */
 export const getContactSettings = cache((locale: Locale) =>
   safe(async () => (await getPayloadClient()).findGlobal({
@@ -313,13 +380,13 @@ export const getSitemapEntries = cache(() =>
         collection, ...base, depth: collection === 'products' ? 1 : 0, where,
         select: collection === 'products'
           ? { slug: true, family: true, updatedAt: true }
-          : { slug: true, updatedAt: true },
+          : collection === 'pages' ? { slug: true, pageType: true, systemKey: true, updatedAt: true } : { slug: true, updatedAt: true },
         populate: { 'product-families': { slug: true } },
-      }).then((r) => r.docs as unknown as { slug?: unknown; family?: unknown; updatedAt?: string }[])
+      }).then((r) => r.docs as unknown as { id: number; slug?: unknown; family?: unknown; pageType?: string | null; systemKey?: string | null; updatedAt?: string }[])
         .catch(() => [])
-    const [families, products, solutions, cases, posts, careers, pages] = await Promise.all([
+    const [families, products, solutions, cases, posts, careers, pages, homePageId] = await Promise.all([
       list('product-families'), list('products'), list('solutions'), list('case-studies'), list('posts'),
-      list('careers'), list('pages', { pageType: { equals: 'legal' } }),
+      list('careers'), list('pages', { pageType: { in: ['legal', ...LANDING_PAGE_TYPES] } }), getHomePageId(),
     ])
     const entries: SitemapEntry[] = []
     const simple = (docs: typeof families, prefix: string) => {
@@ -335,7 +402,17 @@ export const getSitemapEntries = cache(() =>
     simple(cases, '/referanslar')
     simple(posts, '/haberler')
     simple(careers, '/kariyer')
-    simple(pages, '/yasal')
+    simple(pages.filter((p) => p.pageType === 'legal'), '/yasal')
+    // Landing pages (`/[slug]`): templates, system pages, the home slug and reserved slugs never get a URL.
+    for (const d of pages) {
+      if (d.pageType === 'legal' || d.id === homePageId) continue
+      const slugs = pickLocales(d.slug)
+      const paths: SitemapEntry['paths'] = {}
+      for (const l of routing.locales) {
+        if (slugs[l] && isLandingPage({ slug: slugs[l], pageType: d.pageType ?? 'standard', systemKey: d.systemKey })) paths[l] = `/${encodeURIComponent(slugs[l]!)}`
+      }
+      if (Object.keys(paths).length) entries.push({ paths, lastModified: d.updatedAt })
+    }
     for (const d of products) {
       const slugs = pickLocales(d.slug)
       const fam = pickLocales(relOf<{ slug?: unknown }>(d.family)?.slug)

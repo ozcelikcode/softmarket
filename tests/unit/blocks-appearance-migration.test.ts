@@ -63,19 +63,22 @@ describe(`migration ${NAME}`, () => {
     const later = migrations.find((m) => m.name === '20261107_111754_blocks_static_set')!
     const dynamic = migrations.find((m) => m.name === '20261107_130000_blocks_dynamic_set')!
     const globalsEditable = migrations.find((m) => m.name === '20261107_141523_globals_editable')!
+    const pageBuilder = migrations.find((m) => m.name === '20261107_144850_page_builder_pages')!
     await later.up(args())
     await dynamic.up(args())
     await globalsEditable.up(args())
+    await pageBuilder.up(args())
     let product
     try {
       product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
     } finally {
+      await pageBuilder.down(args())
       await globalsEditable.down(args())
       await dynamic.down(args())
       await later.down(args())
     }
     expect(product.layout?.[0]).toMatchObject({ blockType: 'cta', style: 'card', appearance: { theme: 'auto', spacing: 'md', align: 'center', hidden: false } })
-  })
+  }, 60000)
 
   it('down drops only the new columns and keeps the data; up is repeatable', async () => {
     await migration.down(args())

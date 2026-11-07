@@ -2,11 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { contentSecurityPolicy, usesNonce } from '@/lib/csp'
 import { serverUrl, validateServerUrl } from '@/lib/server-url'
 
-const cache = vi.hoisted(() => ({ revalidatePath: vi.fn() }))
+const cache = vi.hoisted(() => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 vi.mock('next/cache', () => cache)
 import { revalidatePublicContent, withPublicRevalidation, withGlobalRevalidation } from '@/lib/revalidate'
 
-afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); cache.revalidatePath.mockReset() })
+afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); cache.revalidatePath.mockReset(); cache.revalidateTag.mockReset() })
 
 describe('CSP rendering boundaries', () => {
   it('uses a strict nonce only for dynamic HTML, with service origins and frame restrictions', () => {
@@ -53,7 +53,8 @@ describe('CMS cache invalidation', () => {
     expect(cache.revalidatePath).not.toHaveBeenCalled()
     vi.stubEnv('NEXT_RUNTIME', 'nodejs')
     await revalidatePublicContent()
-    expect(cache.revalidatePath.mock.calls).toEqual([['/tr', 'layout'], ['/en', 'layout'], ['/sitemap.xml']])
+    expect(cache.revalidatePath.mock.calls).toEqual([['/', 'layout'], ['/sitemap.xml']])
+    expect(cache.revalidateTag).toHaveBeenCalledWith('public-sitemap')
   })
   it('invalidates publish and unpublish but not draft saves', async () => {
     vi.stubEnv('NEXT_RUNTIME', 'nodejs')
@@ -62,7 +63,7 @@ describe('CMS cache invalidation', () => {
     const findOne = vi.fn()
     const invoke = (doc: object, previousDoc: object) => hook({ doc, previousDoc, req: { payload: { db: { findOne } } } } as never)
     await invoke({ id: 1, _status: 'published' }, { _status: 'draft' })
-    expect(cache.revalidatePath).toHaveBeenCalledTimes(3)
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(2)
     cache.revalidatePath.mockClear()
     await invoke({ id: 1, _status: 'draft' }, { _status: 'draft' })
     expect(cache.revalidatePath).not.toHaveBeenCalled()
@@ -70,7 +71,7 @@ describe('CMS cache invalidation', () => {
     await invoke({ id: 1, _status: 'draft' }, { _status: 'published' })
     expect(cache.revalidatePath).not.toHaveBeenCalled()
     await invoke({ id: 1, _status: 'draft' }, { _status: 'published' })
-    expect(cache.revalidatePath).toHaveBeenCalledTimes(3)
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(2)
   })
   it('preserves existing hooks and does not fail when Next cache context is absent', async () => {
     const existing = vi.fn()
@@ -92,6 +93,6 @@ describe('CMS cache invalidation', () => {
     const req = { payload: { db: { findOne } } }
     for (const hook of config.hooks?.beforeChange ?? []) await hook({ data, originalDoc, operation: 'update', req } as never)
     await config.hooks!.afterChange![0]!({ doc: { id: 1, ...data }, previousDoc: originalDoc, req } as never)
-    expect(cache.revalidatePath.mock.calls).toEqual([['/tr', 'layout'], ['/en', 'layout'], ['/sitemap.xml']])
+    expect(cache.revalidatePath.mock.calls).toEqual([['/', 'layout'], ['/sitemap.xml']])
   })
 })

@@ -11,12 +11,15 @@ export const BLOCK_SPACINGS = ['none', 'sm', 'md', 'lg'] as const
 export const BLOCK_ALIGNS = ['start', 'center'] as const
 export const BLOCK_WIDTHS = ['narrow', 'normal', 'wide'] as const
 export const BLOCK_ANIMATIONS = ['subtle', 'none'] as const
+/** Hairline between sections (F6): `top` draws the border-t the hand-built home sections used. */
+export const BLOCK_SEPARATORS = ['none', 'top'] as const
 
 export type BlockTheme = (typeof BLOCK_THEMES)[number]
 export type BlockSpacing = (typeof BLOCK_SPACINGS)[number]
 export type BlockAlign = (typeof BLOCK_ALIGNS)[number]
 export type BlockWidth = (typeof BLOCK_WIDTHS)[number]
 export type BlockAnimation = (typeof BLOCK_ANIMATIONS)[number]
+export type BlockSeparator = (typeof BLOCK_SEPARATORS)[number]
 
 /** HTML id for in-page links (`/sayfa#anchor`). */
 export const ANCHOR_PATTERN = /^[a-z0-9-]{1,40}$/
@@ -31,6 +34,7 @@ type AppearanceInput = {
   animation?: string | null
   anchor?: string | null
   hidden?: boolean | null
+  separator?: string | null
 }
 type BlockLike = { blockType: string; appearance?: AppearanceInput | null } & Record<string, unknown>
 
@@ -68,6 +72,8 @@ export const BLOCK_DEFAULTS: Record<string, BlockDefaults> = {
   solutionsGrid: { ...base, theme: 'dark', spacing: 'lg' },
   caseStudy: { ...base, theme: 'dark', spacing: 'lg' },
   newsList: { ...base, theme: 'light', spacing: 'lg' },
+  // The route's own list (system pages, F6); defaults equal the pre-F6 list section (light, md).
+  listing: { ...base, theme: 'light', width: false },
 }
 const FALLBACK: BlockDefaults = { ...base, theme: 'light' }
 
@@ -79,6 +85,7 @@ export type ResolvedAppearance = {
   animation: BlockAnimation
   anchor?: string
   hidden: boolean
+  separator: BlockSeparator
 }
 
 const pick = <T extends string>(allowed: readonly T[], value: unknown, fallback: T): T =>
@@ -99,6 +106,7 @@ export function resolveAppearance(block: BlockLike): ResolvedAppearance {
     animation: pick(BLOCK_ANIMATIONS, a.animation, d.animation),
     ...(anchor ? { anchor } : {}),
     hidden: a.hidden === true,
+    separator: pick(BLOCK_SEPARATORS, a.separator, 'none'),
   }
 }
 
@@ -132,6 +140,24 @@ export const validateAnchor: TextFieldSingleValidation = (value, { data, req }) 
   return true
 }
 
+/**
+ * Drizzle enum name for an appearance select. Keeps Payload's default (`enum_<table>_appearance_<key>`)
+ * whenever it fits the 63 character identifier limit, so existing schemas are unchanged; longer table
+ * names (e.g. `product_families_blocks_product_showcase`, F6) get a shortened, collision-free name.
+ * SQLite has no enum types: the name only exists in the drizzle schema.
+ */
+export function appearanceEnumName(key: string) {
+  return ({ tableName }: { tableName?: string }) => {
+    const table = tableName ?? 'block'
+    const full = `enum_${table}_appearance_${key}`
+    if (full.length <= 63) return full
+    let hash = 5381
+    for (const ch of table) hash = ((hash * 33) ^ ch.charCodeAt(0)) >>> 0
+    const short = `enum_${table}_${key}`
+    return short.length <= 63 ? short : `enum_${table.slice(0, 40)}_${hash.toString(36)}_${key.slice(0, 4)}`
+  }
+}
+
 const L = (tr: string, en: string) => ({ tr, en })
 const opt = (value: string, tr: string, en: string) => ({ value, label: L(tr, en) })
 
@@ -149,6 +175,7 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
         {
           name: 'theme',
           type: 'select',
+          enumName: appearanceEnumName('theme'),
           defaultValue: 'auto',
           label: L('Tema', 'Theme'),
           options: [opt('auto', 'Otomatik (blok varsayılanı)', 'Auto (block default)'), opt('dark', 'Koyu', 'Dark'), opt('light', 'Açık', 'Light')],
@@ -157,6 +184,7 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
         {
           name: 'spacing',
           type: 'select',
+          enumName: appearanceEnumName('spacing'),
           defaultValue: d.spacing,
           label: L('Dikey boşluk', 'Vertical spacing'),
           options: [opt('none', 'Yok', 'None'), opt('sm', 'Küçük', 'Small'), opt('md', 'Orta', 'Medium'), opt('lg', 'Büyük', 'Large')],
@@ -170,7 +198,7 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
           options: [opt('subtle', 'Hafif (görününce)', 'Subtle (on reveal)'), opt('none', 'Yok', 'None')],
           // `enum__case_studies_v_blocks_<slug>_appearance_animation` exceeds Payload's 63 char limit for 15+ char
           // slugs (productFamilies). The enum name only exists in the drizzle schema (SQLite has no enums).
-          ...(blockType.length >= 15 ? { enumName: ({ tableName }: { tableName?: string }) => `enum_${tableName}_anim` } : {}),
+          enumName: blockType.length >= 15 ? ({ tableName }: { tableName?: string }) => `enum_${tableName}_anim` : appearanceEnumName('animation'),
           admin: { width: '33%' },
         },
       ],
@@ -181,6 +209,7 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
         {
           name: 'align',
           type: 'select',
+          enumName: appearanceEnumName('align'),
           defaultValue: d.align,
           label: L('Hizalama', 'Alignment'),
           options: [opt('start', 'Sola', 'Start'), opt('center', 'Ortala', 'Center')],
@@ -190,12 +219,22 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
           ? [{
               name: 'width',
               type: 'select',
+              enumName: appearanceEnumName('width'),
               defaultValue: 'normal',
               label: L('Genişlik', 'Width'),
               options: [opt('narrow', 'Dar', 'Narrow'), opt('normal', 'Normal (blok varsayılanı)', 'Normal (block default)'), opt('wide', 'Geniş', 'Wide')],
               admin: { width: '33%' },
             } satisfies Field]
           : []),
+        {
+          name: 'separator',
+          type: 'select',
+          defaultValue: 'none',
+          label: L('Ayraç çizgisi', 'Separator line'),
+          options: [opt('none', 'Yok', 'None'), opt('top', 'Üstte ince çizgi', 'Hairline on top')],
+          enumName: appearanceEnumName('separator'),
+          admin: { width: '33%', description: L('Önceki bölümle arasına çizgi.', 'Line between this and the previous section.') },
+        },
       ],
     },
     {

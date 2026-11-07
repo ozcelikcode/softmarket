@@ -10,13 +10,12 @@ import { notFound } from 'next/navigation'
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
 import { MediaCard } from '@/components/sections/media-card'
-import { PageHero } from '@/components/sections/page-hero'
+import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
-import { Section } from '@/components/ui/section'
 import { anim } from '@/lib/anim'
-import { getPosts } from '@/lib/content'
+import { getPosts, getSystemPage, mediaOf } from '@/lib/content'
 import { formatDate } from '@/lib/format'
 import { initLocale, MAX_PAGE, parsePage } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
@@ -28,18 +27,19 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const page = parsePage((await searchParams).sayfa)
   if (page === null) notFound()
   if (page > 1 && page > (await getPosts(locale, { page })).totalPages) notFound()
-  const t = await getTranslations({ locale, namespace: 'news' })
-  return buildMetadata({ locale, path: page > 1 ? `/haberler?sayfa=${page}` : '/haberler', title: t('title'), description: t('lead') })
+  const [t, cms] = await Promise.all([getTranslations({ locale, namespace: 'news' }), getSystemPage(locale, 'news')])
+  return buildMetadata({ locale, path: page > 1 ? `/haberler?sayfa=${page}` : '/haberler', ...systemMeta(cms, { title: t('title'), lead: t('lead') }), image: mediaOf(cms?.meta?.image)?.url })
 }
 
 async function NewsPage({ params, searchParams }: Props) {
   const locale = await initLocale(params)
   const page = parsePage((await searchParams).sayfa)
   if (page === null) notFound()
-  const [t, c, posts] = await Promise.all([
+  const [t, c, posts, cms] = await Promise.all([
     getTranslations({ locale, namespace: 'news' }),
     getTranslations({ locale, namespace: 'common' }),
     getPosts(locale, { page }),
+    getSystemPage(locale, 'news'),
   ])
   if (page > 1 && page > posts.totalPages) notFound()
   const totalPages = Math.min(posts.totalPages, MAX_PAGE)
@@ -48,8 +48,8 @@ async function NewsPage({ params, searchParams }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <PageHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} title={t('title')} lead={t('lead')} />
-      <Section theme="light" spacing="md">
+      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={cms} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody locale={locale} page={cms} listing={
         <Container>
           {posts.docs.length ? (
             <>
@@ -76,7 +76,7 @@ async function NewsPage({ params, searchParams }: Props) {
             <EmptyState title={t('emptyTitle')} description={t('emptyDesc')} />
           )}
         </Container>
-      </Section>
+      } />
     </>
   )
 }

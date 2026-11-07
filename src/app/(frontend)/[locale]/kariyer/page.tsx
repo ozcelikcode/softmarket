@@ -7,12 +7,11 @@ import { getTranslations } from 'next-intl/server'
 
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
-import { PageHero } from '@/components/sections/page-hero'
+import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
 import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Container } from '@/components/ui/container'
-import { Section } from '@/components/ui/section'
-import { getCareers } from '@/lib/content'
+import { getCareers, getSystemPage, mediaOf } from '@/lib/content'
 import { initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
 
@@ -20,23 +19,24 @@ type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
-  const t = await getTranslations({ locale, namespace: 'careers' })
-  return buildMetadata({ locale, path: '/kariyer', title: t('title'), description: t('lead') })
+  const [t, page] = await Promise.all([getTranslations({ locale, namespace: 'careers' }), getSystemPage(locale, 'careers')])
+  return buildMetadata({ locale, path: '/kariyer', ...systemMeta(page, { title: t('title'), lead: t('lead') }), image: mediaOf(page?.meta?.image)?.url })
 }
 
 export default async function CareersPage({ params }: Props) {
   const locale = await initLocale(params)
-  const [t, c, jobs] = await Promise.all([
+  const [t, c, jobs, page] = await Promise.all([
     getTranslations({ locale, namespace: 'careers' }),
     getTranslations({ locale, namespace: 'common' }),
     getCareers(locale),
+    getSystemPage(locale, 'careers'),
   ])
   const trail = [{ label: c('home'), href: '/' }, { label: t('title'), href: '/kariyer' }]
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <PageHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} title={t('title')} lead={t('lead')} />
-      <Section theme="light" spacing="md">
+      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody locale={locale} page={page} listing={
         <Container size="narrow" className="max-w-[56rem]">
           {jobs.length ? (
             <ul className="overflow-hidden rounded-lg border border-border bg-surface">
@@ -62,7 +62,7 @@ export default async function CareersPage({ params }: Props) {
             <EmptyState title={t('emptyTitle')} description={t('emptyDesc')} />
           )}
         </Container>
-      </Section>
+      } />
     </>
   )
 }

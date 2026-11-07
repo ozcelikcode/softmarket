@@ -10,7 +10,7 @@ vi.mock('@/lib/site', () => ({ resolveLink: (link?: { label?: string; url?: stri
 vi.mock('@/components/blocks/rich-text', () => ({ RichContent: ({ className }: { className?: string }) => <div className={`rich-text ${className ?? ''}`} /> }))
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }))
 
-import { layoutBlocks } from '@/blocks'
+import { layoutBlocks, pageBlocks } from '@/blocks'
 import { BlockShell } from '@/components/blocks/block-shell'
 import { CTABlock } from '@/components/blocks/cta-block'
 import { blockRegistry, getBlockRenderer } from '@/components/blocks/registry'
@@ -38,7 +38,7 @@ const shellHtml = (appearance: Partial<ResolvedAppearance>, props: Partial<Param
 
 describe('blockSettings appearance group', () => {
   it('is attached to every layout block inside a collapsed "Görünüm" collapsible', () => {
-    for (const block of layoutBlocks) {
+    for (const block of pageBlocks) {
       const { collapsible, group } = appearanceGroup(block)
       expect(collapsible.label).toEqual({ tr: 'Görünüm', en: 'Appearance' })
       expect(collapsible.admin?.initCollapsed).toBe(true)
@@ -46,7 +46,7 @@ describe('blockSettings appearance group', () => {
     }
   })
   it('defaults reproduce the pre-F3 look of each block (column defaults = renderer fallbacks)', () => {
-    for (const block of layoutBlocks) {
+    for (const block of pageBlocks) {
       const { fields } = appearanceGroup(block)
       const d = BLOCK_DEFAULTS[block.slug]
       expect(fields.theme.defaultValue).toBe('auto')
@@ -55,13 +55,14 @@ describe('blockSettings appearance group', () => {
       expect(fields.animation.defaultValue).toBe('subtle')
       expect(fields.hidden.defaultValue).toBe(false)
       expect(fields.anchor.defaultValue).toBeUndefined()
-      expect(Boolean(fields.width)).toBe(!['richText', 'spacer'].includes(block.slug))
+      expect(Boolean(fields.width)).toBe(!['richText', 'spacer', 'listing'].includes(block.slug))
+      expect(fields.separator.defaultValue).toBe('none')
     }
     expect(BLOCK_DEFAULTS.hero.spacing).toBe('lg')
     expect(blockSettings('richText').fields).toHaveLength(1)
   })
   it('resolves missing/legacy appearance to the old hard-coded theme, spacing and alignment', () => {
-    expect(resolveAppearance({ blockType: 'hero' })).toEqual({ theme: 'dark', spacing: 'lg', align: 'start', width: 'normal', animation: 'subtle', hidden: false })
+    expect(resolveAppearance({ blockType: 'hero' })).toEqual({ theme: 'dark', spacing: 'lg', align: 'start', width: 'normal', animation: 'subtle', hidden: false, separator: 'none' })
     expect(resolveAppearance({ blockType: 'faq', appearance: null }).theme).toBe('light')
     expect(resolveAppearance({ blockType: 'stats' }).theme).toBe('dark')
     expect(resolveAppearance({ blockType: 'cta', style: 'banner' })).toMatchObject({ theme: 'dark', align: 'center' })
@@ -71,7 +72,7 @@ describe('blockSettings appearance group', () => {
     expect(resolveAppearance({ blockType: 'logoWall' }).align).toBe('center')
     expect(resolveAppearance({ blockType: 'richText', appearance: { width: 'wide' } }).width).toBe('normal')
     expect(resolveAppearance({ blockType: 'hero', appearance: { spacing: 'huge', animation: 'spin', anchor: 'Bad Id', hidden: true } }))
-      .toEqual({ theme: 'dark', spacing: 'lg', align: 'start', width: 'normal', animation: 'subtle', hidden: true })
+      .toEqual({ theme: 'dark', spacing: 'lg', align: 'start', width: 'normal', animation: 'subtle', hidden: true, separator: 'none' })
     expect(resolveAppearance({ blockType: 'unknown' }).theme).toBe('light')
     expect(resolveAppearance({ blockType: 'constructor' }).theme).toBe('light')
     expect(resolveAppearance({ blockType: 'hero', appearance: { anchor: 'surumler' } }).anchor).toBeUndefined()
@@ -100,8 +101,8 @@ describe('anchor validation', () => {
 
 describe('block registry', () => {
   it('has exactly one renderer per configured layout block', () => {
-    expect(Object.keys(blockRegistry).sort()).toEqual(layoutBlocks.map((b) => b.slug).sort())
-    for (const b of layoutBlocks) expect(typeof getBlockRenderer(b.slug)).toBe('function')
+    expect(Object.keys(blockRegistry).sort()).toEqual(pageBlocks.map((b) => b.slug).sort())
+    for (const b of pageBlocks) expect(typeof getBlockRenderer(b.slug)).toBe('function')
     expect(getBlockRenderer('constructor')).toBeUndefined()
     expect(getBlockRenderer('toString')).toBeUndefined()
   })
@@ -183,7 +184,8 @@ describe('blocks with legacy data (no appearance) and new options', () => {
     const cinematic = renderToStaticMarkup(<RenderBlocks locale="tr" firstHeroH1 blocks={[hero('h', { variant: 'default' })]} />)
     expect(cinematic).toContain('bg-grid')
     expect(cinematic).toMatch(/<h1 class="[^"]*text-display" data-hero-in="slide"/)
-    expect(cinematic).toContain('pt-32')
+    // Page top: the pre-F6 home hero padding (clears the fixed header).
+    expect(cinematic).toContain('pt-40 sm:pt-48 pb-20 sm:pb-28')
     const minimal = renderToStaticMarkup(<RenderBlocks locale="tr" blocks={[hero('h', { variant: 'minimal', appearance: { animation: 'none' } })]} />)
     expect(minimal).not.toContain('bg-glow')
     expect(minimal).not.toContain('data-hero-in')

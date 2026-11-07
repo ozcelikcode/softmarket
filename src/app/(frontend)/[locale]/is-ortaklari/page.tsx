@@ -8,14 +8,13 @@ import { getTranslations } from 'next-intl/server'
 import { CtaBand } from '@/components/sections/cta-band'
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
-import { PageHero } from '@/components/sections/page-hero'
+import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
 import { MediaImage } from '@/components/ui/media-image'
-import { Section } from '@/components/ui/section'
 import { SectionHeading } from '@/components/ui/heading'
-import { getPartners, mediaOf } from '@/lib/content'
+import { getPartners, getSystemPage, mediaOf } from '@/lib/content'
 import { initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
 import { safeHref } from '@/lib/utils'
@@ -25,23 +24,29 @@ const TIERS = ['technology', 'solution', 'reseller', 'distributor'] as const
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
-  const t = await getTranslations({ locale, namespace: 'partners' })
-  return buildMetadata({ locale, path: '/is-ortaklari', title: t('title'), description: t('lead') })
+  const [t, page] = await Promise.all([getTranslations({ locale, namespace: 'partners' }), getSystemPage(locale, 'partners')])
+  return buildMetadata({ locale, path: '/is-ortaklari', ...systemMeta(page, { title: t('title'), lead: t('lead') }), image: mediaOf(page?.meta?.image)?.url })
 }
 
 export default async function PartnersPage({ params }: Props) {
   const locale = await initLocale(params)
-  const [t, c, partners] = await Promise.all([
+  const [t, c, partners, page] = await Promise.all([
     getTranslations({ locale, namespace: 'partners' }),
     getTranslations({ locale, namespace: 'common' }),
     getPartners(locale),
+    getSystemPage(locale, 'partners'),
   ])
   const trail = [{ label: c('home'), href: '/' }, { label: t('title'), href: '/is-ortaklari' }]
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <PageHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} title={t('title')} lead={t('lead')} />
-      <Section theme="light" spacing="md">
+      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody locale={locale} page={page} fallback={
+        <CtaBand
+          title={t('becomeTitle')} lead={t('becomeLead')}
+          actions={<Button asChild size="lg"><AppLink href="/iletisim" locale={locale}>{t('becomeCta')}</AppLink></Button>}
+        />
+      } listing={
         <Container className="space-y-16">
           {partners.length ? TIERS.map((tier) => {
             const list = partners.filter((p) => (p.tier ?? 'reseller') === tier)
@@ -71,11 +76,7 @@ export default async function PartnersPage({ params }: Props) {
             )
           }) : <EmptyState title={t('emptyTitle')} description={t('emptyDesc')} />}
         </Container>
-      </Section>
-      <CtaBand
-        title={t('becomeTitle')} lead={t('becomeLead')}
-        actions={<Button asChild size="lg"><AppLink href="/iletisim" locale={locale}>{t('becomeCta')}</AppLink></Button>}
-      />
+      } />
     </>
   )
 }

@@ -1,7 +1,7 @@
 import { Ajv } from 'ajv'
 import type { Field } from 'payload'
 import { collections, globals, flatFields } from './model'
-import { layoutBlocks } from '@/blocks'
+import { pageBlocks } from '@/blocks'
 
 type Schema = Record<string, unknown>
 const string = { type: 'string', minLength: 1 }
@@ -50,7 +50,7 @@ export function fieldsSchema(fields: Field[]): Schema {
 }
 export const seedSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $defs: Object.fromEntries(layoutBlocks.map(block => {
+  $defs: Object.fromEntries(pageBlocks.map(block => {
     const data = fieldsSchema(block.fields)
     return [block.slug, { ...data, properties: { ...(data.properties as object), blockType: { const: block.slug } }, required: [...data.required as string[], 'blockType'] }]
   })),

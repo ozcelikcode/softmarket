@@ -10,6 +10,9 @@ import * as migration_20261107_111754_blocks_static_set from './20261107_111754_
 import * as migration_20261107_120000_hero_video_delete from './20261107_120000_hero_video_delete';
 import * as migration_20261107_130000_blocks_dynamic_set from './20261107_130000_blocks_dynamic_set';
 import * as migration_20261107_141523_globals_editable from './20261107_141523_globals_editable';
+import * as migration_20261107_144850_page_builder_pages from './20261107_144850_page_builder_pages';
+
+import * as migration_20261107_160000_globals_media_delete from './20261107_160000_globals_media_delete';
 
 export const migrations = [
   {
@@ -70,6 +73,16 @@ export const migrations = [
   {
     up: migration_20261107_141523_globals_editable.up,
     down: migration_20261107_141523_globals_editable.down,
-    name: '20261107_141523_globals_editable'
+    name: '20261107_141523_globals_editable',
+  },
+  {
+    up: migration_20261107_144850_page_builder_pages.up,
+    down: migration_20261107_144850_page_builder_pages.down,
+    name: '20261107_144850_page_builder_pages'
+  },
+  {
+    up: migration_20261107_160000_globals_media_delete.up,
+    down: migration_20261107_160000_globals_media_delete.down,
+    name: '20261107_160000_globals_media_delete',
   },
 ];

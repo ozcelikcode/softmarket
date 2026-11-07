@@ -50,7 +50,7 @@ export function ListFrame({
           {linkBeside && viewAll ? <ViewAllButton viewAll={viewAll} locale={locale} /> : null}
         </div>
       ) : null}
-      <div className={hasCopy || linkBeside ? 'mt-10 sm:mt-14' : undefined}>{children}</div>
+      <div className={hasCopy || linkBeside ? 'mt-14' : undefined}>{children}</div>
       {viewAll && center ? <div className="mt-10 flex justify-center"><ViewAllButton viewAll={viewAll} locale={locale} /></div> : null}
     </>
   )

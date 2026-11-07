@@ -82,7 +82,8 @@ describe('public content queries', () => {
     for (const [options] of client.find.mock.calls) {
       expect(options).toMatchObject({ locale: 'all', fallbackLocale: false, overrideAccess: false, user: null, draft: false })
       expect(options.depth).toBeLessThanOrEqual(1)
-      if (options.collection === 'pages') expect(options.where).toEqual({ pageType: { equals: 'legal' } })
+      // Legal pages plus F6 landing pages (standard/landing); templates never get a URL.
+      if (options.collection === 'pages') expect(options.where).toEqual({ pageType: { in: ['legal', 'standard', 'landing'] } })
     }
   })
 

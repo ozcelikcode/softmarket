@@ -6,6 +6,7 @@ import { Divider } from './Divider'
 import { FAQ } from './FAQ'
 import { FeatureGrid } from './FeatureGrid'
 import { Hero } from './Hero'
+import { Listing } from './Listing'
 import { LogoWall } from './LogoWall'
 import { Media } from './Media'
 import { MediaText } from './MediaText'
@@ -21,7 +22,7 @@ import { Tabs } from './Tabs'
 import { Testimonial } from './Testimonial'
 import { VideoEmbed } from './VideoEmbed'
 
-export { CaseStudy, CTA, Divider, FAQ, FeatureGrid, Hero, LogoWall, Media, MediaText, NewsList, ProductFamilies, ProductShowcase, RichText, SolutionsGrid, Spacer, SpecTable, Stats, Tabs, Testimonial, VideoEmbed }
+export { CaseStudy, CTA, Divider, FAQ, FeatureGrid, Hero, Listing, LogoWall, Media, MediaText, NewsList, ProductFamilies, ProductShowcase, RichText, SolutionsGrid, Spacer, SpecTable, Stats, Tabs, Testimonial, VideoEmbed }
 
 /** Full block set for free-form pages and product bodies. */
 export const layoutBlocks: Block[] = [
@@ -46,3 +47,6 @@ export const layoutBlocks: Block[] = [
   CaseStudy,
   NewsList,
 ]
+
+/** Pages add the system-page list position (F6). Only appended: removing a block drops its tables. */
+export const pageBlocks: Block[] = [...layoutBlocks, Listing]

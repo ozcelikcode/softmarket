@@ -18,6 +18,25 @@ export const SiteSettings: GlobalConfig = {
             { name: 'siteName', type: 'text', localized: true, required: true, defaultValue: 'SoftMarket' },
             { name: 'tagline', type: 'text', localized: true },
             {
+              name: 'homePage',
+              type: 'relationship',
+              relationTo: 'pages',
+              label: { tr: 'Ana sayfa', en: 'Home page' },
+              // Only pages that can be a home page: no legal texts, templates or system pages.
+              filterOptions: {
+                and: [
+                  { pageType: { not_in: ['legal', 'template'] } },
+                  { systemKey: { exists: false } },
+                ],
+              },
+              admin: {
+                description: {
+                  tr: 'Ana sayfanın blokları bu sayfadan gelir (yayınlanmış olmalı). Boşsa slug\'ı "home" olan sayfa, o da yoksa yerleşik varsayılan ana sayfa.',
+                  en: 'The home page blocks come from this page (must be published). Empty: the page with slug "home", else the built-in default home.',
+                },
+              },
+            },
+            {
               name: 'logo',
               type: 'upload',
               relationTo: 'media',

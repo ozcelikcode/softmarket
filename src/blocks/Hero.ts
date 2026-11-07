@@ -51,6 +51,37 @@ export const Hero: Block = {
       admin: { description: L('"Arka plan" yerleşiminde bu görsel poster ve LCP görselidir; video yüklenmediğinde (mobil, hareket azaltma) bu görsel görünür.', 'In the "Background" layout this image is the poster and LCP image; it is what shows when the video does not load (mobile, reduced motion).') },
     },
     {
+      type: 'row',
+      fields: [
+        {
+          name: 'aside',
+          type: 'select',
+          defaultValue: 'media',
+          label: L('Sağ panel', 'Side panel'),
+          options: [
+            opt('media', 'Görsel (yukarıdaki alan)', 'Image (field above)'),
+            opt('families', 'Ürün aileleri listesi (otomatik)', 'Product family list (automatic)'),
+          ],
+          admin: {
+            width: '50%',
+            condition: (_, siblingData) => !siblingData?.variant || siblingData.variant === 'default' || siblingData.variant === 'split',
+            description: L('Ürün aileleri: yayınlı ilk 5 aile, ürün sayılarıyla.', 'Product families: first 5 published families with product counts.'),
+          },
+        },
+        {
+          name: 'panelTitle',
+          type: 'text',
+          localized: true,
+          label: L('Panel başlığı', 'Panel title'),
+          admin: {
+            width: '50%',
+            condition: (_, siblingData) => siblingData?.aside === 'families',
+            description: L('Boşsa "Ürün aileleri".', 'Empty: "Product families".'),
+          },
+        },
+      ],
+    },
+    {
       name: 'video',
       type: 'upload',
       relationTo: 'media',

@@ -11,7 +11,7 @@ import { importContent, loadLegal } from '../../src/lib/content-import/importer'
 import { withImportTransaction } from '../../src/lib/content-import/transaction'
 import { convertMarkdownToLexical, defaultEditorConfig, sanitizeServerEditorConfig } from '@payloadcms/richtext-lexical'
 
-const nextCache = vi.hoisted(() => ({ revalidatePath: vi.fn() }))
+const nextCache = vi.hoisted(() => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 vi.mock('next/cache', () => nextCache)
 
 let payload: Payload
@@ -50,24 +50,24 @@ describe('SQLite integrity', () => {
         data: { title: 'Cache audit', slug: 'cache-audit', _status: 'draft' } })
       nextCache.revalidatePath.mockClear()
       await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, data: { _status: 'published' } })
-      expect(nextCache.revalidatePath).toHaveBeenCalledTimes(3)
+      expect(nextCache.revalidatePath).toHaveBeenCalledTimes(2)
       nextCache.revalidatePath.mockClear()
       for (const title of ['First draft', 'Second draft']) {
         await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, draft: true, data: { title, _status: 'draft' } })
         expect(nextCache.revalidatePath).not.toHaveBeenCalled()
       }
       await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, data: { _status: 'draft' } })
-      expect(nextCache.revalidatePath.mock.calls).toEqual([['/tr', 'layout'], ['/en', 'layout'], ['/sitemap.xml']])
+      expect(nextCache.revalidatePath.mock.calls).toEqual([['/', 'layout'], ['/sitemap.xml']])
       expect((await payload.find({ collection: 'pages', user: null, overrideAccess: false, draft: false,
         where: { id: { equals: page.id } } })).docs).toEqual([])
       nextCache.revalidatePath.mockClear()
       await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, draft: true, data: { title: 'Still draft' } })
       expect(nextCache.revalidatePath).not.toHaveBeenCalled()
       await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, data: { slug: 'renamed-cache-audit', _status: 'published' } })
-      expect(nextCache.revalidatePath.mock.calls).toEqual([['/tr', 'layout'], ['/en', 'layout'], ['/sitemap.xml']])
+      expect(nextCache.revalidatePath.mock.calls).toEqual([['/', 'layout'], ['/sitemap.xml']])
       nextCache.revalidatePath.mockClear()
       await payload.delete({ collection: 'pages', id: page.id, overrideAccess: true })
-      expect(nextCache.revalidatePath).toHaveBeenCalledTimes(3)
+      expect(nextCache.revalidatePath).toHaveBeenCalledTimes(2)
     } finally {
       vi.unstubAllEnvs()
       nextCache.revalidatePath.mockClear()

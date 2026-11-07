@@ -4,12 +4,15 @@ import type { CollectionConfig, GlobalConfig, CollectionSlug } from 'payload'
 export async function revalidatePublicContent() {
   if (!process.env.NEXT_RUNTIME || process.env.NEXT_PHASE === 'phase-production-build') return
   try {
-    const { revalidatePath } = await import('next/cache')
-    // Layout invalidation covers every descendant, both old/new localized slugs,
-    // all listing pages and cross-collection relationships (header, footer, blocks).
-    revalidatePath('/tr', 'layout')
-    revalidatePath('/en', 'layout')
+    const { revalidatePath, revalidateTag } = await import('next/cache')
+    // Root layout invalidation covers every descendant: both locales, old/new localized
+    // slugs, the home page, landing/system pages, listings and cross-collection
+    // relationships (header, footer, blocks). Next derives implicit cache tags from the
+    // route file path (`/layout`, `/(frontend)/[locale]/layout` …) plus the URL pathname,
+    // so `revalidatePath('/tr', 'layout')` (tag `/tr/layout`) matched no cached page (F6).
+    revalidatePath('/', 'layout')
     revalidatePath('/sitemap.xml')
+    revalidateTag('public-sitemap')
   } catch (error) {
     // Local API/CLI can run in a process without a Next request/cache context.
     console.warn('[ISR] Cache invalidation unavailable; hourly revalidation remains active.', error instanceof Error ? error.message : 'Unknown error')

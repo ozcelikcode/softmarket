@@ -8,15 +8,14 @@ import { getTranslations } from 'next-intl/server'
 
 import { JsonLd } from '@/components/sections/json-ld'
 import { EmptyState } from '@/components/sections/empty-state'
-import { PageHero } from '@/components/sections/page-hero'
+import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
 import { ProductCard } from '@/components/sections/product-card'
 import { AppLink } from '@/components/ui/app-link'
 import { Container } from '@/components/ui/container'
 import { NamedIcon } from '@/components/ui/icon'
 import { MediaImage } from '@/components/ui/media-image'
-import { Section } from '@/components/ui/section'
 import { anim } from '@/lib/anim'
-import { getCatalogProducts, getFamilies, mediaOf, relOf } from '@/lib/content'
+import { getCatalogProducts, getFamilies, getSystemPage, mediaOf, relOf } from '@/lib/content'
 import { first, initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
@@ -26,30 +25,32 @@ type Props = { params: Promise<{ locale: string }>; searchParams: Promise<Record
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
-  const t = await getTranslations({ locale, namespace: 'products' })
-  return buildMetadata({ locale, path: '/urunler', title: t('title'), description: t('lead') })
+  const [t, page] = await Promise.all([getTranslations({ locale, namespace: 'products' }), getSystemPage(locale, 'products')])
+  return buildMetadata({ locale, path: '/urunler', ...systemMeta(page, { title: t('title'), lead: t('lead') }), image: mediaOf(page?.meta?.image)?.url })
 }
 
 async function ProductsPage({ params, searchParams }: Props) {
   const locale = await initLocale(params)
   const sp = await searchParams
-  const [t, c, families, products] = await Promise.all([
+  const [t, c, families, products, page] = await Promise.all([
     getTranslations({ locale, namespace: 'products' }),
     getTranslations({ locale, namespace: 'common' }),
     getFamilies(locale),
     getCatalogProducts(locale),
+    getSystemPage(locale, 'products'),
   ])
   const active = families.find((f) => f.slug === first(sp.aile))
   const visible = active
     ? products.filter((p) => (relOf<ProductFamily>(p.family)?.id ?? p.family) === active.id)
     : products
-  const trail = [{ label: c('home'), href: '/' }, { label: t('title'), href: '/urunler' }]
+  const fallback = { title: t('title'), lead: t('lead') }
+  const trail = [{ label: c('home'), href: '/' }, { label: fallback.title, href: '/urunler' }]
 
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <PageHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} title={t('title')} lead={t('lead')} />
-      <Section theme="light" spacing="md">
+      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={fallback} />
+      <SystemBody locale={locale} page={page} listing={
         <Container>
           {families.length > 1 ? (
             <nav aria-label={t('filter')} className="mb-10 flex flex-wrap gap-2">
@@ -96,7 +97,7 @@ async function ProductsPage({ params, searchParams }: Props) {
             <EmptyState title={t('emptyTitle')} description={t('emptyDesc')} />
           )}
         </Container>
-      </Section>
+      } />
     </>
   )
 }

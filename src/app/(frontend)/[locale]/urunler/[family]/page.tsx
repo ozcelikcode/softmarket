@@ -9,6 +9,7 @@ import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
+import { RenderBlocks } from '@/components/blocks/render-blocks'
 import { RichContent } from '@/components/blocks/rich-text'
 import { SetAlternates } from '@/components/layout/set-alternates'
 import { EmptyState } from '@/components/sections/empty-state'
@@ -98,6 +99,8 @@ export default async function FamilyPage({ params }: Props) {
           )}
         </Container>
       </Section>
+      {/* F6: editor blocks below the product list (heroes stay h2: the PageHero holds the h1). */}
+      <RenderBlocks blocks={family.layout} locale={locale} />
     </>
   )
 }

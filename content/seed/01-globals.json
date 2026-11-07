@@ -416,6 +416,7 @@
     "site-settings": {
       "tr": {
         "siteName": "SoftMarket",
+        "homePage": "home",
         "tagline": "Kurumsal süreçler için yazılım çözümleri",
         "company": {
           "legalName": "SoftMarket Yazılım A.Ş."
@@ -433,6 +434,7 @@
       },
       "en": {
         "siteName": "SoftMarket",
+        "homePage": "home",
         "tagline": "Software solutions for enterprise operations",
         "company": {
           "legalName": "SoftMarket Yazılım A.Ş."

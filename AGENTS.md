@@ -78,3 +78,17 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Agent upsert: önce slug/SKU ile find; varsa ID üzerinden update, yoksa create. İçerik yazımında locale tr/en ayrı ve yayın için `_status: published` kullan. MCP create doğal olarak upsert değildir; idempotent toplu içerik için content:import kullan.
 - Dev HMR authStrategies kaydını yenilemez: yeni users API key stratejisi olağan sonraki süreç başlangıcında aktif olur. Bu fazda restart yapılmadı; taze Payload handler ile 69 araç doğrulandı.
 - Analytics: `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` varsa frontend beacon. Cloudflare auto-injection kullanma (portal/admin sınırını aşar). `spa:false` ile ölçüm document yüklemeleriyle sınırlı. Kaynak: https://developers.cloudflare.com/web-analytics/get-started/web-analytics-spa/
+
+## Page builder (F6): ana sayfa, sistem sayfaları, landing
+
+- Ana sayfa = `pages` kaydı. Çözüm sırası: `site-settings.homePage` → slug `home` → yerleşik yedek (`src/components/home/fallback-home.tsx`). Yalnız **yayınlı** kayıt görünür; taslak ziyaretçiye gitmez. `/home` → `/` (308).
+- Bloklar `layout` dizisinde sırayla render edilir; ilk `hero` sayfanın h1'idir. Ana sayfa seed'i `content/seed/05-pages.json` (bugünkü düzenin birebir karşılığı: hero `aside: families`, productFamilies, solutionsGrid, logoWall, caseStudy, newsList, cta). Görünüm: `appearance.{theme,spacing,align,width,animation,anchor,hidden,separator}`.
+- Sistem sayfaları: `pages.systemKey` ∈ `products|solutions|news|customers|careers|partners|support|contact|about` (her biri tek kayıt) → `hero` (eyebrow/title/lead/actions; boş alan = i18n) + bloklar o rotada. Listenin yeri `listing` bloğudur; blok yoksa liste hero'nun altında, `appearance.hidden` ile gizlenir. Kayıt yoksa rota eski düzende kalır.
+- Landing: `pageType` standard/landing + `systemKey` boş → `/tr/<slug>`, `/en/<en-slug>`. Rota klasörü/EN çevirisi olan slug'lar (`urunler`, `products`, `hesap`, `admin` …; `src/lib/system-pages.ts` `RESERVED_SLUGS`) reddedilir. Link: `type: internal` + pages referansı (dile göre slug) ya da `type: route`, `route: slug`, `routeParam: <tr-slug>`.
+- `pageType: template` asla public değildir (anonim okuma/rota/sitemap yok); Payload "Duplicate" ile yeni sayfa başlat (systemKey kopyada boşalır).
+- Yayın (`_status: published`) ve global güncellemesi tüm site önbelleğini yeniler (`revalidatePath('/', 'layout')`); taslak/autosave yenilemez. CLI (`content:import`) Next önbelleğine erişemez: canlı süreçte en geç 1 saatte ya da admin/API'den bir yayınla yenilenir.
+- MCP ile ana sayfa blok sırası (admin API anahtarı; `pages` CRUD açık):
+  1. `findPages` `where: { slug: { equals: "home" } }`, `locale: "tr"`, `depth: 0` → `id` ve `layout`.
+  2. `layout` dizisinin **tamamını** yeni sırayla gönder (blokların `id`'lerini koru, eksik blok silinir): `updatePages` `id`, `locale: "tr"`, `data: { layout: [...], _status: "published" }`. Blok yapısı dilden bağımsızdır; yalnız metin değiştirirken EN için `locale: "en"` ile aynı sırayı ve `id`'leri gönder.
+  3. Ana sayfayı başka kayda çevirmek: `updateSiteSettings` `data: { homePage: <pageId> }`.
+- Toplu/idempotent içerik için `pnpm content:import` (slug/TR kimliği); MCP create upsert değildir.

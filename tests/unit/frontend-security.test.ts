@@ -97,7 +97,12 @@ describe('public URLs', () => {
   it('resolves only pages with an implemented public route', () => {
     expect(referencePath({ relationTo: 'pages', value: { slug: 'about', pageType: 'standard' } })).toBe('/sirket/hakkimizda')
     expect(referencePath({ relationTo: 'pages', value: { slug: 'privacy', pageType: 'legal' } })).toBe('/yasal/privacy')
-    expect(referencePath({ relationTo: 'pages', value: { slug: 'campaign', pageType: 'landing' } })).toBeNull()
+    // F6: landing pages live at /<slug>; system pages at their route; templates and reserved slugs nowhere.
+    expect(referencePath({ relationTo: 'pages', value: { slug: 'campaign', pageType: 'landing' } })).toBe('/campaign')
+    expect(referencePath({ relationTo: 'pages', value: { slug: 'campaign', pageType: 'template' } })).toBeNull()
+    expect(referencePath({ relationTo: 'pages', value: { slug: 'urunler', pageType: 'landing' } })).toBeNull()
+    expect(referencePath({ relationTo: 'pages', value: { slug: 'x', pageType: 'standard', systemKey: 'news' } })).toBe('/haberler')
+    expect(referencePath({ relationTo: 'pages', value: { slug: 'home', pageType: 'standard' } })).toBe('/')
   })
 })
 

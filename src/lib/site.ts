@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { getPayload } from 'payload'
 
 import { routePath } from '@/i18n/paths'
+import { pagePath } from '@/lib/system-pages'
 import type { Locale } from '@/i18n/routing'
 import { publicText, safeHref } from '@/lib/utils'
 
@@ -48,10 +49,8 @@ export function referencePath(ref: NonNullable<LinkGroup>['reference']): string 
   if (!doc || !slug) return null
   switch (ref.relationTo) {
     case 'pages':
-      if (doc.pageType === 'legal') return `/yasal/${slug}`
-      if (doc.slug === 'home') return '/'
-      if (doc.slug === 'hakkimizda' || doc.slug === 'about') return '/sirket/hakkimizda'
-      return null
+      // Legal -> /yasal/<slug>, system page -> its route, home -> /, landing -> /<slug>; templates none.
+      return pagePath(doc)
     case 'product-families':
       return `/urunler/${slug}`
     case 'products': {
@@ -96,7 +95,7 @@ export const getPayloadClient = cache(() => getPayload({ config }))
 // Read references separately: linkField.maxDepth=1 otherwise leaves a product's family as an ID.
 // Projection and depth prevent traversal into unrelated records or protected uploads.
 const referenceSelect = {
-  pages: { slug: true, pageType: true },
+  pages: { slug: true, pageType: true, systemKey: true },
   'product-families': { slug: true },
   products: { slug: true, family: true },
   solutions: { slug: true },

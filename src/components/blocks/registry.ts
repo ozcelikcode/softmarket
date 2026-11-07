@@ -4,6 +4,7 @@ import { DividerBlock } from '@/components/blocks/divider-block'
 import { FAQBlock } from '@/components/blocks/faq-block'
 import { FeatureGridBlock } from '@/components/blocks/feature-grid-block'
 import { HeroBlock } from '@/components/blocks/hero-block'
+import { ListingBlock } from '@/components/blocks/listing-block'
 import { LogoWallBlock } from '@/components/blocks/logo-wall-block'
 import { MediaBlock } from '@/components/blocks/media-block'
 import { MediaTextBlock } from '@/components/blocks/media-text-block'
@@ -46,6 +47,7 @@ export const blockRegistry: { [K in LayoutBlockType]: BlockComponent<BlockOf<K>>
   solutionsGrid: SolutionsGridBlock,
   caseStudy: CaseStudyBlock,
   newsList: NewsListBlock,
+  listing: ListingBlock,
 }
 
 export const hasBlockRenderer = (blockType: string): blockType is LayoutBlockType =>

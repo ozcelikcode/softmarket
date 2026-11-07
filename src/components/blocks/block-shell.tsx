@@ -48,7 +48,7 @@ export function BlockShell({
       tone={tone}
       id={appearance.anchor}
       data-block={blockType}
-      className={cn(appearance.anchor && 'scroll-mt-24', className)}
+      className={cn(appearance.anchor && 'scroll-mt-24', appearance.separator === 'top' && 'border-t border-border', className)}
     >
       {decor}
       <Container

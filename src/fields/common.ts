@@ -1,6 +1,6 @@
 import type { BlocksField, CollectionConfig, DateField, NumberField } from 'payload'
 
-import { layoutBlocks } from '@/blocks'
+import { layoutBlocks, pageBlocks } from '@/blocks'
 
 /** Block-based body shared by pages, products, solutions and case studies. */
 export const layoutField = (overrides: Partial<BlocksField> = {}): BlocksField => ({
@@ -9,6 +9,9 @@ export const layoutField = (overrides: Partial<BlocksField> = {}): BlocksField =
   blocks: layoutBlocks,
   ...overrides,
 })
+
+/** Pages: the full set plus the system-page `listing` block (F6). */
+export const pageLayoutField = (overrides: Partial<BlocksField> = {}): BlocksField => layoutField({ blocks: pageBlocks, ...overrides })
 
 /** Sidebar date auto-filled on first publish. */
 export const publishedAtField: DateField = {

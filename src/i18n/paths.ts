@@ -86,9 +86,12 @@ export const CANONICAL_PATHS = [
  * token/ID-based portal pages are excluded. Add new keys only: stored links reference them.
  */
 const ROUTE_EXCLUDED = new Set<string>(['/hesap/sifre-sifirla', '/hesap/dogrula', '/hesap/talepler/[id]'])
-export const LINK_ROUTES = CANONICAL_PATHS.filter(
-  (p) => !ROUTE_EXCLUDED.has(p) && (p.match(/\[/g)?.length ?? 0) <= 1,
-)
+/** F6 landing pages (`[locale]/[slug]`). Link-only: not a next-intl pathname, so EN rewrites are unaffected. */
+export const LANDING_ROUTE = '/[slug]'
+export const LINK_ROUTES: readonly string[] = [
+  ...CANONICAL_PATHS.filter((p) => !ROUTE_EXCLUDED.has(p) && (p.match(/\[/g)?.length ?? 0) <= 1),
+  LANDING_ROUTE,
+]
 export const routeKey = (path: string) =>
   path === '/' ? 'home' : path.slice(1).replace(/\[([^\]]+)\]/g, '$1').replace(/\//g, '_')
 export const ROUTE_BY_KEY: Record<string, string> = Object.fromEntries(LINK_ROUTES.map((p) => [routeKey(p), p]))
@@ -114,7 +117,10 @@ const translate = (path: string, locale: string) =>
 
 /** Admin labels: the TR canonical path in TR, the public EN path in EN. */
 export const routeOptions = () =>
-  LINK_ROUTES.map((p) => ({ value: routeKey(p), label: { tr: p, en: translate(p, 'en') } }))
+  LINK_ROUTES.map((p) => ({
+    value: routeKey(p),
+    label: p === LANDING_ROUTE ? { tr: 'Landing sayfası /[slug]', en: 'Landing page /[slug]' } : { tr: p, en: translate(p, 'en') },
+  }))
 
 export const buildPathnames = () =>
   Object.fromEntries(CANONICAL_PATHS.map((p) => [p, { tr: p, en: translate(p, 'en') }])) as Record<

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { MediaImage } from '@/components/ui/media-image'
+import { placeholderCover } from '@/lib/cover'
 import { mediaOf } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +23,7 @@ export function MediaCard({
   className?: string
   headingAs?: 'h2' | 'h3'
 }) {
+  const cover = placeholderCover(href)
   return (
     <AppLink
       href={href}
@@ -36,9 +38,9 @@ export function MediaCard({
           <MediaImage media={image} sizes="(min-width: 1024px) 33vw, 100vw" className="transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : !logo ? (
           // Branded placeholder (pure CSS, no request): accent glow + fine diagonal lines + wordmark glyph.
-          <div aria-hidden className="bg-brand-pattern absolute inset-0 flex items-center justify-center">
+          <div aria-hidden className="bg-brand-pattern absolute inset-0 flex items-center justify-center" style={cover.style}>
             <span className="inline-flex size-10 items-center justify-center rounded-lg border border-border-strong/40 bg-bg/40 text-accent">
-              <svg viewBox="0 0 16 16" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5.5h10M3 10.5h10" /></svg>
+              <svg viewBox="0 0 16 16" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d={cover.glyph} /></svg>
             </span>
           </div>
         ) : null}

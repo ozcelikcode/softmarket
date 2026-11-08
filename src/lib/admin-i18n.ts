@@ -522,3 +522,21 @@ export function localizeGlobal<T extends GlobalConfig>(global: T): T {
     fields: localizeFields(global.slug, global.fields as unknown as AnyField[], []) as unknown as Field[],
   }
 }
+
+/** SEO plugin default fields (`meta.*`) carry English auto-labels; TR/EN replacements keyed by field name. */
+export const SEO_FIELD_LABELS: Record<string, Localized> = {
+  overview: loc('Genel bakış', 'Overview'),
+  title: loc('Meta başlığı', 'Meta title'),
+  description: loc('Meta açıklaması', 'Meta description'),
+  image: loc('Meta görseli', 'Meta image'),
+  preview: loc('Arama sonucu önizlemesi', 'Search result preview'),
+}
+
+/** Plugin-seo `fields` override: label every default field in TR/EN (list column picker, SEO tab). */
+export function localizeSeoFields<T extends Field>({ defaultFields }: { defaultFields: T[] }): T[] {
+  return defaultFields.map((f) => {
+    const name = 'name' in f ? (f.name as string) : undefined
+    const label = name ? SEO_FIELD_LABELS[name] : undefined
+    return label ? ({ ...f, label } as T) : f
+  })
+}

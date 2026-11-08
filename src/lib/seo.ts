@@ -60,11 +60,7 @@ export function seoText(
 }
 
 /** Safe JSON for a `<script type="application/ld+json">` body. */
-export const jsonLdString = (data: unknown): string =>
-  JSON.stringify(data)
-    .replace(/</g, '\\u003c')
-    .replace(new RegExp(String.fromCharCode(0x2028), 'g'), '\\u2028')
-    .replace(new RegExp(String.fromCharCode(0x2029), 'g'), '\\u2029')
+export { jsonLdString } from './json-ld-string'
 
 /** BreadcrumbList JSON-LD. Every crumb needs a canonical-form href. */
 export function breadcrumbJsonLd(locale: Locale, crumbs: { label: string; href: string }[]) {

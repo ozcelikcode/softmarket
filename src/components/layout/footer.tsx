@@ -122,6 +122,7 @@ export async function Footer({ locale }: { locale: Locale }) {
                 ))}
               </ul>
             ) : null}
+            <div className="-ml-2.5 mt-4"><LanguageSwitcher /></div>
           </div>
 
           <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
@@ -147,20 +148,17 @@ export async function Footer({ locale }: { locale: Locale }) {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-6 border-t border-border pt-8 md:flex-row md:items-center md:justify-between">
-          <p className="text-small text-muted">{copyright}</p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <ul className="flex flex-wrap gap-x-6">
-              {legal.map((link) => (
-                <li key={link.href + link.label}>
-                  <AppLink href={link.href} locale={locale} className="inline-flex min-h-11 items-center text-small text-muted transition-colors hover:text-text">
-                    {link.label}
-                  </AppLink>
-                </li>
-              ))}
-            </ul>
-            <LanguageSwitcher />
-          </div>
+        <div className="mt-16 flex flex-col gap-x-8 gap-y-3 border-t border-border pt-8 lg:flex-row lg:items-center lg:justify-between">
+          <p className="text-small text-muted lg:shrink-0 lg:whitespace-nowrap">{copyright}</p>
+          <ul className="flex flex-wrap items-center gap-x-5 lg:justify-end">
+            {legal.map((link) => (
+              <li key={link.href + link.label}>
+                <AppLink href={link.href} locale={locale} className="inline-flex min-h-11 items-center text-small text-muted transition-colors hover:text-text">
+                  {link.label}
+                </AppLink>
+              </li>
+            ))}
+          </ul>
         </div>
       </Container>
     </footer>

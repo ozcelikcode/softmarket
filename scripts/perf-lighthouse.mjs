@@ -57,6 +57,7 @@ for (const preset of presets) {
         const lcpNode = a['lcp-breakdown-insight']?.details?.items?.find((i) => i.type === 'node')
         const rd = a['lcp-breakdown-insight']?.details?.items?.[0]?.items?.find((i) => i.subpart === 'elementRenderDelay')
         const js = (a['network-requests']?.details?.items ?? []).filter((i) => i.resourceType === 'Script')
+        const fonts = (a['network-requests']?.details?.items ?? []).filter((i) => i.resourceType === 'Font')
         single.push({
           preset,
           path,
@@ -72,6 +73,8 @@ for (const preset of presets) {
           ttfb: a['server-response-time']?.numericValue,
           jsTransferKb: js.reduce((s, i) => s + (i.transferSize || 0), 0) / 1024,
           jsRawKb: js.reduce((s, i) => s + (i.resourceSize || 0), 0) / 1024,
+          fontKb: fonts.reduce((s, i) => s + (i.transferSize || 0), 0) / 1024,
+          fontCount: fonts.length,
           lcpEl: lcpNode ? `${lcpNode.selector || ''} "${(lcpNode.nodeLabel || '').slice(0, 40)}"` : '',
           lcpRenderDelay: rd?.duration,
           failed: Object.values(a)
@@ -91,7 +94,7 @@ for (const preset of presets) {
     const errors = rs.filter((x) => x.error).map(({ run, error }) => ({ run, error }))
     if (!ok.length) { rows.push({ preset, path, runs: 0, error: errors[0]?.error, errors }); continue }
     const row = { preset, path, runs: ok.length, ...(errors.length ? { errors } : {}) }
-    for (const k of ['perf', 'a11y', 'bp', 'seo', 'lcp', 'cls', 'tbt', 'fcp', 'ttfb', 'jsTransferKb', 'jsRawKb', 'lcpRenderDelay']) row[k] = median(ok.map((x) => x[k]))
+    for (const k of ['perf', 'a11y', 'bp', 'seo', 'lcp', 'cls', 'tbt', 'fcp', 'ttfb', 'jsTransferKb', 'jsRawKb', 'fontKb', 'fontCount', 'lcpRenderDelay']) row[k] = median(ok.map((x) => x[k]))
     row.lcpEl = ok[0].lcpEl
     row.failed = [...new Set(ok.flatMap((x) => x.failed))]
     row.lcpRuns = ok.map((x) => Math.round(x.lcp))

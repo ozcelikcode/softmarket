@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { Accordion as AccordionPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 
-import { cn } from '@/lib/utils'
+import { cx } from '@/lib/cx'
 
 export const Accordion = AccordionPrimitive.Root
 
@@ -13,7 +13,7 @@ export function AccordionItem({
   ...props
 }: ComponentProps<typeof AccordionPrimitive.Item>) {
   return (
-    <AccordionPrimitive.Item className={cn('border-b border-border', className)} {...props} />
+    <AccordionPrimitive.Item className={cx('border-b border-border', className)} {...props} />
   )
 }
 
@@ -25,7 +25,7 @@ export function AccordionTrigger({
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
-        className={cn(
+        className={cx(
           'group flex flex-1 items-center justify-between gap-4 py-5 text-left text-h4 text-text',
           className,
         )}
@@ -51,7 +51,7 @@ export function AccordionContent({
       className="overflow-hidden data-[state=closed]:animate-[accordion-up_200ms_ease-out] data-[state=open]:animate-[accordion-down_200ms_ease-out]"
       {...props}
     >
-      <div className={cn('pb-5 pr-9 text-muted', className)}>{children}</div>
+      <div className={cx('pb-5 pr-9 text-muted', className)}>{children}</div>
     </AccordionPrimitive.Content>
   )
 }

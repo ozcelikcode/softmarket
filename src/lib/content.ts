@@ -3,6 +3,7 @@ import type { Where } from 'payload'
 
 import type { Locale } from '@/i18n/routing'
 import { routing } from '@/i18n/routing'
+import { isLegalDraft } from '@/lib/legal-draft'
 import { readAs } from '@/lib/preview'
 import { getPayloadClient, safe } from '@/lib/site'
 import { HOME_SLUG, isLandingPage, isReservedSlug, LANDING_PAGE_TYPES, type SystemKey } from '@/lib/system-pages'
@@ -400,7 +401,27 @@ export const getSitemapEntries = cache(() =>
     simple(cases, '/referanslar')
     simple(posts, '/haberler')
     simple(careers, '/kariyer')
-    simple(pages.filter((p) => p.pageType === 'legal'), '/yasal')
+    // Legal pages still carrying the draft banner / [PLACEHOLDER]s (awaiting legal review) stay out of the sitemap per locale.
+    const legalDocs = pages.filter((p) => p.pageType === 'legal')
+    const drafts = await Promise.all(routing.locales.map((l) => !legalDocs.length ? ([l, new Set<number>()] as const) :
+      payload.find({
+        collection: 'pages', ...base, locale: l, depth: 0,
+        where: { and: [{ pageType: { equals: 'legal' } }, { id: { in: legalDocs.map((d) => d.id) } }] },
+        select: { layout: true },
+      }).then((r) => {
+        // A missing or inaccessible document has not been checked and must not enter the sitemap.
+        const unchecked = new Set(legalDocs.map((d) => d.id))
+        for (const d of r.docs) if (!isLegalDraft((d as { layout?: unknown }).layout)) unchecked.delete(d.id)
+        return [l, unchecked] as const
+      })
+        .catch(() => [l, new Set<number>(legalDocs.map((d) => d.id))] as const)))
+    const draftByLocale = Object.fromEntries(drafts)
+    for (const d of legalDocs) {
+      const slugs = pickLocales(d.slug)
+      const paths: SitemapEntry['paths'] = {}
+      for (const l of routing.locales) if (slugs[l] && !draftByLocale[l]?.has(d.id)) paths[l] = `/yasal/${encodeURIComponent(slugs[l]!)}`
+      if (Object.keys(paths).length) entries.push({ paths, lastModified: d.updatedAt })
+    }
     // Landing pages (`/[slug]`): templates, system pages, the home slug and reserved slugs never get a URL.
     for (const d of pages) {
       if (d.pageType === 'legal' || d.id === homePageId) continue

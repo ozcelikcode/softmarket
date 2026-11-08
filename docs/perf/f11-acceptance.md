@@ -63,6 +63,50 @@ Sonuç: §7 bütçesi **tamamen yeşil değil**; kabul için 4 kırmızı (görs
 - **Dinamik rotalar:** `/tr/iletisim` (18 sorgu), `/tr/urunler`, `/tr/cozumler`, `/tr/haberler`, indirmeler, dokümantasyon listesi ISR'siz (`private, no-store`). Katalog/iletişim sorguları büyük olasılıkla globals + liste; ISR/`unstable_cache` ile 0'a inebilir.
 - Build: `.next-prod` ve `.next-f11` build'leri ilk denemede zaman aşımsız geçti (doküman build timeout kök neden araştırması bu fazda yapılmadı).
 
+## Düzeltme turu sonrası (2026-11-08, JS/font/görselli LCP)
+
+Ortam: canlı DB'nin salt okunur yedeği + boş uploads (scratchpad), kopyaya yalnız `content:import` ile 1 medya (1600×1000 dokulu JPEG → card 768w 22 KB) ve `/tr/f11-gorsel-test` landing (görselli `default` hero). `NEXT_DIST_DIR=.next-perf` prod build + `next start` 127.0.0.1:3300, Lighthouse 13.6 (`LH_RUNS=3`, medyan), mobil Lantern + masaüstü preset. **Önce** = aynı kopya/fixture ile değişiklik öncesi build (F11 tablosundaki 3.01 s farklı, daha hafif fixture'dandı). Font KB = Lighthouse ağ kaydındaki `Font` transfer toplamı (yeni `fontKb`/`fontCount` alanları).
+
+### Mobil (3 koşu medyan, önce → sonra)
+
+| Sayfa | Perf | LCP (s) | TBT (ms) | CLS | JS gzip (KB) | Font KB (dosya) |
+|---|---|---|---|---|---|---|
+| /tr | 100 → 100 | 1.06 → 1.06 | 77 → 71 | 0 → 0 | 192.0 → **129.0** | 138.7 (2) → **48.3 (2)** |
+| /en | 100 → 100 | 1.06 → 1.06 | 73 → 69 | 0 → 0 | 192.0 → **129.0** | 138.7 (2) → **48.3 (2)** |
+| /tr/urunler | 100 → 100 | 1.21 → 1.21 | 75 → 70 | 0 → 0 | 193.3 → 130.4 | 68.5 (1) → **28.1 (1)** |
+| /tr/urunler/akis-yonetimi/akis-merkezi | 100 → 100 | 1.06 → 1.06 | 75 → 67 | 0 → 0 | 192.0 → 129.0 | 68.5 (1) → 28.1 (1) |
+| /tr/f11-gorsel-test (görselli hero) | 93 → 97 | **3.16 → 2.53** | 59 → 70 | 0 → 0 | 192.0 → 129.0 | 68.5 (1) → 28.1 (1) |
+
+### Masaüstü (3 koşu medyan, önce → sonra)
+
+| Sayfa | Perf | LCP (s) | TBT (ms) | CLS | JS gzip (KB) | Font KB |
+|---|---|---|---|---|---|---|
+| /tr | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 192.0 → 129.0 | 138.7 → 48.3 |
+| /en | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 192.0 → 129.0 | 138.7 → 48.3 |
+| /tr/urunler | 100 → 100 | 0.33 → 0.33 | 0 → 0 | 0 → 0 | 194.6 → 131.9 | 68.5 → 28.1 |
+| /tr/urunler/…/akis-merkezi | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 193.3 → 130.4 | 68.5 → 28.1 |
+| /tr/f11-gorsel-test | 100 → 100 | 0.68 → 0.57 | 0 → 0 | 0 → 0 | 193.3 → 130.4 | 68.5 → 28.1 |
+
+Görselli hero gerçek throttling'te (`--throttling-method=devtools`, 3 koşu): LCP 2.24–2.27 s, FCP 2.14 s (görsel ≈ FCP + 0.1 s). A11y/BP 100, SEO 92 (yalnız `canonical`) değişmedi.
+
+### Ne değişti
+
+- **Mega menü (Radix NavigationMenu + Dialog, ~16 KB):** header artık sunucu bileşeni (`header-shell.tsx`); tek istemci adası `header-frame.tsx` (scroll/portal açık tema) + DOM denetleyicisi `src/lib/header-nav.ts`. Paneller HTML'de `hidden`, tetikleyicide `aria-expanded`/`aria-controls`/`data-state`; hover-intent 80 ms aç / 150 ms kapat / 300 ms skip-delay, tıklama toggle (Radix gibi tıkla-kapat hover ile yeniden açılmaz), Escape kapatır ve tetikleyiciye odak döner, ←/→/Home/End üst öğeler arasında, ↓ paneli açıp ilk linke girer, ↑/↓ panel içinde, dışarı tıklama/odak kapatır, link tıklaması kapatır. Mobil menü yerel modal `<dialog>` (odak hapsi, Escape, arka plan inert, odak dönüşü yerleşik; backdrop/link/kapat tıklaması ve ≥64rem kapatır; `html:has(dialog[data-sheet][open])` kaydırma kilidi). `ui/sheet.tsx` silindi.
+- **ICU ayrıştırıcı + mesajlar (12.5 KB):** istemcide next-intl kancası kalmadı; `NextIntlClientProvider` kaldırıldı (provider tek başına `use-intl/format-message` → `intl-messageformat` getiriyordu). Dil seçici yerel ayarı URL'den, etiketini statik JSON seçiminden alır (`publicLanguageSwitch`); `error.tsx`/`global-error.tsx` yalnız `feedback` dizelerini içerir (eskiden iki mesaj dosyasının tamamı, 10.5 KB). Sunucu kodu `next-intl` kök girişini (`hasLocale`) içe aktarmıyor: react-server build'i `NextIntlClientProvider`'ı istemci referansı olarak kaydedip use-intl'i her sayfaya ekliyordu → `src/i18n/has-locale.ts`. Kanıt: build chunk'larında `MALFORMED_ARGUMENT`/`MISSING_MESSAGE` yok; `tests/unit/client-bundle-guard.test.ts` regresyonu kilitler.
+- **tailwind-merge + cva (9.3 KB):** `cn()` sunucuda kalır (F2 `text-small` testi değişmedi). Paylaşılan istemci adaları `cn`/cva/Button/Container kullanmaz; `safeHref` bağımlılıksız `src/lib/safe-href.ts`'e taşındı (i18n/paths istemcide tailwind-merge'i çekiyordu), `jsonLdString` → `src/lib/json-ld-string.ts` (JsonLd adası lib/seo + routing'i çekiyordu). Sayfa düzeyi adalar (tabs, accordion, portal-nav) `cx` (= clsx) kullanır. İstemci adalarındaki 3 lucide ikonu aynı SVG ile satır içi (`ui/client-icons.tsx`).
+- **Font:** `geist/font/sans` (70 KB, tüm diller) yerine `scripts/subset-fonts.sh` ile alt küme değişken Geist (OFL, `src/fonts/OFL.txt`): birincil Latin + Latin-1 + Türkçe (ĞğİıŞş) + noktalama/oklar/€/₺ = 28 KB, **tek preload**; Latin Extended-A'nın geri kalanı ayrı `unicode-range` yüzü (15 KB, yalnız bu karakterler sayfada varsa iner, ölçülen sayfalarda inmedi); Geist Mono alt kümesi 20 KB, preload yok. `font-display: swap`, ortak `Geist Fallback` (Arial + next/font'un hesapladığı ascent/descent/size-adjust) → CLS 0.
+- **Görselli LCP:** hero görseli zaten preload + `fetchpriority=high` + doğru `sizes` (390 px/DPR 1.75 → 768w) idi; render-blocking yalnız 2 CSS. Lantern görselli LCP'yi gözlenen LCP'den önce başlayan tüm JS/font ağ ve CPU düğümleriyle simüle ettiğinden kazanç JS (−63 KB) ve font (−40 KB) azaltımından geldi.
+
+### Görsel/davranış karşılaştırması
+
+390/1440, 7 sayfa (+ /tr ve /tr/hesap/giris'te mega menü Ürünler hover, Şirket tık, Escape sonrası kapalı; mobil sheet açık ve akordeon açık): header, mega paneller ve mobil sheet piksel düzeyinde aynı (yalnız alt küme fontun alt-piksel kenar yumuşatma farkı, üst 900 px'te 0–25 piksel). Sayfa gövdelerindeki farklar (PageHero/breadcrumb boşluğu, ürün hero'su, footer dil seçici/telif) paralel görsel düzeltme turuna ait. Playwright: `tests/e2e/header-keyboard.spec.ts` (salt okunur, `E2E_BASE_URL` ile izole build'e yönlendirilebilir) 3/3.
+
+### Kalan kırmızılar
+
+- **Görselli hero LCP (Lantern) 2.53 s** (hedef < 2.5 s; 3.16'dan indi). Deney (1 koşu): tüm JS engellenince 1.97 s, yalnız site chunk'ları (`/chunks/app/*`, ~8 KB) engellenince 2.51 s, react-dom veya next chunk'ı engellenince 2.26 s; font engellenince 2.38 s. Kalan maliyet çerçeve tabanı (react-dom 53 + next 43 KB gzip) ve yerel `next start`'ın HTTP/1.1 bağlantı modeli; `experimental.inlineCss` denendi (2.83 s, daha kötü, geri alındı), koşullu adaları `next/dynamic` ile bölmek kazanç vermedi (geri alındı). Canlıda Caddy HTTP/2 ve gerçek fotoğraf boyutu ile yeniden ölçülmeli.
+- **Ana sayfada Geist Mono iniyor** (20 KB, toplam 48 KB ≤ 60 KB bütçesi içinde): hero panelindeki `font-mono` etiketleri ("Ürün aileleri", sayaçlar). Tamamen kaldırmak bu etiketleri sans/sistem mono'ya çevirmek demek (görsel değişiklik), yapılmadı.
+- JS: ana sayfa 129.0 KB (≤ 130); katalog 130.4 / masaüstü 131.9 KB (sayfaya özel liste/filtre chunk'ı) bütçe sınırında. SEO 92 (`canonical`, ortam) değişmedi.
+
 ## Yeniden üretme
 
 Build ve test için `DATABASE_URI` ve `UPLOADS_DIR` değişkenlerini önce geçici DB/yükleme kopyalarına ayarlayın; aşağıdaki build komutu tek başına DB izolasyonu sağlamaz. `.next` çalışan 3100 geliştirme sunucusuna aittir; bu dizini silmeyin.

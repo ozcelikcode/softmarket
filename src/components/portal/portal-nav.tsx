@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 
 import { AppLink } from '@/components/ui/app-link'
 import { canonicalPortalPath } from '@/lib/portal/redirect'
-import { cn } from '@/lib/utils'
+import { cx } from '@/lib/cx'
 
 export type PortalNavItem = { href: string; label: string }
 
@@ -22,7 +22,7 @@ export function PortalNav({ items, locale, label }: { items: PortalNavItem[]; lo
                 href={item.href}
                 locale={locale}
                 aria-current={active ? 'page' : undefined}
-                className={cn(
+                className={cx(
                   '-mb-px inline-flex h-11 items-center border-b-2 px-3.5 text-small font-medium transition-colors',
                   active ? 'border-accent text-text' : 'border-transparent text-muted hover:text-text',
                 )}

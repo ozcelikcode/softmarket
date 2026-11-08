@@ -123,9 +123,10 @@ export default async function ProductPage({ params }: Props) {
         eyebrow={family.title} title={product.title} lead={product.tagline ?? product.summary}
         actions={
           <>
-            <Button asChild size="lg"><AppLink href={`${path}#surumler`} locale={locale}>{t('editions')}</AppLink></Button>
+            <Button asChild size="lg"><AppLink href={`/teklif-iste?urun=${enc(productSlug)}`} locale={locale}>{t('quote')}</AppLink></Button>
+            <Button asChild size="lg" variant="secondary"><AppLink href={`${path}#surumler`} locale={locale}>{t('editions')}</AppLink></Button>
             {brochure && safeHref(brochure.url) ? (
-              <Button asChild size="lg" variant="secondary"><a href={brochure.url!} download>{t('brochure')}<ArrowDownToLine aria-hidden /></a></Button>
+              <Button asChild size="lg" variant="ghost"><a href={brochure.url!} download>{t('brochure')}<ArrowDownToLine aria-hidden /></a></Button>
             ) : null}
           </>
         }

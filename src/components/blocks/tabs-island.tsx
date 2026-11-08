@@ -3,7 +3,7 @@
 import { useId, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from 'react'
 
 import { nextTabIndex } from '@/lib/blocks/static'
-import { cn } from '@/lib/utils'
+import { cx } from '@/lib/cx'
 
 export type TabPanel = { label: string; content: ReactNode }
 const subscribe = () => () => {}
@@ -48,7 +48,7 @@ export function TabsIsland({ tabs, labelledBy }: { tabs: TabPanel[]; labelledBy?
             aria-controls={`${uid}-panel-${i}`}
             tabIndex={i === active ? 0 : -1}
             onClick={() => select(i)}
-            className={cn(
+            className={cx(
               '-mb-px min-h-11 whitespace-nowrap border-b-2 px-4 py-3 text-small font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2',
               i === active ? 'border-accent text-text' : 'border-transparent text-muted hover:text-text',
             )}

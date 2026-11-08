@@ -87,6 +87,25 @@ describe('public content queries', () => {
     }
   })
 
+  it('keeps draft legal pages (banner/placeholders) out of the sitemap per locale', async () => {
+    const draft = [{ blockType: 'richText', content: 'TASLAK — Yayın öncesi incelenmelidir. [ŞİRKET UNVANI]' }]
+    client.find.mockImplementation(async (o: { collection: string; locale: string; select?: Record<string, boolean> }) => {
+      if (o.collection !== 'pages') return { docs: [] }
+      if (o.select?.layout) return { docs: [{ id: 7, layout: o.locale === 'tr' ? draft : [{ blockType: 'richText', content: 'Reviewed' }] }] }
+      return { docs: [{ id: 7, pageType: 'legal', slug: { tr: 'eula', en: 'eula-en' } }] }
+    })
+    const entries = await getSitemapEntries()
+    expect(entries).toEqual([expect.objectContaining({ paths: { en: '/yasal/eula-en' } })])
+  })
+
+  it('excludes legal pages missing from the draft check', async () => {
+    client.find.mockImplementation(async (o: { collection: string; select?: Record<string, boolean> }) => {
+      if (o.collection !== 'pages' || o.select?.layout) return { docs: [] }
+      return { docs: [{ id: 7, pageType: 'legal', slug: { tr: 'eula', en: 'eula-en' } }] }
+    })
+    expect(await getSitemapEntries()).toEqual([])
+  })
+
   it('keeps localized product paths paired with their own family locale', async () => {
     client.findByID.mockResolvedValue({ slug: { tr: 'urun', en: 'product' }, family: { slug: { tr: 'aile' } } })
     expect(await getProductVariants(2)).toEqual({ tr: ['aile', 'urun'] })

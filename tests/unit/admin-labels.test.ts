@@ -203,3 +203,24 @@ describe('F10 admin labels (TR + EN)', () => {
     expect(src).not.toMatch(/group: '[A-Za-z]+'/)
   })
 })
+
+describe('SEO plugin field labels (F11 follow-up)', () => {
+  it('labels every default meta field in TR and EN', async () => {
+    const { seoPlugin } = await import('@payloadcms/plugin-seo')
+    const { localizeSeoFields } = await import('../../src/lib/admin-i18n')
+    const out = seoPlugin({ collections: ['pages'], uploadsCollection: 'media', tabbedUI: true, fields: localizeSeoFields })(
+      { collections: [{ slug: 'pages', fields: [{ name: 'title', type: 'text' }] }] } as never,
+    ) as unknown as { collections: { fields: unknown[] }[] }
+    const json = JSON.stringify(out.collections[0].fields)
+    const meta = (JSON.parse(json) as { tabs: { fields: { name?: string; fields?: { name: string; label?: unknown }[] }[] }[] }[])
+    const group = meta[0].tabs.flatMap((t) => t.fields).find((f) => f.name === 'meta')!
+    const fields = group.fields!
+    expect(fields.map((f) => f.name).sort()).toEqual(['description', 'image', 'overview', 'preview', 'title'])
+    for (const f of fields) {
+      const l = f.label as { tr: string; en: string }
+      expect(l.tr, f.name).toBeTruthy()
+      expect(l.en, f.name).toBeTruthy()
+      expect(l.tr).not.toBe(l.en)
+    }
+  })
+})

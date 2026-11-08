@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { XIcon as X } from '@/components/ui/client-icons'
 import { useEffect, useState, type ReactNode } from 'react'
 
 const KEY = 'sm-announcement-dismissed'

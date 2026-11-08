@@ -1,15 +1,17 @@
 'use client'
 
-import { Globe } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
+import { GlobeIcon as Globe } from '@/components/ui/client-icons'
 import { usePathname as usePublicPathname, useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
-import { usePathname } from '@/i18n/navigation'
-import { languageSwitchPath, localizedHref } from '@/i18n/paths'
-import { routing } from '@/i18n/routing'
+import en from '@/i18n/messages/en.json'
+import tr from '@/i18n/messages/tr.json'
+import { localizedHref, publicLanguageSwitch } from '@/i18n/paths'
 import { useAlternates } from '@/lib/alternates-store'
-import { cn } from '@/lib/utils'
+
+// Static property access keeps only these strings in the client bundle (webpack JSON tree shaking).
+// No next-intl client hooks here: they would ship the ICU message parser to every page.
+const LANGUAGE_LABEL = { tr: tr.common.language, en: en.common.language }
 
 /**
  * Target-locale path published as `<link rel="alternate" hreflang>` by generateMetadata: the same
@@ -26,38 +28,35 @@ export function hreflangPath(head: Pick<ParentNode, 'querySelectorAll'>, target:
   return undefined
 }
 
-export function LanguageSwitcher({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
-  const locale = useLocale()
-  const t = useTranslations('common')
-  const pathname = usePathname()
+/** `closesSheet`: inside the mobile drawer, a click also closes the dialog (lib/header-nav initSheet). */
+export function LanguageSwitcher({ className, closesSheet }: { className?: string; closesSheet?: boolean }) {
   const publicPathname = usePublicPathname()
+  const { locale, path: fallbackPath } = publicLanguageSwitch(publicPathname)
   const { current } = useAlternates()
   const router = useRouter()
   const [pending, start] = useTransition()
-  const next = routing.locales.find((l) => l !== locale) ?? routing.defaultLocale
+  const next = locale === 'tr' ? 'en' : 'tr'
 
   return (
     <button
       type="button"
       disabled={pending}
       lang={next}
-      aria-label={`${t('language')}: ${next.toUpperCase()}`}
+      aria-label={`${LANGUAGE_LABEL[locale]}: ${next.toUpperCase()}`}
+      data-sheet-close={closesSheet ? '' : undefined}
       onClick={() =>
         start(() => {
-          onNavigate?.()
           const known = current?.pathname === publicPathname ? current.hrefs[next] : undefined
           const alt = known ?? hreflangPath(document.head, next)
           router.replace(
             alt
               ? alt + (known ? '' : window.location.search) + window.location.hash
-              : localizedHref(languageSwitchPath(pathname), next) + window.location.search + window.location.hash,
+              : localizedHref(fallbackPath, next) + window.location.search + window.location.hash,
           )
         })
       }
-      className={cn(
-        'inline-flex h-11 min-w-11 items-center justify-center lg:h-9 lg:min-w-0 gap-1.5 rounded-md px-2.5 text-small font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text',
-        className,
-      )}
+      // No tailwind-merge on the client: a caller-supplied `hidden` replaces the base display instead of conflicting with it.
+      className={`${className?.split(/\s+/).includes('hidden') ? '' : 'inline-flex '}h-11 min-w-11 items-center justify-center lg:h-9 lg:min-w-0 gap-1.5 rounded-md px-2.5 text-small font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text${className ? ` ${className}` : ''}`}
     >
       <Globe aria-hidden className="size-4" />
       {next.toUpperCase()}

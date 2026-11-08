@@ -1,4 +1,4 @@
-import { safeHref } from '@/lib/utils'
+import { safeHref } from '@/lib/safe-href'
 
 /**
  * Canonical routes use Turkish folder names (src/app/(frontend)/[locale]/...).
@@ -150,6 +150,17 @@ export function languageSwitchPath(pathname: string): string {
   if (index < 0) return route
   const listing = route.slice(0, index)
   return (CANONICAL_PATHS as readonly string[]).includes(listing) ? listing : '/'
+}
+
+/**
+ * Locale + language-switch fallback target for a public, locale-prefixed pathname (client side,
+ * without next-intl context): same result as `languageSwitchPath(next-intl usePathname())`.
+ */
+export function publicLanguageSwitch(publicPathname: string): { locale: 'tr' | 'en'; path: string } {
+  const locale = /^\/en(?:\/|$)/.test(publicPathname) ? 'en' : 'tr'
+  const rest = publicPathname.replace(/^\/(?:tr|en)(?=\/|$)/, '').replace(/\/$/, '') || '/'
+  const route = matchRoute(rest, locale)
+  return { locale, path: route ? languageSwitchPath(route) : '/' }
 }
 
 /** Turn a canonical (Turkish) concrete path into a locale-prefixed public URL. */

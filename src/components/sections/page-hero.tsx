@@ -46,8 +46,8 @@ export function PageHero({
         className={cn('relative', aside && 'grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.2fr_1fr]')}
       >
         <div className="min-w-0">
-          <Breadcrumb locale={locale} label={crumbLabel} items={crumbs} className="mb-8" />
-          {eyebrow ? <Eyebrow className="mb-4" {...heroIn(0)}>{eyebrow}</Eyebrow> : null}
+          <Breadcrumb locale={locale} label={crumbLabel} items={crumbs} className="mb-10" />
+          {eyebrow ? <Eyebrow className="mb-5" {...heroIn(0)}>{eyebrow}</Eyebrow> : null}
           <Heading as="h1" size="h1" className="max-w-3xl" {...heroIn(1, 'slide')}>
             {title}
           </Heading>

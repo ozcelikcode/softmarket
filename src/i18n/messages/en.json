@@ -250,6 +250,8 @@
     "downloads": "Downloads",
     "documentation": "Documentation",
     "releases": "Release notes",
+    "latestRelease": "Latest release",
+    "olderReleases": "Previous releases ({count})",
     "faq": "Frequently asked questions",
     "request": "Support request",
     "contact": "Contact",

@@ -1,7 +1,7 @@
 'use client'
 
 import { useNonce } from '@/components/security/nonce-provider'
-import { jsonLdString } from '@/lib/seo'
+import { jsonLdString } from '@/lib/json-ld-string'
 
 /**
  * Browsers blank the `nonce` attribute after parsing (nonce hiding), so the client always sees nonce="" while

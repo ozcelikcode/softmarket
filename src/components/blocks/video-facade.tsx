@@ -1,6 +1,6 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import { PlayIcon as Play } from '@/components/ui/client-icons'
 import { useState, type ReactNode } from 'react'
 
 import { autoplayUrl } from '@/lib/blocks/static'

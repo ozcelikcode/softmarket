@@ -119,3 +119,18 @@ Kapsam: sitemap'teki 144 URL x 390/768/1440 = 432 tam sayfa ekran görüntüsü,
 - Lead formu: zorunlu alan işareti (`*`, aria-hidden; `required` zaten var) ve `border-strong` giriş kenarlığı (`src/components/forms/lead-form.tsx`).
 - Admin: `layout` blok alanı etiketi "Blok/Bloklar" (`src/lib/admin-i18n.ts`) → "Blok ekle".
 - Sonrası görüntü: `.../scratchpad/f11/after/` (3100 dev, `/tr/teklif-iste`, `/en/contact`).
+
+## F11 turu 3 / G2 düzeltmeleri (2026-11-08)
+
+Önce/sonra görüntüler: `/private/tmp/claude-501/-Users-ozcelik-dev-softmarket/86cb568c-5f6b-4b21-b0fe-e6a5de07c79f/scratchpad/g2/` (`before-*` dev 3100, `after-*` prod 3200; 390/1440).
+
+| # | Durum | Not |
+|---|---|---|
+| Yeni 1 (yasal taslak) | KAPANDI | `src/lib/legal-draft.ts`: içerikte `TASLAK —`/`DRAFT —` başlığı veya `[BÜYÜK HARF]` yer tutucusu varsa sayfa `noindex, nofollow` ve sitemap'ten çıkar (dil bazlı). Şema alanı yok; editör içeriği temizleyince otomatik yayına açılır. Footer bağlantıları duruyor. |
+| Yeni 3 | KAPANDI | Ürün hero: birincil "Teklif İste" (`/teklif-iste?urun=<slug>`), ikincil "Sürümler" (çapa), broşür ghost. |
+| Yeni 4 | KAPANDI | `PageHero` breadcrumb alt boşluğu mb-10, eyebrow mb-5 (tüm başlık sayfaları). |
+| Yeni 5 / O4 | KAPANDI | Sürüm notları ürün başına gruplu; son sürüm açık ("Son sürüm" rozeti, başlık "Ürün 1.2.0"), eskiler native `<details>` ile katlı. Sayfa dinamik (`force-dynamic`) kuralı korundu. |
+| Yeni 6 | KAPANDI | `MediaCard` yer tutucu kapağı slug (href) FNV hash'iyle deterministik: ışıma konumu/şiddeti, tarama açısı/sıklığı, glif. Yalnız CSS. |
+| D3 / Yeni 7 | KAPANDI | Footer alt satır `lg` kırılımında tek satır; telif `whitespace-nowrap`; dil seçici ayraçlı, hizalı. |
+| Yeni 8 (admin SEO) | KAPANDI | `localizeSeoFields` (`src/lib/admin-i18n.ts`) + seo plugin `fields`; test `tests/unit/admin-labels.test.ts`. |
+| O7 | KAPANDI | Gönder düğmesi `lg`, mobilde tam genişlik, masaüstünde min 14rem. |

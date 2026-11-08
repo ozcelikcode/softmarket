@@ -5,10 +5,13 @@ import tr from '@/i18n/messages/tr.json'
 import en from '@/i18n/messages/en.json'
 import './(frontend)/globals.css'
 
+// Static property access: only the `feedback` strings reach the client bundle (not both message files).
+const FEEDBACK = { tr: tr.feedback, en: en.feedback }
+
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const [locale, setLocale] = useState<'tr' | 'en'>('tr')
   useEffect(() => { setLocale(window.location.pathname.startsWith('/en') ? 'en' : 'tr') }, [])
-  const t = (locale === 'en' ? en : tr).feedback
+  const t = FEEDBACK[locale]
   return <html lang={locale} data-theme="dark"><body className="min-h-dvh bg-bg font-sans text-text">
     <main className="mx-auto max-w-2xl px-6 py-32 text-center">
       <h1 className="text-h1">{t.title}</h1>

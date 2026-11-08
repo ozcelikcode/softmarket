@@ -288,7 +288,7 @@ export function LeadForm({
           </noscript>
         </>
       ) : null}
-      <Button type="submit" disabled={pending} aria-disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending} aria-disabled={pending} className="mt-2 w-full sm:w-auto sm:min-w-56">
         {pending ? labels.sending : submitLabel || labels.send}
       </Button>
     </form>

@@ -15,6 +15,7 @@ import { JsonLd } from '@/components/sections/json-ld'
 import { PageHero } from '@/components/sections/page-hero'
 import { getPage, getSlugVariants, mediaOf } from '@/lib/content'
 import { formatDate } from '@/lib/format'
+import { isLegalDraft } from '@/lib/legal-draft'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
 import { breadcrumbJsonLd, buildMetadata, seoText } from '@/lib/seo'
 
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) notFound()
   return buildMetadata({
     locale, path: `/yasal/${enc(slug)}`, ...seoText(page.meta, page.title), image: mediaOf(page.meta?.image)?.url,
-    variants: await variantPaths(page.id),
+    variants: await variantPaths(page.id), noindex: isLegalDraft(page.layout),
   })
 }
 

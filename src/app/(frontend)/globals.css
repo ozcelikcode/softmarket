@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Metric-matched fallback for the subset Geist faces (values next/font computed for Geist + Arial):
+   shared by the primary and Latin-ext faces so the font swap causes no layout shift. */
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial');
+  ascent-override: 94.56%;
+  descent-override: 27.76%;
+  line-gap-override: 0%;
+  size-adjust: 106.28%;
+}
+
 /*
  * Design tokens. Single source of truth for brand colors: change here only.
  * Dark is the site default; sections switch with data-theme="light" (see <Section theme>).
@@ -57,7 +68,7 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), var(--font-geist-sans-ext), 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --radius-sm: 0.375rem;
@@ -178,6 +189,9 @@
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes mega-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Mobile sheet (native modal <dialog>): lock page scroll while open (former Radix Dialog behaviour). */
+html:has(dialog[data-sheet][open]) { overflow: hidden; }
 
 /* Lexical rich text output (no typography plugin): tokens only, works on dark and light sections. */
 @layer components {

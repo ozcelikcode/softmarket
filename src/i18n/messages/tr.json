@@ -250,6 +250,8 @@
     "downloads": "İndirmeler",
     "documentation": "Dokümantasyon",
     "releases": "Sürüm notları",
+    "latestRelease": "Son sürüm",
+    "olderReleases": "Önceki sürümler ({count})",
     "faq": "Sık sorulan sorular",
     "request": "Destek talebi",
     "contact": "İletişim",

@@ -17,23 +17,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/** Allow only browser navigation schemes and local paths, including CMS input. */
-export function safeHref(value: string | null | undefined): string | null {
-  if (!value || /[\s\u0000-\u001f\u007f\\]/u.test(value)) return null
-  if (value.startsWith('//')) return null
-  if (/^(?:\/|#|\?)/.test(value)) return value
-  try {
-    const url = new URL(value)
-    // CMS templates can contain bracketed mail placeholders, including URL-encoded ones.
-    if (url.protocol === 'mailto:' && /[\s\u0000-\u001f\u007f\[\]<>{}]/u.test(decodeURIComponent(url.pathname))) return null
-    return ['https:', 'http:', 'mailto:', 'tel:'].includes(url.protocol) ? value : null
-  } catch {
-    return null
-  }
-}
+export { safeHref } from './safe-href'
 
 /** CMS template placeholders such as "[ŞİRKET ADRESİ]" or "[COMPANY PHONE]" are never rendered. */
 const PLACEHOLDER = /\[\p{Lu}[\p{Lu}\d _-]+\]/u
+
+/** True when the text contains a `[UPPERCASE]` template placeholder. */
+export function hasPlaceholder(value: string): boolean {
+  return PLACEHOLDER.test(value)
+}
 
 /** Trimmed public CMS text, or null when empty or a template placeholder (section is hidden). */
 export function publicText(value: unknown): string | null {

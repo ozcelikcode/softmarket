@@ -1,4 +1,4 @@
-import { hasLocale } from 'next-intl'
+import { hasLocale } from '@/i18n/has-locale'
 import { setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 

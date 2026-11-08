@@ -7,7 +7,7 @@ import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { mcpOptions } from './lib/mcp'
-import { ADMIN_GROUPS, COLLECTION_LABELS, loc, localizeCollection, localizeGlobal } from './lib/admin-i18n'
+import { ADMIN_GROUPS, COLLECTION_LABELS, loc, localizeCollection, localizeGlobal, localizeSeoFields } from './lib/admin-i18n'
 import { withPublicRevalidation, withGlobalRevalidation } from './lib/revalidate'
 import { LIVE_PREVIEW_BREAKPOINTS, LIVE_PREVIEW_COLLECTIONS, livePreviewURL } from './lib/preview-url'
 import { seoPlugin } from '@payloadcms/plugin-seo'
@@ -175,6 +175,7 @@ export default buildConfig({
       ],
       uploadsCollection: 'media',
       tabbedUI: true,
+      fields: localizeSeoFields,
       generateTitle: ({ doc }) => (doc?.title ? `${doc.title} | ${SITE_NAME}` : SITE_NAME),
       generateDescription: ({ doc }) => doc?.summary ?? doc?.excerpt ?? '',
     }),

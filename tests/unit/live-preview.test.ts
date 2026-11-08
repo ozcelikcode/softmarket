@@ -109,7 +109,7 @@ describe('previewOrigin / livePreviewURL', () => {
 })
 
 describe('config wiring', () => {
-  it('enables live preview for the six collections with mobile/tablet/desktop breakpoints and pages autosave', async () => {
+  it('enables live preview for the six collections with mobile/tablet/desktop breakpoints and pages/products autosave', async () => {
     vi.stubEnv('PAYLOAD_SECRET', 'test-secret-long-enough-for-payload')
     const config = await (await import('../../src/payload.config')).default
     expect(config.admin.livePreview?.collections).toEqual([...LIVE_PREVIEW_COLLECTIONS])
@@ -117,8 +117,10 @@ describe('config wiring', () => {
     expect(LIVE_PREVIEW_BREAKPOINTS.map((b) => [b.name, b.width])).toEqual([['mobile', 390], ['tablet', 768], ['desktop', 1440]])
     const versions = (slug: string) => config.collections.find((c) => c.slug === slug)?.versions
     expect(versions('pages')).toMatchObject({ drafts: { autosave: { interval: 2000 } } })
+    // V2: products autosave too (bound-block composition + Live Preview; plan-visual-editor §V2-S).
+    expect(versions('products')).toMatchObject({ drafts: { autosave: { interval: 2000 } } })
     // Other drafted collections keep manual drafts (SQLite write load; plan §2.5).
-    for (const slug of ['products', 'solutions', 'case-studies', 'posts'])
+    for (const slug of ['solutions', 'case-studies', 'posts'])
       expect(versions(slug)).toMatchObject({ drafts: { autosave: false } })
   }, 60000)
 })

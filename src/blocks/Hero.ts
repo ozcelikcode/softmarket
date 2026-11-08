@@ -25,7 +25,7 @@ const validateBackgroundVideo: UploadFieldSingleValidation = (value, options) =>
 // for those operations too, across REST, MCP, Local API and import (without enabling draft validation).
 const enforceHeroPreset: FieldHook = ({ value, req, path }) => {
   const result = validateHeroPreset(value, { req })
-  if (result !== true) throw new ValidationError({ errors: [{ path: path.join('.'), message: result }], req })
+  if (result !== true) throw new ValidationError({ errors: [{ path: path.join('.'), message: result }], req }, req.t)
   return value
 }
 

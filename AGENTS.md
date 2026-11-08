@@ -98,11 +98,20 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 
 ## Live Preview + taslak modu (F8)
 
-- Admin'de Live Preview: `pages, products, product-families, solutions, case-studies, posts` (390/768/1440). iframe `/api/preview?redirect=/<tr|en>/…` açar; `pages` autosave ~2 sn, kayıt/autosave sonrası iframe `RefreshRouteOnSave` ile yenilenir.
+- Admin'de Live Preview: `pages, products, product-families, solutions, case-studies, posts` (390/768/1440). iframe `/api/preview?redirect=/<tr|en>/…` açar; `pages` ve `products` autosave ~2 sn, kayıt/autosave sonrası iframe `RefreshRouteOnSave` ile yenilenir.
 - `/api/preview` yalnız oturum açmış staff (users admin/editor) için draft modunu açar; anonim 401, customer 403, cross-site 403, redirect yalnız `/tr|/en` + slug segmentleri (aksi 400). Gizli token yok. Çıkış: `/api/exit-preview?redirect=/tr/…`.
 - Taslak yalnız draft modu **ve** her istekte yeniden doğrulanan staff oturumu ile okunur (`src/lib/preview.ts` `readAs`); yeni tekil sayfa yükleyicisi eklerken `...(await readAs(locale))` kullan, liste sorguları anonim kalsın. Frontend rotalarında `dynamic = 'error'|'force-static'` kullanma (draft okumayı kapatır; testle yasak).
 - Draft yanıtları `private, no-store`, ISR'a yazılmaz; taslak/autosave önbelleği yenilemez (yalnız yayın).
 
+
+## Ürün sayfası bağlı bloklar (V2)
+
+- `products.layout` = `productBlocks` (`layoutBlocks` + `src/blocks/product-bound.ts`): `productHero`, `productNav`, `productOverview`, `productFeatures`, `productSpecs` (`showRequirements`), `productEditions`, `productDownloads`, `productDocs`. İçerik alanı yok; ürün/sürüm/indirme/doküman kaydından okunur (slot `product`, `src/components/blocks/product/product-blocks.tsx`). Yalnız appearance (anchor yok; hero/editions'ta hidden yok) + motion.
+- `src/lib/blocks/product-composition.ts`: layout'ta bağlı blok yoksa **uyumluluk modu** (V2 öncesi sıra + eski tekrar filtresi; sanal `virtual:<tip>` bloklar DB'ye yazılmaz, HTML birebir aynı). En az bir bağlı blok = **kompozisyon modu** (kayıtlı sıra; listede olmayan bölüm çizilmez).
+- **`productEditions` (Sürümler + Teklif İste) zorunlu:** taşınabilir, silinemez/gizlenemez. `products.layout` validate + `beforeChange` kancası `ValidationError` (400) atar; taslak/autosave, REST, MCP, content:import dahil. `productHero` ilk blok olmalı (h1/breadcrumb/LCP). Renderer yine de eksik editions/hero'yu ekler ve gizlemeyi yok sayar.
+- `productHero` `LCP_BLOCK_TYPES` içinde: yalnız `HERO_PRESETS`, render-plan'da korumalı. Layout `hero` blokları ürün sayfasında h2.
+- Products autosave 2 sn (`PRODUCTS_AUTOSAVE_INTERVAL`), yalnız `_products_v`'ye yazar, ISR'ı yenilemez. Migration `20261108_130717_v2_product_bound_blocks` (16 CREATE TABLE + indeks + `_products_v.autosave`).
+- Gelecek "Satın al" (docs/plan-payments.md) `productEditions`'a eklemeli seçenek olarak gelir; Teklif İste kalır.
 
 ## Yeni şirket kurulumu (starter)
 

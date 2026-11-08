@@ -10,7 +10,7 @@ vi.mock('@/lib/site', () => ({ resolveLink: (link?: { label?: string; url?: stri
 vi.mock('@/components/blocks/rich-text', () => ({ RichContent: ({ className }: { className?: string }) => <div className={`rich-text ${className ?? ''}`} /> }))
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }))
 
-import { layoutBlocks, pageBlocks } from '@/blocks'
+import { layoutBlocks, pageBlocks, productBlocks } from '@/blocks'
 import { BlockShell } from '@/components/blocks/block-shell'
 import { CTABlock } from '@/components/blocks/cta-block'
 import { blockRegistry, getBlockRenderer } from '@/components/blocks/registry'
@@ -101,8 +101,10 @@ describe('anchor validation', () => {
 
 describe('block registry', () => {
   it('has exactly one renderer per configured layout block', () => {
-    expect(Object.keys(blockRegistry).sort()).toEqual(pageBlocks.map((b) => b.slug).sort())
-    for (const b of pageBlocks) expect(typeof getBlockRenderer(b.slug)).toBe('function')
+    // Pages add `listing`, products add the V2 product-bound sections.
+    const configured = [...new Set([...pageBlocks, ...productBlocks].map((b) => b.slug))]
+    expect(Object.keys(blockRegistry).sort()).toEqual(configured.sort())
+    for (const slug of configured) expect(typeof getBlockRenderer(slug)).toBe('function')
     expect(getBlockRenderer('constructor')).toBeUndefined()
     expect(getBlockRenderer('toString')).toBeUndefined()
   })

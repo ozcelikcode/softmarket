@@ -4,7 +4,7 @@ import { Breadcrumb, type Crumb } from '@/components/ui/breadcrumb'
 import { Container } from '@/components/ui/container'
 import { Eyebrow, Heading } from '@/components/ui/heading'
 import { Section } from '@/components/ui/section'
-import { heroIn } from '@/lib/anim'
+import { heroIn, type AnimProps } from '@/lib/anim'
 import { cn } from '@/lib/utils'
 
 /** Page header with breadcrumb. Dark by default: every title page shares one hero theme. */
@@ -19,6 +19,8 @@ export function PageHero({
   aside,
   className,
   theme = 'dark',
+  enter = heroIn,
+  asideMotion,
 }: {
   theme?: 'dark' | 'light'
   locale: string
@@ -30,7 +32,15 @@ export function PageHero({
   actions?: ReactNode
   aside?: ReactNode
   className?: string
+  /**
+   * Entrance props per element (V2 product hero: `heroMotion(ctx.motion)`); default = the pre-V1 hero entrance.
+   * `null` renders no entrance attributes.
+   */
+  enter?: ((i: number, mode?: 'fade' | 'slide') => ReturnType<typeof heroIn>) | null
+  /** `parallax-soft` on the aside media (wrapper inside the entrance element). */
+  asideMotion?: AnimProps | null
 }) {
+  const e = (i: number, mode?: 'fade' | 'slide') => (enter ? enter(i, mode) : {})
   return (
     <Section
       theme={theme}
@@ -47,14 +57,14 @@ export function PageHero({
       >
         <div className="min-w-0">
           <Breadcrumb locale={locale} label={crumbLabel} items={crumbs} className="mb-10" />
-          {eyebrow ? <Eyebrow className="mb-5" {...heroIn(0)}>{eyebrow}</Eyebrow> : null}
-          <Heading as="h1" size="h1" className="max-w-3xl" {...heroIn(1, 'slide')}>
+          {eyebrow ? <Eyebrow className="mb-5" {...e(0)}>{eyebrow}</Eyebrow> : null}
+          <Heading as="h1" size="h1" className="max-w-3xl" {...e(1, 'slide')}>
             {title}
           </Heading>
-          {lead ? <p className="mt-5 max-w-2xl text-lead text-muted text-pretty break-words" {...heroIn(2, 'slide')}>{lead}</p> : null}
-          {actions ? <div className="mt-8 flex flex-wrap gap-3" {...heroIn(3)}>{actions}</div> : null}
+          {lead ? <p className="mt-5 max-w-2xl text-lead text-muted text-pretty break-words" {...e(2, 'slide')}>{lead}</p> : null}
+          {actions ? <div className="mt-8 flex flex-wrap gap-3" {...e(3)}>{actions}</div> : null}
         </div>
-        {aside ? <div className="min-w-0" {...heroIn(4, 'slide')}>{aside}</div> : null}
+        {aside ? <div className="min-w-0" {...e(4, 'slide')}>{asideMotion ? <div {...asideMotion}>{aside}</div> : aside}</div> : null}
       </Container>
     </Section>
   )

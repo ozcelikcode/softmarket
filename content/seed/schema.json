@@ -3960,6 +3960,928 @@
       "required": [
         "blockType"
       ]
+    },
+    "productHero": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "parallax-soft"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productHero"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productNav": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productNav"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productOverview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productOverview"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productFeatures": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productFeatures"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productSpecs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "showRequirements": {
+          "type": "boolean"
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productSpecs"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productEditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productEditions"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productDownloads": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productDownloads"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
+    },
+    "productDocs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "theme": {
+              "enum": [
+                "auto",
+                "dark",
+                "light"
+              ]
+            },
+            "spacing": {
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "animation": {
+              "enum": [
+                "subtle",
+                "none"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "center"
+              ]
+            },
+            "separator": {
+              "enum": [
+                "none",
+                "top"
+              ]
+            },
+            "hidden": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preset": {
+              "enum": [
+                "auto",
+                "none",
+                "fade",
+                "slide-up",
+                "slide-down",
+                "slide-left",
+                "slide-right",
+                "zoom-in",
+                "parallax-soft",
+                "stagger"
+              ]
+            },
+            "trigger": {
+              "enum": [
+                "scroll",
+                "scroll-progress",
+                "load",
+                "hover"
+              ]
+            },
+            "duration": {
+              "enum": [
+                "fast",
+                "base",
+                "slow"
+              ]
+            },
+            "delay": {
+              "enum": [
+                "0",
+                "100",
+                "200",
+                "300"
+              ]
+            },
+            "easing": {
+              "enum": [
+                "soft",
+                "standard",
+                "emphasized"
+              ]
+            },
+            "stagger": {
+              "enum": [
+                "none",
+                "tight",
+                "relaxed"
+              ]
+            },
+            "mobile": {
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "blockType": {
+          "const": "productDocs"
+        }
+      },
+      "required": [
+        "blockType"
+      ]
     }
   },
   "title": "SoftMarket bilingual content seed v1",
@@ -4402,6 +5324,30 @@
                     },
                     {
                       "$ref": "#/$defs/newsList"
+                    },
+                    {
+                      "$ref": "#/$defs/productHero"
+                    },
+                    {
+                      "$ref": "#/$defs/productNav"
+                    },
+                    {
+                      "$ref": "#/$defs/productOverview"
+                    },
+                    {
+                      "$ref": "#/$defs/productFeatures"
+                    },
+                    {
+                      "$ref": "#/$defs/productSpecs"
+                    },
+                    {
+                      "$ref": "#/$defs/productEditions"
+                    },
+                    {
+                      "$ref": "#/$defs/productDownloads"
+                    },
+                    {
+                      "$ref": "#/$defs/productDocs"
                     }
                   ]
                 }
@@ -4628,6 +5574,30 @@
                     },
                     {
                       "$ref": "#/$defs/newsList"
+                    },
+                    {
+                      "$ref": "#/$defs/productHero"
+                    },
+                    {
+                      "$ref": "#/$defs/productNav"
+                    },
+                    {
+                      "$ref": "#/$defs/productOverview"
+                    },
+                    {
+                      "$ref": "#/$defs/productFeatures"
+                    },
+                    {
+                      "$ref": "#/$defs/productSpecs"
+                    },
+                    {
+                      "$ref": "#/$defs/productEditions"
+                    },
+                    {
+                      "$ref": "#/$defs/productDownloads"
+                    },
+                    {
+                      "$ref": "#/$defs/productDocs"
                     }
                   ]
                 }

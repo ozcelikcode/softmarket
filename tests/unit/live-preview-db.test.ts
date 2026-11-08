@@ -167,6 +167,52 @@ describe('draft loaders and cache invalidation', () => {
     state.headers = new Headers(cookie ? { cookie } : {})
   }
 
+  it('product-bound data stays anonymous for related lists and autosave never leaks or purges ISR', async () => {
+    const family = await payload.create({ collection: 'product-families', data: { title: 'V2 family', slug: 'v2-family' } })
+    const product = await payload.create({ collection: 'products', data: { title: 'Public product', slug: 'v2-product', family: family.id, _status: 'published' } })
+    const visible = await payload.create({ collection: 'docs', data: { title: 'Public doc', slug: 'public-doc', product: product.id, _status: 'published' } })
+    await payload.create({ collection: 'docs', draft: true, data: { title: 'Secret doc', slug: 'secret-doc', product: product.id, sortOrder: -100 } })
+    for (const access of ['public', 'licensed'] as const) {
+      const file = await payload.create({ collection: 'media', data: { alt: access, protected: true, visibility: 'public' },
+        file: { data: Buffer.from(access), name: `${access}.txt`, mimetype: 'text/plain', size: access.length } })
+      await payload.create({ collection: 'downloads', data: { title: `${access} download`, file: file.id, product: product.id, os: 'windows', access } })
+    }
+    const read = () => content.getProductDetail('tr', 'v2-family', 'v2-product')
+    as(false)
+    const find = vi.spyOn(payload, 'find')
+    const legacy = await read()
+    const oldQueryCount = find.mock.calls.length
+    find.mockClear()
+    const layout = [{ blockType: 'productHero' }, { blockType: 'productNav' }, { blockType: 'productEditions' }, { blockType: 'productDownloads' }, { blockType: 'productDocs' }]
+    await payload.update({ collection: 'products', id: product.id, data: { layout: layout as never } })
+    find.mockClear()
+    const composed = await read()
+    expect(find.mock.calls.length).toBe(oldQueryCount)
+    find.mockRestore()
+    expect(composed?.downloads.map((d) => d.title)).toEqual(['public download'])
+    expect(composed?.docSlug).toBe(visible.slug)
+    expect(composed?.downloads).toEqual(legacy?.downloads)
+    vi.stubEnv('NEXT_RUNTIME', 'nodejs')
+    try {
+      nextCache.revalidatePath.mockClear()
+      await payload.update({ collection: 'products', id: product.id, draft: true, autosave: true, data: { title: 'Secret product' } })
+      expect(nextCache.revalidatePath).not.toHaveBeenCalled()
+      for (const cookie of [undefined, cookies.customerPortal, cookies.customerJwt]) {
+        as(true, cookie)
+        expect((await read())?.product.title).toBe('Public product')
+      }
+      as(true, cookies.admin)
+      const preview = await read()
+      expect(preview?.product.title).toBe('Secret product')
+      expect(preview?.downloads.map((d) => d.title)).toEqual(['public download'])
+      expect(preview?.docSlug).toBe(visible.slug)
+      as(false)
+      await payload.update({ collection: 'products', id: product.id, data: { _status: 'published' } })
+      expect(nextCache.revalidatePath).toHaveBeenCalledWith('/', 'layout')
+      expect((await read())?.product.title).toBe('Secret product')
+    } finally { vi.unstubAllEnvs() }
+  }, 30000)
+
   it('serves drafts only to a draft-mode request with a live staff session', async () => {
     vi.stubEnv('NEXT_RUNTIME', 'nodejs')
     try {

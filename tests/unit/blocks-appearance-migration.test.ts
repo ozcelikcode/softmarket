@@ -66,15 +66,19 @@ describe(`migration ${NAME}`, () => {
     const pageBuilder = migrations.find((m) => m.name === '20261107_144850_page_builder_pages')!
     // V1 motion columns are part of the current block schema as well.
     const motion = migrations.find((m) => m.name === '20261108_100715_blocks_motion')!
+    // V2 product-bound block tables + products autosave column.
+    const productBound = migrations.find((m) => m.name === '20261108_130717_v2_product_bound_blocks')!
     await later.up(args())
     await dynamic.up(args())
     await globalsEditable.up(args())
     await pageBuilder.up(args())
     await motion.up(args())
+    await productBound.up(args())
     let product
     try {
       product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
     } finally {
+      await productBound.down(args())
       await motion.down(args())
       await pageBuilder.down(args())
       await globalsEditable.down(args())

@@ -74,6 +74,15 @@ export const BLOCK_DEFAULTS: Record<string, BlockDefaults> = {
   newsList: { ...base, theme: 'light', spacing: 'lg' },
   // The route's own list (system pages, F6); defaults equal the pre-F6 list section (light, md).
   listing: { ...base, theme: 'light', width: false },
+  // V2 product-bound blocks (products.layout only): defaults equal the pre-V2 product page sections.
+  productHero: { ...base, theme: 'dark', spacing: 'none', width: false },
+  productNav: { ...base, theme: 'dark', spacing: 'none', width: false },
+  productOverview: { ...base, theme: 'light', width: false },
+  productFeatures: { ...base, theme: 'light', width: false },
+  productSpecs: { ...base, theme: 'light', width: false },
+  productEditions: { ...base, theme: 'dark', spacing: 'lg', width: false },
+  productDownloads: { ...base, theme: 'light', width: false },
+  productDocs: { ...base, theme: 'light', width: false },
 }
 const FALLBACK: BlockDefaults = { ...base, theme: 'light' }
 
@@ -161,12 +170,40 @@ export function appearanceEnumName(key: string) {
 const L = (tr: string, en: string) => ({ tr, en })
 const opt = (value: string, tr: string, en: string) => ({ value, label: L(tr, en) })
 
+const anchorField = (): Field => ({
+  name: 'anchor',
+  type: 'text',
+  label: L('Anchor (bağlantı kimliği)', 'Anchor id'),
+  validate: validateAnchor,
+  hooks: { beforeValidate: [({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() || null : value)] },
+  admin: {
+    width: '50%',
+    description: L('Sayfa içi bağlantı için, ör. "ozellikler" → /sayfa#ozellikler. Sayfada tekil olmalı.', 'For in-page links, e.g. "features" → /page#features. Must be unique on the page.'),
+  },
+})
+
+const hiddenField = (): Field => ({
+  name: 'hidden',
+  type: 'checkbox',
+  defaultValue: false,
+  label: L('Bloğu gizle', 'Hide block'),
+  admin: { width: '50%', description: L('Blok kayıtta kalır ama sitede gösterilmez.', 'The block stays in the document but is not rendered.') },
+})
+
 /**
  * "Görünüm" collapsible holding the `appearance` group. Additive only: names/options must never be renamed
  * or removed (SQLite rebuilds tables on such changes). Column defaults equal BLOCK_DEFAULTS, so the
  * migration fills existing rows with the values the renderer would derive anyway.
  */
-export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): CollapsibleField {
+export function blockSettings(
+  blockType: keyof typeof BLOCK_DEFAULTS,
+  /**
+   * V2 product-bound blocks: `anchor: false` (the section id is fixed, e.g. `surumler`), `hideable: false`
+   * (required sections such as the editions/quote block cannot be hidden). Omitted fields create no column.
+   */
+  options: { anchor?: boolean; hideable?: boolean } = {},
+): CollapsibleField {
+  const { anchor = true, hideable = true } = options
   const d = BLOCK_DEFAULTS[blockType] ?? FALLBACK
   const fields: Field[] = [
     {
@@ -237,29 +274,15 @@ export function blockSettings(blockType: keyof typeof BLOCK_DEFAULTS): Collapsib
         },
       ],
     },
-    {
-      type: 'row',
-      fields: [
-        {
-          name: 'anchor',
-          type: 'text',
-          label: L('Anchor (bağlantı kimliği)', 'Anchor id'),
-          validate: validateAnchor,
-          hooks: { beforeValidate: [({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() || null : value)] },
-          admin: {
-            width: '50%',
-            description: L('Sayfa içi bağlantı için, ör. "ozellikler" → /sayfa#ozellikler. Sayfada tekil olmalı.', 'For in-page links, e.g. "features" → /page#features. Must be unique on the page.'),
-          },
-        },
-        {
-          name: 'hidden',
-          type: 'checkbox',
-          defaultValue: false,
-          label: L('Bloğu gizle', 'Hide block'),
-          admin: { width: '50%', description: L('Blok kayıtta kalır ama sitede gösterilmez.', 'The block stays in the document but is not rendered.') },
-        },
-      ],
-    },
+    ...(anchor || hideable
+      ? [{
+          type: 'row',
+          fields: [
+            ...(anchor ? [anchorField()] : []),
+            ...(hideable ? [hiddenField()] : []),
+          ],
+        } satisfies Field]
+      : []),
   ]
   return {
     type: 'collapsible',

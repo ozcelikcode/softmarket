@@ -9,6 +9,16 @@ import { LogoWallBlock } from '@/components/blocks/logo-wall-block'
 import { MediaBlock } from '@/components/blocks/media-block'
 import { MediaTextBlock } from '@/components/blocks/media-text-block'
 import { NewsListBlock } from '@/components/blocks/news-list-block'
+import {
+  ProductDocsSection,
+  ProductDownloadsSection,
+  ProductEditionsSection,
+  ProductFeaturesSection,
+  ProductHeroSection,
+  ProductNavSection,
+  ProductOverviewSection,
+  ProductSpecsSection,
+} from '@/components/blocks/product/product-blocks'
 import { ProductFamiliesBlock } from '@/components/blocks/product-families-block'
 import { ProductShowcaseBlock } from '@/components/blocks/product-showcase-block'
 import { RichTextBlock } from '@/components/blocks/rich-text-block'
@@ -48,6 +58,15 @@ export const blockRegistry: { [K in LayoutBlockType]: BlockComponent<BlockOf<K>>
   caseStudy: CaseStudyBlock,
   newsList: NewsListBlock,
   listing: ListingBlock,
+  // V2 product-bound sections (products.layout; data from the `product` slot).
+  productHero: ProductHeroSection,
+  productNav: ProductNavSection,
+  productOverview: ProductOverviewSection,
+  productFeatures: ProductFeaturesSection,
+  productSpecs: ProductSpecsSection,
+  productEditions: ProductEditionsSection,
+  productDownloads: ProductDownloadsSection,
+  productDocs: ProductDocsSection,
 }
 
 export const hasBlockRenderer = (blockType: string): blockType is LayoutBlockType =>

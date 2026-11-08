@@ -1,3 +1,14 @@
+## V2 denetimi (2026-11-08)
+
+- Zorunlu editions bloğunu tüm bağlı blokları kaldırarak/legacy restore ile atlatma, ham gizleme girdisinin sessiz temizlenmesi, çakışan blok ID'leri ve legacy ek blok LCP animasyon regresyonu düzeltildi. Ayrıntı/kanıt ve 3200 kapanış engeli `activeContext.md` başında.
+- Kapılar: typecheck/lint/diff-check, 67 dosya / 1015 test, kopya DB `.next-prod` build ve TR/EN 3200 duman başarılı. Legacy/kompozisyon MISS = 24/24 sorgu; anonim erişim, draft/ISR, REST/MCP, version restore, duplicate, import idempotansı ve migration up/down testleri geçti. Canlı DB/3100/`.next`/payments/commit korunuyor.
+
+## V2 — Ürün sayfası bağlı bloklar (2026-11-08)
+
+- 8 ürün bölüm bloğu (yalnız products), uyumluluk/kompozisyon modu, zorunlu `productEditions` (Teklif İste; validate + taslakta da kanca + render garantisi), productHero ilk blok/h1/LCP, products autosave 2 sn, admin TR/EN etiketleri + blok önizleme görselleri, seed şeması, editör kılavuzu §7.2a.
+- Migration `20261108_130717_v2_product_bound_blocks` yalnız CREATE TABLE/INDEX + ADD COLUMN; down yalnız kendi eklerini kaldırır. Kopya → yedek (`softmarket-pre-v2.db`) → canlı; eski veri farkı 0.
+- typecheck/lint temiz, `pnpm test --maxWorkers=1` 66 dosya / 1005 test (yeni: product-composition, product-bound-db), typecheck/lint temiz, `.next-prod` build, 3200 duman (404 dahil), eski ürünlerde `<main>` HTML bayt bayt aynı, LH mobil ürün Perf 100.
+
 ## V1 denetimi — 2026-11-08
 
 - Hero draft/autosave doğrulama atlatması, ilk içerik LCP koruması, bozuk admin preset kaydı, hover klavye odağı ve scroll-progress aralığı/fallback düzeltildi; ayrıntı `activeContext.md` başında. CSS değer enjeksiyonu saptanmadı; legacy `appearance.animation` ve stagger sınırları regresyonda korundu. Import şeması hero için aynı yedi seçeneği kullanır.
@@ -203,3 +214,8 @@
 - 2026-11-08 G2 (F11 yeni bulgular): yasal taslak sayfalar (`TASLAK —`/`DRAFT —` veya `[BÜYÜK HARF]`) `src/lib/legal-draft.ts` ile noindex + sitemap dışı (şema yok); ürün hero birincil Teklif İste; PageHero ritmi; sürüm notları ürün gruplu/katlı; MediaCard slug-hash kapak; footer alt satır; SEO plugin TR/EN alan etiketleri; lead form düğmesi lg. Detay: docs/qa/visual-baseline.md.
 - 2026-11-08 F11 diff denetimi: yasal taslak tespiti/sitemap fail-closed ve header navigasyon, odak, mobil scroll/close yarışı düzeltildi; typecheck/lint, 54 dosya 698 test, izole build ve HTTP duman geçti. Chromium MachPort sandbox nedeniyle header E2E çalıştırılamadı; iOS doğrulanmadı.
 - 2026-11-08 V1 animasyon preset sistemi: `motion` grubu + migration `blocks_motion` (yalnız ADD COLUMN, canlıda), CSS sözleşmesi + LCP koruması, admin Hareket paneli (preset kartları), editor-guide 2.6a. Testler/build/Playwright/Lighthouse yeşil; V2 (ürün bağlı bloklar) sırada.
+
+## 2026-11-08 V2 ürün sayfası bağlı bloklar (commit ve doğrulama)
+- V2: 8 ürün bağlı blok, Teklif İste zorunlu, hero ilk; eski layout birebir. Migration `20261108_130717_v2_product_bound_blocks` (yalnız ADD/CREATE), yedek scratchpad `softmarket-pre-v2.db`.
+- QA düzeltmeleri: restore/hidden/duplicate-id bypass kapatıldı, `.product-anchor` offset, ValidationError TR toast (`req.t`).
+- Ödeme P1 çekirdeği 16b565e (`src/lib/payments`, bağlı değil). Sonraki: V3a Puck pilotu, V3b native canvas pilotu (ayrı worktree, 3510/3520, migration yok).

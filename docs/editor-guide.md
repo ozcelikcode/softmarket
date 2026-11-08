@@ -135,7 +135,7 @@ SoftMarket'te iki durum vardır:
 
 Kurallar:
 
-1. **Sayfalar** koleksiyonunda "Taslağı kaydet" düğmesi yoktur: değişiklikler zaten otomatik taslak olarak kaydedilir (bölüm 2.8) ve canlı siteye etkisi yoktur. Ürünler, Çözümler gibi otomatik kayıtsız taslaklı koleksiyonlarda ayrıca **Taslağı kaydet** düğmesi bulunur.
+1. **Sayfalar** ve **Ürünler** koleksiyonlarında "Taslağı kaydet" düğmesi yoktur: değişiklikler zaten otomatik taslak olarak kaydedilir (bölüm 2.8) ve canlı siteye etkisi yoktur. Çözümler gibi otomatik kayıtsız taslaklı koleksiyonlarda ayrıca **Taslağı kaydet** düğmesi bulunur.
 2. Sağ üstteki **Değişiklikleri yayınla** düğmesi değişikliği siteye çıkarır. Yanındaki ok **Türkçe dilinde yayınlayın** gibi yalnız geçerli dili yayınlama seçeneğini açar.
 3. Yayına çıkmış bir sayfada yapılan taslak değişiklik, üst çubukta **Durum: Değişiklik yapıldı** olarak görünür. Taslağı atıp yayındaki hale dönmek için **Yayınlanana geri döndür** bağlantısını kullanın.
 4. Sayfayı siteden tamamen kaldırmak için sağ üstteki **⋮** menüsünden **Yayından Kaldır** seçin.
@@ -144,7 +144,7 @@ Kurallar:
 
 ### 2.8 Otomatik kayıt
 
-- Sayfa düzenlenirken değişiklikler yaklaşık **2 saniye** sonra otomatik kaydedilir.
+- Sayfa veya ürün düzenlenirken değişiklikler yaklaşık **2 saniye** sonra otomatik kaydedilir.
 - Bu kayıt **taslak** olarak yapılır. Yayına çıkmaz.
 - Otomatik kayıt, Live Preview'un güncel kalması için vardır.
 
@@ -163,7 +163,7 @@ Live Preview, değişikliğinizi sitenin gerçek görünümünde gösterir. Sayf
 4. Sitede taslak modundayken görünen şeritteki **Önizlemeden çık** düğmesi taslak modunu kapatır. Live Preview panelini kapatmak için göz simgesini kullanın.
 
 Önizleme yalnız giriş yapmış editör ve yönetici için açılır. Ziyaretçiler taslakları göremez.
-Live Preview; sayfalar, ürünler, ürün aileleri, çözümler, referanslar ve haberlerde vardır. **Şablon** sayfalarında public önizleme yoktur. İlişkili içerik listeleri önizlemede de yalnız yayınlı kayıtları gösterir. Yaklaşık 2 saniyelik otomatik kayıt yalnız **Sayfalar** için açıktır; diğer koleksiyonlarda kaydetmeniz gerekir.
+Live Preview; sayfalar, ürünler, ürün aileleri, çözümler, referanslar ve haberlerde vardır. **Şablon** sayfalarında public önizleme yoktur. İlişkili içerik listeleri önizlemede de yalnız yayınlı kayıtları gösterir. Yaklaşık 2 saniyelik otomatik kayıt **Sayfalar** ve **Ürünler** için açıktır; diğer koleksiyonlarda kaydetmeniz gerekir.
 
 ---
 
@@ -581,6 +581,20 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 - **Ürün ailesi:** En üst grup. Örnek: "Muhasebe".
 - **Ürün:** Ailenin altındaki ürün. Örnek: "Muhasebe Pro".
 - **Sürüm:** Ürünün paketi ya da lisans türü. Her sürümün bir **SKU** kodu vardır.
+
+### 7.2a Ürün sayfası düzeni (ürün blokları)
+
+Ürün sayfasındaki bölümler **"Ürün:"** ile başlayan bloklardır: Giriş (başlık + Teklif İste), Sekme çubuğu, Genel bakış, Özellikler, Teknik özellikler, Sürümler ve Teklif İste, İndirmeler, Dokümantasyon. Blok seçicide **Ürün sayfası bölümleri** grubundadır.
+
+- Bu bloklarda metin yazılmaz. Başlık, özet, özellikler, teknik tablo, sürümler, indirmeler ve dokümanlar ürün kaydından (ve bağlı sürüm/indirme/doküman kayıtlarından) okunur. Bölüm içeriğini değiştirmek için ürünün ilgili sekmesini düzenleyin.
+- **Sayfa blokları boşsa** (ya da yalnız SSS, CTA gibi ek bloklar varsa) sayfa varsayılan sırayla çizilir: Giriş, Sekme çubuğu, Genel bakış, Özellikler, Teknik özellikler, Sürümler, İndirmeler, Dokümantasyon, ardından ek bloklar.
+- **İlk "Ürün:" bloğunu eklediğinizde sıra sizindir:** bölümler listedeki sırayla çizilir; listede olmayan bölüm görünmez. Bu yüzden varsayılan düzenden geçerken kullanmak istediğiniz tüm bölümleri ekleyin.
+- **"Ürün: Sürümler ve Teklif İste" zorunludur.** Yeri değiştirilebilir ama silinemez ve gizlenemez; bu bloğu kaldırıp kaydetmeye/yayınlamaya çalışırsanız kayıt hata vererek reddedilir (otomatik kayıt dahil). Her sürüm kartındaki **Teklif İste** düğmesi sürümün SKU'su ile teklif formunu açar.
+- **"Ürün: Giriş"** sayfa başlığını (h1), gezinti yolunu ve üstteki Teklif İste düğmesini taşır; her zaman ilk bloktur ve gizlenemez. Eklemezseniz sayfa yine en üstte varsayılan girişi gösterir.
+- İndirmeler, Dokümantasyon ve Sekme çubuğu serbesttir: taşıyabilir, gizleyebilir veya silebilirsiniz. Sekme çubuğu yalnız sayfada görünen bölümlere bağlantı verir.
+- "Ürün: Teknik özellikler" bloğunda **Sistem gereksinimlerini göster** seçeneği vardır.
+- Her ürün bloğunda **Görünüm** (tema, boşluk, hizalama, ayraç) ve **Hareket** (bölüm 2.6a) ayarları bulunur. Bölüm kimlikleri sabit olduğu için anchor alanı yoktur. Girişte yalnız kayma/paralaks efektleri seçilebilir (sayfa açılışını yavaşlatmamak için).
+- Ürünlerde de değişiklikler yaklaşık **2 saniyede** otomatik taslak olarak kaydedilir ve Live Preview yenilenir; yayın için **Değişiklikleri yayınla**.
 
 ### 7.3 SKU nedir?
 

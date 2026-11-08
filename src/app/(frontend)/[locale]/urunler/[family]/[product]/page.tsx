@@ -5,32 +5,17 @@ export async function generateStaticParams({ params }: { params: Record<string, 
   return contentStaticParams('/urunler/[family]/[product]', params)
 }
 
-import { ArrowDownToLine, ArrowRight, Lock } from 'lucide-react'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
-import { RenderBlocks } from '@/components/blocks/render-blocks'
-import { RichContent } from '@/components/blocks/rich-text'
+import { RenderBlocks, type LayoutBlock } from '@/components/blocks/render-blocks'
 import { SetAlternates } from '@/components/layout/set-alternates'
-import { EditionCard } from '@/components/product/edition-card'
-import { SpecTable } from '@/components/product/spec-table'
 import { JsonLd } from '@/components/sections/json-ld'
-import { FeatureGrid } from '@/components/sections/feature-grid'
-import { PageHero } from '@/components/sections/page-hero'
-import { AppLink } from '@/components/ui/app-link'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Container } from '@/components/ui/container'
-import { Heading, SectionHeading } from '@/components/ui/heading'
-import { NamedIcon } from '@/components/ui/icon'
-import { MediaImage } from '@/components/ui/media-image'
-import { Section } from '@/components/ui/section'
+import { composeProductLayout, PRODUCT_BOUND_BLOCKS } from '@/lib/blocks/product-composition'
 import { getProductDetail, getProductVariants, mediaOf } from '@/lib/content'
-import { formatBytes } from '@/lib/format'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
 import { absoluteUrl, breadcrumbJsonLd, buildMetadata, seoText, siteUrl } from '@/lib/seo'
-import { cn, safeHref } from '@/lib/utils'
 
 type Props = { params: Promise<{ locale: string; family: string; product: string }> }
 
@@ -58,10 +43,8 @@ export default async function ProductPage({ params }: Props) {
   const data = await getProductDetail(locale, familySlug, productSlug)
   if (!data) notFound()
   const { family, product, editions, downloads, docSlug } = data
-  const [t, c, os, pt, variants] = await Promise.all([
-    getTranslations({ locale, namespace: 'product' }),
+  const [c, pt, variants] = await Promise.all([
     getTranslations({ locale, namespace: 'common' }),
-    getTranslations({ locale, namespace: 'os' }),
     getTranslations({ locale, namespace: 'products' }),
     variantPaths(product.id),
   ])
@@ -74,31 +57,14 @@ export default async function ProductPage({ params }: Props) {
     { label: product.title, href: path },
   ]
 
-  const features = product.features ?? []
-  const specs = product.specs ?? []
-  // Collection fields are the single source: page hero, features and specs come from them, so layout
-  // blocks only add extra content (a duplicate hero/feature grid/spec table would repeat the same text).
-  const extraBlocks = (product.layout ?? []).filter(
-    (b) => b.blockType !== 'hero' && !(b.blockType === 'featureGrid' && features.length) && !(b.blockType === 'specTable' && specs.length),
-  )
-  const hasOverview = Boolean(product.summary)
-  const requirements = (product.systemRequirements ?? []).filter((r) => r.minimum || r.recommended)
-  const groups = new Map<string, [string, string][]>()
-  for (const s of specs) {
-    const k = s.group ?? ''
-    groups.set(k, [...(groups.get(k) ?? []), [s.label, s.value]])
-  }
-  const brochure = mediaOf(product.brochure)
-  const docsHref = docSlug ? `/destek/dokumantasyon/${enc(productSlug)}/${enc(docSlug)}` : '/destek/dokumantasyon'
-
-  const sections = [
-    hasOverview && { id: 'genel-bakis', label: t('overview') },
-    features.length > 0 && { id: 'ozellikler', label: t('features') },
-    (specs.length > 0 || requirements.length > 0) && { id: 'teknik-ozellikler', label: t('specs') },
-    { id: 'surumler', label: t('editions') },
-    { id: 'indirmeler', label: t('downloads') },
-    { id: 'dokumantasyon', label: t('docs') },
-  ].filter(Boolean) as { id: string; label: string }[]
+  // V2: every section is a product-bound block. Empty/legacy layout = compatibility mode (pre-V2 order, extra
+  // blocks after the fixed sections with the duplicate filter); see src/lib/blocks/product-composition.ts.
+  const { mode, blocks, sections } = composeProductLayout(product.layout, {
+    summary: Boolean(product.summary),
+    features: (product.features ?? []).length > 0,
+    specs: (product.specs ?? []).length > 0,
+    requirements: (product.systemRequirements ?? []).some((r) => r.minimum || r.recommended),
+  })
 
   const image = mediaOf(product.heroImage)?.url
   const productLd = {
@@ -118,150 +84,17 @@ export default async function ProductPage({ params }: Props) {
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
       <SetAlternates hrefs={alternateHrefs(variants)} />
 
-      <PageHero
-        locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail}
-        eyebrow={family.title} title={product.title} lead={product.tagline ?? product.summary}
-        actions={
-          <>
-            <Button asChild size="lg"><AppLink href={`/teklif-iste?urun=${enc(productSlug)}`} locale={locale}>{t('quote')}</AppLink></Button>
-            <Button asChild size="lg" variant="secondary"><AppLink href={`${path}#surumler`} locale={locale}>{t('editions')}</AppLink></Button>
-            {brochure && safeHref(brochure.url) ? (
-              <Button asChild size="lg" variant="ghost"><a href={brochure.url!} download>{t('brochure')}<ArrowDownToLine aria-hidden /></a></Button>
-            ) : null}
-          </>
-        }
-        aside={mediaOf(product.heroImage) ? (
-          <div className="overflow-hidden rounded-xl border border-border bg-surface p-1.5 shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--accent)_35%,transparent)]">
-            <MediaImage media={product.heroImage} priority sizes="(min-width: 1024px) 45vw, 100vw" className="aspect-[16/10] rounded-lg" />
-          </div>
-        ) : undefined}
-      />
-
-      <Section theme="dark" spacing="none" className="sticky top-16 z-30 border-b border-border bg-surface/90 backdrop-blur lg:top-[4.5rem]">
-        <Container>
-          <div className="relative">
-          <nav aria-label={t('nav')} className="-mx-1 flex gap-1 overflow-x-auto pr-8 [scrollbar-width:none] lg:pr-0 [&::-webkit-scrollbar]:hidden">
-            {sections.map((s) => (
-              <a key={s.id} href={`#${s.id}`} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-3 py-3 text-small font-medium text-muted transition-colors hover:text-text">
-                {s.label}
-              </a>
-            ))}
-          </nav>
-          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-surface to-transparent lg:hidden" />
-          </div>
-        </Container>
-      </Section>
-
-      {hasOverview ? (
-        <div id="genel-bakis" className="scroll-mt-32">
-          {product.summary ? (
-            <Section theme="light" spacing="md">
-              <Container><p className="max-w-3xl text-h3 font-normal text-text text-pretty">{product.summary}</p></Container>
-            </Section>
-          ) : null}
-        </div>
-      ) : null}
-
-      {features.length ? (
-        <Section id="ozellikler" theme="light" tone="raised" spacing="md" className="scroll-mt-32">
-          <Container>
-            <SectionHeading title={t('features')} className="mb-10" />
-            <FeatureGrid features={features.map((f) => ({ title: f.title, description: f.description ?? undefined, icon: f.icon ? <NamedIcon name={f.icon} /> : undefined }))} />
-          </Container>
-        </Section>
-      ) : null}
-
-      {specs.length || requirements.length ? (
-        <Section id="teknik-ozellikler" theme="light" spacing="md" className="scroll-mt-32">
-          <Container className="space-y-16">
-            {specs.length ? (
-              <div>
-                <SectionHeading title={t('specs')} className="mb-10" />
-                <SpecTable groups={[...groups].map(([title, rows]) => ({ title: title || undefined, rows }))} />
-              </div>
-            ) : null}
-            {requirements.length ? (
-              <div>
-                <SectionHeading title={t('requirements')} className="mb-10" />
-                <div className={cn('grid gap-5', requirements.length > 1 && 'md:grid-cols-2')}>
-                  {requirements.map((r, i) => (
-                    <div key={r.id ?? i} className="rounded-lg border border-border bg-surface p-6">
-                      <Badge variant="accent">{os(r.os)}</Badge>
-                      {r.minimum ? <div className="mt-5"><p className="mb-2 text-eyebrow font-semibold uppercase text-muted">{t('minimum')}</p><RichContent data={r.minimum} locale={locale} className="text-small" /></div> : null}
-                      {r.recommended ? <div className="mt-5"><p className="mb-2 text-eyebrow font-semibold uppercase text-muted">{t('recommended')}</p><RichContent data={r.recommended} locale={locale} className="text-small" /></div> : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </Container>
-        </Section>
-      ) : null}
-
-      <Section id="surumler" theme="dark" spacing="lg" className="scroll-mt-32 overflow-hidden border-y border-border">
-        <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />
-        <Container className="relative">
-          <SectionHeading title={t('editions')} className="mb-12" />
-          {editions.length ? (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {editions.map((e) => <EditionCard key={e.id} edition={e} productSlug={productSlug} locale={locale} />)}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-dashed border-border-strong/60 p-10 text-center">
-              <p className="text-muted">{t('editionsEmpty')}</p>
-              <Button asChild className="mt-6"><AppLink href={`/teklif-iste?urun=${enc(productSlug)}`} locale={locale}>{t('quote')}</AppLink></Button>
-            </div>
-          )}
-        </Container>
-      </Section>
-
-      <Section id="indirmeler" theme="light" spacing="md" className="scroll-mt-32">
-        <Container>
-          <SectionHeading title={t('downloads')} className="mb-10" />
-          {downloads.length ? (
-            <ul className="overflow-hidden rounded-lg border border-border bg-surface">
-              {downloads.map((d) => {
-                const file = mediaOf(d.file) as { url?: string | null; filesize?: number | null } | null
-                const href = safeHref(file?.url)
-                return (
-                  <li key={d.id} className="flex flex-wrap items-center gap-4 border-b border-border px-5 py-4 last:border-b-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-text">{d.title}</p>
-                      <p className="mt-0.5 text-small text-muted">
-                        {[os(d.os), d.arch, formatBytes((d.file as { filesize?: number | null })?.filesize)].filter(Boolean).join(' · ')}
-                      </p>
-                      {d.checksumSha256 ? <p className="mt-1 break-all font-mono text-xs text-muted">{t('checksum')}: {d.checksumSha256}</p> : null}
-                    </div>
-                    {href ? (
-                      <Button asChild variant="secondary" size="sm"><a href={href} download>{t('download')}<ArrowDownToLine aria-hidden /></a></Button>
-                    ) : null}
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <p className="text-muted">{t('noDownloads')}</p>
-          )}
-          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface-2 px-5 py-4">
-            <Lock aria-hidden className="size-4 text-muted" />
-            <p className="flex-1 text-small text-muted"><span className="font-medium text-text">{t('licenseRequired')}.</span> {t('licensedNote')}</p>
-            <Button asChild variant="link"><AppLink href="/hesap/indirmeler" locale={locale}>{t('portal')}<ArrowRight aria-hidden /></AppLink></Button>
-          </div>
-        </Container>
-      </Section>
-
-      <Section id="dokumantasyon" theme="light" tone="raised" spacing="md" className="scroll-mt-32 border-t border-border">
-        <Container className="flex flex-wrap items-center justify-between gap-6">
-          <div>
-            <Heading size="h3">{t('docs')}</Heading>
-            <p className="mt-2 text-muted">{t('docsLead')}</p>
-          </div>
-          <Button asChild variant="secondary" size="lg"><AppLink href={docsHref} locale={locale}>{t('openDocs')}<ArrowRight aria-hidden /></AppLink></Button>
-        </Container>
-      </Section>
-
-      {/* Extra CMS blocks (FAQ, closing CTA) come last: the single dark showcase (editions) sits between light sections. */}
-      {extraBlocks.length ? <RenderBlocks blocks={extraBlocks} locale={locale} /> : null}
+      {mode === 'compat' ? (
+        <>
+          <RenderBlocks blocks={blocks.slice(0, PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale}
+            slots={{ product: { family, product, editions, downloads, docSlug, productSlug, path, trail, sections } }} />
+          {/* Keep the old planning boundary: the first extra CMS block retains its LCP-safe motion. */}
+          <RenderBlocks blocks={blocks.slice(PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale} />
+        </>
+      ) : (
+        <RenderBlocks blocks={blocks as LayoutBlock[]} locale={locale}
+          slots={{ product: { family, product, editions, downloads, docSlug, productSlug, path, trail, sections } }} />
+      )}
     </>
   )
 }

@@ -12,6 +12,7 @@ import { Media } from './Media'
 import { MediaText } from './MediaText'
 import { NewsList } from './NewsList'
 import { ProductFamilies } from './ProductFamilies'
+import { productBoundBlocks } from './product-bound'
 import { ProductShowcase } from './ProductShowcase'
 import { RichText } from './RichText'
 import { Spacer } from './Spacer'
@@ -50,3 +51,10 @@ export const layoutBlocks: Block[] = [
 
 /** Pages add the system-page list position (F6). Only appended: removing a block drops its tables. */
 export const pageBlocks: Block[] = [...layoutBlocks, Listing]
+
+/**
+ * Products (V2): the full set plus the product-bound sections (hero, tabs, overview, features, specs,
+ * editions + quote, downloads, docs). Only `products.layout` creates tables for them.
+ */
+export const productBlocks: Block[] = [...layoutBlocks, ...productBoundBlocks]
+export { productBoundBlocks }

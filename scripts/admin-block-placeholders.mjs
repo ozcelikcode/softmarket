@@ -35,11 +35,23 @@ const blocks = {
   solutionsGrid: [dark, 'Çözümler', (c) => `${bar(32, 34, 80, 6, accent)}${bar(32, 48, 170, 14, c.text)}${[0, 1, 2, 3].map((i) => `${box(32 + i * 108, 86, 100, 140, c, 6)}${bar(44 + i * 108, 100, 20, 20, accent, 5)}${bar(44 + i * 108, 134, 64, 8, c.text)}${bar(44 + i * 108, 150, 74, 5, c.muted)}${bar(44 + i * 108, 160, 56, 5, c.muted)}`).join('')}`],
   caseStudy: [dark, 'Öne çıkan vaka', (c) => `${bar(32, 60, 70, 6, accent)}${bar(32, 78, 170, 16, c.text)}${bar(32, 102, 120, 16, c.text)}${bar(32, 132, 60, 6, c.muted)}${bar(32, 150, 180, 6, c.muted)}${bar(32, 162, 160, 6, c.muted)}${bar(32, 186, 76, 22, c.line, 6)}${[0, 1, 2, 3].map((i) => box(262 + (i % 2) * 96, 70 + Math.floor(i / 2) * 86, 90, 80, c, 4) + bar(274 + (i % 2) * 96, 92 + Math.floor(i / 2) * 86, 50, 16, c.text) + bar(274 + (i % 2) * 96, 120 + Math.floor(i / 2) * 86, 60, 5, c.muted)).join('')}`],
   newsList: [light, 'Haber listesi', (c) => `${bar(32, 34, 140, 14, c.text)}${[0, 1, 2].map((i) => `${box(32 + i * 142, 70, 130, 164, c)}<rect x="${32 + i * 142}" y="70" width="130" height="64" rx="8" fill="${c.line}"/>${bar(44 + i * 142, 146, 40, 6, accent)}${bar(44 + i * 142, 162, 100, 8, c.text)}${bar(44 + i * 142, 178, 106, 5, c.muted)}${bar(44 + i * 142, 188, 80, 5, c.muted)}`).join('')}`],
+  // V2 product-bound sections (products.layout): wireframes of the product page sections.
+  productHero: [dark, 'Ürün: Giriş', (c) => `${bar(32, 40, 120, 6, c.muted)}${bar(32, 70, 60, 6, accent)}${bar(32, 88, 190, 18, c.text)}${bar(32, 120, 170, 6, c.muted)}${bar(32, 150, 80, 22, accent, 6)}${bar(120, 150, 70, 22, c.line, 6)}${box(260, 50, 190, 140, c)}`],
+  productNav: [dark, 'Ürün: Sekme çubuğu', (c) => `${bar(0, 110, 480, 44, c.surface, 0)}${[0, 1, 2, 3, 4].map((i) => bar(32 + i * 86, 128, 64, 8, i === 0 ? c.text : c.muted)).join('')}<line x1="0" x2="480" y1="154" y2="154" stroke="${c.line}"/>`],
+  productOverview: [light, 'Ürün: Genel bakış', (c) => `${bar(32, 90, 380, 14, c.text)}${bar(32, 114, 400, 14, c.text)}${bar(32, 138, 260, 14, c.text)}`],
+  productFeatures: [light, 'Ürün: Özellikler', (c) => `${bar(32, 40, 140, 14, c.text)}${[0, 1, 2].map((i) => `${box(32 + i * 142, 76, 130, 130, c)}${bar(48 + i * 142, 94, 22, 22, accent, 5)}${bar(48 + i * 142, 130, 90, 8, c.text)}${bar(48 + i * 142, 146, 96, 5, c.muted)}`).join('')}`],
+  productSpecs: [light, 'Ürün: Teknik özellikler', (c) => `${bar(32, 36, 170, 14, c.text)}${box(32, 64, 416, 110, c, 6)}${[0, 1, 2].map((i) => `${bar(48, 82 + i * 30, 110, 7, c.muted)}${bar(250, 82 + i * 30, 150, 7, c.text)}`).join('')}${box(32, 190, 200, 56, c, 6)}${box(248, 190, 200, 56, c, 6)}`],
+  productEditions: [dark, 'Ürün: Sürümler + Teklif İste', (c) => `${bar(32, 34, 120, 14, c.text)}${[0, 1, 2].map((i) => `${box(32 + i * 142, 64, 130, 170, c)}${bar(46 + i * 142, 80, 50, 10, c.line, 5)}${bar(46 + i * 142, 104, 90, 10, c.text)}${bar(46 + i * 142, 126, 96, 5, c.muted)}${bar(46 + i * 142, 140, 80, 5, c.muted)}${bar(46 + i * 142, 200, 102, 22, accent, 6)}`).join('')}`],
+  productDownloads: [light, 'Ürün: İndirmeler', (c) => `${bar(32, 36, 130, 14, c.text)}${box(32, 64, 416, 120, c, 6)}${[0, 1, 2].map((i) => `${bar(48, 80 + i * 36, 160, 8, c.text)}${bar(48, 94 + i * 36, 110, 5, c.muted)}${bar(370, 80 + i * 36, 62, 18, c.line, 5)}`).join('')}${bar(32, 196, 416, 28, c.line, 6)}`],
+  productDocs: [light, 'Ürün: Dokümantasyon', (c) => `${bar(32, 100, 180, 16, c.text)}${bar(32, 128, 240, 7, c.muted)}${bar(330, 104, 118, 30, c.line, 6)}`],
   listing: [light, 'Sayfa listesi', (c) => `${bar(32, 34, 90, 6, accent)}${[0, 1, 2].map((i) => `<rect x="${32 + i * 52}" y="56" width="44" height="16" rx="8" fill="${i === 0 ? accent : c.line}"/>`).join('')}${[0, 1, 2].map((i) => `${box(32 + i * 142, 90, 130, 140, c)}${bar(48 + i * 142, 108, 22, 22, accent, 5)}${bar(48 + i * 142, 144, 90, 8, c.text)}${bar(48 + i * 142, 160, 96, 5, c.muted)}${bar(48 + i * 142, 170, 80, 5, c.muted)}`).join('')}`],
 }
 
+// Optional slug list: `node scripts/admin-block-placeholders.mjs productHero productNav` writes only those.
+const only = process.argv.slice(2)
 for (const [slug, [c, label, draw]] of Object.entries(blocks)) {
+  if (only.length && !only.includes(slug)) continue
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300"><rect width="480" height="300" fill="${c.bg}"/>${draw(c)}<rect x="0" y="258" width="480" height="42" fill="${c.surface}" stroke="${c.line}"/><text x="24" y="285" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="${c.text}">${label}</text></svg>`
   await sharp(Buffer.from(svg)).webp({ quality: 80 }).toFile(join(out, `${slug}.webp`))
 }
-console.log('wrote', Object.keys(blocks).length, 'placeholders to', out)
+console.log('wrote', only.length || Object.keys(blocks).length, 'placeholders to', out)

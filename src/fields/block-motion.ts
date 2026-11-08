@@ -54,7 +54,7 @@ export const MOTION_DEFAULTS = {
 export const HIDING_PRESETS: readonly MotionEffect[] = ['fade', 'zoom-in', 'stagger']
 /** Hero blocks own the page h1/LCP: only translate-only entrances and parallax are offered. */
 export const HERO_PRESETS: readonly MotionPreset[] = ['auto', 'none', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'parallax-soft']
-export const LCP_BLOCK_TYPES: readonly string[] = ['hero']
+export const LCP_BLOCK_TYPES: readonly string[] = ['hero', 'productHero']
 
 export type ResolvedMotion = {
   preset: MotionEffect

@@ -27,6 +27,8 @@ const hasText = (value: unknown) => typeof value === 'string' && value.trim().le
 function hasIntroContent(block: PlannableBlock): boolean {
   // CTA always renders a translated fallback action, even when its heading/actions are empty.
   if (block.blockType === 'cta') return true
+  // Product hero (V2) always renders the product title (required field) as the page h1.
+  if (block.blockType === 'productHero') return true
   if (block.blockType === 'hero' || block.blockType === 'mediaText') return hasText(block.heading)
   if (block.blockType !== 'richText') return false
   const root = (block.content as { root?: { children?: unknown } } | null)?.root

@@ -283,6 +283,11 @@ const SPECIFIC: Record<string, Entry> = {
   'pages:pageType': ['Sayfa türü', 'Page type', 'Standart/Landing: /<slug> adresinde yayınlanır. Şablon: sitede görünmez; "Çoğalt" ile yeni sayfa başlatın.', 'Standard/Landing: published at /<slug>. Template: never public; use "Duplicate" to start a new page.'],
   'pages:title': ['Sayfa başlığı', 'Page title', 'Tarayıcı sekmesinde ve admin listesinde görünür.', 'Shown in the browser tab and admin lists.'],
   'products:title': ['Ürün adı', 'Product name'],
+  'products:layout': [
+    'Sayfa blokları', 'Page blocks',
+    'Boşsa ürün sayfası varsayılan sırayla çizilir. "Ürün:" blokları ürün kaydındaki verileri gösterir (içerik kopyalanmaz); ilk "Ürün:" bloğunu eklediğinizde sıra sizindir: eklemediğiniz bölüm görünmez. "Ürün: Sürümler ve Teklif İste" zorunludur (taşınabilir, silinemez); "Ürün: Giriş" en üstte kalır.',
+    'Empty: the product page uses the default order. "Product:" blocks show the data of this product record (nothing is copied); once you add the first "Product:" block the order is yours and sections you leave out are not shown. "Product: Editions and quote" is required (movable, not removable); "Product: Hero" stays on top.',
+  ],
   'products:summary': ['Özet', 'Summary', 'Katalog kartlarında ve arama sonuçlarında görünür.', 'Shown on catalog cards and in search results.'],
   'products:publishedAt': ['Yayın tarihi', 'Published at', 'İlk yayında otomatik doldurulur.', 'Filled automatically on first publish.'],
   'products:features.title': ['Başlık', 'Title'],

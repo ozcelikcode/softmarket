@@ -12,6 +12,8 @@ export const BLOCK_GROUPS = {
   proof: L('Kanıt', 'Proof'),
   conversion: L('Dönüşüm', 'Conversion'),
   utility: L('Yardımcı', 'Utility'),
+  /** V2 product-bound sections (products.layout only). */
+  product: L('Ürün sayfası bölümleri', 'Product page sections'),
 } as const
 
 /**

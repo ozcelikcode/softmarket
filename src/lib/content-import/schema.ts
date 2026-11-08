@@ -1,8 +1,8 @@
 import { Ajv } from 'ajv'
 import type { Field } from 'payload'
 import { collections, globals, flatFields } from './model'
-import { pageBlocks } from '@/blocks'
-import { HERO_PRESETS } from '@/fields/block-motion'
+import { pageBlocks, productBoundBlocks } from '@/blocks'
+import { HERO_PRESETS, LCP_BLOCK_TYPES } from '@/fields/block-motion'
 
 type Schema = Record<string, unknown>
 const string = { type: 'string', minLength: 1 }
@@ -51,9 +51,9 @@ export function fieldsSchema(fields: Field[]): Schema {
 }
 export const seedSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $defs: Object.fromEntries(pageBlocks.map(block => {
+  $defs: Object.fromEntries([...pageBlocks, ...productBoundBlocks].map(block => {
     const data = fieldsSchema(block.fields)
-    if (block.slug === 'hero') {
+    if (LCP_BLOCK_TYPES.includes(block.slug)) {
       const motion = (data.properties as Record<string, Schema>).motion
       const properties = motion.properties as Record<string, Schema>
       properties.preset = { enum: [...HERO_PRESETS] }

@@ -486,7 +486,7 @@ export interface Product {
    */
   heroImage?: (number | null) | Media;
   /**
-   * Blocks that make up the page content; drag to reorder.
+   * Empty: the product page uses the default order. "Product:" blocks show the data of this product record (nothing is copied); once you add the first "Product:" block the order is yours and sections you leave out are not shown. "Product: Editions and quote" is required (movable, not removable); "Product: Hero" stays on top.
    */
   layout?:
     | (
@@ -510,6 +510,14 @@ export interface Product {
         | SolutionsGridBlock
         | CaseStudyBlock
         | NewsListBlock
+        | ProductHeroBlock
+        | ProductNavBlock
+        | ProductOverviewBlock
+        | ProductFeaturesBlock
+        | ProductSpecsBlock
+        | ProductEditionsBlock
+        | ProductDownloadsBlock
+        | ProductDocsBlock
       )[]
     | null;
   features?:
@@ -3293,6 +3301,458 @@ export interface ListingBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroBlock".
+ */
+export interface ProductHeroBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductNavBlock".
+ */
+export interface ProductNavBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productNav';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductOverviewBlock".
+ */
+export interface ProductOverviewBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productOverview';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFeaturesBlock".
+ */
+export interface ProductFeaturesBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productFeatures';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductSpecsBlock".
+ */
+export interface ProductSpecsBlock {
+  /**
+   * Requirements from the product "Technical" tab are shown below the table.
+   */
+  showRequirements?: boolean | null;
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productSpecs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductEditionsBlock".
+ */
+export interface ProductEditionsBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productEditions';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductDownloadsBlock".
+ */
+export interface ProductDownloadsBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productDownloads';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductDocsBlock".
+ */
+export interface ProductDocsBlock {
+  appearance?: {
+    theme?: ('auto' | 'dark' | 'light') | null;
+    spacing?: ('none' | 'sm' | 'md' | 'lg') | null;
+    animation?: ('subtle' | 'none') | null;
+    /**
+     * Heading and text alignment.
+     */
+    align?: ('start' | 'center') | null;
+    /**
+     * Line between this and the previous section.
+     */
+    separator?: ('none' | 'top') | null;
+    /**
+     * The block stays in the document but is not rendered.
+     */
+    hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productDocs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "editions".
  */
 export interface Edition {
@@ -5005,6 +5465,14 @@ export interface ProductsSelect<T extends boolean = true> {
         solutionsGrid?: T | SolutionsGridBlockSelect<T>;
         caseStudy?: T | CaseStudyBlockSelect<T>;
         newsList?: T | NewsListBlockSelect<T>;
+        productHero?: T | ProductHeroBlockSelect<T>;
+        productNav?: T | ProductNavBlockSelect<T>;
+        productOverview?: T | ProductOverviewBlockSelect<T>;
+        productFeatures?: T | ProductFeaturesBlockSelect<T>;
+        productSpecs?: T | ProductSpecsBlockSelect<T>;
+        productEditions?: T | ProductEditionsBlockSelect<T>;
+        productDownloads?: T | ProductDownloadsBlockSelect<T>;
+        productDocs?: T | ProductDocsBlockSelect<T>;
       };
   features?:
     | T
@@ -5052,6 +5520,237 @@ export interface ProductsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductHeroBlock_select".
+ */
+export interface ProductHeroBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductNavBlock_select".
+ */
+export interface ProductNavBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+        hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductOverviewBlock_select".
+ */
+export interface ProductOverviewBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+        hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductFeaturesBlock_select".
+ */
+export interface ProductFeaturesBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+        hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductSpecsBlock_select".
+ */
+export interface ProductSpecsBlockSelect<T extends boolean = true> {
+  showRequirements?: T;
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+        hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductEditionsBlock_select".
+ */
+export interface ProductEditionsBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductDownloadsBlock_select".
+ */
+export interface ProductDownloadsBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+        hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductDocsBlock_select".
+ */
+export interface ProductDocsBlockSelect<T extends boolean = true> {
+  appearance?:
+    | T
+    | {
+        theme?: T;
+        spacing?: T;
+        animation?: T;
+        align?: T;
+        separator?: T;
+        hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

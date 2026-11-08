@@ -115,6 +115,30 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/*
+ * Product page tab-bar jump targets (src/components/blocks/product/product-blocks.tsx).
+ * Wanted: section content ~1rem below header + sticky tab bar. html scroll-padding-top (5rem) is added to
+ * scroll-margin, and the section's own top padding sits above the heading, so both are subtracted:
+ * margin = header (4rem, 4.5rem from lg) + tab bar (2.9375rem incl. border) + 1rem - 5rem - section padding.
+ */
+.product-anchor {
+  --pa-bar: 7.9375rem;
+  --pa-pad: 4rem;
+  scroll-margin-top: calc(var(--pa-bar) - 5rem - var(--pa-pad));
+}
+.product-anchor-none { --pa-pad: 0rem; }
+.product-anchor-sm { --pa-pad: 3rem; }
+.product-anchor-lg { --pa-pad: 6rem; }
+@media (min-width: 40rem) {
+  .product-anchor { --pa-pad: 6rem; }
+  .product-anchor-none { --pa-pad: 0rem; }
+  .product-anchor-sm { --pa-pad: 4rem; }
+  .product-anchor-lg { --pa-pad: 8rem; }
+}
+@media (min-width: 64rem) {
+  .product-anchor { --pa-bar: 8.4375rem; }
+}
+
 @layer base {
   html {
     background: var(--bg);

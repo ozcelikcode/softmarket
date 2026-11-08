@@ -1,3 +1,18 @@
+## V2 güvenlik/kalite denetimi (2026-11-08)
+
+- Kompozisyondaki bütün bağlı blokları kaldırarak uyumluluk moduna dönme açığı kapatıldı: önceki layout ile karşılaştırma, EN/draft/autosave/where toplu güncelleme/eski sürüm restore/import dahil zorunlu editions bloğunu korur. Ham girdide `beforeValidate`, son sınırda `beforeChange`; `hidden: true|"true"|1|"1"` ve çakışan blok ID'leri 400. Kısmi ID güncellemesi ve Duplicate çalışır.
+- Eski layout'ta ek CMS bloklarının ayrı render-plan sınırı korundu; ilk ek bloğun LCP-safe animasyonu V2 öncesiyle aynı. Regresyonlar: `product-bound-db`, `product-composition`, yeni `product-render`, ürün draft/ilişkili liste/ISR testleri `live-preview-db`.
+- Typecheck/lint/diff-check temiz; `pnpm test --maxWorkers=1`: 67 dosya / 1015 test. DB kopyasıyla `.next-prod` build ve 3200 duman geçti (TR/EN ana sayfa + ürün 200, olmayan ürün 404, tek h1, SKU teklif linkleri). Legacy ve 8 bağlı bloklu TR/EN ürünlerin MISS sorgusu aynı: 24. Migration up/down/eski satır koruması, import idempotansı, REST/MCP retleri geçti; anonim taslak/lisanslı indirme/yayınlanmamış doküman sızıntısı görülmedi.
+- Canlı DB/3100/`.next`/payments/commit işlemi yok. Kanıt dizini `/private/tmp/softmarket-v2-audit-dlkms1ma`. **3200 PID 98175 kapanışı bekliyor:** sandbox SIGTERM'i reddetti, terminal kesilince süreç kaldı; kullanıcıya yalnız bu PID'yi kapatma isteği iletildi. Tarayıcıda görsel/piksel eşdeğerliği bu denetimde ölçülmedi.
+
+## V2 — Ürün sayfası bağlı bloklar (2026-11-08)
+
+- `products.layout` = `productBlocks` (`layoutBlocks` + `src/blocks/product-bound.ts`): productHero, productNav, productOverview, productFeatures, productSpecs (`showRequirements`), productEditions, productDownloads, productDocs. İçerik kopyalanmaz; ürün/sürüm/indirme/doküman kayıtlarından okunur (`slots.product`, `src/components/blocks/product/product-blocks.tsx`).
+- `src/lib/blocks/product-composition.ts`: bağlı blok yoksa uyumluluk modu (V2 öncesi sıra + eski filtre, sanal `virtual:*` bloklar; HTML birebir aynı, 14 eski sayfa doğrulandı). Bağlı blok varsa kayıtlı sıra.
+- **Teklif İste zorunlu:** `productEditions` taşınabilir, silinemez/gizlenemez (hidden kolonu yok). Layout `validate` + alan `beforeChange` kancası taslak/autosave/REST/MCP/import dahil 400 verir; renderer eksikse yine ekler. `productHero` ilk blok, gizlenemez, yoksa varsayılan giriş çizilir; `LCP_BLOCK_TYPES`'ta.
+- Products autosave 2 sn. Migration `20261108_130717_v2_product_bound_blocks` (16 CREATE TABLE + 49 indeks + `_products_v.autosave`); canlıya uygulandı, yedek `scratchpad/softmarket-pre-v2.db`. Dev 3100 yeniden başlatılmadı; ürün sayfaları migrate sonrası 200 ve eskiyle aynı.
+- Doğrulama: typecheck/lint temiz, `pnpm test --maxWorkers=1` 66 dosya / 1005 test (yeni: product-composition, product-bound-db); prod build 118 sayfa, 3200 duman, LH mobil ürün Perf 100 / LCP 1.21 s / CLS 0. Ayrıntı `docs/plan-visual-editor.md` V2 kaydı. Commit yok.
+
 ## V1 güvenlik/kalite denetimi (2026-11-08)
 
 - Hero preset doğrulaması Payload taslak/autosave yolunda atlanıyordu: `Hero.ts` preset `beforeValidate` kancası REST/MCP/Local API dahil yedi seçenek sınırını uygular. Import şeması da aynı listeyle sınırlı; canlı şema/migration değiştirilmedi.
@@ -213,3 +228,10 @@ Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince günce
 - SEO plugin `fields: localizeSeoFields` (admin-i18n.ts). Şema değişmedi.
 - 2026-11-08 F11 diff güvenlik/kalite denetimi: yasal taslak Lexical metin parçalanması/büyük-küçük harf ve sitemap eksik doğrulama fail-closed; header istemci navigasyonunda yeniden bağlanır, odaklı panel hover çıkışında kapanmaz, mobil body scroll kilidi ve hızlı yeniden açmada close yarışı düzeltildi. `pnpm typecheck`, `pnpm lint`, `pnpm test --maxWorkers=1` (54/698), kopya DB ile `.next-prod` build ve 3200 HTTP duman (EULA noindex, sitemap yasal yok) geçti. Sans/mono TR+EN glifleri doğrulandı. Playwright Chromium MachPort sandbox 1100 nedeniyle başlatılamadı; iOS cihaz testi yapılmadı. 3200 kapatıldı; 3100/canlı DB/.next korunuyor, commit yok.
 - Mobil menü (native dialog) Tab/Shift+Tab döngüsü initSheet içinde (header-nav.ts): Chromium fokusu tarayıcı arayüzüne bırakıyordu; e2e tam + isolated yeşil.
+
+## 2026-11-08 V2 ürün sayfası bağlı blokları
+- V2 tamamlandı: ürün sayfası 8 bağlı blok (`src/blocks/product-bound.ts`). "Teklif İste" (editions) zorunlu: taşınabilir; silinemez/gizlenemez/çoğaltılamaz (sunucu doğrulaması + render geri ekleme).
+- Ürün hero tek ve her zaman ilk; aşağıdaysa sunucu sessizce başa taşır. Boş/eski layout eski düzenle birebir.
+- Migration `20261108_130717_v2_product_bound_blocks` yalnız CREATE/ADD; yedek scratchpad `softmarket-pre-v2.db`. Ürün sekme anchor'ları `.product-anchor`; ValidationError'a `req.t` verilir (TR toast).
+- Ödeme P1 çekirdeği commit 16b565e (`src/lib/payments`, rota/UI'ye bağlı değil).
+- Sıradaki: V3a Puck pilotu ve V3b native canvas pilotu (ayrı worktree, port 3510/3520, migration yok), sonra kullanıcının 8 görevlik testi. Bilinen sınır: Payload FieldLabel locale etiketi "— Türkçe" her admin dilinde aynı.

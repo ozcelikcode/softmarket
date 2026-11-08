@@ -1,8 +1,29 @@
-import type { CollectionConfig } from 'payload'
+import { ValidationError, type BlocksField, type CollectionConfig, type FieldHook } from 'payload'
+import { blocks as validateBlocks } from 'payload/shared'
 
 import { isAdminOrEditor, publishedOrStaff } from '@/access'
-import { draftVersions, layoutField, publishedAtField, sortOrderField } from '@/fields/common'
+import { productBlocks } from '@/blocks'
+import { layoutField, publishedAtField, sortOrderField } from '@/fields/common'
 import { slugField } from '@/fields/slug'
+import { normalizeProductLayout, validateProductLayout } from '@/lib/blocks/product-composition'
+
+/** V2: autosave drives Live Preview like `pages` (F8); autosaves only write `_products_v` (no ISR purge). */
+export const PRODUCTS_AUTOSAVE_INTERVAL = 2000
+
+const layoutValidate: BlocksField['validate'] = (value, options) => {
+  const base = validateBlocks(value, options)
+  if (base !== true) return base
+  return validateProductLayout(value, options.req?.i18n?.language)
+}
+
+// Payload skips field validators for drafts/autosaves. The required "Teklif İste" (editions) block and the
+// ordering rules are enforced at the write boundary too: REST, GraphQL, MCP, Local API and content:import.
+const enforceProductLayout: FieldHook = ({ value, previousValue, req, path }) => {
+  const next = normalizeProductLayout(value, previousValue)
+  const result = validateProductLayout(next, req?.i18n?.language, previousValue)
+  if (result !== true) throw new ValidationError({ errors: [{ path: path.join('.'), message: result }], req }, req.t)
+  return next
+}
 
 export const OPERATING_SYSTEMS = [
   { label: 'Windows', value: 'windows' },
@@ -29,7 +50,7 @@ export const Products: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
-  versions: draftVersions,
+  versions: { maxPerDoc: 50, drafts: { autosave: { interval: PRODUCTS_AUTOSAVE_INTERVAL } } },
   fields: [
     {
       type: 'tabs',
@@ -41,7 +62,8 @@ export const Products: CollectionConfig = {
             { name: 'tagline', type: 'text', localized: true },
             { name: 'summary', type: 'textarea', localized: true },
             { name: 'heroImage', type: 'upload', relationTo: 'media' },
-            layoutField(),
+            // beforeValidate sees unknown fields before Payload strips them (e.g. hidden on required blocks).
+            layoutField({ blocks: productBlocks, validate: layoutValidate, hooks: { beforeValidate: [enforceProductLayout], beforeChange: [enforceProductLayout] } }),
           ],
         },
         {

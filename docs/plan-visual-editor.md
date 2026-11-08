@@ -317,6 +317,7 @@ Geçişte ayrıca [3.85.2](https://github.com/payloadcms/payload/releases/tag/v3
 - İç içe sütun/slot: **şimdilik yok** — tek seviyeli blok listesi; sütunlu düzenler hazır bloklarla. İç içe yapı sonraki sürüme.
 - Ürün sayfası: **"Teklif İste" zorunlu** (kaldırılamaz; yalnız yeri değişebilir); İndirmeler, Dokümantasyon ve sekme çubuğu taşınabilir veya kaldırılabilir.
 - Pilot kararı: 8 görevlik denemeyi **kullanıcı kendisi yapacak**; sonucu V4 karar puanında belirleyici. Pilotlar hazır olunca kullanıcıya haber verilecek.
+- Seed yeniden import (karar b): mevcut ürünün en son taslak/autosave layout'u bağlı blok içeriyor, seed içermiyorsa layout TR/EN dönüşüm/yazımından çıkarılır; diğer alanlar güncellenir, uyarı + exit 0. Import yayın akışını korur (taslak kompozisyon yayına geçer); kompozisyon seed'i V2 doğrulamasıyla yazılır. Layout yapısı ortak; yalnız tek locale'de kompozisyon seed'i geçersizdir. `--dry-run` aynı transaction akışını rollback eder; pages etkilenmez.
 
 ## V1 uygulama kaydı — 2026-11-08
 

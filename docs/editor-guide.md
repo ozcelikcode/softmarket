@@ -690,3 +690,5 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 1. Ana sayfa ve sayfalar bloklardan oluşur. Blok ekleyin, sürükleyin, gerekirse gizleyin.
 2. Taslak destekleyen içerikleri önizlemede kontrol edip **Değişiklikleri yayınla** deyin. Menü, footer, Site ayarları ve taslak desteği olmayan koleksiyonlarda **Kaydet** doğrudan siteye uygulanır.
 3. Görseller korumasız, alt metinli ve çevirileri tamam olmalı. Renk ve görsel kuralları reddedilirse mesaja bakın.
+
+> Not: Bir ürünü editörde bağlı bloklarla (kompozisyon modu) düzenlediyseniz ve seed eski düzende ise, `pnpm content:import` en son taslak/autosave düzenini iki dilde korur; diğer alanları günceller ve "layout korundu" uyarısı basar. Import yine yayınlar: yalnız taslakta olan düzen de yayına geçer. Seed de bağlı bloklarla kompozisyon içeriyorsa seed düzeni yazılır ve zorunlu "Sürümler ve Teklif İste" kuralı uygulanır. Seed düzenini kullanmak için seed'i geçerli bir kompozisyona dönüştürün. `--dry-run` aynı işlemi deneyip geri alır.

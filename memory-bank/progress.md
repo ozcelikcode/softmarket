@@ -1,3 +1,9 @@
+## content:import karar b denetimi (2026-11-08)
+
+- P2: korunacak seed layout'u silinmeden önce ilişki/Markdown dönüşümünden geçiyordu; kullanılmayan eski referans import ve dry-run'ı hata ile durdurabiliyordu. `importer.ts` layout'u dönüşümden önce çıkarır; önce başarısız olan regresyonlar düzeltmeyle geçti.
+- P3: editör kılavuzundaki koşulsuz koruma ve editörden eski seed'e dönme yönlendirmesi düzeltildi; kompozisyon seed'i istisnası ve taslak kompozisyonun import ile yayınlanması açıklandı. Ayrıntılı kapsam `activeContext.md` son maddesinde.
+- `pnpm typecheck`, `pnpm lint`, `git diff --check` başarılı. `pnpm test --maxWorkers=1`: **67 dosya / 1033 test**; odaklı import/SQLite: **2 dosya / 58 test**. DB yazıları yalnız geçici SQLite/uploads üzerinde; canlı DB, dev 3100, `.next`, payments ve commit işlemi yok.
+
 ## V2 denetimi (2026-11-08)
 
 - Zorunlu editions bloğunu tüm bağlı blokları kaldırarak/legacy restore ile atlatma, ham gizleme girdisinin sessiz temizlenmesi, çakışan blok ID'leri ve legacy ek blok LCP animasyon regresyonu düzeltildi. Ayrıntı/kanıt ve 3200 kapanış engeli `activeContext.md` başında.

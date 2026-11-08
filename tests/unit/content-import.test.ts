@@ -132,6 +132,103 @@ describe('content import', () => {
     const docs = store.get('docs')!
     expect(docs.find(d => d.slug === 'child')!.parent).toBe(docs.find(d => d.slug === 'parent')!.id)
   })
+  describe('editor-composed product layout (decision b)', () => {
+    const bound = [{ blockType: 'productHero' }, { blockType: 'productEditions' }, { blockType: 'richText', content: { markdown: 'x' } }]
+    const withTitle = (title: string, layout?: Data[]) => {
+      const seed = structuredClone(example) as unknown as { products: { tr: Data; en: Data }[] }
+      seed.products[0].tr.title = title
+      for (const l of ['tr', 'en'] as const) { if (layout) seed.products[0][l].layout = layout; }
+      return seed as unknown as Seed
+    }
+    const setup = async () => {
+      const f = fakePayload()
+      await run(f.payload)
+      f.store.get('products')![0].layout = bound.map((b, i) => ({ ...b, id: `b${i}` }))
+      return f
+    }
+    const capture = (payload: Payload, seed: Seed, dryRun = false) => {
+      const logs: string[] = []
+      return importContent({ payload, root: resolve('content/seed'), sources: [{ file: 'f.json', seed }], dryRun, markdown: t => ({ root: { text: t } }), log: m => logs.push(m) }).then(r => ({ r, logs }))
+    }
+    it('keeps composed layout, updates other fields, warns, no error', async () => {
+      const { payload, store } = await setup()
+      const { logs } = await capture(payload, withTitle('Yeni Başlık'))
+      const product = store.get('products')![0]
+      expect(product.title).toBe('Yeni Başlık')
+      expect((product.layout as Data[]).map(b => b.blockType)).toEqual(['productHero', 'productEditions', 'richText'])
+      expect(logs.some(l => l.includes('warn products:ornek-urun') && l.includes('layout korundu (editörde düzenlenmiş)'))).toBe(true)
+    })
+    it('dry run gives the same decision and writes nothing', async () => {
+      const { payload, store, client } = await setup()
+      client.update.mockClear()
+      const { logs } = await capture(payload, withTitle('Yeni Başlık'), true)
+      expect(client.update).not.toHaveBeenCalled()
+      expect(store.get('products')![0].title).toBe('Örnek Ürün')
+      expect(logs.some(l => l.includes('layout korundu'))).toBe(true)
+    })
+    it.each([false, true])('does not resolve references or markdown in a skipped layout (dryRun=%s)', async dryRun => {
+      const { payload, store, client } = await setup()
+      const before = structuredClone(store.get('products')![0].layout)
+      const seed = withTitle('Yeni Başlık', [
+        { blockType: 'faq', faqs: ['removed-faq'] },
+        { blockType: 'richText', content: { markdown: 'Unused seed text' } },
+      ])
+      const markdown = vi.fn(() => { throw new Error('Skipped markdown must not be converted') })
+      const req = { transactionID: 'import-transaction' }
+      const logs: string[] = []
+      client.update.mockClear()
+      await expect(importContent({ payload, req, root: resolve('content/seed'),
+        sources: [{ file: 'skipped-layout.json', seed }], dryRun, markdown, log: m => logs.push(m),
+      })).resolves.toMatchObject({ creates: 0 })
+      expect(markdown).not.toHaveBeenCalled()
+      expect(store.get('products')![0].layout).toEqual(before)
+      expect(logs.filter(l => l.includes('layout korundu'))).toHaveLength(1)
+      expect(client.find).not.toHaveBeenCalledWith(expect.objectContaining({ collection: 'faqs' }))
+      expect(client.findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'products', draft: true, fallbackLocale: false, req }))
+      if (!dryRun) for (const locale of ['tr', 'en']) {
+        const call = client.update.mock.calls.find(([args]) => args.collection === 'products' && args.locale === locale)![0]
+        expect(call.data).not.toHaveProperty('layout')
+        expect(call).toHaveProperty('req', req)
+      }
+    })
+    it.each(['tr', 'en'] as const)('rejects a seed composed only in %s before writing', async locale => {
+      const { payload, client } = await setup()
+      const seed = withTitle('T')
+      const products = seed.products as { tr: Data; en: Data }[]
+      products[0][locale].layout = bound
+      client.update.mockClear()
+      await expect(capture(payload, seed)).rejects.toThrow(/tr\/en (array lengths|block types) differ/)
+      expect(client.update).not.toHaveBeenCalled()
+    })
+    it('writes the seed when it is composed too', async () => {
+      const { payload, store } = await setup()
+      const { logs } = await capture(payload, withTitle('T', [{ blockType: 'productHero' }, { blockType: 'productEditions' }]))
+      expect((store.get('products')![0].layout as Data[]).map(b => b.blockType)).toEqual(['productHero', 'productEditions'])
+      expect(logs.some(l => l.includes('layout korundu'))).toBe(false)
+    })
+    it('writes the seed for a new product', async () => {
+      const f = fakePayload()
+      const { logs } = await capture(f.payload, withTitle('T'))
+      expect((f.store.get('products')![0].layout as Data[])[0].blockType).toBe('hero')
+      expect(logs.some(l => l.includes('layout korundu'))).toBe(false)
+    })
+    it('is idempotent', async () => {
+      const { payload, store } = await setup()
+      await capture(payload, withTitle('T')); await capture(payload, withTitle('T'))
+      expect(store.get('products')).toHaveLength(1)
+      expect(store.get('products')![0].layout as Data[]).toHaveLength(3)
+    })
+    it('still imports page layouts while a product layout is protected', async () => {
+      const { payload, store } = await setup()
+      store.set('pages', [{ id: 500, slug: 'landing', title: 'Old', layout: [{ blockType: 'cta', heading: 'Old CTA' }] }])
+      const seed = withTitle('T')
+      const page = { slug: 'landing', title: 'Landing', layout: [{ blockType: 'hero', heading: 'New hero' }] }
+      seed.pages = [{ tr: page, en: page }]
+      const { logs } = await capture(payload, seed)
+      expect((store.get('pages')![0].layout as Data[])[0]).toMatchObject({ blockType: 'hero', heading: 'New hero' })
+      expect(logs.filter(l => l.includes('layout korundu'))).toEqual(['warn products:ornek-urun layout korundu (editörde düzenlenmiş)'])
+    })
+  })
   it('reports the file path for syntactically invalid JSON', async () => {
     const dir = await mkdtemp(resolve(tmpdir(), 'softmarket-bad-json-'))
     const file = resolve(dir, 'bad.json')

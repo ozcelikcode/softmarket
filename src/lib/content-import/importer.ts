@@ -4,6 +4,7 @@ import { readFile, readdir, realpath, stat } from 'node:fs/promises'
 import type { CollectionSlug, Field, GlobalSlug, Payload, PayloadRequest, Where } from 'payload'
 import { collections, fieldsBySlug, flatFields } from './model'
 import { sanitizeLexical } from './markdown'
+import { isProductBound } from '@/lib/blocks/product-composition'
 import { validateSeed, type Data, type RecordInput, type Seed } from './schema'
 
 export type Source = { file: string; seed: Seed }
@@ -85,6 +86,7 @@ function matchesInput(input: unknown, stored: unknown): boolean {
   }
   return input === stored
 }
+const hasBoundBlock = (layout: unknown) => Array.isArray(layout) && layout.some(b => !!b && typeof b === 'object' && isProductBound((b as Data).blockType))
 export async function importContent(options: {
   payload: Payload; sources: Source[]; root: string; dryRun?: boolean;
   /** Caller rolls the transaction back: real writes, but existing media files are never replaced on disk. */
@@ -208,8 +210,19 @@ export async function importContent(options: {
     const full = `${entry.collection}:${entry.key}`
     try {
       const id = await allocate(entry)
+      // Editor-composed product (bound blocks) + legacy seed layout: keep the stored layout, update the rest.
+      let keepLayout = false
+      if (entry.collection === 'products' && existing.has(full) && !hasBoundBlock(entry.input.tr.layout) && !hasBoundBlock(entry.input.en.layout)
+        && (entry.input.tr.layout !== undefined || entry.input.en.layout !== undefined)) {
+        const stored = await payload.findByID({ collection: 'products', id, locale: 'tr', fallbackLocale: false, depth: 0, draft: true, overrideAccess: true, req })
+        keepLayout = hasBoundBlock((stored as unknown as Data | undefined)?.layout)
+        if (keepLayout) log(`warn ${full} layout korundu (editörde düzenlenmiş)`)
+      }
       for (const locale of ['tr', 'en'] as const) {
-        const translated = await transform(fieldsBySlug[entry.collection], entry.input[locale])
+        // Skipped blocks must not resolve stale references or convert unused markdown either.
+        const input = { ...entry.input[locale] }
+        if (keepLayout) delete input.layout
+        const translated = await transform(fieldsBySlug[entry.collection], input)
         if (!dryRun) {
           const previous = await payload.findByID({ collection: entry.collection, id, locale, fallbackLocale: false, depth: 0, draft: true, overrideAccess: true, req })
           const data = rowIDs(translated, previous, fieldsBySlug[entry.collection])

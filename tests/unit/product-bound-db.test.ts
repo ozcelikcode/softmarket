@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { Payload } from 'payload'
+import type { Data, RecordInput } from '../../src/lib/content-import/schema'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
@@ -234,7 +235,7 @@ describe('product-bound blocks through Payload', () => {
     expect(bulk.content[0].text).toMatch(/Errors: 1/)
   })
 
-  it('imports compositions idempotently and rejects removing the required block on re-import', async () => {
+  it('imports compositions idempotently and keeps the composed layout when a legacy seed is re-imported', async () => {
     const { createLocalReq } = await import('payload')
     const { importContent } = await import('../../src/lib/content-import/importer')
     const { withImportTransaction } = await import('../../src/lib/content-import/transaction')
@@ -250,7 +251,133 @@ describe('product-bound blocks through Payload', () => {
     const first = await read()
     expect((await load()).creates).toBe(0)
     expect((await read()).layout).toEqual(first.layout)
-    await expect(load([])).rejects.toMatchObject({ cause: { status: 400 } })
+    await expect(load([])).resolves.toMatchObject({ updates: 1 })
+    await expect(load([{ blockType: 'hero', heading: 'Eski' } as never])).resolves.toMatchObject({ updates: 1 })
     expect((await read()).layout).toEqual(first.layout)
+  })
+
+  describe('legacy seed protection with real versions and transactions', () => {
+    const legacy = [{ blockType: 'hero', heading: 'Seed hero' }]
+    const record = (slug: string, layout: Data[] = legacy): RecordInput => ({
+      tr: { title: 'Seed TR', slug, family: 'aile', layout },
+      en: { title: 'Seed EN', slug, family: 'aile', layout },
+    })
+    const load = async (product: RecordInput, rollback = false) => {
+      const { createLocalReq } = await import('payload')
+      const { importContent } = await import('../../src/lib/content-import/importer')
+      const { withImportTransaction } = await import('../../src/lib/content-import/transaction')
+      const req = await createLocalReq({}, payload)
+      const logs: string[] = []
+      const result = await withImportTransaction(payload, req, () => importContent({
+        payload, req, root: dir, rollbackRun: rollback, markdown: () => ({}), log: m => logs.push(m),
+        sources: [{ file: 'audit.json', seed: { version: 1, products: [product] } }],
+      }), { rollback })
+      return { result, logs }
+    }
+    const read = (id: number, locale: 'tr' | 'en', draft = false) => payload.findByID({
+      collection: 'products', id, locale, draft, fallbackLocale: false, depth: 0,
+    })
+
+    it.each([
+      { locale: 'tr' as const, autosave: false },
+      { locale: 'tr' as const, autosave: true },
+      { locale: 'en' as const, autosave: true },
+    ])('preserves a composition existing only in a $locale draft (autosave=$autosave), including rollback dry-run', async ({ locale, autosave }) => {
+      const seed = record(`audit-draft-${locale}-${autosave}`)
+      await load(seed)
+      const id = (await payload.find({ collection: 'products', where: { slug: { equals: seed.tr.slug } }, locale: 'tr' })).docs[0].id
+      await payload.update({ collection: 'products', id, locale, draft: true, autosave,
+        data: { layout: composed as never, _status: 'draft' },
+      })
+      const snapshot = async () => ({
+        published: await Promise.all((['tr', 'en'] as const).map(l => read(id, l))),
+        draft: await Promise.all((['tr', 'en'] as const).map(l => read(id, l, true))),
+        versions: (await run(`SELECT * FROM _products_v WHERE parent_id=${id} ORDER BY id`)).rows,
+      })
+      const before = await snapshot()
+      expect(before.published[0].layout?.[0].blockType).toBe('hero')
+      expect(before.draft[0].layout?.[0].blockType).toBe('productHero')
+      seed.tr.title = 'Imported TR'
+      seed.en.title = 'Imported EN'
+      seed.tr.features = [{ title: 'Yeni özellik' }]
+      seed.en.features = [{ title: 'New feature' }]
+      seed.tr.systemRequirements = [{ os: 'web' }]
+      seed.en.systemRequirements = [{ os: 'web' }]
+      // The unused legacy layout may refer to content that no longer exists.
+      seed.tr.layout = seed.en.layout = [{ blockType: 'faq', faqs: ['deleted-faq'] }]
+      const dry = await load(seed, true)
+      expect(dry.logs.filter(l => l.includes('layout korundu'))).toHaveLength(1)
+      expect(await snapshot()).toEqual(before)
+      const actual = await load(seed)
+      expect(actual.result).toEqual(dry.result)
+      expect(actual.logs.filter(l => l.includes('layout korundu'))).toHaveLength(1)
+      for (const [i, l] of (['tr', 'en'] as const).entries()) {
+        const doc = await read(id, l)
+        expect(doc.layout).toEqual(before.draft[i].layout)
+        expect(doc.title).toBe(seed[l].title)
+        expect(doc.features?.[0].title).toBe((seed[l].features as Data[])[0].title)
+        expect(doc.systemRequirements?.[0].os).toBe('web')
+        expect(doc._status).toBe('published')
+      }
+      const after = await snapshot()
+      await load(seed)
+      expect(await snapshot()).toEqual(after)
+    })
+
+    it('sees a composition written earlier in the same uncommitted transaction', async () => {
+      const { createLocalReq } = await import('payload')
+      const { importContent } = await import('../../src/lib/content-import/importer')
+      const { withImportTransaction } = await import('../../src/lib/content-import/transaction')
+      const seed = record('audit-same-transaction')
+      await load(seed)
+      const id = (await payload.find({ collection: 'products', where: { slug: { equals: seed.tr.slug } }, locale: 'tr' })).docs[0].id
+      const req = await createLocalReq({}, payload)
+      await withImportTransaction(payload, req, async () => {
+        const draft = await payload.update({ collection: 'products', id, req, draft: true, autosave: true,
+          data: { layout: composed as never, _status: 'draft' },
+        })
+        const logs: string[] = []
+        await importContent({ payload, req, root: dir, markdown: () => ({}), log: m => logs.push(m),
+          sources: [{ file: 'transaction.json', seed: { version: 1, products: [seed] } }],
+        })
+        expect(logs.some(l => l.includes('layout korundu'))).toBe(true)
+        expect((await payload.findByID({ collection: 'products', id, req, depth: 0 })).layout).toEqual(draft.layout)
+      })
+      expect((await read(id, 'tr')).layout?.[0].blockType).toBe('productHero')
+    })
+
+    it('keeps localized block text and settings while importing fields outside layout', async () => {
+      const seed = record('audit-published-composition', [...composed.slice(0, 4), { blockType: 'cta', heading: 'Türkçe başlık' }])
+      await load(seed)
+      const id = (await payload.find({ collection: 'products', where: { slug: { equals: seed.tr.slug } }, locale: 'tr' })).docs[0].id
+      const english = await read(id, 'en')
+      const layout = english.layout!.map(b => b.blockType === 'cta' ? { ...b, heading: 'English heading' } : b)
+      await payload.update({ collection: 'products', id, locale: 'en', data: { layout, _status: 'published' } })
+      const before = await Promise.all((['tr', 'en'] as const).map(l => read(id, l)))
+      expect(before[0].layout?.find(b => b.blockType === 'cta')?.heading).toBe('Türkçe başlık')
+      expect(before[1].layout?.find(b => b.blockType === 'cta')?.heading).toBe('English heading')
+      const legacySeed = record(String(seed.tr.slug))
+      legacySeed.tr.summary = 'Yeni özet'
+      legacySeed.en.summary = 'New summary'
+      await load(legacySeed)
+      for (const [i, locale] of (['tr', 'en'] as const).entries()) {
+        const doc = await read(id, locale)
+        expect(doc.layout).toEqual(before[i].layout)
+        expect(doc.summary).toBe(legacySeed[locale].summary)
+      }
+    })
+
+    it('writes a composed seed and still rejects missing required blocks in commit and rollback runs', async () => {
+      const seed = record('audit-seed-composition', composed.slice(0, 4))
+      await load(seed)
+      const replacement = [{ blockType: 'productHero' }, { blockType: 'productEditions' }, { blockType: 'productDocs' }]
+      await load(record(String(seed.tr.slug), replacement))
+      const doc = (await payload.find({ collection: 'products', where: { slug: { equals: seed.tr.slug } }, locale: 'tr' })).docs[0]
+      expect(doc.layout?.map(b => b.blockType)).toEqual(replacement.map(b => b.blockType))
+      for (const rollback of [true, false]) {
+        await expect(load(record(String(seed.tr.slug), [{ blockType: 'productHero' }]), rollback)).rejects.toMatchObject({ cause: { status: 400 } })
+        expect((await read(doc.id, 'tr')).layout).toEqual(doc.layout)
+      }
+    })
   })
 })

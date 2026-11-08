@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { L, blockMeta, opt } from './meta'
@@ -59,5 +60,6 @@ export const CaseStudy: Block = {
       ],
     },
     blockSettings('caseStudy'),
+    blockMotion('caseStudy'),
   ],
 }

@@ -1,3 +1,18 @@
+## V1 güvenlik/kalite denetimi (2026-11-08)
+
+- Hero preset doğrulaması Payload taslak/autosave yolunda atlanıyordu: `Hero.ts` preset `beforeValidate` kancası REST/MCP/Local API dahil yedi seçenek sınırını uygular. Import şeması da aynı listeyle sınırlı; canlı şema/migration değiştirilmedi.
+- `render-plan.ts`: gizli/dekoratif/boş/sonuç getirmeyen başlangıç blokları LCP korumasını tüketmez. Görünür içerik kesinleşene kadar adaylar korumalı kalır; Lexical kontrolü sınırlı gezinir.
+- Admin kartlarında bilinmeyen preset çökmesi, hero için yasak kart eklenmesi, enum dışı önizleme zamanlaması ve eksik alan hata gösterimi düzeltildi. CSS hover klavye odağı pointer koşulundan çıkarıldı; scroll-progress tam girişte tamamlanır, fallback hem timeline hem range desteğini kontrol eder.
+- Odaklı regresyonlar ve migration 1134 up/down (162 tablo; 72 `_v`) veri koruma testi geçti; gerçek REST/MCP handler reddi doğrulandı. Tam kapı sonuçları `progress.md` başındaki denetim kaydında. Canlı DB/3100/`.next`/commit işlemi yok; build ve duman DB kopyasında.
+
+## V1 — Animasyon preset sistemi (2026-11-08)
+
+- Yeni `motion` grubu (`src/fields/block-motion.ts`, "Hareket" collapsible; spacer/divider/listing hariç 18 blok): `preset` auto|none|fade|slide-up|slide-down|slide-left|slide-right|zoom-in|parallax-soft|stagger, `trigger` scroll|scroll-progress|load|hover, `duration` fast/base/slow (240/560/800 ms), `delay` 0/100/200/300, `easing` soft/standard/emphasized, `stagger` none/tight/relaxed (≤4 adım, ≤300 ms), `mobile` (paralaks). `appearance.animation` aynen; `none` ana anahtar. Varsayılan `auto` = eski işaretleme birebir.
+- Render: `planBlocks` → `ctx.motion` (`resolveMotion`); `anim(i, motion, mode)` + `BlockShell motion`; hero `heroMotion` (yalnız translate; paralaks medyaya). CSS sözleşmesi `globals.css` "Motion system": `data-anim`, `data-anim-trigger`, `data-anim-safe`, `data-anim-mobile`, `--anim-dur|delay|ease|stagger`, efekt başına `--m-o/--m-from`; observer `[data-anim-trigger]` izlemez. LCP: ilk blok + her hero'da gizleyen efekt sunucuda `slide-up` + safe (opacity 1). Reduced-motion/`data-motion=none` her şeyi kapatır.
+- Admin: `src/admin/fields/motion-preset-cards.tsx` (import map, saf CSS önizleme, Tekrar oynat; hero'da 7 güvenli kart + `validateHeroPreset`). Etiketler `admin-i18n.ts` `MOTION_LABELS`.
+- Migration `20261108_100715_blocks_motion`: 1134 ADD COLUMN (162 tablo × 7); down yalnız bu kolonları düşürür. Kopyada test; canlı yedek `scratchpad/softmarket-pre-v1.db{,-wal,-shm}` + `.snapshot.db`; canlı migrate, 681 tablo eski veri farkı 0, integrity ok.
+- Doğrulama: typecheck/lint, 58 dosya/728 test, prod build, 3300 (kopya DB) Playwright 27/27 (390/1440, CLS 0, reduced/none/no-JS), Lighthouse mobil /tr Perf 100, LCP 1.06 s, JS 129.4 KB. Commit yok. Ayrıntı: `docs/plan-visual-editor.md` V1 kaydı.
+
 ## V0 — Payload güvenlik yükseltmesi (2026-11-08)
 
 - `payload` + tüm `@payloadcms/*` **3.85.1 → 3.93.0**, tam sabit/hizalı; Next **15.4.11**, React **19.2.6** korundu. Node minimum **24.22.1**; host **24.21.0** değiştirilmedi, test/build/migration geçici resmi **24.22.2** runtime ile yapıldı.
@@ -63,6 +78,10 @@
 - Güvenlik QA (2026-11-07): lisans e-postası HTTP yanıtı sonrası, bağımsız doğrulanmış kalıcı kayıt için gönderilir; SMTP yoksa anahtar konsola yazılmaz. İstek bağlamı dışındaki atamalarda bildirim zamanlanmaz. Uygulanmış `20261107_092304_remove_sales_legal_fields` üç eski ilişki değerini siler; down değerleri geri getirmez. Migration geçmişi değiştirilmedi.
 
 Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince güncelle.
+
+## Ödeme modu planı (2026-11-08)
+- Plan: `docs/plan-payments.md` (taslak, kod yok). Üç katmanlı anahtar: env `PAYMENTS_ENABLED` → `site-settings.commerce.mode` (quote|payment, varsayılan quote) → `editions.saleMode` (quote|purchase). Kapalı modda ödeme yüzeyi tamamen 404/gizli olur, veri silinmez. iyzico (TRY) + Stripe (USD/EUR) hosted redirect (SAQ-A), webhook = tetik / gerçek = sağlayıcı retrieve, idempotent fulfillment ile otomatik lisans.
+- Sıra: P0 doğrulama + P1 saf çekirdek + P7 yasal taslaklar V pilotlarıyla paralel; P2-S şema V4'ten sonra (V2-S'den önce asla). 4 açık soru plan §9'da; kullanıcı yanıtı bekleniyor.
 
 ## Sıradaki iş: görsel editör pilotu (2026-11-08)
 - Plan: `docs/plan-visual-editor.md` (taslak, kod yok). Kullanıcı kararı "önce ikisini dene": V3a Puck (`@puckeditor/core`) ve V3b Payload-native canvas (önce what-digital eklentisi yarım gün spike) 2–3 gün pilot, ayrı worktree/dal, şema değiştirmeden; V4'te kapılar (round-trip 0 fark, Lexical, TR/EN, public bundle, güvenlik) + ağırlıklı puanla seçim.

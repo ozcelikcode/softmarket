@@ -64,14 +64,18 @@ describe(`migration ${NAME}`, () => {
     const dynamic = migrations.find((m) => m.name === '20261107_130000_blocks_dynamic_set')!
     const globalsEditable = migrations.find((m) => m.name === '20261107_141523_globals_editable')!
     const pageBuilder = migrations.find((m) => m.name === '20261107_144850_page_builder_pages')!
+    // V1 motion columns are part of the current block schema as well.
+    const motion = migrations.find((m) => m.name === '20261108_100715_blocks_motion')!
     await later.up(args())
     await dynamic.up(args())
     await globalsEditable.up(args())
     await pageBuilder.up(args())
+    await motion.up(args())
     let product
     try {
       product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
     } finally {
+      await motion.down(args())
       await pageBuilder.down(args())
       await globalsEditable.down(args())
       await dynamic.down(args())

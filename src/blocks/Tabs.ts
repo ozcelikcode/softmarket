@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { publicImageFilter } from '@/fields/public-media'
 
@@ -25,5 +26,6 @@ export const Tabs: Block = {
       ],
     },
     blockSettings('tabs'),
+    blockMotion('tabs'),
   ],
 }

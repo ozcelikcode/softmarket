@@ -15,6 +15,7 @@ import * as migration_20261107_160000_globals_media_delete from './20261107_1600
 import * as migration_20261107_190342_pages_autosave from './20261107_190342_pages_autosave';
 import * as migration_20261107_192347_media_image_sizes from './20261107_192347_media_image_sizes';
 import * as migration_20261108_093334_v0_payload_393 from './20261108_093334_v0_payload_393';
+import * as migration_20261108_100715_blocks_motion from './20261108_100715_blocks_motion';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20261108_093334_v0_payload_393.up,
     down: migration_20261108_093334_v0_payload_393.down,
-    name: '20261108_093334_v0_payload_393'
+    name: '20261108_093334_v0_payload_393',
+  },
+  {
+    up: migration_20261108_100715_blocks_motion.up,
+    down: migration_20261108_100715_blocks_motion.down,
+    name: '20261108_100715_blocks_motion'
   },
 ];

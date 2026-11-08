@@ -85,6 +85,8 @@ describe('F6 pages through Payload', () => {
   beforeAll(async () => {
     const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
     await migrations.find((m) => m.name === '20261107_190342_pages_autosave')!.up(args())
+    // V1 motion columns (independent of F6) are part of the current block schema.
+    await migrations.find((m) => m.name === '20261108_100715_blocks_motion')!.up(args())
   })
   const seed = JSON.parse(readFileSync(resolve('content/seed/05-pages.json'), 'utf8'))
   const importSeed = async (dryRun = false) => {

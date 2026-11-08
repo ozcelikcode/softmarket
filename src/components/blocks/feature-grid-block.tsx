@@ -13,16 +13,16 @@ export function FeatureGridBlock({ block, ctx }: BlockProps<Block>) {
   if (!items.length) return null
   const { appearance } = ctx
   return (
-    <BlockShell blockType="featureGrid" appearance={appearance} animate="items">
+    <BlockShell blockType="featureGrid" appearance={appearance} motion={ctx.motion} animate="items">
       {block.heading ? (
-        <div {...anim(0, appearance.animation)}>
+        <div {...anim(0, ctx.motion)}>
           <SectionHeading title={block.heading} lead={block.intro} align={appearance.align === 'center' ? 'center' : 'left'} className="mb-12" />
         </div>
       ) : null}
       <FeatureGrid
         columns={(Number(block.columns) || 3) as 2 | 3 | 4}
         variant={block.style === 'plain' ? 'plain' : 'cards'}
-        animation={appearance.animation}
+        animation={ctx.motion}
         features={items.map((it) => ({
           title: it.title,
           description: it.description ?? undefined,

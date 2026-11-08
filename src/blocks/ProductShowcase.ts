@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { listDisplayFields, listHeaderFields, viewAllFields } from './list-fields'
@@ -57,5 +58,6 @@ export const ProductShowcase: Block = {
     }),
     ...viewAllFields('/urunler'),
     blockSettings('productShowcase'),
+    blockMotion('productShowcase'),
   ],
 }

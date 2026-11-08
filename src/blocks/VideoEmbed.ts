@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { toEmbedUrl } from '@/lib/video'
 
@@ -36,5 +37,6 @@ export const VideoEmbed: Block = {
     { name: 'poster', type: 'upload', relationTo: 'media', label: L('Kapak görseli', 'Poster') },
     { name: 'caption', type: 'text', localized: true, label: L('Alt yazı', 'Caption') },
     blockSettings('videoEmbed'),
+    blockMotion('videoEmbed'),
   ],
 }

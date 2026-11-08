@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { listDisplayFields, listHeaderFields, viewAllFields } from './list-fields'
@@ -31,5 +32,6 @@ export const ProductFamilies: Block = {
     ...listDisplayFields({ limit: 6, sort: 'order', layout: 'grid-3' }),
     ...viewAllFields('/urunler'),
     blockSettings('productFamilies'),
+    blockMotion('productFamilies'),
   ],
 }

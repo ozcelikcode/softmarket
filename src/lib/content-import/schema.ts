@@ -2,6 +2,7 @@ import { Ajv } from 'ajv'
 import type { Field } from 'payload'
 import { collections, globals, flatFields } from './model'
 import { pageBlocks } from '@/blocks'
+import { HERO_PRESETS } from '@/fields/block-motion'
 
 type Schema = Record<string, unknown>
 const string = { type: 'string', minLength: 1 }
@@ -52,6 +53,11 @@ export const seedSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $defs: Object.fromEntries(pageBlocks.map(block => {
     const data = fieldsSchema(block.fields)
+    if (block.slug === 'hero') {
+      const motion = (data.properties as Record<string, Schema>).motion
+      const properties = motion.properties as Record<string, Schema>
+      properties.preset = { enum: [...HERO_PRESETS] }
+    }
     return [block.slug, { ...data, properties: { ...(data.properties as object), blockType: { const: block.slug } }, required: [...data.required as string[], 'blockType'] }]
   })),
   title: 'SoftMarket bilingual content seed v1',

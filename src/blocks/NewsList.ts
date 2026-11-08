@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { listDisplayFields, listHeaderFields, viewAllFields } from './list-fields'
@@ -49,5 +50,6 @@ export const NewsList: Block = {
     ...listDisplayFields({ limit: 3, sort: 'newest', layout: 'grid-3' }),
     ...viewAllFields('/haberler'),
     blockSettings('newsList'),
+    blockMotion('newsList'),
   ],
 }

@@ -24,7 +24,7 @@ export async function NewsListBlock({ block, locale, ctx }: BlockProps<Block>) {
   if (!docs.length) return null
   const layout = normalizeLayout(block.layout)
   return (
-    <BlockShell blockType="newsList" appearance={ctx.appearance} animate="items">
+    <BlockShell blockType="newsList" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
         locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
         viewAll={resolveViewAll(block, '/haberler', c('viewAll'))}
@@ -34,7 +34,7 @@ export async function NewsListBlock({ block, locale, ctx }: BlockProps<Block>) {
             const href = `/haberler/${encodeURIComponent(p.slug!)}`
             const badge = p.category && CATEGORIES.includes(p.category) ? n(`cat.${p.category}`) : null
             return (
-              <div key={p.id} {...anim(staggerIndex(i, layout), ctx.appearance.animation)} className="h-full">
+              <div key={p.id} {...anim(staggerIndex(i, layout), ctx.motion)} className="h-full">
                 {layout === 'list' ? (
                   <ListRow
                     title={p.title} description={p.excerpt} href={href} locale={locale} badge={badge} meta={formatDate(p.publishedAt, locale)}

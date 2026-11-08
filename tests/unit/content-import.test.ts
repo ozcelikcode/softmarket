@@ -39,6 +39,15 @@ const run = (payload: Payload, seed: unknown = example, dryRun = false) => impor
 describe('content import', () => {
   it('keeps the shipped JSON Schema in sync with the collection/block model', () => expect(schema).toEqual(seedSchema))
   it('accepts the bilingual minimal example', () => expect(() => validateSeed(example, 'example.json')).not.toThrow())
+  it('rejects unsafe hero motion before writes, including a dry run', async () => {
+    for (const preset of ['fade', 'zoom-in', 'stagger']) {
+      const doc = { slug: 'motion-test', title: 'Motion', layout: [{ blockType: 'hero', heading: 'Hero', motion: { preset } }] }
+      const { payload, client } = fakePayload()
+      await expect(run(payload, { version: 1, pages: [{ tr: doc, en: doc }] }, true)).rejects.toThrow(/preset/)
+      expect(client.create).not.toHaveBeenCalled()
+      expect(client.update).not.toHaveBeenCalled()
+    }
+  })
   it('rejects list limits above 24 in the JSON schema before mutation', async () => {
     for (const blockType of ['productFamilies', 'productShowcase', 'solutionsGrid', 'newsList', 'logoWall']) {
       const doc = { slug: 'too-many', title: 'Too many', layout: [{ blockType, limit: 25 }] }

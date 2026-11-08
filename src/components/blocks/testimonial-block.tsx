@@ -12,7 +12,7 @@ export function TestimonialBlock({ block, ctx }: BlockProps<Block>) {
   const logo = mediaOf(block.logo)
   const byline = [block.role, block.company].filter(Boolean).join(' · ')
   return (
-    <BlockShell blockType="testimonial" appearance={ctx.appearance} container={{ size: 'narrow' }}>
+    <BlockShell blockType="testimonial" appearance={ctx.appearance} motion={ctx.motion} container={{ size: 'narrow' }}>
       <figure className={alignClass(ctx.appearance)}>
         <blockquote className="text-h3 font-medium text-text text-balance break-words">
           <span aria-hidden className="mr-1 text-accent">&ldquo;</span>

@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { ICON_NAMES, normalizeIconName } from '@/lib/icon-names'
 
@@ -56,5 +57,6 @@ export const FeatureGrid: Block = {
       ],
     },
     blockSettings('featureGrid'),
+    blockMotion('featureGrid'),
   ],
 }

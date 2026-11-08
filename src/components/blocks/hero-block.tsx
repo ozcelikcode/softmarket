@@ -10,7 +10,7 @@ import { Eyebrow, Heading } from '@/components/ui/heading'
 import { NamedIcon } from '@/components/ui/icon'
 import { MediaImage } from '@/components/ui/media-image'
 import { containerImageSizes } from '@/lib/media-layout'
-import { heroIn } from '@/lib/anim'
+import { anim, heroMotion } from '@/lib/anim'
 import { HERO_PANEL_FAMILIES, loadHeroFamilies } from '@/lib/blocks/data'
 import { mediaOf } from '@/lib/content'
 import { cn } from '@/lib/utils'
@@ -83,12 +83,15 @@ export function HeroBlock({ block, locale, ctx }: BlockProps<Block>) {
   const video = mediaOf(block.video)
   const bgVideo = bgPoster && video?.protected === false && video.visibility === 'public'
     && (video.mimeType === 'video/mp4' || video.mimeType === 'video/webm') ? video.url : undefined
-  const motion = appearance.animation !== 'none'
-  const enter = (i: number, mode?: 'fade' | 'slide') => (motion ? heroIn(i, mode) : {})
+  // Hero is always LCP-protected (render plan): heading/lead only translate; `parallax-soft` moves the media.
+  const entrance = heroMotion(ctx.motion)
+  const enter = (i: number, mode?: 'fade' | 'slide') => (entrance ? entrance(i, mode) : {})
+  const parallax = ctx.motion.preset === 'parallax-soft' ? anim(0, ctx.motion) : null
   return (
     <BlockShell
       blockType="hero"
       appearance={appearance}
+      motion={ctx.motion}
       animate="none"
       // Page top (CMS page/home): clear the fixed header. Default spacing reproduces the pre-F6 home hero
       // (pt-40/48, pb-20/28); other spacings keep their own bottom padding.
@@ -119,10 +122,10 @@ export function HeroBlock({ block, locale, ctx }: BlockProps<Block>) {
           <Actions actions={block.actions} locale={locale} className={cinematic ? 'mt-10' : 'mt-8'} arrowOnSecondary />
         </div>
       </div>
-      {familiesPanel ? <div className="min-w-0" {...enter(4)}><FamiliesPanel locale={locale} title={block.panelTitle} /></div> : null}
+      {familiesPanel ? <div className="min-w-0" {...enter(4)}>{parallax ? <div {...parallax}><FamiliesPanel locale={locale} title={block.panelTitle} /></div> : <FamiliesPanel locale={locale} title={block.panelTitle} />}</div> : null}
       {hasMedia ? (
         <div className={cn('min-w-0', !sideMedia && 'mt-14')} {...enter(4, 'slide')}>
-          <div className={cn('overflow-hidden rounded-xl border border-border bg-surface', variant === 'cinematic' && 'p-1.5 shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--accent)_35%,transparent)]')}>
+          <div {...parallax} className={cn('overflow-hidden rounded-xl border border-border bg-surface', variant === 'cinematic' && 'p-1.5 shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--accent)_35%,transparent)]')}>
             <MediaImage
               media={block.media}
               priority={ctx.pageTop}

@@ -24,7 +24,7 @@ export async function ProductFamiliesBlock({ block, locale, ctx }: BlockProps<Bl
   const layout = normalizeLayout(block.layout)
   const showCount = block.showCount !== false
   return (
-    <BlockShell blockType="productFamilies" appearance={ctx.appearance} animate="items">
+    <BlockShell blockType="productFamilies" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
         locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
         viewAll={resolveViewAll(block, '/urunler', c('viewAll'))}
@@ -35,7 +35,7 @@ export async function ProductFamiliesBlock({ block, locale, ctx }: BlockProps<Bl
             const count = showCount ? counts.get(f.id) : undefined
             const badge = count ? pr('count', { count }) : undefined
             return (
-              <div key={f.id} {...anim(staggerIndex(i, layout), ctx.appearance.animation)} className="h-full">
+              <div key={f.id} {...anim(staggerIndex(i, layout), ctx.motion)} className="h-full">
                 {layout === 'list' ? (
                   <ListRow
                     title={f.title} description={f.tagline} href={href} locale={locale} badge={badge}

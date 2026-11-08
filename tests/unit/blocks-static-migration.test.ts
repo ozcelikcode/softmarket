@@ -48,6 +48,8 @@ beforeAll(async () => {
   await migrations.find((m) => m.name === '20261107_190342_pages_autosave')!.up(args())
   // F9 media size columns are needed by the current Payload upload schema.
   await migrations.find((m) => m.name === '20261107_192347_media_image_sizes')!.up(args())
+  // V1 motion columns are part of the current block schema (independent of F4).
+  await migrations.find((m) => m.name === '20261108_100715_blocks_motion')!.up(args())
 }, 60000)
 afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
 

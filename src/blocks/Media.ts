@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { publicImageFilter } from '@/fields/public-media'
 
@@ -42,5 +43,6 @@ export const Media: Block = {
       admin: { description: L('Seçilen oran görseli kırparak doldurur; "Özgün oran" kırpmaz.', 'A fixed ratio crops the image to fill; "Original ratio" never crops.') },
     },
     blockSettings('media'),
+    blockMotion('media'),
   ],
 }

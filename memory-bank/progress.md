@@ -1,3 +1,10 @@
+## V1 denetimi — 2026-11-08
+
+- Hero draft/autosave doğrulama atlatması, ilk içerik LCP koruması, bozuk admin preset kaydı, hover klavye odağı ve scroll-progress aralığı/fallback düzeltildi; ayrıntı `activeContext.md` başında. CSS değer enjeksiyonu saptanmadı; legacy `appearance.animation` ve stagger sınırları regresyonda korundu. Import şeması hero için aynı yedi seçeneği kullanır.
+- Son sabit kaynak koşusu: **`pnpm typecheck`, `pnpm lint`, `pnpm test --maxWorkers=1` (59 dosya / 737 test), `NEXT_DIST_DIR=.next-prod PORT=3200 pnpm build` geçti**. Build/duman için salt okunur kaynaktan SQLite kopyası ve ayrı uploads kullanıldı. Migration up/down + `_v`/satır koruması izole SQLite'ta geçti; migration dosyası/şema değiştirilmedi.
+- 3200: `/tr`, `/en`, `/tr/urunler`, `/tr/urunler/akis-yonetimi/akis-merkezi`, `/admin` 200; `/tr/olmayan` 404. SSR gizli animasyon durumu 0; public HTML'nin yüklediği 13 JS parçasında admin preset bileşeni yok. `next start` pnpm'in `node_modules/.bin/next` shim'iyle çalıştırılmalı (NODE_PATH/libsql çözümü).
+- Chromium başlatılamadı: gerçek tarayıcıda no-JS/reduced-motion/klavye/sticky görsel QA bu denetimde doğrulanmadı; CSS sözleşmesi ve SSR kontrolleri geçti. 3200 kapalı; 3100 aynı PID 69553 ile açık, canlı DB/`.next` korunuyor; commit yok. `docs/plan-payments.md` kapsam dışında kaldı.
+
 ## V0 — Payload güvenlik yükseltmesi (2026-11-08)
 
 - `payload` + tüm `@payloadcms/*` **3.85.1 → 3.93.0**, tam sabit/hizalı; Next **15.4.11**, React **19.2.6** korundu. Node minimum **24.22.1**; host **24.21.0** değiştirilmedi, test/build/migration geçici resmi **24.22.2** runtime ile yapıldı.
@@ -195,3 +202,4 @@
 
 - 2026-11-08 G2 (F11 yeni bulgular): yasal taslak sayfalar (`TASLAK —`/`DRAFT —` veya `[BÜYÜK HARF]`) `src/lib/legal-draft.ts` ile noindex + sitemap dışı (şema yok); ürün hero birincil Teklif İste; PageHero ritmi; sürüm notları ürün gruplu/katlı; MediaCard slug-hash kapak; footer alt satır; SEO plugin TR/EN alan etiketleri; lead form düğmesi lg. Detay: docs/qa/visual-baseline.md.
 - 2026-11-08 F11 diff denetimi: yasal taslak tespiti/sitemap fail-closed ve header navigasyon, odak, mobil scroll/close yarışı düzeltildi; typecheck/lint, 54 dosya 698 test, izole build ve HTTP duman geçti. Chromium MachPort sandbox nedeniyle header E2E çalıştırılamadı; iOS doğrulanmadı.
+- 2026-11-08 V1 animasyon preset sistemi: `motion` grubu + migration `blocks_motion` (yalnız ADD COLUMN, canlıda), CSS sözleşmesi + LCP koruması, admin Hareket paneli (preset kartları), editor-guide 2.6a. Testler/build/Playwright/Lighthouse yeşil; V2 (ürün bağlı bloklar) sırada.

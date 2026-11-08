@@ -1,6 +1,7 @@
-import type { Block, UploadFieldSingleValidation } from 'payload'
+import { ValidationError, type Block, type FieldHook, type UploadFieldSingleValidation } from 'payload'
 import { upload } from 'payload/shared'
 
+import { blockMotion, validateHeroPreset } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { linkField } from '@/fields/link'
 import { publicImageFilter, publicVideoFilter } from '@/fields/public-media'
@@ -18,6 +19,14 @@ const validateBackgroundVideo: UploadFieldSingleValidation = (value, options) =>
   if (value && sibling?.variant === 'mediaBackground' && !sibling?.media)
     return 'A poster image is required for a background video.'
   return upload(value, options)
+}
+
+// Payload skips field validators for drafts/autosaves. Keep the hero allowlist at the write boundary
+// for those operations too, across REST, MCP, Local API and import (without enabling draft validation).
+const enforceHeroPreset: FieldHook = ({ value, req, path }) => {
+  const result = validateHeroPreset(value, { req })
+  if (result !== true) throw new ValidationError({ errors: [{ path: path.join('.'), message: result }], req })
+  return value
 }
 
 export const Hero: Block = {
@@ -105,5 +114,6 @@ export const Hero: Block = {
       fields: [linkField({ withAppearance: true })],
     },
     blockSettings('hero'),
+    blockMotion('hero', { beforeValidate: [enforceHeroPreset] }),
   ],
 }

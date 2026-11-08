@@ -12,7 +12,7 @@ export function MediaTextBlock({ block, locale, ctx }: BlockProps<Block>) {
   const hasMedia = Boolean(mediaOf(block.media))
   const center = ctx.appearance.align === 'center'
   return (
-    <BlockShell blockType="mediaText" appearance={ctx.appearance} tone="raised" containerClassName={cn('grid items-center gap-12', hasMedia && 'lg:grid-cols-2')}>
+    <BlockShell blockType="mediaText" appearance={ctx.appearance} motion={ctx.motion} tone="raised" containerClassName={cn('grid items-center gap-12', hasMedia && 'lg:grid-cols-2')}>
       {hasMedia ? (
         <div className={cn('overflow-hidden rounded-xl border border-border bg-bg', block.mediaPosition === 'right' && 'lg:order-2')}>
           <MediaImage media={block.media} sizes="(min-width: 1024px) 50vw, 100vw" className="aspect-[4/3]" />

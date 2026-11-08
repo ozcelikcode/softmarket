@@ -79,7 +79,7 @@ Her blokta **Görünüm** adlı bir bölüm vardır. Varsayılan ayarlar çoğu 
 | **Dikey boşluk** | Bloğun üstü ve altındaki boşluk. | Yok, küçük, orta, büyük. |
 | **Hizalama** | Başlık ve metnin hizası. | Sola, ortala. |
 | **Genişlik** | Blok içeriğinin genişliği. | Dar, normal (varsayılan), geniş. |
-| **Animasyon** | Bloğun görününce hafifçe belirmesi. | Hafif (görününce), yok. |
+| **Animasyon** | Bloğun hareketinin ana anahtarı. **Yok** seçilirse **Hareket** bölümündeki efekt de çalışmaz (bölüm 2.6a). | Hafif (görününce), yok. |
 | **Ayraç çizgisi** | Önceki bölümle arasına ince çizgi. | Yok, üstte ince çizgi. |
 | **Anchor (bağlantı kimliği)** | Sayfa içi bağlantı için ad. Örnek: `avantajlar` yazarsanız adres `.../sayfa#avantajlar` olur. | Yalnız küçük harf, rakam ve tire. En fazla 40 karakter. Aynı sayfada iki blokta aynı ad olamaz. `main`, `ozellikler`, `genel-bakis`, `teknik-ozellikler`, `surumler`, `indirmeler`, `dokumantasyon` ayrılmıştır. |
 | **Bloğu gizle** | Bloğu sitede gizler. | Açık/kapalı. |
@@ -88,6 +88,43 @@ Her blokta **Görünüm** adlı bir bölüm vardır. Varsayılan ayarlar çoğu 
 
 - Animasyonu tüm site için kapatmak da mümkündür. Bu ayar **Site ayarları** içindedir (bölüm 5).
 - Bağlantı adı (anchor) yalnız sayfa içi bağlantılarda işe yarar. Boş bırakabilirsiniz.
+
+### 2.6a "Hareket" (animasyon efektleri)
+
+**Görünüm**'ün hemen altında **Hareket** bölümü vardır. Sayfanın "dümdüz" görünmemesi için her bloğa hazır bir efekt seçebilirsiniz. Serbest animasyon yoktur: hız ve mobil uyum için yalnız denenmiş hazır efektler sunulur.
+
+**Efekt kartları.** Her kartın üstünde küçük bir önizleme kutusu oynar. **Tekrar oynat** düğmesi önizlemeleri yeniden başlatır. Kartlar:
+
+| Efekt | Ne yapar |
+|---|---|
+| **Otomatik** (varsayılan) | Bugünkü hafif belirme. Hiçbir şey değiştirmezseniz site eskisi gibi görünür. |
+| **Yok** | Blok hareketsiz görünür. |
+| **Belirme** | Yerinde yavaşça görünür. |
+| **Yukarı / Aşağı kayma** | Aşağıdan yukarı veya yukarıdan aşağı kayarak gelir. |
+| **Sola / Sağa kayma** | Sağdan sola veya soldan sağa kayarak gelir. |
+| **Yakınlaşma** | Hafifçe büyüyerek belirir. |
+| **Paralaks** | Kaydırdıkça içerik zeminden hafifçe ayrışır. Varsayılan olarak yalnız tablet ve masaüstünde çalışır. |
+| **Sırayla** | Kartlı/listeli bloklarda kartlar tek tek belirir. Diğer bloklarda bloğun parçaları sırayla gelir. |
+
+**Gelişmiş** (kartların altında, kapalı gelir):
+
+| Ayar | Seçenekler |
+|---|---|
+| **Tetikleyici** | Kaydırınca (görünür olunca bir kez, varsayılan) · Kaydırma ilerlemesine bağlı · Sayfa açılışında · Fareyle üzerine gelince |
+| **Süre** | Hızlı (240 ms) · Orta (560 ms, varsayılan) · Yavaş (800 ms) |
+| **Gecikme** | Yok · 100 · 200 · 300 ms |
+| **Hız eğrisi** | Yumuşak (varsayılan) · Dengeli · Vurgulu |
+| **Sırayla aralık** | Yok · Sık (60 ms, varsayılan) · Geniş (100 ms). Toplam en çok 300 ms. |
+| **Paralaks mobilde de çalışsın** | Yalnız Paralaks seçiliyken görünür. |
+
+Kurallar ve ipuçları:
+
+- **Hız kuralı (otomatik):** Sayfanın ilk görünür içeriği ve her Giriş (Hero) bloğu, açılışta görünmez başlayan (belirme/yakınlaşma/sırayla) bir efekt alamaz. Seçerseniz site bunu kendiliğinden kısa bir kaymaya çevirir; içerik hep görünür kalır. Gizli, boş veya sonuç getirmeyebilen başlangıç blokları korumayı tüketmez; içerik kesinleşene kadar sonraki bloklar da korunabilir. Hero bloğunda yalnız kayma ve paralaks kartları gösterilir.
+- **Fareyle üzerine gelince** içeriği gizlemez; fare ile üzerine gelindiğinde veya içindeki bağlantı/düğme klavye odağı aldığında hafifçe hareket eder. Klavye odağı dokunmatik cihaza bağlı klavyede de çalışır.
+- **Kaydırma ilerlemesine bağlı** ve **Paralaks** yalnız destekleyen tarayıcılarda çalışır; diğerlerinde blok hareketsiz ve tam görünür kalır.
+- Ziyaretçi cihazında "hareketi azalt" açıksa veya **Site ayarları → Animasyon: Kapalı** ise hiçbir efekt oynamaz.
+- Ölçülü kullanın: bir sayfada 2-3 farklı efekt yeterlidir. Ardışık bloklarda aynı efekti tekrarlamak daha sakin görünür.
+- Değişikliği **Live Preview**'de veya taslak önizlemede görebilirsiniz; efekt sayfa yenilendiğinde yeniden oynar.
 
 ### 2.7 Taslak ve yayın
 

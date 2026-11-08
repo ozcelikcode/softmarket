@@ -15,7 +15,7 @@ export function MediaBlock({ block, ctx }: BlockProps<Block>) {
   const count = items.length
   const sizes = count === 1 ? '(min-width: 1280px) 75rem, 100vw' : count === 2 ? '(min-width: 640px) 50vw, 100vw' : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
   return (
-    <BlockShell blockType="media" appearance={ctx.appearance}>
+    <BlockShell blockType="media" appearance={ctx.appearance} motion={ctx.motion}>
       {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
       <div className={cn('grid gap-6', count === 2 && 'sm:grid-cols-2', count === 3 && 'sm:grid-cols-2 lg:grid-cols-3', count === 4 && 'sm:grid-cols-2 lg:grid-cols-4')}>
         {items.map((it, i) => (

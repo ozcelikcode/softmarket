@@ -540,3 +540,75 @@ export function localizeSeoFields<T extends Field>({ defaultFields }: { defaultF
     return label ? ({ ...f, label } as T) : f
   })
 }
+
+/**
+ * V1 "Hareket" (motion) panel labels: block `motion` group fields, preset cards and their one-line help.
+ * Used by `src/fields/block-motion.ts` (field labels/options) and the admin preset card component.
+ * Keys equal the stored option values; values never change here (labels are not schema).
+ */
+export const MOTION_LABELS = {
+  panel: loc('Hareket', 'Motion'),
+  advanced: loc('Gelişmiş', 'Advanced'),
+  replay: loc('Tekrar oynat', 'Replay'),
+  heroNote: loc(
+    'Giriş (Hero) bloğunda yalnız sayfa açılışını geciktirmeyen efektler gösterilir.',
+    'Hero blocks only offer effects that never delay the first paint.',
+  ),
+  lcpNote: loc(
+    'Sayfanın ilk bloğunda solma/yakınlaşma, kaymaya dönüştürülür (hız için).',
+    'On the first block, fade/zoom becomes a slide (for page speed).',
+  ),
+  fields: {
+    preset: loc('Efekt', 'Effect'),
+    trigger: loc('Tetikleyici', 'Trigger'),
+    duration: loc('Süre', 'Duration'),
+    delay: loc('Gecikme', 'Delay'),
+    easing: loc('Hız eğrisi', 'Easing'),
+    stagger: loc('Sırayla aralık', 'Stagger interval'),
+    mobile: loc('Paralaks mobilde de çalışsın', 'Run parallax on mobile too'),
+  },
+  descriptions: {
+    trigger: loc('Efektin ne zaman oynayacağı.', 'When the effect plays.'),
+    stagger: loc('Kartlı/listeli bloklarda öğeler arası gecikme (en çok 300 ms).', 'Delay between cards/items in list blocks (max 300 ms).'),
+    mobile: loc('Kapalıyken paralaks yalnız tablet ve masaüstünde çalışır.', 'When off, parallax runs on tablet and desktop only.'),
+  },
+  presets: {
+    auto: [loc('Otomatik', 'Auto'), loc('Bugünkü hafif belirme (varsayılan).', 'Current subtle reveal (default).')],
+    none: [loc('Yok', 'None'), loc('Blok hareketsiz görünür.', 'The block appears without motion.')],
+    fade: [loc('Belirme', 'Fade'), loc('Yerinde yavaşça görünür.', 'Fades in place.')],
+    'slide-up': [loc('Yukarı kayma', 'Slide up'), loc('Aşağıdan yukarı kayarak gelir.', 'Slides up from below.')],
+    'slide-down': [loc('Aşağı kayma', 'Slide down'), loc('Yukarıdan aşağı kayarak gelir.', 'Slides down from above.')],
+    'slide-left': [loc('Sola kayma', 'Slide left'), loc('Sağdan sola kayarak gelir.', 'Slides in from the right.')],
+    'slide-right': [loc('Sağa kayma', 'Slide right'), loc('Soldan sağa kayarak gelir.', 'Slides in from the left.')],
+    'zoom-in': [loc('Yakınlaşma', 'Zoom in'), loc('Hafifçe büyüyerek belirir.', 'Grows in slightly.')],
+    'parallax-soft': [loc('Paralaks', 'Parallax'), loc('Kaydırdıkça içerik zeminden hafifçe ayrışır.', 'Content drifts gently while scrolling.')],
+    stagger: [loc('Sırayla', 'Stagger'), loc('Kartlar/öğeler sırayla belirir.', 'Cards and items appear one by one.')],
+  },
+  triggers: {
+    scroll: loc('Kaydırınca (görünür olunca bir kez)', 'On scroll (once, when visible)'),
+    'scroll-progress': loc('Kaydırma ilerlemesine bağlı', 'Linked to scroll progress'),
+    load: loc('Sayfa açılışında', 'On page load'),
+    hover: loc('Fareyle üzerine gelince', 'On hover'),
+  },
+  durations: {
+    fast: loc('Hızlı (240 ms)', 'Fast (240 ms)'),
+    base: loc('Orta (560 ms)', 'Medium (560 ms)'),
+    slow: loc('Yavaş (800 ms)', 'Slow (800 ms)'),
+  },
+  delays: {
+    '0': loc('Yok', 'None'),
+    '100': loc('100 ms', '100 ms'),
+    '200': loc('200 ms', '200 ms'),
+    '300': loc('300 ms', '300 ms'),
+  },
+  easings: {
+    soft: loc('Yumuşak (varsayılan)', 'Soft (default)'),
+    standard: loc('Dengeli', 'Standard'),
+    emphasized: loc('Vurgulu', 'Emphasized'),
+  },
+  staggers: {
+    none: loc('Yok (hepsi birlikte)', 'None (all together)'),
+    tight: loc('Sık (60 ms, varsayılan)', 'Tight (60 ms, default)'),
+    relaxed: loc('Geniş (100 ms)', 'Relaxed (100 ms)'),
+  },
+} as const

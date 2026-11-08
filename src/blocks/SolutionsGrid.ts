@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { listDisplayFields, listHeaderFields, viewAllFields } from './list-fields'
@@ -42,5 +43,6 @@ export const SolutionsGrid: Block = {
     ...listDisplayFields({ limit: 4, sort: 'order', layout: 'grid-4' }),
     ...viewAllFields('/cozumler'),
     blockSettings('solutionsGrid'),
+    blockMotion('solutionsGrid'),
   ],
 }

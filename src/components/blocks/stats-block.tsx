@@ -9,7 +9,7 @@ export function StatsBlock({ block, ctx }: BlockProps<Block>) {
   if (!items.length) return null
   const center = ctx.appearance.align === 'center'
   return (
-    <BlockShell blockType="stats" appearance={ctx.appearance} className="border-y border-border">
+    <BlockShell blockType="stats" appearance={ctx.appearance} motion={ctx.motion} className="border-y border-border">
       {block.heading ? <Heading size="h2" className={cn('mb-12 max-w-2xl', center && 'mx-auto text-center')}>{block.heading}</Heading> : null}
       <dl className={`grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 ${items.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
         {items.map((it, i) => (

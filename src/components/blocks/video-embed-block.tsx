@@ -19,7 +19,7 @@ export async function VideoEmbedBlock({ block, locale, ctx }: BlockProps<Block>)
   const c = await getTranslations({ locale, namespace: 'common' })
   const title = block.heading || block.caption || 'Video'
   return (
-    <BlockShell blockType="videoEmbed" appearance={ctx.appearance} container={{ size: 'narrow', className: 'max-w-[60rem]' }}>
+    <BlockShell blockType="videoEmbed" appearance={ctx.appearance} motion={ctx.motion} container={{ size: 'narrow', className: 'max-w-[60rem]' }}>
       {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
       <VideoFacade
         embedUrl={src}

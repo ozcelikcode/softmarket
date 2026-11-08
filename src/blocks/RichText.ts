@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { L, blockMeta, opt } from './meta'
@@ -19,5 +20,6 @@ export const RichText: Block = {
     },
     { name: 'content', type: 'richText', localized: true, required: true, label: L('İçerik', 'Content') },
     blockSettings('richText'),
+    blockMotion('richText'),
   ],
 }

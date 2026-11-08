@@ -18,7 +18,7 @@ export async function SolutionsGridBlock({ block, locale, ctx }: BlockProps<Bloc
   if (!docs.length) return null
   const layout = normalizeLayout(block.layout, 'grid-4')
   return (
-    <BlockShell blockType="solutionsGrid" appearance={ctx.appearance} animate="items">
+    <BlockShell blockType="solutionsGrid" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
         locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
         viewAll={resolveViewAll(block, '/cozumler', c('viewAll'))}
@@ -27,7 +27,7 @@ export async function SolutionsGridBlock({ block, locale, ctx }: BlockProps<Bloc
           {docs.map((s, i) => {
             const href = `/cozumler/${encodeURIComponent(s.slug!)}`
             return (
-              <div key={s.id} {...anim(staggerIndex(i, layout), ctx.appearance.animation)} className="h-full">
+              <div key={s.id} {...anim(staggerIndex(i, layout), ctx.motion)} className="h-full">
                 {layout === 'list' ? (
                   <ListRow
                     title={s.title} description={s.summary} href={href} locale={locale}

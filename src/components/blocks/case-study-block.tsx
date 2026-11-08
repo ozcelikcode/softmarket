@@ -20,8 +20,8 @@ export async function CaseStudyBlock({ block, locale, ctx }: BlockProps<Block>) 
   const custom = typeof block.linkUrl === 'string' ? safeHref(block.linkUrl.trim()) : null
   const href = custom && /^(?:\/(?!\/)|https?:\/\/)/i.test(custom) ? custom : `/referanslar/${encodeURIComponent(study.slug!)}`
   return (
-    <BlockShell blockType="caseStudy" appearance={appearance} animate="items" containerClassName={results.length ? 'grid items-center gap-12 lg:grid-cols-2' : undefined}>
-      <div {...anim(0, appearance.animation)} className={alignClass(appearance)}>
+    <BlockShell blockType="caseStudy" appearance={appearance} motion={ctx.motion} animate="items" containerClassName={results.length ? 'grid items-center gap-12 lg:grid-cols-2' : undefined}>
+      <div {...anim(0, ctx.motion)} className={alignClass(appearance)}>
         {block.eyebrow ? <Eyebrow className="mb-4">{block.eyebrow}</Eyebrow> : null}
         <Heading as="h2" size="h1">{study.title}</Heading>
         <p className="mt-3 text-small text-muted">{study.customerName}</p>
@@ -33,7 +33,7 @@ export async function CaseStudyBlock({ block, locale, ctx }: BlockProps<Block>) 
         ) : null}
       </div>
       {results.length ? (
-        <dl {...anim(1, appearance.animation)} className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+        <dl {...anim(1, ctx.motion)} className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
           {results.map((r, i) => (
             <div key={r.id ?? i} className="bg-surface p-6">
               <dd className="font-mono text-h1 text-text">{r.value}</dd>

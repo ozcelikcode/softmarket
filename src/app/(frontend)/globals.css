@@ -220,9 +220,16 @@ html:has(dialog[data-sheet][open]) { overflow: hidden; }
 }
 
 /*
- * Motion system (plan section 5). Only transform and opacity animate; colors/borders may transition.
- * Hidden state exists only when MotionObserver sets data-anim-state="pending" on an off-screen element,
- * so server markup, no-JS and reduced-motion always show all content.
+ * Motion system (plan section 5 + plan-visual-editor V1). Only transform and opacity animate; colors/borders
+ * may transition. Hidden state exists only when MotionObserver sets data-anim-state="pending" on an off-screen
+ * element, or inside a CSS animation that always ends visible, so server markup, no-JS and reduced-motion
+ * always show all content.
+ *
+ * V1 contract (src/lib/anim.ts): data-anim="<effect>" + optional data-anim-trigger (scroll-progress|load|hover),
+ * data-anim-safe (LCP: never below full opacity), data-anim-mobile (parallax < 768px) and the variables
+ * --i, --anim-dur, --anim-delay, --anim-ease, --anim-stagger. Each effect only sets its start state:
+ * --m-o (start opacity) and --m-from (start transform). Precedence: prefers-reduced-motion ->
+ * html[data-motion="none"] -> block settings. Rules use :where() so they never outrank .card-hover.
  */
 :root {
   --dur-fast: 150ms;
@@ -230,25 +237,82 @@ html:has(dialog[data-sheet][open]) { overflow: hidden; }
   --dur-reveal: 560ms;
   --dur-hero: 520ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
   --reveal-distance: 12px;
+  --slide-distance: 24px;
   --stagger: 60ms;
   --hero-stagger: 80ms;
 }
 
-@keyframes hero-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes hero-rise { from { opacity: 0; transform: translate(var(--hero-dx, 0px), var(--hero-dy, 10px)); } to { opacity: 1; transform: translate(0, 0); } }
 /* LCP candidates (h1, lead) never start at opacity 0: they only slide. */
-@keyframes hero-slide { from { transform: translateY(8px); } to { transform: translateY(0); } }
+@keyframes hero-slide { from { transform: translate(var(--hero-dx, 0px), var(--hero-dy, 8px)); } to { transform: translate(0, 0); } }
+@keyframes motion-in { from { opacity: var(--m-o); transform: var(--m-from); } }
+@keyframes motion-parallax { from { transform: translateY(var(--m-shift)); } to { transform: translateY(calc(var(--m-shift) * -1)); } }
+
+/* Effect start states (consumed by the observer reveal, load keyframes and scroll-linked reveal). */
+:where([data-anim]) { --m-o: 0; --m-from: translateY(var(--reveal-distance)); --m-hover: translateY(-4px); --m-shift: calc(16px + var(--i, 0) * 6px); }
+:where([data-anim="fade"]) { --m-from: none; --m-hover: translateY(-2px); }
+:where([data-anim="slide-up"], [data-anim="stagger"]) { --m-from: translateY(var(--slide-distance)); }
+:where([data-anim="slide-down"]) { --m-from: translateY(calc(var(--slide-distance) * -1)); --m-hover: translateY(4px); }
+:where([data-anim="slide-left"]) { --m-from: translateX(var(--slide-distance)); --m-hover: translateX(-4px); }
+:where([data-anim="slide-right"]) { --m-from: translateX(calc(var(--slide-distance) * -1)); --m-hover: translateX(4px); }
+:where([data-anim="zoom-in"]) { --m-from: scale(0.94); --m-hover: scale(1.03); }
+:where([data-anim][data-anim-safe]) { --m-o: 1; }
+/* `stagger` on a block container: its children reveal one after another (max 4 steps). */
+:where([data-anim="stagger"]) > :nth-child(2) { --i: 1; }
+:where([data-anim="stagger"]) > :nth-child(3) { --i: 2; }
+:where([data-anim="stagger"]) > :nth-child(n + 4) { --i: 3; }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-anim][data-anim-state="pending"] { opacity: 0; transform: translateY(var(--reveal-distance)); }
-  [data-anim][data-anim-state="visible"] {
+  /* Trigger `scroll` (default): MotionObserver flips pending -> visible once. */
+  [data-anim][data-anim-state="pending"]:where(:not([data-anim="stagger"])),
+  :where([data-anim="stagger"][data-anim-state="pending"]) > * { opacity: var(--m-o); transform: var(--m-from); }
+  [data-anim][data-anim-state="visible"]:where(:not([data-anim="stagger"])),
+  :where([data-anim="stagger"][data-anim-state="visible"]) > * {
     opacity: 1;
     transform: none;
     transition:
-      opacity var(--dur-reveal) var(--ease-out-soft) calc(var(--i, 0) * var(--stagger)),
-      transform var(--dur-reveal) var(--ease-out-soft) calc(var(--i, 0) * var(--stagger));
+      opacity var(--anim-dur, var(--dur-reveal)) var(--anim-ease, var(--ease-out-soft)) calc(var(--anim-delay, 0ms) + var(--i, 0) * var(--anim-stagger, var(--stagger))),
+      transform var(--anim-dur, var(--dur-reveal)) var(--anim-ease, var(--ease-out-soft)) calc(var(--anim-delay, 0ms) + var(--i, 0) * var(--anim-stagger, var(--stagger)));
   }
-  [data-hero-in] { animation: hero-slide var(--dur-hero) var(--ease-out-soft) calc(var(--i, 0) * var(--hero-stagger)) backwards; }
+  /* Trigger `load`: CSS keyframe on first paint, no JS; always ends visible. */
+  :where(html:not([data-motion="none"])) :where([data-anim-trigger="load"]:not([data-anim="stagger"]), [data-anim="stagger"][data-anim-trigger="load"] > *) {
+    animation: motion-in var(--anim-dur, var(--dur-reveal)) var(--anim-ease, var(--ease-out-soft)) calc(var(--anim-delay, 0ms) + var(--i, 0) * var(--anim-stagger, var(--stagger))) backwards;
+  }
+  /* Keyboard focus works even on devices without a hover-capable pointer (e.g. tablet + keyboard). */
+  :where(html:not([data-motion="none"])) :where([data-anim-trigger="hover"]) {
+    transition: transform calc(var(--anim-dur, var(--dur-reveal)) * 0.5) var(--anim-ease, var(--ease-out-soft));
+  }
+  :where(html:not([data-motion="none"])) :where([data-anim-trigger="hover"]:focus-within) { transform: var(--m-hover); }
+  /* Trigger `hover`: transform only, hover-capable pointers only; content is never hidden. */
+  @media (hover: hover) {
+    :where(html:not([data-motion="none"])) :where([data-anim-trigger="hover"]:hover) { transform: var(--m-hover); }
+  }
+  /* Trigger `scroll-progress` + parallax: CSS scroll-driven animations; unsupported browsers stay static. */
+  @supports (animation-timeline: view()) and (animation-range: entry 0% entry 100%) {
+    :where(html:not([data-motion="none"])) :where([data-anim-trigger="scroll-progress"]:not([data-anim="parallax-soft"])) {
+      animation: motion-in linear both;
+      animation-timeline: view();
+      /* A short final block can never travel 280px before the document ends. Finish at full entry. */
+      animation-range: entry 0% entry 100%;
+    }
+    :where(html:not([data-motion="none"])) :where([data-anim="parallax-soft"][data-anim-mobile]) {
+      animation: motion-parallax linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+    @media (min-width: 768px) {
+      :where(html:not([data-motion="none"])) :where([data-anim="parallax-soft"]) {
+        animation: motion-parallax linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+    }
+  }
+  [data-hero-in] {
+    animation: hero-slide var(--anim-dur, var(--dur-hero)) var(--anim-ease, var(--ease-out-soft)) calc(var(--anim-delay, 0ms) + var(--i, 0) * var(--hero-stagger)) backwards;
+  }
   [data-hero-in="fade"] { animation-name: hero-rise; }
   /* Hover lift: transform + border color only, hover-capable pointers only. */
   @media (hover: hover) {
@@ -262,7 +326,8 @@ html:has(dialog[data-sheet][open]) { overflow: hidden; }
     background-color var(--dur-fast) linear;
 }
 /* Site setting motion = none (html[data-motion="none"]): everything static. */
-html[data-motion="none"] [data-anim][data-anim-state] { opacity: 1 !important; transform: none !important; transition: none !important; }
+html[data-motion="none"] [data-anim][data-anim-state],
+html[data-motion="none"] [data-anim="stagger"][data-anim-state] > * { opacity: 1 !important; transform: none !important; transition: none !important; }
 html[data-motion="none"] [data-hero-in] { animation: none !important; }
 html[data-motion="none"] .card-hover:hover { transform: none; }
 #main { scroll-margin-top: 4.5rem; }

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import type { ResolvedMotion } from '@/fields/block-motion'
 import { anim, type AnimKind } from '@/lib/anim'
 import { cn } from '@/lib/utils'
 
@@ -24,7 +25,7 @@ export function FeatureGrid({
   features: Feature[]
   columns?: 2 | 3 | 4
   variant?: 'cards' | 'plain'
-  animation?: AnimKind
+  animation?: AnimKind | ResolvedMotion
   className?: string
 }) {
   const plain = variant === 'plain'

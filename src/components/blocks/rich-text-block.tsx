@@ -9,6 +9,7 @@ export function RichTextBlock({ block, locale, ctx }: BlockProps<Block>) {
     <BlockShell
       blockType="richText"
       appearance={ctx.appearance}
+      motion={ctx.motion}
       container={{ size: block.width === 'wide' ? 'content' : 'narrow', className: block.width === 'normal' || !block.width ? 'max-w-[52rem]' : undefined }}
     >
       <RichContent data={block.content} locale={locale} className={alignClass(ctx.appearance)} />

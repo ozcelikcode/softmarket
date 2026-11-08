@@ -16,7 +16,7 @@ export function FAQBlock({ block, locale, ctx }: BlockProps<Block>) {
         })
   if (!items.length) return null
   return (
-    <BlockShell blockType="faq" appearance={ctx.appearance} tone="raised" container={{ size: 'narrow' }}>
+    <BlockShell blockType="faq" appearance={ctx.appearance} motion={ctx.motion} tone="raised" container={{ size: 'narrow' }}>
       {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
       <div>
         {items.map((it) => (

@@ -17,7 +17,7 @@ export async function CTABlock({ block, locale, ctx }: BlockProps<Block>) {
 
   if (style === 'split') {
     return (
-      <BlockShell blockType="cta" appearance={appearance}>
+      <BlockShell blockType="cta" appearance={appearance} motion={ctx.motion}>
         <div className="rounded-xl border border-border bg-surface p-8 sm:p-10 lg:flex lg:items-center lg:justify-between lg:gap-12">
           <div className="max-w-2xl">
             <Heading as="h2" size="h2">{block.heading}</Heading>
@@ -34,6 +34,7 @@ export async function CTABlock({ block, locale, ctx }: BlockProps<Block>) {
     <BlockShell
       blockType="cta"
       appearance={appearance}
+      motion={ctx.motion}
       container={{ size: 'narrow' }}
       className={card ? undefined : 'overflow-hidden border-t border-border'}
       decor={card ? null : <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />}

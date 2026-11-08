@@ -783,6 +783,37 @@ export interface HeroBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'hero';
@@ -1096,6 +1127,37 @@ export interface FeatureGridBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureGrid';
@@ -1240,6 +1302,37 @@ export interface MediaTextBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -1453,6 +1546,37 @@ export interface SpecTableBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'specTable';
@@ -1495,6 +1619,37 @@ export interface StatsBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -1542,6 +1697,37 @@ export interface LogoWallBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -1699,6 +1885,37 @@ export interface CTABlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -2096,6 +2313,37 @@ export interface FAQBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'faq';
@@ -2180,6 +2428,37 @@ export interface RichTextBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'richText';
@@ -2217,6 +2496,37 @@ export interface VideoEmbedBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -2264,6 +2574,37 @@ export interface MediaBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'media';
@@ -2300,6 +2641,37 @@ export interface TestimonialBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -2354,6 +2726,37 @@ export interface TabsBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -2479,6 +2882,37 @@ export interface ProductFamiliesBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'productFamilies';
@@ -2538,6 +2972,37 @@ export interface ProductShowcaseBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'productShowcase';
@@ -2596,6 +3061,37 @@ export interface SolutionsGridBlock {
      */
     hidden?: boolean | null;
   };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'solutionsGrid';
@@ -2640,6 +3136,37 @@ export interface CaseStudyBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -2698,6 +3225,37 @@ export interface NewsListBlock {
      * The block stays in the document but is not rendered.
      */
     hidden?: boolean | null;
+  };
+  motion?: {
+    preset?:
+      | (
+          | 'auto'
+          | 'none'
+          | 'fade'
+          | 'slide-up'
+          | 'slide-down'
+          | 'slide-left'
+          | 'slide-right'
+          | 'zoom-in'
+          | 'parallax-soft'
+          | 'stagger'
+        )
+      | null;
+    /**
+     * When the effect plays.
+     */
+    trigger?: ('scroll' | 'scroll-progress' | 'load' | 'hover') | null;
+    duration?: ('fast' | 'base' | 'slow') | null;
+    delay?: ('0' | '100' | '200' | '300') | null;
+    easing?: ('soft' | 'standard' | 'emphasized') | null;
+    /**
+     * Delay between cards/items in list blocks (max 300 ms).
+     */
+    stagger?: ('none' | 'tight' | 'relaxed') | null;
+    /**
+     * When off, parallax runs on tablet and desktop only.
+     */
+    mobile?: boolean | null;
   };
   id?: string | null;
   blockName?: string | null;
@@ -3647,6 +4205,17 @@ export interface HeroBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -3679,6 +4248,17 @@ export interface FeatureGridBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -3721,6 +4301,17 @@ export interface MediaTextBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -3755,6 +4346,17 @@ export interface SpecTableBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -3783,6 +4385,17 @@ export interface StatsBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -3816,6 +4429,17 @@ export interface LogoWallBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -3857,6 +4481,17 @@ export interface CTABlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -3887,6 +4522,17 @@ export interface FAQBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -3907,6 +4553,17 @@ export interface RichTextBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -3931,6 +4588,17 @@ export interface VideoEmbedBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -3961,6 +4629,17 @@ export interface MediaBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -3986,6 +4665,17 @@ export interface TestimonialBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -4015,6 +4705,17 @@ export interface TabsBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -4089,6 +4790,17 @@ export interface ProductFamiliesBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -4122,6 +4834,17 @@ export interface ProductShowcaseBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -4154,6 +4877,17 @@ export interface SolutionsGridBlockSelect<T extends boolean = true> {
         anchor?: T;
         hidden?: T;
       };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -4181,6 +4915,17 @@ export interface CaseStudyBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;
@@ -4213,6 +4958,17 @@ export interface NewsListBlockSelect<T extends boolean = true> {
         separator?: T;
         anchor?: T;
         hidden?: T;
+      };
+  motion?:
+    | T
+    | {
+        preset?: T;
+        trigger?: T;
+        duration?: T;
+        delay?: T;
+        easing?: T;
+        stagger?: T;
+        mobile?: T;
       };
   id?: T;
   blockName?: T;

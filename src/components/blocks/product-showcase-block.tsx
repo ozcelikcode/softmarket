@@ -26,7 +26,7 @@ export async function ProductShowcaseBlock({ block, locale, ctx }: BlockProps<Bl
   const alternating = block.layout === 'alternating'
   const layout = alternating ? 'alternating' : normalizeLayout(block.layout)
   return (
-    <BlockShell blockType="productShowcase" appearance={ctx.appearance} animate="items">
+    <BlockShell blockType="productShowcase" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
         locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
         viewAll={resolveViewAll(block, '/urunler', c('viewAll'))}
@@ -38,7 +38,7 @@ export async function ProductShowcaseBlock({ block, locale, ctx }: BlockProps<Bl
             const text = p.tagline || p.summary
             const image = mediaOf(p.heroImage)
             return (
-              <div key={p.id} {...anim(staggerIndex(i, layout), ctx.appearance.animation)} className={alternating ? undefined : 'h-full'}>
+              <div key={p.id} {...anim(staggerIndex(i, layout), ctx.motion)} className={alternating ? undefined : 'h-full'}>
                 {alternating ? (
                   <article className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
                     <div className={cn('min-w-0', i % 2 === 1 && 'lg:order-2')}>

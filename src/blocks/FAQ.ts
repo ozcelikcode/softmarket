@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { L, blockMeta, opt } from './meta'
@@ -40,5 +41,6 @@ export const FAQ: Block = {
       ],
     },
     blockSettings('faq'),
+    blockMotion('faq'),
   ],
 }

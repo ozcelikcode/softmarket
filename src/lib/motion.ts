@@ -8,6 +8,11 @@ export type MotionEnv = {
 }
 
 const VISIBLE_FRACTION = 0.92
+/**
+ * Scroll-trigger elements only. `data-anim-trigger` (load / hover / scroll-progress / parallax) is pure CSS
+ * and never gets a pending (hidden) state from the observer.
+ */
+export const OBSERVED = '[data-anim]:not([data-anim-state]):not([data-anim-trigger])'
 
 export function motionDisabled(env: Pick<MotionEnv, 'doc' | 'reducedMotion'>) {
   return env.reducedMotion || env.doc.documentElement.dataset.motion === 'none'
@@ -20,7 +25,7 @@ export function motionDisabled(env: Pick<MotionEnv, 'doc' | 'reducedMotion'>) {
  */
 export function startMotion(env: MotionEnv): () => void {
   if (!env.IntersectionObserver || motionDisabled(env)) return () => {}
-  const nodes = Array.from(env.doc.querySelectorAll<HTMLElement>('[data-anim]:not([data-anim-state])'))
+  const nodes = Array.from(env.doc.querySelectorAll<HTMLElement>(OBSERVED))
   const pending = new Set<HTMLElement>()
   let observer: IntersectionObserver | undefined
   const cleanup = () => {

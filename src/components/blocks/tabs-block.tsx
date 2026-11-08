@@ -27,7 +27,7 @@ export function TabsBlock({ block, locale, ctx }: BlockProps<Block>) {
     ),
   }))
   return (
-    <BlockShell blockType="tabs" appearance={ctx.appearance}>
+    <BlockShell blockType="tabs" appearance={ctx.appearance} motion={ctx.motion}>
       {block.heading ? <Heading id={headingId} size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
       <TabsIsland tabs={tabs} labelledBy={headingId} />
     </BlockShell>

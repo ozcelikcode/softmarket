@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { publicImageFilter } from '@/fields/public-media'
 
@@ -27,5 +28,6 @@ export const Testimonial: Block = {
       ],
     },
     blockSettings('testimonial'),
+    blockMotion('testimonial'),
   ],
 }

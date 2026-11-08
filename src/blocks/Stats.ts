@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 
 import { L, blockMeta } from './meta'
@@ -24,5 +25,6 @@ export const Stats: Block = {
       ],
     },
     blockSettings('stats'),
+    blockMotion('stats'),
   ],
 }

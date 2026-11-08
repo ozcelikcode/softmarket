@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 
+import { blockMotion } from '@/fields/block-motion'
 import { blockSettings } from '@/fields/block-settings'
 import { linkField } from '@/fields/link'
 
@@ -29,5 +30,6 @@ export const MediaText: Block = {
       fields: [linkField({ withAppearance: true })],
     },
     blockSettings('mediaText'),
+    blockMotion('mediaText'),
   ],
 }

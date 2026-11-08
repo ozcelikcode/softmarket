@@ -1,0 +1,352 @@
+{
+  "pilot": "V3b native canvas (custom bridge, Argon design)",
+  "date": "2026-11-08",
+  "branch": "pilot/native-canvas",
+  "server": "http://localhost:3520 (NEXT_DIST_DIR=.next-pilot-canvas, copy DB)",
+  "method": "Playwright/Chromium automation against the production build; times are automated (no human think time)",
+  "gates": {
+    "roundTrip": {
+      "result": "PASS",
+      "how": "admin editor + Live Preview canvas opened, block selected, no-op form change, autosave + publish; REST draft docs TR/EN (fallback-locale=none) deep-compared without updatedAt/createdAt/_status",
+      "docs": {
+        "products/5": {
+          "trDiff": 0,
+          "enDiff": 0
+        },
+        "products/4 (composed by canvas)": {
+          "trDiff": 0,
+          "enDiff": 0
+        },
+        "pages/6 (home)": {
+          "trDiff": 0,
+          "enDiff": 0
+        },
+        "pages/1 (legal, richText)": {
+          "trDiff": 0,
+          "enDiff": 0,
+          "lexicalRoots": 2
+        }
+      }
+    },
+    "lexical": {
+      "result": "PASS",
+      "detail": "whole-document deep compare incl. Lexical JSON (pages/1 richText) 0 diff; canvas never edits richText (plain text only)"
+    },
+    "trEn": {
+      "result": "PASS",
+      "enEditKeepsTr": true,
+      "trTitleAfterEnEdit": "unchanged",
+      "emptyEnFieldsFilledWithTr": 0
+    },
+    "publicBundle": {
+      "result": "PASS",
+      "lighthouseMobileMedian3": {
+        "main": {
+          "/tr": {
+            "jsTransferKb": 129.42,
+            "perf": 100,
+            "lcpMs": 1055,
+            "tbtMs": 9.5,
+            "cls": 0
+          },
+          "/tr/urunler/guvenli-altyapi/sistem-nobeti": {
+            "jsTransferKb": 129.42,
+            "perf": 100
+          }
+        },
+        "pilot": {
+          "/tr": {
+            "jsTransferKb": 129.59,
+            "perf": 100,
+            "lcpMs": 1056,
+            "tbtMs": 8,
+            "cls": 0
+          },
+          "/tr/urunler/guvenli-altyapi/sistem-nobeti": {
+            "jsTransferKb": 129.59,
+            "perf": 100
+          }
+        },
+        "deltaKb": 0.17,
+        "note": "first pilot build with next/dynamic loader measured 130.4 KB (> 130); switched to React.lazy + mount gate"
+      },
+      "draftOnlyChunks": {
+        "bridge": {
+          "file": "5505.*.js",
+          "rawBytes": 11111,
+          "gzipBytes": 4165
+        },
+        "zod": {
+          "file": "9538-*.js",
+          "rawBytes": 88137,
+          "gzipBytes": 24810
+        }
+      },
+      "anonymousRequestsBridgeChunk": false,
+      "publicHtmlMarkers": 0,
+      "adminHostChunk": {
+        "gzipBytes": 7152
+      }
+    },
+    "security": {
+      "result": "PASS",
+      "anonymous": {
+        "preview": 401,
+        "cacheControl": "private, no-store, max-age=0",
+        "markers": 0,
+        "bridgeChunk": false,
+        "admin": "/admin/login"
+      },
+      "customer": {
+        "preview": 403,
+        "markers": 0,
+        "admin": "307 /admin/unauthorized"
+      },
+      "staffDraftCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "forgedMessages": {
+        "sameOriginSiblingIframeToAdmin": "ignored",
+        "adminSelfPost": "ignored",
+        "crossOriginPopup127": "ignored",
+        "unknownTypeFromRealIframe": "ignored",
+        "nonParentWindowToBridge": "ignored",
+        "genuineParentToBridge": "accepted (positive control)",
+        "layoutRowsBeforeAfter": [
+          10,
+          10
+        ]
+      },
+      "standaloneDraftPage": {
+        "markers": 10,
+        "canvasUi": 0
+      },
+      "unitTests": "tests/unit/canvas-pilot.test.tsx (23), client-bundle-guard extended"
+    },
+    "mcpImport": {
+      "result": "PARTIAL",
+      "mcpFind": "OK TR/EN (findProducts veri-pusulasi: title 'Veri Pusulası Pro' / 'Flow Hub Pro', layout order + productFeatures slide-left/slow)",
+      "importDryRunPreEditorSnapshot": "OK 0 created, 98 updated",
+      "importDryRunAfterEditor": "FAIL on products[0] akis-merkezi: V2 rule (composition cannot be reset to legacy without productEditions) - the canvas materialised 4 seed products into composition mode while content/seed still has their legacy layout",
+      "importDryRunWithoutMaterialisedProducts": "OK 0 created, 94 updated (includes products inline-edited and round-tripped via canvas)"
+    },
+    "canvasParity": {
+      "result": "PASS",
+      "detail": "staff draft render (with editor markers, bridge inactive standalone, exit badge hidden) vs anonymous public render: identical full-page pixels, text and section rects",
+      "pages": [
+        "/tr",
+        "/tr/urunler/akis-yonetimi/talep-masasi",
+        "/en/products/akis-yonetimi/talep-masasi"
+      ],
+      "widths": [
+        390,
+        1440
+      ],
+      "realRenderBlocksPct": 100
+    }
+  },
+  "tasks": {
+    "product": "products/4 veri-pusulasi (TR -> EN), legacy layout",
+    "T0_materialise": {
+      "ms": 2715,
+      "note": "one click 'Bölümleri düzenlenebilir yap' on a compatibility-mode product"
+    },
+    "T1_addCta": {
+      "ms": 2781
+    },
+    "T2_moveEditionsAboveFeatures": {
+      "ms": 3186,
+      "via": "pointer drag"
+    },
+    "T3_delete": {
+      "ms": 2719,
+      "note": "two-step confirm"
+    },
+    "T4_inlineTitle": {
+      "ms": 2250
+    },
+    "T5_slideLeftSlow": {
+      "ms": 3951,
+      "note": "block click opens its Görünüm/Hareket groups in the form; preset card + duration select there"
+    },
+    "T6_enTranslate": {
+      "ms": 5364
+    },
+    "T7_preview390_1440": {
+      "ms": 2124
+    },
+    "T8_publish": {
+      "ms": 4219
+    },
+    "totalMs": 29309,
+    "v2Locks": {
+      "productEditions": {
+        "remove": "disabled",
+        "hide": "disabled",
+        "move": "enabled",
+        "duplicate": "disabled"
+      },
+      "productHero": {
+        "remove": "disabled",
+        "hide": "disabled",
+        "move": "disabled",
+        "duplicate": "disabled"
+      },
+      "productDownloads": {
+        "remove": "enabled",
+        "hide": "enabled",
+        "move": "enabled",
+        "duplicate": "disabled"
+      }
+    },
+    "screenshots": "scratchpad/v3b/t*.png"
+  },
+  "caretAutosave": {
+    "liveCommitOnInput": {
+      "keystrokes": 31,
+      "pausesForAutosave": 3,
+      "autosavePatches": 4,
+      "previewRefreshes": 4,
+      "caretBroken": 22,
+      "textIntact": false,
+      "verdict": "BROKEN: refresh resets caret to 0"
+    },
+    "commitOnEnterOrBlur_default": {
+      "keystrokes": 31,
+      "caretBroken": 0,
+      "textIntact": true,
+      "formTitleIntact": true
+    },
+    "commitOnBlur_withForeignAutosaveDuringTyping": {
+      "autosavePatches": 2,
+      "previewRefreshes": 2,
+      "caretBroken": 0,
+      "textIntact": true
+    },
+    "loopLatencyMs": {
+      "commitToAutosavePatch": 2356,
+      "commitToPreviewRefresh": 2422,
+      "structuralChangeToCanvas": [
+        2472,
+        2579
+      ]
+    }
+  },
+  "performance": {
+    "adminEditorOpenMs": [
+      501,
+      400,
+      411
+    ],
+    "selectToToolbarMs": [
+      60,
+      39,
+      36
+    ],
+    "keyboardMove": {
+      "keys": "Alt+ArrowUp / Alt+ArrowDown on the selected block",
+      "canvasUpdateMs": 2472,
+      "toolbarButtonsFocusable": true
+    }
+  },
+  "maintenance": {
+    "newDependencies": 0,
+    "payloadUiImports": [
+      "useAllFormFields",
+      "useConfig",
+      "useDocumentInfo",
+      "useForm",
+      "useLivePreviewContext",
+      "useLocale",
+      "useTranslation"
+    ],
+    "payloadInternalsRelied": [
+      "FieldAction SET_ROW_COLLAPSED (shape not in public types, cast)",
+      "FieldAction DUPLICATE_ROW / UPDATE",
+      "formState.layout.rows[{id, blockType, collapsed}]",
+      "DOM id layout-row-N and .collapsible__content .collapsible__toggle--collapsed classes",
+      "config.blocksMap for blockReferences",
+      "admin.components.edit.beforeDocumentControls slot (inside Form)"
+    ],
+    "sourceLines": {
+      "bridge.tsx": 296,
+      "admin-host.tsx": 219,
+      "protocol.ts": 81,
+      "rules.ts": 33,
+      "plugin.ts": 30,
+      "bridge-loader.tsx": 17
+    }
+  },
+  "v5EstimateDays": {
+    "low": 6,
+    "high": 8
+  },
+  "reverification": {
+    "commit": "9715277",
+    "date": "2026-11-08",
+    "products": {
+      "caretTasks": 5,
+      "caretText": 4
+    },
+    "caret": {
+      "keystrokes": 31,
+      "intervalMs": 220,
+      "broken": 0,
+      "focusLost": 0,
+      "textIntact": true,
+      "formTitleIntact": true,
+      "autosavePatches": 4,
+      "rscRefreshes": 2,
+      "product5": {
+        "broken": 0,
+        "focusLost": 0
+      }
+    },
+    "quickClose": {
+      "leaveMs": 550,
+      "savedOnLeave": false,
+      "savedOnTabClose": false,
+      "note": "autosave ~2s not reached; no flush on unload"
+    },
+    "locale": {
+      "trDiff": 0,
+      "enEmptyFieldsFilledFromTr": 0,
+      "enLeak": []
+    },
+    "roundTrip": {
+      "products/4": {
+        "tr": 0,
+        "en": 0
+      },
+      "products/5": {
+        "tr": 0,
+        "en": 0
+      },
+      "pages/6": {
+        "tr": 0,
+        "en": 0
+      },
+      "pages/1": {
+        "tr": 0,
+        "en": 0,
+        "lexicalIncluded": true
+      }
+    },
+    "security": {
+      "anonPreview": 401,
+      "anonMarkers": 0,
+      "publicProductMarkers": 0,
+      "canvasUi": 0
+    },
+    "tasksMs": {
+      "T0": 2728,
+      "T1": 2815,
+      "T2": 3187,
+      "T3": 2711,
+      "T4": 2281,
+      "T5": 3928,
+      "T6": 5279,
+      "T7": 2068,
+      "T8": 4209
+    },
+    "flaky": "T5 motion group reveal timed out once in 3 runs"
+  }
+}

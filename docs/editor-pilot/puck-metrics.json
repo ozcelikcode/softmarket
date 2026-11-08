@@ -1,0 +1,122 @@
+{
+  "pilot": "V3a Puck",
+  "date": "2026-11-08",
+  "branch": "pilot/puck",
+  "base": "fc22469",
+  "puck": { "package": "@puckeditor/core", "version": "0.24.0", "pinned": true, "published": "2026-10-29", "license": "MIT", "peer": "react ^18 || ^19", "maturity": "0.x" },
+  "dependencies": {
+    "direct_added": 1,
+    "lockfile_packages_added": 60,
+    "notable": ["@dnd-kit/* 0.4.0 (7)", "@tiptap/* (22)", "prosemirror-* (13)", "happy-dom", "zustand", "@tanstack/react-virtual"],
+    "unpacked_size_core_mb": 2.9
+  },
+  "bundles": {
+    "editor_route_first_load_kb_next_report": 315,
+    "editor_route_page_kb_next_report": 195,
+    "editor_only_js_gzip_kb": 208.4,
+    "editor_css_gzip_kb": 14.4,
+    "public_home_js_transfer_kb": 124.6,
+    "public_product_js_transfer_kb": 124.8,
+    "public_home_js_gzip_kb_manifest_sum": 107.6,
+    "public_threshold_kb": 130,
+    "public_chunks_with_puck_trace": 0,
+    "public_entries_checked": 48
+  },
+  "gates": {
+    "roundtrip_db": { "pass": true, "scope": "pilot DB copy (pristine + edited): 8 products + 15 pages, TR+EN, open -> save unchanged; fixture product/page with Lexical", "diff": 0 },
+    "roundtrip_ui": { "pass": true, "scope": "Playwright on 3510: products/1 and pages/6 (home), Taslak kaydet TR + EN", "trEqual": true, "enEqual": true },
+    "lexical": { "pass": true, "scope": "richText, tabs items, faq answers, systemRequirements: node JSON identical" },
+    "tr_en": { "pass": true, "leaks": 0, "scope": "EN edit -> TR unchanged; EN empty body stays null; block ids/order shared" },
+    "public_bundle": { "pass": true, "trace": 0, "home_js_kb": 124.6 },
+    "security": { "pass": true, "anonymous": "307 -> /admin/login", "customer": "404 (loader 'forbidden')", "staff": "200, Cache-Control private no-store, X-Frame-Options SAMEORIGIN", "other_collections": "404", "postMessage": "not used (no bridge)" },
+    "mcp_import": {
+      "pass": false,
+      "mcp_find_after_publish": true,
+      "import_dry_run_after_unchanged_save": "0 errors, 98 updated",
+      "import_dry_run_after_composition_save": "rejected for that product (V2 rule: seed JSON still legacy layout; same for any editor)"
+    }
+  },
+  "canvas_real_view": {
+    "by_block_type": { "real": 23, "total": 29, "ratio": 0.79, "placeholders": ["productFamilies", "productShowcase", "solutionsGrid", "caseStudy", "newsList", "listing"] },
+    "product_page_blocks": { "real": 10, "total": 10, "ratio": 1.0 },
+    "home_page_blocks": { "real": 2, "total": 7, "ratio": 0.29, "note": "hero (families panel = placeholder), cta real; productFamilies, solutionsGrid, logoWall(partnersAndCaseStudies), caseStudy, newsList placeholders" },
+    "other_notes": "media/relationship values shown via id map (DB has no media); logoWall/faq from collections = placeholder"
+  },
+  "timings_ms": {
+    "editor_open_prod_products_1": 483,
+    "editor_open_prod_home": 196,
+    "editor_open_prod_product_cold": 465,
+    "editor_open_dev_first": 1389
+  },
+  "tasks_automated_prod": {
+    "product": 2,
+    "T1_add_cta": { "ok": true, "ms": 1843 },
+    "T2_move_editions_above_features": { "ok": true, "ms": 3352, "via": "outline drag" },
+    "T3_delete_downloads": { "ok": true, "ms": 538, "editions_delete_buttons": 0 },
+    "T4_inline_heading": { "ok": true, "ms": 807 },
+    "T5_slide_up_slow": { "ok": true, "ms": 410 },
+    "T6_en_translate_heading": { "ok": true, "ms": 3314 },
+    "T7_viewports_390_1440": { "ok": true, "ms": 1532 },
+    "T8_publish": { "ok": true, "ms": 164 },
+    "note": "Playwright script times (no human think time); user test still decides V4 score"
+  },
+  "checks": { "typecheck": "pass", "lint": "pass", "build": "pass (.next-pilot-puck)", "unit_tests": "68 files / 1029 passed, 1 skipped (PUCK_PILOT_DB-only case; run separately: 7/7 on pristine and edited copies)" },
+  "v5_effort_days": { "estimate": 12, "range": [10, 15] },
+  "audit": {
+    "date": "2026-11-08",
+    "reviewer": "GPT",
+    "reviewed_head": "370c9df",
+    "historical_metrics_note": "Fields outside audit are original pilot measurements, except the corrected MCP/import gate. UI timings were not remeasured after these fixes.",
+    "p0": 0,
+    "p1_fixed": ["save queue race", "stale autosave after undo/unmount", "locale transition race and lost edits"],
+    "p2_report_only": ["nested array duplicate IDs rejected with 400", "EN preview opens TR", "Lexical canvas links are active and bypass safeHref", "malformed product ID returns 500"],
+    "p3_report_only": ["source bundle guard misses dynamic and transitive imports"],
+    "checks": {
+      "typecheck": "pass",
+      "lint": "pass",
+      "unit_tests": { "files": 69, "passed": 1039, "skipped": 1 },
+      "db_copy_suite": { "passed": 10, "skipped": 0, "existing_products": 8, "existing_pages": 15, "layout_diff": 0 },
+      "save_lifecycle_dom_tests": { "passed": 7, "puck_mocked": true, "original_code_regressions_reproduced": 4 },
+      "build": "pass (.next-pilot-puck-qa, PORT=3511, separate DB/uploads)",
+      "bundle_guard": { "passed": 54, "dist": ".next-pilot-puck-qa" }
+    },
+    "production_http": {
+      "anonymous": 307,
+      "customer": 404,
+      "editor": 200,
+      "admin": 200,
+      "unsupported_collection": 404,
+      "malformed_id": 500,
+      "no_store": true,
+      "sameorigin": true,
+      "foreign_origin_patch_preflight_allow_origin": null,
+      "csrf_scope": "Browser PATCH preflight rejected by missing allow-origin; existing Payload CSRF list is empty, no separate server Origin allowlist proven.",
+      "rest_patch_anonymous_customer": 403,
+      "rest_patch_without_editions_draft_autosave": 400
+    },
+    "bundles": {
+      "public_entries": 48,
+      "public_js_chunks": 65,
+      "puck_trace": 0,
+      "home_js_transfer_kb": 122.6,
+      "product_js_transfer_kb": 122.9,
+      "transfer_method": "HTTP gzip script response body bytes, modern browser (nomodule excluded), decimal KB",
+      "home_manifest_js_gzip_kb": 110.1,
+      "manifest_method": "unique entry JS files, node zlib gzipSync default settings, decimal KB",
+      "editor_only_js_gzip_kb": 198.4,
+      "editor_only_method": "editor entry JS minus union of all public entry files, zlib gzipSync, decimal KB",
+      "editor_route_first_load_kb_next_report": 315,
+      "editor_route_page_kb_next_report": 195
+    },
+    "v4": {
+      "eligible": false,
+      "mcp_import": "fail: content:import --dry-run exit 1, products:belge-rotasi layout; MCP find not rerun",
+      "canvas_real_ratio": 0.7931,
+      "canvas_target": 0.8,
+      "browser_ui_recheck": "blocked: Chromium MachPort permission denied (1100); DOM regressions are not real iframe/browser proof"
+    },
+    "isolation": { "port_3510_preserved": true, "port_3511_closed": true, "live_db_used": false, "schema_changed": false },
+    "evidence": "/private/tmp/softmarket-puck-qa-el4vwpfl",
+    "commit": { "status": "blocked", "reason": "sandbox cannot create /Users/ozcelik/dev/softmarket/.git/worktrees/softmarket-pilot-puck/index.lock (Operation not permitted)", "message": "fix: prevent lost edits in Puck pilot save lifecycle" }
+  }
+}

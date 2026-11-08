@@ -236,3 +236,7 @@ Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince günce
 - Ödeme P1 çekirdeği commit 16b565e (`src/lib/payments`, rota/UI'ye bağlı değil).
 - Sıradaki: V3a Puck pilotu ve V3b native canvas pilotu (ayrı worktree, port 3510/3520, migration yok), sonra kullanıcının 8 görevlik testi. Bilinen sınır: Payload FieldLabel locale etiketi "— Türkçe" her admin dilinde aynı.
 - content:import karar b denetimi (2026-11-08): kompozisyondaki mevcut ürün + eski seed -> layout TR/EN dönüşümünden önce çıkarılır (eski ilişki/Markdown hatası import'u düşürmez); diğer alanlar güncellenir, tek uyarı, hata yok. `draft:true` aynı req/transaction ile en son taslak/autosave'ı okur; import korunmuş taslak kompozisyonu da yayınlar. Layout yapısı ortak, blok metinleri lokalize; tek dilde kompozisyon seed'i yazmadan reddedilir. Kompozisyon seed'i V2 doğrulamasına tabidir, pages etkilenmez. Geçici SQLite'ta gerçek rollback dry-run, aynı transaction'daki taslak, TR/EN metin/ayar/ID koruması ve idempotans doğrulandı (`content-import.test.ts`, `product-bound-db.test.ts`); kapı sonuçları `progress.md` başında.
+
+## 2026-11-08 V4 görsel editör kararı
+- Karar: Payload-native canvas. Puck bırakıldı (etiket `archive/pilot-puck`). Ayrıntı: `docs/editor-pilot/decision.md`.
+- Sıradaki: V5 `feat/visual-editor`. Görsel editör varsayılan, form dar yan panel.

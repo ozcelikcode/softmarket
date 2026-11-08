@@ -225,3 +225,6 @@
 - V2: 8 ürün bağlı blok, Teklif İste zorunlu, hero ilk; eski layout birebir. Migration `20261108_130717_v2_product_bound_blocks` (yalnız ADD/CREATE), yedek scratchpad `softmarket-pre-v2.db`.
 - QA düzeltmeleri: restore/hidden/duplicate-id bypass kapatıldı, `.product-anchor` offset, ValidationError TR toast (`req.t`).
 - Ödeme P1 çekirdeği 16b565e (`src/lib/payments`, bağlı değil). Sonraki: V3a Puck pilotu, V3b native canvas pilotu (ayrı worktree, 3510/3520, migration yok).
+
+## 2026-11-08 V4 karar kaydı
+- V4 karar: native canvas kazandı; Puck pilot dalı ve worktree kaldırıldı, raporlar `docs/editor-pilot/` altında. Sonraki: V5 (`feat/visual-editor`).

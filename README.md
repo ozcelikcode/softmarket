@@ -15,7 +15,7 @@ Kurumsal yazılım şirketinin 5-20 ürününü tanıttığı, teklif ve demo ta
 
 ## Gereksinimler
 
-- Node.js `>=24 <25`
+- Node.js `>=24.22.1 <25` (Payload 3.93 gereksinimi)
 - pnpm `>=12 <13` (`packageManager`: `pnpm@12.16.1`)
 
 ## Hızlı başlangıç

@@ -121,8 +121,13 @@ describe('image pipeline', () => {
     }
   })
 
-  it('serves SVG under a restrictive sandbox policy', async () => {
+  it('rejects active SVG uploads with the Payload 3.90 security defaults', async () => {
     const data = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><script>alert(1)</script></svg>')
+    await expect(payload.create({ collection: 'media', data: { alt: 'SVG', protected: false, visibility: 'public' }, file: { data, mimetype: 'image/svg+xml', name: 'active.svg', size: data.length } })).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('serves safe SVG under a restrictive sandbox policy', async () => {
+    const data = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20"/></svg>')
     const svg = await payload.create({ collection: 'media', data: { alt: 'SVG', protected: false, visibility: 'public' }, file: { data, mimetype: 'image/svg+xml', name: 'test.svg', size: data.length } })
     const response = await request(svg.filename!)
     expect(response.headers.get('content-security-policy')).toContain('sandbox')

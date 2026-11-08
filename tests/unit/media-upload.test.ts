@@ -77,7 +77,8 @@ it.each(['png', 'webp', 'tiff'] as const)('preserves %s format and removes priva
   const doc = await upload(data, `private.${format}`, `image/${format}`)
   const saved = readFileSync(join(dir, 'uploads', doc.filename!))
   const metadata = await sharp(saved).metadata()
-  expect(doc.filename).toBe(`private.${format}`)
+  // Payload 3.90+ derives the canonical extension from the detected bytes (TIFF -> tif).
+  expect(doc.filename).toBe(`private.${format === 'tiff' ? 'tif' : format}`)
   expect(metadata.format).toBe(format)
   expect(metadata.exif).toBeUndefined()
   expect(metadata.xmp).toBeUndefined()

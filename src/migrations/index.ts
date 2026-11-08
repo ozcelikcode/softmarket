@@ -14,6 +14,7 @@ import * as migration_20261107_144850_page_builder_pages from './20261107_144850
 import * as migration_20261107_160000_globals_media_delete from './20261107_160000_globals_media_delete';
 import * as migration_20261107_190342_pages_autosave from './20261107_190342_pages_autosave';
 import * as migration_20261107_192347_media_image_sizes from './20261107_192347_media_image_sizes';
+import * as migration_20261108_093334_v0_payload_393 from './20261108_093334_v0_payload_393';
 
 export const migrations = [
   {
@@ -94,6 +95,11 @@ export const migrations = [
   {
     up: migration_20261107_192347_media_image_sizes.up,
     down: migration_20261107_192347_media_image_sizes.down,
-    name: '20261107_192347_media_image_sizes'
+    name: '20261107_192347_media_image_sizes',
+  },
+  {
+    up: migration_20261108_093334_v0_payload_393.up,
+    down: migration_20261108_093334_v0_payload_393.down,
+    name: '20261108_093334_v0_payload_393'
   },
 ];

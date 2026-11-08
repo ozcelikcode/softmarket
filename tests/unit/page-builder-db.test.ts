@@ -120,7 +120,10 @@ describe('F6 pages through Payload', () => {
     expect((await content.getHomePage('tr'))?.id).toBe(alt.id)
     // A draft-only configured page is skipped (anonymous, published-only read) -> slug "home".
     const draft = await payload.create({ collection: 'pages', locale: 'tr', overrideAccess: true, draft: true, data: { title: 'Taslak', slug: 'taslak-ana', _status: 'draft' } as never })
-    await payload.updateGlobal({ slug: 'site-settings', data: { homePage: draft.id }, overrideAccess: true })
+    // 3.93 preserves shared fields in draft versions; the unpublished row no longer
+    // passes the relationship filter. A legacy stored reference must still fail closed.
+    await expect(payload.updateGlobal({ slug: 'site-settings', data: { homePage: draft.id }, overrideAccess: true })).rejects.toMatchObject({ status: 400 })
+    await run(`UPDATE site_settings SET home_page_id=${draft.id}`)
     expect((await content.getHomePage('tr'))?.id).toBe(home.id)
     // A draft saved over the published home keeps the published blocks for visitors.
     await payload.update({ collection: 'pages', id: home.id, locale: 'tr', draft: true, overrideAccess: true, data: { layout: [{ blockType: 'spacer' }], _status: 'draft' } as never })

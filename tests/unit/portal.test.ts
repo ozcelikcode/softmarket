@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { describe, expect, it, vi } from 'vitest'
-import type { AuthStrategy, PayloadRequest } from 'payload'
+import { JWT_AUTH_VERSION, type AuthStrategy, type PayloadRequest } from 'payload'
 
 import { Customers } from '@/collections/Customers'
 import { licenseState, maskLicenseKey } from '@/lib/licenses/state'
@@ -92,8 +92,8 @@ describe('portal JWT verification (real Payload JWTAuthentication)', () => {
   const secret = 'unit-test-secret-for-portal-only'
   const now = Math.floor(Date.now() / 1000)
   const claims = { id: 7, collection: 'customers', sid: 'session-7', exp: now + 3600 }
-  const sign = (data: object, alg = 'HS256', key = secret) => {
-    const parts = [Buffer.from(JSON.stringify({ alg, typ: 'JWT' })).toString('base64url'), Buffer.from(JSON.stringify(data)).toString('base64url')]
+  const sign = (data: object, alg = 'HS256', key = secret, authVersion: number | null = JWT_AUTH_VERSION) => {
+    const parts = [Buffer.from(JSON.stringify({ alg, typ: 'JWT', ...(authVersion === null ? {} : { authVersion }) })).toString('base64url'), Buffer.from(JSON.stringify(data)).toString('base64url')]
     return `${parts.join('.')}.${createHmac(alg === 'HS512' ? 'sha512' : 'sha256', key).update(parts.join('.')).digest('base64url')}`
   }
   const authenticate = async (token: string, overrides = {}) => {
@@ -107,6 +107,10 @@ describe('portal JWT verification (real Payload JWTAuthentication)', () => {
   }
   it('accepts only a correctly signed, live customer session', async () => {
     expect((await authenticate(sign(claims))).user).toMatchObject({ id: 7, collection: 'customers', _sid: 'session-7' })
+  })
+  it('rejects pre-upgrade tokens and an unsupported signed auth version', async () => {
+    for (const version of [null, JWT_AUTH_VERSION + 1])
+      expect((await authenticate(sign(claims, 'HS256', secret, version))).user).toBeNull()
   })
   it.each([
     { ...claims, collection: 'users' }, { ...claims, exp: now - 1 }, { ...claims, exp: undefined },

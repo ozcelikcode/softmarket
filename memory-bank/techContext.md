@@ -1,9 +1,9 @@
 # Teknik Bağlam
 
 ## Sürümler
-- Node `>=24 <25`, pnpm `12.16.1`, TypeScript `5.7.3` (strict).
+- Node `>=24.22.1 <25` (Payload 3.92+), pnpm `12.16.1`, TypeScript `5.7.3` (strict).
 - Next.js `15.4.11` (App Router), React / React-DOM `19.2.6`.
-- Payload CMS `3.85.1`: `@payloadcms/db-sqlite`, `@payloadcms/richtext-lexical`, `@payloadcms/ui`, `@payloadcms/email-nodemailer`, plugin: seo, form-builder, search.
+- Payload CMS ve tüm `@payloadcms/*` `3.93.0` (tam sabit): SQLite, Next/UI, Lexical, Nodemailer, live-preview-react; plugin: seo, form-builder, search, mcp. Next/React peer uyumu korunur. Lexical `0.50.0` yalnız Payload re-export'ları üzerinden kullanılır; özel node yok, içerik dönüşümü gerekmedi.
 - Tailwind CSS `^4.3.4`, `@tailwindcss/postcss` `^4.3.4`; Radix UI `^1.8.1`; Motion `^14.9.1`; Lucide React `^1.68.0`.
 - `next-intl` `^4.14.9`; `sharp` `0.35.4`.
 - Vitest `4.0.18`; Playwright `1.63.0`; ESLint `^9.16.0` (`eslint-config-next` `15.4.11`); tsx `4.23.15`.
@@ -35,7 +35,7 @@
 - GitHub Actions CI/CD planlandı; kurulu değil.
 
 ## Kısıtlar
-- **`pnpm build` çalışan dev sunucusu varken `.next` klasörünü bozar.** Önce dev sunucuyu durdur.
+- Dev açıkken build yalnız `NEXT_DIST_DIR=.next-prod pnpm build`; dev sürecini durdurma ve `.next` silme. Bağımlılık kurulumu çalışan dev HMR'sini bozabilir; yönetici Node gereksinimini sağlayıp olağan restart yapar.
 - `.env`, kimlik bilgileri, yerel yüklemeler ve yedekler commit edilmez.
 - Git commit yalnız kullanıcı açıkça isterse.
 - Ödeme SDK ve ortam değişkenleri kaldırıldı. SMTP boş/`CHANGE_` ise konsol adaptörü; gerçek SMTP gönderimi doğrulanmadı.
@@ -51,7 +51,7 @@
 
 ## Ajan araçları
 - Bağlam koruma için büyük çıktılar `ctx_execute` / `ctx_batch_execute` ile işlenir.
-- Payload MCP plugin `@payloadcms/plugin-mcp@3.85.1` kurulu; peer Payload 3.85.1. `/api/mcp`; kurulum AGENTS.md içinde.
+- Payload MCP plugin `@payloadcms/plugin-mcp@3.93.0`; peer Payload 3.93.0. `/api/mcp`; kurulum/araç argüman sözleşmesi AGENTS.md içinde. SDK `1.30.0`; upstream `mcp-handler@1.1.0` peer'i `1.26.0` olduğundan pnpm uyarır (önceden de vardı); güvenlik güncellemesi düşürülmedi, gerçek handler kontrolü geçti.
 
 ## SQLite geçişi (2026-11-06)
 - SQLite WAL/FULL, busy timeout 5000; Payload transaction etkin, libSQL yazma transaction `BEGIN IMMEDIATE`.

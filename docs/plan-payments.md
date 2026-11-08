@@ -1,13 +1,25 @@
 # Plan — Seçimli Online Ödeme ("Teklif iste" / "Ödeme al")
 
-> Durum: **taslak plan, kod yok** (2026-11-08). Uygulama kullanıcı onayı ve §9'daki girdilerden sonra başlar.
+> Durum: **P1 şemasız çekirdek yazıldı** (`src/lib/payments/**`, rotaya/UI'ye bağlı değil). Şema ve rotalar kullanıcı onayı ve §9'daki girdilerden sonra başlar.
 > Kaynaklar: `memory-bank/*`, `AGENTS.md`, `docs/implementation-plan.md` (ilk plan §5 ödeme akışı), `docs/plan-visual-editor.md` (V0–V6, şema sırası), migration'lar `20261106_151826_remove_online_sales` ve `20261107_092304_remove_sales_legal_fields`, mevcut kod (`Editions`, `Licenses`, `Customers`, `SiteSettings`, `src/access`, `src/lib/{licenses,portal,forms,email,mcp,csp,request-guards,legal-draft}`, `middleware.ts`, ürün sayfası, `EditionCard`, portal `/hesap`).
 
 ## Kullanıcı isteği ve kararları
 
 - İstek (harfiyen): "Ödeme sistemi de sitede dursun. Sadece seçime göre tamamen kaldırılabilir olmalı. Admin panelde bu seçenek şöyle olacak: teklif iste, ödeme al. Bu denge iyi kurulmalı."
 - K1 **Site geneli + sürüm bazında.** `site-settings` ana anahtarı. "Yalnız teklif" seçiliyse ödeme yüzeyinin tamamı kapanır: fiyat, checkout, ödeme sayfaları, webhook uçları, sipariş menüleri ve satış yasal metni linkleri. "Ödeme açık" seçiliyse her sürüm ayrıca "Teklif iste" ya da "Satın al" olarak işaretlenir.
-- K2 **Sağlayıcılar:** iyzico (TRY) ve Stripe (USD/EUR). Admin'de her biri ayrı açılıp kapatılır.
+- K2 **Sağlayıcılar:** ~~iyzico (TRY) ve Stripe (USD/EUR)~~ → **P0 bulgusuyla güncellendi:** iyzico TRY/USD/EUR için birincil sağlayıcı. Stripe adaptörü kodda hazır ama **varsayılan kapalı** (aşağıya bakın). Admin'de her biri ayrı açılıp kapatılır.
+
+### P0 bulgusu (2026-11-08): Stripe Türkiye'de yok
+
+- **Türkiye, Stripe'ın desteklenen ülke listesinde değil.** TR merkezli şirket Stripe hesabı açamaz ([stripe.com/global](https://stripe.com/global), 2026-11-08 kontrolü).
+- **Sonuç:** iyzico **tüm para birimleri (TRY/USD/EUR)** için birincil sağlayıcıdır. Checkout Form USD/EUR'yu destekler ([CF Initialize](https://docs.iyzico.com/en/payment-methods/checkoutform/cf-implementation/cf-initialize) `currency`: TRY, USD, EUR, GBP, NOK, CHF). Üye işyeri sözleşmesinde döviz yetkisi ayrıca istenir (§9).
+- **Stripe adaptörü kodda hazır, varsayılan kapalı.** Yalnız yurt dışı tüzel kişilik gibi durumlarda `PAYMENTS_STRIPE_ENABLED=true` ile açılır. O zaman da yalnız `PAYMENTS_STRIPE_CURRENCIES` (varsayılan USD,EUR) Stripe'a gider; TRY hiçbir zaman Stripe'a gitmez.
+- **iyzico imzaları resmi belgeden doğrulandı:**
+  - [IYZWSv2](https://docs.iyzico.com/en/getting-started/preliminaries/authentication/hmacsha256-auth): `hex(HMAC-SHA256(secretKey, randomKey + uriPath + body))`, başlık `IYZWSv2 base64("apiKey:…&randomKey:…&signature:…")`.
+  - [Yanıt imzası](https://docs.iyzico.com/en/advanced/response-signature-validation): CF retrieve sırası `paymentStatus:paymentId:currency:basketId:conversationId:paidPrice:price:token`. Fiyatlarda sondaki sıfırlar atılır. Resmi örnek vektör testte kullanılır.
+  - [Webhook `X-IYZ-SIGNATURE-V3`](https://docs.iyzico.com/en/advanced/webhook) (HPP/CF): `hex(HMAC-SHA256(secretKey, secretKey + iyziEventType + iyziPaymentId + token + paymentConversationId + status))`.
+  - [CF Retrieve](https://docs.iyzico.com/en/payment-methods/checkoutform/cf-implementation/cf-retrieve): `fraudStatus` 1 = onay, 0 = inceleme, -1 = ret. [İade v2](https://docs.iyzico.com/en/advanced/refund-and-cancel): `paymentId` + `price`.
+- **Stripe webhook imzası** ([belge](https://docs.stripe.com/webhooks/signature)): `Stripe-Signature: t=…,v1=…`, `HMAC-SHA256(secret, "t.body")`, 300 sn tolerans.
 - K3 **Otomatik lisans.** Ödeme doğrulanınca lisans otomatik atanır, müşteri e-posta alır ve lisansı portalda görür. Yönetici lisansı iptal edebilir.
 
 ## Geçmiş: ne silindi, ne geri gelir
@@ -22,7 +34,7 @@
 | `customers.billing_address_*` | **Geri gelmez.** Fatura bilgisi siparişte anlık kopya olarak saklanır. Bir sonraki siparişte form, müşterinin son siparişinden ön doldurulur |
 | `site_settings.commerce_checkout_enabled` | `commerce.mode` (`quote`/`payment`) ile değiştirilir |
 | `site_settings.legal_{distance_sales,pre_information,refund}_id` (FK; `092304` up `__new_site_settings` ile silindi) | **FK olarak geri gelmez.** Satış metinleri `pages.commerceLegal` seçim alanıyla işaretlenir (FK yok, down'da DROP COLUMN çalışır) |
-| `stripe`, `@react-email/*` paketleri | `stripe` tam sabit sürümle geri gelir. React Email gelmez; mevcut `src/lib/email/template.ts` yeterli |
+| `stripe`, `@react-email/*` paketleri | **Hiçbiri geri gelmez.** Stripe için fetch istemcisi ve kendi imza doğrulamamız yeterli (varsayılan kapalı adaptöre bağımlılık eklenmez). React Email yerine mevcut `src/lib/email/template.ts` kullanılır |
 
 ---
 
@@ -57,7 +69,7 @@ Sürüm başına eylem saf fonksiyonla belirlenir: `resolveEditionOffer(edition,
 | `commerce.quoteSince` | date, readOnly, hook doldurur | — | `payment → quote` geçişinde yazılır (drain penceresi, §1.4) |
 | `commerce.status` | `ui` alanı (şema yok) | — | Hazırlık kontrol listesi ve sağlayıcı ortamı (**SANDBOX/LIVE**, env'den, salt okunur). Gizli değer göstermez; yalnız "tanımlı/eksik" bilgisi verir |
 
-**Gizli anahtarlar DB'de tutulmaz.** Env değişkenleri: `IYZICO_API_KEY`, `IYZICO_SECRET_KEY`, `IYZICO_BASE_URL` (sandbox/live; ortam bu değerden türetilir), `STRIPE_SECRET_KEY` (tercihen restricted `rk_`; `sk_test`/`rk_test` öneki = test), `STRIPE_WEBHOOK_SECRET`. Test/live seçimi admin'den yapılamaz; env belirler, admin yalnız görür. Production'da sandbox anahtar kullanılıyorsa checkout ve admin'de kırmızı "TEST MODU" bandı çıkar.
+**Gizli anahtarlar DB'de tutulmaz.** Env değişkenleri: `IYZICO_API_KEY`, `IYZICO_SECRET_KEY`, `IYZICO_BASE_URL` (sandbox/live; ortam bu değerden türetilir), `PAYMENTS_STRIPE_ENABLED` (varsayılan `false`), `PAYMENTS_STRIPE_CURRENCIES`, `STRIPE_SECRET_KEY` (tercihen restricted `rk_`; `sk_test`/`rk_test` öneki = test), `STRIPE_WEBHOOK_SECRET`. Stripe env'i kapalıyken admin'deki Stripe anahtarı "yapılandırılmamış" görünür ve açılamaz. Test/live seçimi admin'den yapılamaz; env belirler, admin yalnız görür. Production'da sandbox anahtar kullanılıyorsa checkout ve admin'de kırmızı "TEST MODU" bandı çıkar.
 
 **Hazırlık doğrulaması** (`validate` on `commerce.mode`, yalnız `payment` seçilirken): yetenek açık olmalı; en az bir sağlayıcı enabled ve configured olmalı; üç satış yasal sayfası (§5) yayınlı olmalı ve production'da `isLegalDraft` false dönmeli; `company.legalName/taxNumber/taxOffice/mersisNo` ve `contact.address/email/phone` dolu olmalı; SMTP yapılandırılmış olmalı. Eksikler TR/EN liste halinde döner ve kayıt reddedilir. Böylece taslak sözleşmeyle satış yapılamaz.
 
@@ -196,11 +208,11 @@ Sürüm kartı "Satın al" (para birimi seçili)
   → Portal: Siparişlerim (durum, tutar, fatura no, sözleşme kopyası) + Lisanslarım (mevcut)
 ```
 
-- **Para birimi ↔ sağlayıcı eşlemesi** tek yerde tutulur: `CURRENCY_PROVIDER = { TRY: 'iyzico', USD: 'stripe', EUR: 'stripe' }`. Varsayılan para birimi TR dilinde TRY, EN dilinde USD'dir; kullanıcı yalnız fiyatı ve sağlayıcısı açık para birimleri arasında seçebilir.
+- **Para birimi ↔ sağlayıcı eşlemesi** tek yerde tutulur: `providerForCurrency()` (`src/lib/payments/mode.ts`). Varsayılan **hepsi iyzico**. Stripe yalnız `PAYMENTS_STRIPE_ENABLED=true` iken `PAYMENTS_STRIPE_CURRENCIES` içindeki USD/EUR'yu alır; TRY asla. Varsayılan para birimi TR dilinde TRY, EN dilinde USD'dir; kullanıcı yalnız fiyatı ve sağlayıcısı açık para birimleri arasında seçebilir.
 - Sağlayıcı soyutlaması `src/lib/payments/providers/types.ts`:
   `createCheckout(order, urls) → { providerRef, redirectUrl, expiresAt }`, `retrieve(ref) → ProviderPaymentState`, `verifyWebhook(rawBody, headers) → VerifiedEvent | null`, `refund(order) → RefundResult`.
-- **Stripe:** SDK `stripe` tam sürüm, API sürümü sabitlenir. Checkout Session `mode: payment`, `price_data` (sunucu tutarı), `client_reference_id`, `metadata.orderId`, `expires_at` +30 dk, `customer_email`. Olaylar: `checkout.session.completed`, `checkout.session.async_payment_succeeded/failed`, `checkout.session.expired`, `charge.refunded`, `charge.dispute.created/closed`. İmza `constructEvent(rawBody, sig, secret, 300)`.
-- **iyzico:** resmi `iyzipay` paketi eski ve callback tabanlı olduğu için **ince fetch istemcisi** (`IYZWSv2` HMAC kimlik doğrulama) tercih edilir; P0'da doğrulanır. Checkout Form initialize `paymentPageUrl` kullanılır. **Gömülü `checkoutFormContent` script'i kullanılmaz** (CSP/SAQ-A). `basketItems` toplamı = `price`, `paidPrice` = toplam. Buyer alanları fatura snapshot'ından gelir. Webhook imzası `X-IYZ-SIGNATURE-V3` (HMAC-SHA256; alan sırası P0'da güncel dokümandan doğrulanır). Webhook yalnız tetiktir; durum her zaman retrieve ile okunur.
+- **Stripe (varsayılan kapalı):** SDK yok; fetch istemcisi, `Stripe-Version` sabitlenir. Checkout Session `mode: payment`, `price_data` (sunucu tutarı), `client_reference_id`, `metadata.orderId`, `expires_at` +30 dk, `customer_email`. Olaylar: `checkout.session.completed`, `checkout.session.async_payment_succeeded/failed`, `checkout.session.expired`, `charge.refunded`, `charge.dispute.created/closed`. İmza kendi `verifyStripeSignature` (300 sn, `timingSafeEqual`).
+- **iyzico:** resmi `iyzipay` paketi eski ve callback tabanlı olduğu için **ince fetch istemcisi** (`IYZWSv2` HMAC kimlik doğrulama) kullanılır (P1'de yazıldı). Checkout Form initialize `paymentPageUrl` kullanılır. **Gömülü `checkoutFormContent` script'i kullanılmaz** (CSP/SAQ-A). `basketItems` toplamı = `price`, `paidPrice` = toplam. Buyer alanları fatura snapshot'ından gelir. Webhook imzası `X-IYZ-SIGNATURE-V3` (alan sırası P0 bulgusunda). Retrieve yanıtının `signature` alanı da doğrulanır; eksikse ret. `enabledInstallments: [1]` (taksit farkı `paidPrice`'ı değiştirmesin). `fraudStatus` 1 değilse ödendi sayılmaz. Webhook yalnız tetiktir; durum her zaman retrieve ile okunur.
 - **Zaman aşımı:** 60 dakikadan eski pending siparişler reconcile işinde sağlayıcıya sorulur; ödeme yoksa `cancelled` olur. Reconcile: `pnpm payments:reconcile` + systemd timer (15 dk). Bu iş Next önbelleğine dokunmaz.
 - Sepet yoktur (v1): tek sürüm, adet 1. Çoklu koltuk ve kurumsal alım "Teklif iste"de kalır.
 
@@ -227,7 +239,7 @@ Kart verisi sitemizden geçmez: sağlayıcıya tam sayfa yönlendirme yapılır,
 
 ### 4.4 CSP
 
-`usesNonce` hesap yollarını zaten kapsar. Yeni `contentSecurityPolicy({ checkout: true })` yalnız `/(tr|en)/(hesap|account)/(satin-al|checkout)/` yolunda ve `PAYMENTS_ENABLED=true` iken `form-action`'a `https://checkout.stripe.com` ile iyzico sandbox/live ödeme sayfası origin'lerini ekler (JS'siz POST→303 zincirini Chrome `form-action` ile denetler). `script-src`/`frame-src`/`connect-src`'ye **sağlayıcı eklenmez**. Test: quote modunda ve diğer tüm yollarda politika bugünküyle aynı kalır.
+`usesNonce` hesap yollarını zaten kapsar. Yeni `contentSecurityPolicy({ checkout: true })` yalnız `/(tr|en)/(hesap|account)/(satin-al|checkout)/` yolunda ve `PAYMENTS_ENABLED=true` iken `form-action`'a `https://checkout.stripe.com` ile iyzico sandbox/live ödeme sayfası origin'lerini ekler (Stripe origin'i yalnız `PAYMENTS_STRIPE_ENABLED=true` iken) (JS'siz POST→303 zincirini Chrome `form-action` ile denetler). `script-src`/`frame-src`/`connect-src`'ye **sağlayıcı eklenmez**. Test: quote modunda ve diğer tüm yollarda politika bugünküyle aynı kalır.
 
 ### 4.5 Gizli anahtarlar ve loglar
 
@@ -263,7 +275,7 @@ Admin iade işlemi: `orders` belge görünümünde "İade et" düğmesi (admin, 
   `content/legal/tr/mesafeli-satis-sozlesmesi.md`, `on-bilgilendirme-formu.md`, `iade-ve-cayma.md`;
   `content/legal/en/distance-sales-agreement.md`, `pre-information-form.md`, `refund-and-withdrawal.md`.
   EN slug'ları mevcut legal dosya adı düzenine (TR dosya adı = slug) göre P7'de hizalanır. `--legal` importu `commerceLegal` değerini dosya adı eşlemesinden yazar.
-- **Güncellenecek taslaklar:** `kvkk-aydinlatma.md` (ödeme ve fatura verisi, işleme amacı, saklama süresi, aktarım: iyzico yurt içi, **Stripe yurt dışı aktarım**; KVKK md. 9 kapsamında standart sözleşme ve Kurul'a bildirim yükümlülüğü hukukçuyla netleşir), `gizlilik-politikasi.md`, `kullanim-kosullari.md` (satın alma bölümü), `eula.md` (ücretli lisans, iade halinde lisansın iptali).
+- **Güncellenecek taslaklar:** `kvkk-aydinlatma.md` (ödeme ve fatura verisi, işleme amacı, saklama süresi, aktarım: iyzico yurt içi; Stripe yalnız açılırsa **yurt dışı aktarım**; KVKK md. 9 kapsamında standart sözleşme ve Kurul'a bildirim yükümlülüğü hukukçuyla netleşir), `gizlilik-politikasi.md`, `kullanim-kosullari.md` (satın alma bölümü), `eula.md` (ücretli lisans, iade halinde lisansın iptali).
 - **e-Arşiv/e-Fatura:** kapsam dışıdır. Fatura bilgisi eksiksiz toplanır, admin fatura numarasını elle girer, portal gösterir. Fatura yasal süre içinde kesilmelidir; kimin keseceği §9'da sorulur.
 - **ETBİS** kaydı ve sağlayıcı üye işyeri onayı satıştan önce gereklidir (operasyonel ön koşul). iyzico onayı için sitede istenen öğeler (sözleşmeler, iletişim, logo bandı) yalnız ödeme modunda görünür.
 
@@ -317,11 +329,12 @@ Kurallar: yazan ≠ denetleyen. Ödeme fazlarında QA **en yüksek effort** ile 
 
 - **Kapsam:** güncel dokümandan doğrulanacaklar: iyzico Checkout Form `paymentPageUrl`, retrieve, refund/cancel, webhook V3 imza alan sırası, sandbox test kartları, buyer zorunlu alanları (TCKN kuralı), USD/EUR desteği; Stripe API sürümü, Checkout Session parametreleri, olay listesi, restricted key izinleri, **Türkiye merkezli şirket için Stripe hesabı uygunluğu**, `stripe-mock`/host override; Payload 3.93'te array içi `join`, custom endpoint CSRF davranışı, koşullu `update where`; kopya DB'de taslak koleksiyonlarla `migrate:create`'in ürettiği SQL.
 - **Çıktı:** `docs/payments/p0-findings.md` (kaynak URL'leriyle). Doğrulanamayan her madde "doğrulanmadı" olarak işaretlenir.
-- **Kabul:** her soru yanıtlı ya da riskli olarak işaretli. Stripe uygun değilse §9 S-girdisi ve eşleme alternatifi (iyzico USD/EUR) kullanıcıya sunulur.
+- **Kabul:** her soru yanıtlı ya da riskli olarak işaretli.
+- **Sonuç (kısmi):** Stripe TR uygunluğu → **uygun değil**; eşleme iyzico'ya alındı (K2 altındaki P0 bulgusu). iyzico imza formülleri doğrulandı. Açık kalanlar: iyzico sandbox'ta USD/EUR + `VIRTUAL` sepet + kurumsal alıcıda `identityNumber` kuralı, Payload array içi `join`, koşullu `update where`, `migrate:create` SQL'i.
 
 ### P1 — Saf çekirdek (1–1,5 gün, şemasız, pilotlarla paralel)
 
-- **Dosyalar:** `src/lib/payments/{money,pricing,state,order-number,identity}.ts`, `src/lib/payments/providers/types.ts`, `src/lib/payments/signature/{stripe,iyzico}.ts`, `src/lib/commerce/offer.ts` (`resolveEditionOffer`, `resolveProductActions`; tipler elle tanımlı, payload-types'a bağımsız), testler + fixture'lar.
+- **Dosyalar (yazıldı):** `src/lib/payments/{types,errors,secret,env,money,tax,mode,state,idempotency}.ts`, `signature/{compare,iyzico,stripe}.ts`, `providers/{http,iyzico,stripe,index}.ts`; testler `tests/unit/payments-{signature,mode,money,idempotency,providers}.test.ts`. `resolveEditionOffer` `mode.ts` içinde. `resolveProductActions`, TCKN/VKN doğrulaması ve `server-only` guard'ı P3/P4'e kaldı. Mod değerleri çekirdekte `quote-only|payments` ve `quote|buy`; plandaki `payment`/`purchase` yazımları takma ad olarak kabul edilir, P2-S tek yazımı sabitler. KDV ayarı para birimi başına `{ kind: 'rate', rateBasisPoints } | { kind: 'exempt' }`; boşsa o para biriminde satış yok (S1) (`server-only` guard henüz yok: `node:crypto` kullanan modüller istemci derlemesinde hata verebilir, ancak saf modülleri korumaz; entegrasyondan önce açık sunucu sınırı ve bundle testi zorunlu).
 - **Kabul:** %100 dal kapsamı (state/money/offer), imza fixture'ları geçer. `src/lib/payments` server-only importu var. Hiçbir rota ya da şema değişmez.
 - **Riskler:** imza formülünün yanlış varsayılması. Önlem: P0 bulgusu + fixture'ın resmi örnekten üretilmesi.
 
@@ -340,7 +353,7 @@ Kurallar: yazan ≠ denetleyen. Ödeme fazlarında QA **en yüksek effort** ile 
 
 - **Dosyalar:** `src/lib/payments/providers/{stripe,iyzico}.ts`, `src/lib/payments/{sync,fulfill,events,reconcile}.ts`, `src/app/(payload)/api/payments/{stripe/webhook,iyzico/webhook,iyzico/callback}/route.ts`, `scripts/payments-reconcile.ts` + `package.json` script + `deploy/` systemd timer örneği, `src/lib/email/order-*.ts`, `.env.example`.
 - **Kabul:** §6 DB ve imza testlerinin tamamı. Eşzamanlılık testi tek lisans üretir. Drain penceresi testi. Loglarda PII taraması (test, log yakalayıp regex ile e-posta/TCKN/anahtar arar) 0 sonuç verir.
-- **Riskler:** SQLite yazma kilidi altında webhook patlaması (busy timeout 5000 ms + 500 → sağlayıcı yeniden dener). iyzico sync API gecikmesi. Fulfillment transaction'ı lisans afterChange e-postasını commit sonrasına bırakır (mevcut `after()` deseni korunur).
+- **Riskler:** iyzico tek aktif sağlayıcı (TRY/USD/EUR): kesintide checkout kapanır, `quote`'a düşer; pending siparişleri reconcile tamamlar. iyzico döviz yetkisi gelmezse USD/EUR fiyatları fail-to-quote ile gizlenir. SQLite yazma kilidi altında webhook patlaması (busy timeout 5000 ms + 500 → sağlayıcı yeniden dener). iyzico sync API gecikmesi. Fulfillment transaction'ı lisans afterChange e-postasını commit sonrasına bırakır (mevcut `after()` deseni korunur).
 
 ### P5 — Checkout UI, portal siparişleri, e-postalar (2 gün)
 
@@ -389,7 +402,7 @@ Tahmini toplam: **11–14 iş günü** (P0/P1/P7 pilotlarla paralel yürürse ta
 
 **Girdiler (P4 öncesi):**
 1. iyzico sandbox üye işyeri API key/secret (ve live başvuru durumu, USD/EUR yetkisi).
-2. Stripe test anahtarları + webhook secret. **Stripe hesabının hangi ülkedeki tüzel kişilikle açılacağı:** Stripe, Türkiye merkezli şirketlere doğrudan hizmet vermiyor olabilir (P0 doğrular). Uygun değilse USD/EUR iyzico'ya alınır (tek satırlık eşleme değişikliği).
+2. ~~Stripe test anahtarları~~ **Gerekmez** (P0: TR desteklenmiyor; Stripe varsayılan kapalı). Yalnız yurt dışı tüzel kişilik kurulursa test anahtarları + webhook secret istenir. Bunun yerine iyzico'dan **USD/EUR üye işyeri yetkisi** gerekir.
 3. Şirket bilgileri: ticaret unvanı, MERSİS, vergi dairesi/no, adres, KEP, telefon, e-posta; ETBİS kaydı.
 4. Fiyat listesi (sürüm × para birimi), KDV dahil/hariç tercihi, KDV oranı; e-arşiv faturayı kimin/hangi sistemle keseceği.
 5. İade politikası (tam iade süresi, kurumsal istisnalar) ve hukuk danışmanı onay süreci.
@@ -407,3 +420,10 @@ Tahmini toplam: **11–14 iş günü** (P0/P1/P7 pilotlarla paralel yürürse ta
 - **S2:** "Satın al" sürümlerinde ikincil **"Kurumsal teklif iste"** bağlantısı görünür.
 - **S3:** Teklif moduna geçişte **güvenli geçiş**: yeni satış hemen kapanır; sağlayıcı webhook'ları 72 saat işlenmeye devam eder; müşteriler eski siparişlerini portalda salt-okunur görür.
 - **S4:** **Hem bireysel (TCKN) hem kurumsal (VKN)** satış; bireysel satışta cayma hakkı metni ve dijital içerik istisnası onayı zorunlu.
+
+### P1 denetim sınırları
+
+- `planFulfillment` saf bir plandır, tek başına eşzamanlı lisans üretimini engellemez. Uygulama aynı SQLite bağlantısında okumadan önce `BEGIN IMMEDIATE` almalı; lisans, kalem bağlantısı ve durum geçişini aynı transaction'da yazmalı, koşullu bağlantı veya geçiş başarısızsa tümünü geri almalı ve yan etkileri commit sonrasına bırakmalıdır. Henüz store uygulaması veya yarış testi yoktur.
+- iyzico retrieve imzası `fraudStatus` ve `installment` alanlarını kapsamaz; bunlar doğrulanmış HTTPS yanıtından okunur. Initialize imzası da yönlendirme URL'sini kapsamaz; TLS ve host kontrolü gereklidir. Sağlayıcı yönlendirmeleri HTTP istemcisinde reddedilir.
+- iyzico iade isteğinde sağlayıcıya aktarılmış bir idempotency anahtarı yoktur; zaman aşımından sonra kör tekrar çift iade riski taşır. P4, yeniden denemeden önce sağlayıcı durumu ile uzlaştırma ve atomik işlem kilidi uygulamalıdır.
+- 256 KiB sınırı alınmış string üzerinde uygulanır; gelecekteki HTTP handler ham gövdeyi okumadan önce/akış sırasında da sınırlandırmalı ve imzayı değişmemiş baytlarla doğrulamalıdır. Sandbox/canlı iyzico uçtan uca testi yapılmadı.

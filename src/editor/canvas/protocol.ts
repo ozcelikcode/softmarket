@@ -1,6 +1,6 @@
 import * as z from 'zod/mini'
 
-import { INLINE_MAX, isSafeFieldPath } from '@/editor/canvas/fields'
+import { INLINE_MAX, isKnownInlinePath } from '@/editor/canvas/fields'
 
 /*
  * V5 visual editor: postMessage protocol between the draft-mode site bridge (Live Preview iframe) and the admin
@@ -24,7 +24,7 @@ const MAX_BLOCKS = 300
 
 const blockId = z.string().check(z.regex(BLOCK_ID_RE))
 const blockType = z.string().check(z.regex(BLOCK_TYPE_RE))
-const fieldPath = z.string().check(z.refine(isSafeFieldPath))
+const fieldPath = z.string().check(z.refine(isKnownInlinePath))
 const locale = z.enum(['tr', 'en'])
 /** textContent only: one line, no control characters. */
 const plainText = z.string().check(z.maxLength(INLINE_MAX), z.regex(/^[^\u0000-\u001f\u007f]*$/))

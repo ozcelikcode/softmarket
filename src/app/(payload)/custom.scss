@@ -1,0 +1,18 @@
+// V5 visual editor (products, pages): when the Live Preview canvas is open, the form becomes a narrow side
+// panel and the canvas takes the rest. Payload's public BEM classes (3.93: the modifier sits on the edit view
+// root); below 1024px Payload stacks form and preview as before.
+@media (min-width: 1024px) {
+  .collection-edit--products.collection-edit--is-live-previewing,
+  .collection-edit--pages.collection-edit--is-live-previewing {
+    .collection-edit__main {
+      width: clamp(340px, 30%, 460px);
+      flex: 0 0 auto;
+    }
+
+    .live-preview-window {
+      width: auto;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+}

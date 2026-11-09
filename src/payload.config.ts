@@ -21,6 +21,7 @@ import sharp from 'sharp'
 
 import { anyone, isAdmin, isAdminOrEditor, nobody } from './access'
 import { publicSearchRead } from './access/search'
+import { visualEditor } from './editor/canvas/plugin'
 import { CaseStudies } from './collections/CaseStudies'
 import { Careers } from './collections/Careers'
 import { Customers } from './collections/Customers'
@@ -160,6 +161,8 @@ export default buildConfig({
   db: process.env.SM_DB_QUERY_LOG === '1' ? withDbQueryLogging(databaseAdapter) : databaseAdapter,
   sharp,
   plugins: [
+    // V5 visual editor: products/pages open in the Live Preview canvas + editor host (admin UI only).
+    visualEditor(),
     mcpPlugin(mcpOptions),
     seoPlugin({
       collections: [

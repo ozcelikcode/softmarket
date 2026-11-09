@@ -67,3 +67,8 @@ export const isInlineDocField = (collection: string, path: string): boolean =>
 
 /** Canvas text -> stored value: one line, collapsed whitespace, no control characters. */
 export const normalizeInline = (text: string): string => text.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim()
+
+const ALL_PATTERNS = [...new Set([...Object.values(INLINE_BLOCK_FIELDS), ...Object.values(INLINE_DOC_FIELDS)].flat())]
+/** Protocol-level check: a safe path that matches at least one allowlisted pattern (block type checked by the host). */
+export const isKnownInlinePath = (path: unknown): path is string =>
+  isSafeFieldPath(path) && ALL_PATTERNS.some((p) => matchesPattern(p, path))

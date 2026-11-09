@@ -21,7 +21,7 @@ import { t, VISUAL_EDITOR_LABELS } from '@/lib/visual-editor-labels'
 type HostState = Extract<HostMessage, { type: 'host' }>
 type Rect = { top: number; left: number; width: number; height: number }
 type Field = { el: HTMLElement; path: string; scope: 'block' | 'doc' }
-type Editing = Field & { id: string | null; locale: 'tr' | 'en'; original: string; last: string }
+type Editing = Field & { id: string | null; locale: 'tr' | 'en'; original: string; restoreValue: string; last: string; changed: boolean }
 
 const L = VISUAL_EDITOR_LABELS.canvas
 const UI = 'data-canvas-ui'
@@ -114,7 +114,7 @@ export function CanvasBridge() {
     if (!cur) return
     if (restore) {
       cur.el.textContent = cur.original
-      if (cur.last !== cur.original) send({ type: 'text', scope: cur.scope, id: cur.id, path: cur.path, locale: cur.locale, value: cur.original })
+      if (cur.changed) send({ type: 'text', scope: cur.scope, id: cur.id, path: cur.path, locale: cur.locale, value: cur.restoreValue })
     }
     cur.el.removeAttribute('contenteditable')
     cur.el.removeAttribute('data-canvas-editing')
@@ -139,7 +139,7 @@ export function CanvasBridge() {
     if (!locale || !field.el.isConnected) return
     const original = normalizeInline(field.el.textContent ?? '')
     if (original.length > INLINE_MAX) { setNotice(t(L.formOnly, lang)); return }
-    editingRef.current = { ...field, locale, original, last: original }
+    editingRef.current = { ...field, locale, original, restoreValue: fallback ? '' : original, last: original, changed: false }
     window.dispatchEvent(new CustomEvent('sm-canvas-editing', { detail: true }))
     // plaintext-only: the browser never inserts markup; we still only ever read textContent.
     field.el.setAttribute('contenteditable', 'plaintext-only')
@@ -290,6 +290,7 @@ export function CanvasBridge() {
       }
       if (value !== cur.last) {
         cur.last = value
+        cur.changed = true
         send({ type: 'text', scope: cur.scope, id: cur.id, path: cur.path, locale: cur.locale, value })
       }
     }

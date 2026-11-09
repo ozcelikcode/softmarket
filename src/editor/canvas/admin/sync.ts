@@ -13,14 +13,22 @@ import type { FormState } from 'payload'
  * the keepalive limit cannot outlive the page: `beforeunload` then asks the browser to confirm leaving. The
  * request goes through the normal REST auth/access/validation chain (cookie session of the staff user).
  *
- * Conflict: the document's latest draft `updatedAt` is compared with the last one this editor saw (Payload's
- * document data after its own saves, plus our flushes). A newer value written elsewhere (MCP, another tab or
- * user) shows a "reload" warning and pauses flushing. Payload's document locking already blocks a second
- * editor from opening the document; this covers writes that do not take the lock.
+ * Conflict (P1): every admin save carries the form's `editorVersion` (the draft `updatedAt` it was loaded/saved
+ * at); the server rejects a stale one with 409 inside the write transaction (src/editor/canvas/concurrency.ts), so
+ * a change made elsewhere is never overwritten. The watcher below only makes that visible early: a failed save,
+ * focus, tab return or a 15 s poll compares the latest draft `updatedAt` with the form's version and shows the
+ * reload/merge warning; flushing pauses meanwhile. Payload's document lock still keeps a second user out.
  */
 
 const KEEPALIVE_LIMIT = 60_000
-const VOLATILE = new Set(['updatedAt', 'createdAt', '_status'])
+export const fitsKeepalive = (body: string): boolean => new TextEncoder().encode(body).byteLength <= KEEPALIVE_LIMIT
+const VOLATILE = new Set(['updatedAt', 'createdAt', '_status', 'editorVersion'])
+export const VERSION_FIELD = 'editorVersion'
+/** The version the form was loaded/last saved at (virtual `editorVersion` field). */
+export const formVersion = (fields: FormState): string | null => {
+  const v = fields[VERSION_FIELD]?.value
+  return typeof v === 'string' && v ? v : null
+}
 
 /** Form values that matter for saving/history (volatile server fields removed). */
 export function stableValues(fields: FormState): Record<string, unknown> {
@@ -35,37 +43,47 @@ export function autosaveURL({ apiBase, collection, id, locale }: Doc): string {
   return `${apiBase}/${encodeURIComponent(collection)}/${encodeURIComponent(String(id))}?${q}`
 }
 
-export function useAutosaveFlush({ doc, fields, modified, paused, onSaved }: {
+export function useAutosaveFlush({ doc, fields, modified, paused, onSaved, onConflict }: {
   doc: Doc | null
   fields: FormState
   modified: boolean
   paused: boolean
-  onSaved: (updatedAt: string) => void
+  /** New version after an accepted flush. */
+  onSaved: (version: string) => void
+  /** The server rejected the flush: the document changed elsewhere (409). */
+  onConflict: () => void
 }) {
-  const state = useRef({ doc, fields, modified, paused, onSaved, last: '' })
-  state.current = { ...state.current, doc, fields, modified, paused, onSaved }
+  const state = useRef({ doc, fields, modified, paused, onSaved, onConflict })
+  state.current = { ...state.current, doc, fields, modified, paused, onSaved, onConflict }
+  const inFlight = useRef<{ key: string; promise: Promise<boolean> } | null>(null)
 
   /** Send the pending changes now. `keepalive` for page exit. Resolves true when the server accepted them. */
   const flush = useCallback(async (mode: 'keepalive' | 'await'): Promise<boolean> => {
     const s = state.current
     if (!s.doc || !s.modified || s.paused) return !s.modified
-    const body = JSON.stringify({ ...stableValues(s.fields), _status: 'draft' })
-    if (body === s.last) return true
-    if (mode === 'keepalive' && body.length > KEEPALIVE_LIMIT) return false
-    s.last = body
-    try {
-      const res = await fetch(autosaveURL(s.doc), {
-        method: 'PATCH', credentials: 'same-origin', keepalive: mode === 'keepalive', cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' }, body,
-      })
-      if (!res.ok) { s.last = ''; return false }
-      const json = (await res.json().catch(() => null)) as { doc?: { updatedAt?: string } } | null
-      if (json?.doc?.updatedAt) state.current.onSaved(json.doc.updatedAt)
-      return true
-    } catch {
-      s.last = ''
-      return false
-    }
+    const body = JSON.stringify({ ...stableValues(s.fields), [VERSION_FIELD]: formVersion(s.fields), _status: 'draft' })
+    if (mode === 'keepalive' && !fitsKeepalive(body)) return false
+    const url = autosaveURL(s.doc)
+    const key = `${url}\n${body}`
+    if (inFlight.current?.key === key) return inFlight.current.promise
+    const promise = (async () => {
+      try {
+        const res = await fetch(url, {
+          method: 'PATCH', credentials: 'same-origin', keepalive: mode === 'keepalive', cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' }, body,
+        })
+        if (res.status === 409) { state.current.onConflict(); return false }
+        if (!res.ok) return false
+        const json = (await res.json().catch(() => null)) as { doc?: { editorVersion?: string; updatedAt?: string } } | null
+        const version = json?.doc?.editorVersion ?? json?.doc?.updatedAt
+        if (version) state.current.onSaved(version)
+        return true
+      } catch {
+        return false
+      }
+    })()
+    inFlight.current = { key, promise }
+    try { return await promise } finally { if (inFlight.current?.promise === promise) inFlight.current = null }
   }, [])
 
   useEffect(() => {
@@ -74,8 +92,8 @@ export function useAutosaveFlush({ doc, fields, modified, paused, onSaved }: {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       const s = state.current
       if (!s.doc || !s.modified || s.paused) return
-      const size = JSON.stringify(stableValues(s.fields)).length
-      if (size > KEEPALIVE_LIMIT) { event.preventDefault(); event.returnValue = '' }
+      const body = JSON.stringify({ ...stableValues(s.fields), [VERSION_FIELD]: formVersion(s.fields), _status: 'draft' })
+      if (!fitsKeepalive(body)) { event.preventDefault(); event.returnValue = '' }
     }
     document.addEventListener('visibilitychange', onHide)
     window.addEventListener('pagehide', onPageHide)
@@ -90,21 +108,17 @@ export function useAutosaveFlush({ doc, fields, modified, paused, onSaved }: {
   return flush
 }
 
-const later = (a?: string | null, b?: string | null) => (!a ? b ?? null : !b ? a : a > b ? a : b)
-
-export function useConflictWatch({ doc, known, busy, intervalMs = 15_000 }: {
+export function useConflictWatch({ doc, version, busy, intervalMs = 15_000 }: {
   doc: Omit<Doc, 'locale'> | null
-  /** updatedAt values this editor produced or loaded (Payload document data, our flushes). */
-  known: (string | null | undefined)[]
+  /** The form's `editorVersion` (null: not known yet / not guarded). */
+  version: string | null
   /** A save is in flight (its result is not known yet). */
   busy: boolean
   intervalMs?: number
 }) {
   const [conflict, setConflict] = useState<string | null>(null)
-  const ref = useRef({ doc, known: null as string | null, busy, dismissed: null as string | null })
-  ref.current.doc = doc
-  ref.current.busy = busy
-  ref.current.known = known.reduce<string | null>((acc, v) => later(acc, v ?? null), ref.current.known)
+  const ref = useRef({ doc, version, busy })
+  ref.current = { doc, version, busy }
 
   const read = useCallback(async (): Promise<string | null> => {
     const d = ref.current.doc
@@ -120,14 +134,14 @@ export function useConflictWatch({ doc, known, busy, intervalMs = 15_000 }: {
     }
   }, [])
 
-  const check = useCallback(async () => {
-    if (ref.current.busy || document.visibilityState !== 'visible') return
+  /** `settle`: wait for an in-flight own save first (its response updates the form version). */
+  const check = useCallback(async (settle = 2500) => {
+    if (document.visibilityState !== 'visible') return
+    const stale = (server: string | null) => Boolean(server && ref.current.version && server !== ref.current.version && !ref.current.busy)
+    if (!stale(await read())) return
+    if (settle) await new Promise((r) => window.setTimeout(r, settle))
     const server = await read()
-    const newer = () => Boolean(server && ref.current.known && server > ref.current.known && server !== ref.current.dismissed)
-    if (!newer()) return
-    // Our own autosave may have landed meanwhile: confirm once after it settles.
-    await new Promise((r) => window.setTimeout(r, 2500))
-    if (!ref.current.busy && newer()) setConflict(server)
+    if (stale(server)) setConflict(server)
   }, [read])
 
   useEffect(() => {
@@ -143,11 +157,5 @@ export function useConflictWatch({ doc, known, busy, intervalMs = 15_000 }: {
     }
   }, [check, doc, intervalMs])
 
-  const dismiss = useCallback(() => {
-    ref.current.dismissed = conflict
-    ref.current.known = later(ref.current.known, conflict)
-    setConflict(null)
-  }, [conflict])
-
-  return { conflict, dismiss, check }
+  return { conflict, clear: useCallback(() => setConflict(null), []), check, report: setConflict }
 }

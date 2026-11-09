@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { fitsKeepalive } from '@/editor/canvas/admin/sync'
 import { emptyHistory, record, redo, undo } from '@/editor/canvas/history'
 import { acceptMessage, bridgeMessage, CANVAS_NS, CANVAS_VERSION, envelope, hostMessage } from '@/editor/canvas/protocol'
 import {
@@ -180,5 +181,14 @@ describe('labels', () => {
       if (l.tr.length > 4) expect(l.tr, path).not.toBe(l.en)
     }
     expect(VISUAL_EDITOR_LABELS.tour.steps).toHaveLength(4)
+  })
+})
+
+
+describe('keepalive byte limit', () => {
+  it('counts UTF-8 bytes rather than JavaScript characters', () => {
+    expect(fitsKeepalive('a'.repeat(60_000))).toBe(true)
+    expect(fitsKeepalive('ğ'.repeat(30_001))).toBe(false)
+    expect(fitsKeepalive('😀'.repeat(15_001))).toBe(false)
   })
 })

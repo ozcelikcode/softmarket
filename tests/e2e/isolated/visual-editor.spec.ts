@@ -278,6 +278,42 @@ test('T6 switch to EN and translate the title; TR stays unchanged and no TR text
   await expect(canvas(page).locator('html[lang="tr"]')).toBeAttached({ timeout: 30_000 })
 })
 
+test('Escape on an empty translation does not save the fallback', async () => {
+  for (const [locale, tagline] of [['tr', 'Türkçe yedek'], ['en', '']] as const) {
+    const res = await ctx.request.patch(`/api/products/${product.id}?locale=${locale}&draft=true`, {
+      data: { tagline }, headers: { Origin: base },
+    })
+    expect(res.ok()).toBe(true)
+  }
+  await openEditor(page, `${productPath}?locale=en`)
+  await select(page, 'productHero')
+  const field = canvas(page).locator(`${blockSel('productHero')} [data-doc-field="tagline"]`)
+  await expect(field).toContainText('Türkçe yedek')
+  await field.click()
+  await expect(field).toHaveAttribute('contenteditable', /plaintext-only|true/)
+  await page.keyboard.type(' edited')
+  await page.keyboard.press('Escape')
+  await expect(page.locator('#field-tagline')).toHaveValue('')
+  await expect.poll(async () => (await draft(ctx.request, 'products', product.id, 'en') as unknown as { tagline?: string }).tagline || '', { timeout: 20_000 }).toBe('')
+  await page.locator('[data-ve="locale-tr"]').click()
+  await expect(canvas(page).locator('html[lang="tr"]')).toBeAttached({ timeout: 30_000 })
+})
+
+test('a failed draft save prevents switching locale', async () => {
+  await page.route('**/api/products/**?*', async (route) => {
+    if (route.request().method() === 'PATCH') await route.fulfill({ status: 500, body: '{}' })
+    else await route.continue()
+  })
+  const title = page.locator('#field-title')
+  const previous = await title.inputValue()
+  await title.fill(`${previous} unsaved`)
+  await page.locator('[data-ve="locale-en"]').click()
+  await expect(page.locator('[role="alert"]').filter({ hasText: /kaydedilemedi|could not be saved/i })).toBeVisible()
+  await expect(page).not.toHaveURL(/locale=en/)
+  await title.fill(previous)
+  await page.unroute('**/api/products/**?*')
+})
+
 test('T7 preview at 390 and 1440', async () => {
   await timed('T7', async () => {
     await page.locator('[data-ve="device-mobile"]').click()
@@ -340,7 +376,57 @@ test('a write from elsewhere (MCP/another tab) shows the reload warning', async 
   await other.close()
   await page.evaluate(() => window.dispatchEvent(new Event('focus')))
   await expect(page.locator('[data-ve="conflict"]')).toBeVisible({ timeout: 15_000 })
-  await page.locator('[data-ve="keep"]').click()
+})
+
+test('P1: an editor save based on a stale version is rejected (409); the other write survives, local text stays, merge saves both', async () => {
+  await openEditor(page, productPath)
+  // The admin form carries the version it was loaded at.
+  const loaded = await draft(ctx.request, 'products', product.id)
+  expect((loaded as unknown as { editorVersion?: string }).editorVersion).toBe(loaded.updatedAt)
+  // A write elsewhere (MCP / script / another tab): no version -> accepted.
+  const outside = `MCP özeti ${Date.now()}`
+  const other = await ctx.browser()!.newContext({ baseURL: base })
+  await login(other.request, base)
+  expect((await other.request.patch(`/api/products/${product.id}?locale=tr&draft=true`, { data: { summary: outside }, headers: { Origin: base } })).status()).toBe(200)
+  // Replaying the editor's own request with the stale version is refused by the server.
+  const stale = await other.request.patch(`/api/products/${product.id}?locale=tr&draft=true&autosave=true`, { data: { summary: 'stale', editorVersion: loaded.updatedAt }, headers: { Origin: base } })
+  expect(stale.status()).toBe(409)
+  await other.close()
+  // The editor (not reloaded) edits the title: its autosave is rejected, nothing is overwritten.
+  const rejected = page.waitForResponse((r) => r.request().method() === 'PATCH' && r.url().includes(`/api/products/${product.id}`) && r.status() === 409, { timeout: 20_000 })
+  await select(page, 'productHero')
+  const h1 = canvas(page).locator(`${blockSel('productHero')} [data-doc-field="title"]`)
+  await h1.click()
+  await expect(h1).toHaveAttribute('contenteditable', /plaintext-only|true/)
+  await page.keyboard.press('End')
+  await page.keyboard.type(' Yerel')
+  await page.keyboard.press('Enter')
+  await rejected
+  await expect(page.locator('[data-ve="conflict"]')).toBeVisible({ timeout: 15_000 })
+  const server = await draft(ctx.request, 'products', product.id)
+  expect((server as unknown as { summary: string }).summary).toBe(outside)
+  expect(server.title).not.toMatch(/ Yerel$/)
+  await expect(page.locator('#field-title')).toHaveValue(/ Yerel$/)
+  // Copy keeps the local change available verbatim.
+  await page.locator('[data-ve="copy"]').click()
+  await expect(page.locator('[data-ve="copy-text"]')).toHaveValue(/ Yerel/)
+  // Merge: local title + outside summary, saved at the new version.
+  await page.locator('[data-ve="merge"]').click()
+  await expect(page.locator('[data-ve="conflict"]')).toBeHidden({ timeout: 15_000 })
+  await expect.poll(async () => {
+    const d = await draft(ctx.request, 'products', product.id) as unknown as { title: string; summary: string }
+    return [/ Yerel$/.test(d.title), d.summary === outside]
+  }, { timeout: 20_000 }).toEqual([true, true])
+  // Later edits keep saving normally (the form follows the new version).
+  await select(page, 'productHero')
+  await h1.click()
+  await expect(h1).toHaveAttribute('contenteditable', /plaintext-only|true/)
+  // (A long title wraps: End would only reach the end of the visual line, so retype the whole value.)
+  const merged = await page.locator('#field-title').inputValue()
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type(`${merged}!`)
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => (await draft(ctx.request, 'products', product.id)).title, { timeout: 20_000 }).toMatch(/ Yerel!$/)
   await expect(page.locator('[data-ve="conflict"]')).toBeHidden()
 })
 

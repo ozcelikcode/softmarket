@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { BlockPalette, type PaletteBlock } from '@/editor/canvas/admin/palette'
 import { revealRow } from '@/editor/canvas/admin/reveal'
-import { stableValues, useAutosaveFlush, useConflictWatch } from '@/editor/canvas/admin/sync'
+import { formVersion, stableValues, useAutosaveFlush, useConflictWatch, VERSION_FIELD } from '@/editor/canvas/admin/sync'
 import { EditorTour, tourSeen } from '@/editor/canvas/admin/tour'
 import { INLINE_MAX, isInlineBlockField, isInlineDocField } from '@/editor/canvas/fields'
 import { emptyHistory, record, redo as redoStep, undo as undoStep, type History } from '@/editor/canvas/history'
@@ -79,17 +79,19 @@ type Outcome = 'done' | 'wait'
 
 export function VisualEditorHost() {
   const { user } = useAuth()
-  const { collectionSlug, id, data, initialData } = useDocumentInfo()
+  const locale = useLocale()
+  const { collectionSlug, id } = useDocumentInfo()
   const collection: CanvasCollection | null = isCanvasCollection(collectionSlug) && id != null && isStaff(user) ? collectionSlug : null
   if (!collection) return null
-  return <Host collection={collection} id={id!} knownUpdatedAt={[(data as { updatedAt?: string } | undefined)?.updatedAt, (initialData as { updatedAt?: string } | undefined)?.updatedAt]} />
+  return <Host key={`${collection}:${id}:${locale?.code ?? 'tr'}`} collection={collection} id={id!} />
 }
 
-function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection; id: string | number; knownUpdatedAt: (string | undefined)[] }) {
+function Host({ collection, id }: { collection: CanvasCollection; id: string | number }) {
   const preview = useLivePreviewContext()
   const { iframeRef, isLivePreviewing, setIsLivePreviewing, breakpoint, setBreakpoint, isLivePreviewEnabled } = preview
   const [fields, dispatchFields] = useAllFormFields()
-  const { moveFieldRow, removeFieldRow, addFieldRow, setModified } = useForm()
+  const { moveFieldRow, removeFieldRow, addFieldRow, setModified, reset } = useForm()
+  const { data: savedData } = useDocumentInfo()
   const modified = useFormModified()
   const processing = useFormProcessing()
   const background = useFormBackgroundProcessing()
@@ -106,7 +108,10 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
   const [palette, setPalette] = useState<{ at: number } | null>(null)
   const [tour, setTour] = useState(false)
   const [history, setHistory] = useState<History<FormState>>(emptyHistory)
-  const [flushedAt, setFlushedAt] = useState<string | null>(null)
+  const historyRef = useRef(history)
+  const [saveError, setSaveError] = useState(false)
+  const [copyText, setCopyText] = useState<string | null>(null)
+  const [mergeNote, setMergeNote] = useState<string[] | null>(null)
 
   const fieldsRef = useRef(fields)
   fieldsRef.current = fields
@@ -135,7 +140,10 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
     const prev = settled.current
     if (!prev) { settled.current = { state: now, key }; return }
     if (prev.key === key) { settled.current = { state: now, key }; return }
-    if (!restoring.current) setHistory((h) => record(h, prev.state))
+    if (!restoring.current) {
+      historyRef.current = record(historyRef.current, prev.state)
+      setHistory(historyRef.current)
+    }
     restoring.current = false
     settled.current = { state: now, key }
   }, [])
@@ -148,14 +156,18 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
   const travel = useCallback((dir: 'undo' | 'redo') => {
     settle()
     const current = settled.current?.state ?? fieldsRef.current
-    const step = dir === 'undo' ? undoStep(history, current) : redoStep(history, current)
+    const step = dir === 'undo' ? undoStep(historyRef.current, current) : redoStep(historyRef.current, current)
     if (!step) return
     restoring.current = true
+    historyRef.current = step.history
     setHistory(step.history)
     settled.current = { state: step.state, key: keyOf(step.state) }
+    // A snapshot carries the version it was taken at: keep the CURRENT one, or the next save would be a 409.
+    const currentVersion = formVersion(fieldsRef.current)
     dispatchFields({ type: 'REPLACE_STATE', state: step.state })
+    if (currentVersion) dispatchFields({ type: 'UPDATE', path: VERSION_FIELD, value: currentVersion })
     setModified(true)
-  }, [dispatchFields, history, setModified, settle])
+  }, [dispatchFields, setModified, settle])
 
   /* ---------- messaging ---------- */
   const post = useCallback((body: HostMessageBody) => {
@@ -323,15 +335,70 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
 
   /* ---------- save guards ---------- */
   const doc = useMemo(() => ({ apiBase, collection, id }), [apiBase, collection, id])
-  const { conflict, dismiss } = useConflictWatch({ doc, known: [...knownUpdatedAt, flushedAt], busy: processing || background })
+  /* ---------- optimistic concurrency (editorVersion, see src/editor/canvas/concurrency.ts) ---------- */
+  const version = formVersion(fields)
+  const setVersion = useCallback((next: string) => {
+    if (formVersion(fieldsRef.current) !== next) dispatchFields({ type: 'UPDATE', path: VERSION_FIELD, value: next })
+  }, [dispatchFields])
+  // Payload's own saves update the document data; the form's version follows it (no "modified" change).
+  const savedVersion = (savedData as { editorVersion?: string } | undefined)?.editorVersion
+  useEffect(() => { if (savedVersion) setVersion(savedVersion) }, [savedVersion, setVersion])
+  const { conflict, clear, check } = useConflictWatch({ doc, version, busy: processing || background })
   const flush = useAutosaveFlush({
     doc: useMemo(() => ({ ...doc, locale: localeCode }), [doc, localeCode]),
-    fields, modified, paused: Boolean(conflict), onSaved: setFlushedAt,
+    fields, modified, paused: Boolean(conflict), onSaved: setVersion, onConflict: () => void check(0),
   })
+  // A save just ended but the form is still modified: it failed (409 when the document changed elsewhere).
+  const busy = processing || background
+  const wasBusy = useRef(false)
+  useEffect(() => {
+    if (wasBusy.current && !busy && modified) void check(0)
+    wasBusy.current = busy
+  }, [busy, check, modified])
+
+  /** Fields whose local value differs from the last saved/loaded document (what would be lost on reload). */
+  const localChanges = useCallback(() => {
+    const local = stableValues(fieldsRef.current)
+    const base = (savedData ?? {}) as Record<string, unknown>
+    return Object.fromEntries(Object.entries(local).filter(([k, v]) => JSON.stringify(v ?? null) !== JSON.stringify(base[k] ?? null)))
+  }, [savedData])
+
+  /**
+   * Three-way merge per top-level field: base = last saved/loaded document, remote = latest draft, local = form.
+   * Unchanged locally -> remote; changed locally only or identical -> local; changed on both -> local (listed).
+   * The form is rebuilt from the merged values at the remote version and saved by the normal autosave.
+   */
+  const merge = useCallback(async () => {
+    const q = new URLSearchParams({ depth: '0', draft: 'true', locale: localeCode, 'fallback-locale': 'null' })
+    const res = await fetch(`${apiBase}/${collection}/${encodeURIComponent(String(id))}?${q}`, { credentials: 'same-origin', cache: 'no-store' })
+    if (!res.ok) return
+    const remote = (await res.json()) as Record<string, unknown>
+    const base = (savedData ?? {}) as Record<string, unknown>
+    const merged: Record<string, unknown> = { ...remote }
+    const both: string[] = []
+    for (const [key, value] of Object.entries(stableValues(fieldsRef.current))) {
+      const l = JSON.stringify(value ?? null)
+      const b = JSON.stringify(base[key] ?? null)
+      const r = JSON.stringify(remote[key] ?? null)
+      if (l === b) continue
+      merged[key] = value
+      if (r !== b && r !== l) both.push(key)
+    }
+    merged[VERSION_FIELD] = remote.updatedAt
+    await reset(merged)
+    setVersion(String(remote.updatedAt))
+    setModified(true)
+    setMergeNote(both)
+    setCopyText(null)
+    clear()
+  }, [apiBase, clear, collection, id, localeCode, reset, savedData, setModified, setVersion])
 
   const switchLocale = useCallback(async (code: 'tr' | 'en') => {
     if (code === localeCode) return
-    if (await flush('await')) setModified(false)
+    const before = JSON.stringify(stableValues(fieldsRef.current))
+    if (!(await flush('await')) || before !== JSON.stringify(stableValues(fieldsRef.current))) { setSaveError(true); return }
+    setSaveError(false)
+    setModified(false)
     const params = new URLSearchParams(window.location.search)
     params.set('locale', code)
     startRouteTransition(() => router.push(`?${params}`))
@@ -416,11 +483,28 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
           <button type="button" style={btn()} data-ve="tour" onClick={() => setTour(true)}>{t(V.bar.help, lang)}</button>
         </>
       ) : null}
+      {saveError ? <div role="alert" data-ve="save-error" style={{ flexBasis: '100%' }}>{t(V.bar.saveError, lang)}</div> : null}
+      {mergeNote && !conflict ? (
+        <div role="status" data-ve="merged" style={{ flexBasis: '100%' }}>
+          {t(V.bar.merged, lang)}{mergeNote.length ? ` ${t(V.bar.mergedBoth, lang)}: ${mergeNote.join(', ')}` : ''}
+          <button type="button" style={{ ...btn(), marginLeft: 8 }} onClick={() => setMergeNote(null)}>×</button>
+        </div>
+      ) : null}
       {conflict ? (
         <div role="alert" data-ve="conflict" style={{ flexBasis: '100%', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '8px 10px', borderRadius: 4, background: 'var(--theme-warning-100, #fef3c7)', color: 'var(--theme-warning-800, #78350f)' }}>
           <span style={{ flex: '1 1 260px' }}>{t(V.bar.conflict, lang)}</span>
-          <button type="button" style={btn()} data-ve="reload" onClick={() => window.location.reload()}>{t(V.bar.reload, lang)}</button>
-          <button type="button" style={btn()} data-ve="keep" onClick={dismiss}>{t(V.bar.keep, lang)}</button>
+          <button type="button" style={btn(true)} data-ve="merge" onClick={() => void merge()}>{t(V.bar.merge, lang)}</button>
+          <button type="button" style={btn()} data-ve="copy" onClick={() => {
+            const text = JSON.stringify(localChanges(), null, 2)
+            setCopyText(text)
+            void navigator.clipboard?.writeText(text).catch(() => undefined)
+          }}>{t(V.bar.copy, lang)}</button>
+          <button type="button" style={btn()} data-ve="reload" title={t(V.bar.reloadLoses, lang)}
+            onClick={() => { if (window.confirm(t(V.bar.reloadLoses, lang))) window.location.reload() }}>{t(V.bar.reload, lang)}</button>
+          {copyText !== null ? (
+            <textarea readOnly data-ve="copy-text" aria-label={t(V.bar.copy, lang)} value={copyText} rows={6}
+              onFocus={(e) => e.currentTarget.select()} style={{ flexBasis: '100%', font: '12px/1.4 ui-monospace, monospace' }} />
+          ) : null}
         </div>
       ) : null}
       {palette ? <BlockPalette blocks={paletteBlocks} lang={lang} onPick={pick} onClose={() => setPalette(null)} /> : null}

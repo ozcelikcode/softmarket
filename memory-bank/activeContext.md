@@ -1,3 +1,10 @@
+## V5 — Görsel editör (Payload-native canvas), dal `feat/visual-editor` (2026-11-09)
+
+- Ürün/sayfa belgeleri doğrudan görsel editörde açılır (`openByDefault` + `beforeDocumentControls` host, dar form `custom.scss`); klasik form ziyaret başına. Kod `src/editor/canvas/**` (fields, protocol zod/mini v2, rules, history, bridge, admin/{host,reveal,sync,palette,tour}, plugin), işaretler yalnız `isEditingRender()`.
+- Tüm düz metin alanları yerinde (17 blok + ürün başlık/slogan/özet/özellik + sistem hero), gizli bloklar soluk rozetli, palet görselli, MutationObserver reveal, geri al/yinele, keepalive flush, `updatedAt` çakışma uyarısı, 4 adımlı tur, uyumluluk ürünü ilk yapısal işlemde otomatik somutlaşır.
+- Doğrulama: typecheck/lint, 70 dosya/1154 test (1 kırmızı ön-var: legal md git'te yok), `.next-v5` build, izole e2e 17/17, LH mobil Perf 100 / JS 129,62 KB (main 129,31) / CLS 0, MCP find + import dry-run temiz. Ayrıntı `docs/plan-visual-editor.md` V5 kaydı.
+- 3530 prod sunucu açık (kopya DB `scratchpad/softmarket-v5.db`, admin `v5-admin@example.test`, parola `scratchpad/v5-cred.env`). Push yok; main'e merge kullanıcı QA'sından sonra.
+
 ## V2 güvenlik/kalite denetimi (2026-11-08)
 
 - Kompozisyondaki bütün bağlı blokları kaldırarak uyumluluk moduna dönme açığı kapatıldı: önceki layout ile karşılaştırma, EN/draft/autosave/where toplu güncelleme/eski sürüm restore/import dahil zorunlu editions bloğunu korur. Ham girdide `beforeValidate`, son sınırda `beforeChange`; `hidden: true|"true"|1|"1"` ve çakışan blok ID'leri 400. Kısmi ID güncellemesi ve Duplicate çalışır.

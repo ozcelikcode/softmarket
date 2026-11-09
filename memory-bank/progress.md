@@ -1,3 +1,8 @@
+## V5 — Görsel editör (2026-11-09, `feat/visual-editor`)
+
+- Uygulandı: varsayılan görsel düzen, sertleştirilmiş köprü (origin+source+strict şema, id+locale, allowlist yollar), inline düz metin kapsamı, palet, çekmece odaklama, sürükle/klavye, gizli blok rozetleri, geri al/yinele, flush + çakışma, tur, TR/EN etiketler. V4 kapılarının tamamı yeşil; e2e 17/17; LH Perf 100, JS 129,62 KB.
+- Açık: popup önizleme, bazı alanlar yalnız formda (tabs etiketi, testimonial isim/rol, stats değeri, zengin metin), Lexical geri alım doğrulanmadı, çakışma yoklaması 15 sn, kullanıcı 8 görev denemesi, ikinci dalga koleksiyonlar.
+
 ## content:import karar b denetimi (2026-11-08)
 
 - P2: korunacak seed layout'u silinmeden önce ilişki/Markdown dönüşümünden geçiyordu; kullanılmayan eski referans import ve dry-run'ı hata ile durdurabiliyordu. `importer.ts` layout'u dönüşümden önce çıkarır; önce başarısız olan regresyonlar düzeltmeyle geçti.

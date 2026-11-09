@@ -114,6 +114,17 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Products autosave 2 sn (`PRODUCTS_AUTOSAVE_INTERVAL`), yalnız `_products_v`'ye yazar, ISR'ı yenilemez. Migration `20261108_130717_v2_product_bound_blocks` (16 CREATE TABLE + indeks + `_products_v.autosave`).
 - Gelecek "Satın al" (docs/plan-payments.md) `productEditions`'a eklemeli seçenek olarak gelir; Teklif İste kalır.
 
+## Görsel düzenleyici (V5, Payload-native canvas)
+
+- `pages` + `products` Live Preview'da açılır (`src/editor/canvas/plugin.ts`: `admin.livePreview.openByDefault` + `beforeDocumentControls` host); form dar yan panel (`src/app/(payload)/custom.scss`). Klasik form ziyaret başına seçimdir (host `editViewType` tercihini canvas'a geri yazar). İkinci dalga koleksiyonu eklemek: `VISUAL_EDITOR_COLLECTIONS` (`rules.ts`) + işaretleyen rota + `INLINE_DOC_FIELDS`.
+- Tek veri kaynağı Payload formu: köprü API'ye yazmaz; host (`src/editor/canvas/admin/host.tsx`) mesajı formun GÜNCEL durumuna göre id+locale ile çözer ve form API'siyle uygular (move/add/remove/DUPLICATE_ROW/UPDATE/REPLACE_STATE). Kayıt Payload autosave → sunucu doğrulaması. Şema/migration yok.
+- İşaretler yalnız `isEditingRender()` (`src/lib/preview.ts`: draft modu + yeniden doğrulanan staff) ile: `RenderBlocks/CmsPageContent/SystemBody/SystemHero editing`, `planBlocks({ editing })` → `ctx.edit` (gizli bloklar soluk `data-block-hidden`). Metin işaretleri `editText/fieldAttrs/docFieldAttrs` (`block-shell.tsx`); izinli alanlar yalnız `src/editor/canvas/fields.ts` (`INLINE_BLOCK_FIELDS`, `INLINE_DOC_FIELDS`). Yeni blok/metin alanı eklerken listeye ekle; `tests/unit/visual-editor-fields.test.tsx` şema ve render eşleşmesini zorlar. Public/ISR HTML'de `data-block-*`, `data-field-path`, `data-doc-field` YOK.
+- Köprü (`bridge.tsx`) yalnız `LivePreviewRefresh` içinde, iframe içindeyken `React.lazy` ile iner (bundle guard). Mesajlar `protocol.ts` (zod/mini, `ns: sm-canvas`, `v: 2`): iki yönde origin + `event.source` (iframe.contentWindow ↔ parent) + strict şema; metin yolu allowlist + prototype segment yasağı; değer düz tek satır ≤1000.
+- V2 kuralları editörde aynalanır (`rules.ts`): productHero ilk/kilitli, productEditions taşınır ama silinmez/gizlenmez, bağlı bloklar çoğaltılmaz; uyumluluk ürünü ilk yapısal işlemde 8 bağlı bloğa somutlaşır (eski filtrelenen tekrarlar gizli eklenir).
+- Kayıp/çakışma: `admin/sync.ts` sekme gizlenince/kapanınca Payload autosave isteğinin aynısını keepalive PATCH ile gönderir (>60 KB'da `beforeunload` onayı); `updatedAt` (draft) dışarıdan yeniyse "Yeniden yükle" uyarısı. Payload belge kilidi açık (varsayılan).
+- Payload iç bağımlılıkları (yükseltmede `tests/e2e/isolated/visual-editor.spec.ts` zorunlu): BEM sınıfları `.collection-edit--is-live-previewing`, `.collection-edit__main`, `.live-preview-window`, satır `#layout-row-N`, `.collapsible-field__collapsible.collapsible--collapsed .collapsible__toggle`, `SET_ROW_COLLAPSED` / `REPLACE_STATE` / `DUPLICATE_ROW` form eylemleri, `#action-save`, `config.blocksMap`.
+- E2E: `E2E_SOURCE_DB=<db kopyası> E2E_NEXT_DIST_DIR=.next-<ad> pnpm test:e2e:isolated` (3400, geçici kopya; 16 senaryo: T1–T8, geri al, gizli blok, kapanışta flush, çakışma, sahte postMessage, anonim erişim).
+
 ## Yeni şirket kurulumu (starter)
 
 - `content/templates/starter/` boş DB'de çalışan nötr site üretir: globals (header/footer/site-settings), ana sayfa (hero, productFamilies, cta), 9 sistem sayfası, 1 örnek aile + ürün + sürüm (`STARTER-ORNEK-URUN`). Yasal sayfa yoktur.

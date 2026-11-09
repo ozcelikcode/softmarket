@@ -47,6 +47,38 @@ describe('client bundle guard', () => {
     expect(all.filter((p) => /from ['"]next-intl['"]/.test(code(p))).map((p) => p.slice(SRC.length + 1))).toEqual([])
   })
 
+  // V5 visual editor: editor code never reaches public chunks; the bridge is a lazy, staff-draft-only chunk.
+  it('the canvas bridge is only a lazy import of the staff/draft-only LivePreviewRefresh island, inside the admin frame', () => {
+    const importers = all
+      .filter((p) => !p.includes('/editor/canvas/'))
+      .filter((p) => /editor\/canvas\/(bridge|admin\/|protocol|plugin)/.test(code(p)))
+      .map((p) => p.slice(SRC.length + 1))
+    expect(importers.sort()).toEqual(['components/preview/live-preview-refresh.tsx', 'payload.config.ts'])
+    const refresh = code(join(SRC, 'components/preview/live-preview-refresh.tsx'))
+    expect(refresh).toMatch(/lazy\(\(\) => import\('@\/editor\/canvas\/bridge'\)\)/)
+    expect(refresh).toMatch(/origin && !standalone && <Suspense fallback=\{null\}><CanvasBridge \/><\/Suspense>/)
+    expect(code(join(SRC, 'payload.config.ts'))).toMatch(/from '\.\/editor\/canvas\/plugin'/)
+    // LivePreviewRefresh itself is only rendered for a re-validated staff draft request.
+    expect(code(join(SRC, 'app/(frontend)/[locale]/layout.tsx'))).toMatch(/\{previewUser && <LivePreviewRefresh /)
+  })
+
+  it('the bridge never talks to the API and the admin host stays out of frontend modules', () => {
+    const bridge = code(join(SRC, 'editor/canvas/bridge.tsx'))
+    expect(bridge).not.toMatch(/@payloadcms\/|fetch\(|XMLHttpRequest|\/api\/|innerHTML|dangerouslySetInnerHTML|eval\(/)
+    const front = all.filter((p) => !p.includes('/editor/canvas/admin/') && !p.includes('/admin/'))
+    expect(front.filter((p) => /from ['"]@payloadcms\/ui['"]/.test(code(p))).map((p) => p.slice(SRC.length + 1))).toEqual([])
+  })
+
+  it('editor markers are only requested with isEditingRender() (draft mode + staff)', () => {
+    const routes = all.filter((p) => p.includes('/app/(frontend)/'))
+    for (const p of routes) {
+      for (const m of code(p).matchAll(/editing=\{([^}]*\}?)\}/g)) expect([p.slice(SRC.length + 1), m[1]]).toEqual([p.slice(SRC.length + 1), expect.stringMatching(/^(await isEditingRender\(\)|editing)$/)])
+    }
+    const product = code(join(SRC, 'app/(frontend)/[locale]/urunler/[family]/[product]/page.tsx'))
+    expect(product).toMatch(/isEditingRender\(\),\n\s*\]\)/)
+    expect(code(join(SRC, 'lib/preview.ts'))).toMatch(/isEditingRender = async \(\): Promise<boolean> => Boolean\(await getPreviewUser\(\)\)/)
+  })
+
   it('the [locale] layout renders no NextIntlClientProvider', () => {
     expect(code(join(SRC, 'app/(frontend)/[locale]/layout.tsx'))).not.toContain('NextIntlClientProvider')
   })

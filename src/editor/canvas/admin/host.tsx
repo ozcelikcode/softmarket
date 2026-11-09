@@ -2,7 +2,7 @@
 
 import {
   useAllFormFields, useAuth, useConfig, useDocumentInfo, useForm, useFormBackgroundProcessing, useFormModified,
-  useFormProcessing, useLivePreviewContext, useLocale, useRouteTransition, useTranslation,
+  useFormProcessing, useLivePreviewContext, useLocale, usePreferences, useRouteTransition, useTranslation,
 } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation'
 import type { FormState } from 'payload'
@@ -350,6 +350,18 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
     return () => window.removeEventListener('keydown', onKey)
   }, [travel])
 
+  // Visual editing is the default on every open: "classic form" is a per-visit choice. Payload stores the toggle as
+  // the user's `editViewType` preference, so it is reset to the canvas for the next open; a classic preference
+  // stored earlier (before this editor) is overridden once on mount.
+  const { setPreference } = usePreferences()
+  const toggled = useRef(false)
+  useEffect(() => {
+    if (!toggled.current && !isLivePreviewing && isLivePreviewEnabled) setIsLivePreviewing(true)
+    if (!toggled.current || isLivePreviewing) return
+    const timer = window.setTimeout(() => void setPreference(`collection-${collection}`, { editViewType: 'live-preview' }, true), 800)
+    return () => window.clearTimeout(timer)
+  }, [collection, isLivePreviewEnabled, isLivePreviewing, setIsLivePreviewing, setPreference])
+
   // First-run tips once the visual editor is on screen.
   useEffect(() => { if (isLivePreviewing && !tourSeen()) setTour(true) }, [isLivePreviewing])
 
@@ -379,7 +391,7 @@ function Host({ collection, id, knownUpdatedAt }: { collection: CanvasCollection
   return (
     <div data-visual-editor-bar="" role="toolbar" aria-label={t(V.bar.label, lang)}
       style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginRight: 8, fontSize: 13 }}>
-      <button type="button" style={btn(!isLivePreviewing)} data-ve="mode" onClick={() => setIsLivePreviewing(!isLivePreviewing)}>
+      <button type="button" style={btn(!isLivePreviewing)} data-ve="mode" onClick={() => { toggled.current = true; setIsLivePreviewing(!isLivePreviewing) }}>
         {isLivePreviewing ? t(V.bar.classic, lang) : t(V.bar.visual, lang)}
       </button>
       {isLivePreviewing ? (

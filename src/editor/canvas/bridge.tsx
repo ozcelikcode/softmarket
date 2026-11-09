@@ -165,7 +165,12 @@ export function CanvasBridge() {
     const onMessage = (event: MessageEvent) => {
       const msg = acceptMessage(event, { origin: window.location.origin, source: window.parent }, hostMessage)
       if (!msg) return
-      if (msg.type === 'host') { setHost(msg); setSelected(msg.selected) }
+      if (msg.type === 'host') {
+        setHost(msg)
+        setSelected(msg.selected)
+        // Readiness signal for automation/QA (the editor UI is live).
+        document.documentElement.setAttribute('data-canvas-ready', '')
+      }
       else if (msg.type === 'select') setSelected(msg.id)
       else if (msg.type === 'notice') setNotice(msg.message)
       else if (msg.type === 'textGrant') {
@@ -185,7 +190,7 @@ export function CanvasBridge() {
       if (now !== last) { last = now; announce() }
     })
     observer.observe(document.body, { childList: true, subtree: true })
-    return () => { window.removeEventListener('message', onMessage); observer.disconnect(); style.remove() }
+    return () => { window.removeEventListener('message', onMessage); observer.disconnect(); style.remove(); document.documentElement.removeAttribute('data-canvas-ready') }
   }, [announce, startEdit])
 
   // Reposition frames on scroll/resize.

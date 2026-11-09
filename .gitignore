@@ -4,7 +4,7 @@ node_modules/
 .next/
 .next-prod/
 .next-perf/
-.next-v5/
+.next-v5*/
 out/
 coverage/
 playwright-report/

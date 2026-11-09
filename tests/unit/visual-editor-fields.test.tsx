@@ -76,7 +76,7 @@ const markers = (html: string, attr = 'data-field-path') =>
   [...html.matchAll(new RegExp(`<\\w+[^>]*${attr}="([^"]+)"[^>]*>([^<]*)<`, 'g'))].map((m) => ({ path: m[1]!, text: unescape(m[2]!) }))
 
 async function render(block: Record<string, unknown>, editing: boolean) {
-  const [planned] = planBlocks([block as LayoutBlock], { editing })
+  const [planned] = planBlocks([block as unknown as LayoutBlock], { editing })
   const Component = getBlockRenderer(String(block.blockType))!
   const node = await Component({ block: planned!.block as never, locale: 'tr', ctx: planned!.ctx })
   return renderToStaticMarkup(<EditableBlock ctx={planned!.ctx} blockType={String(block.blockType)}>{node}</EditableBlock>)

@@ -617,3 +617,6 @@ export const MOTION_LABELS = {
     relaxed: loc('Geniş (100 ms)', 'Relaxed (100 ms)'),
   },
 } as const
+
+/** V5 "Görsel düzenle" labels (leaf module so the canvas bridge chunk stays small). */
+export { VISUAL_EDITOR_LABELS } from './visual-editor-labels'

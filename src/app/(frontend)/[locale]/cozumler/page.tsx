@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
 import { MediaCard } from '@/components/sections/media-card'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { Container } from '@/components/ui/container'
 import { anim } from '@/lib/anim'
 import { getSolutions, getSystemPage, mediaOf, relOf } from '@/lib/content'
@@ -41,8 +42,8 @@ async function SolutionsPage({ params, searchParams }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
-      <SystemBody locale={locale} page={page} listing={
+      <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody editing={await isEditingRender()} locale={locale} page={page} listing={
         <Container>
           {solutions.length ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

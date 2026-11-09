@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server'
 
 import { RenderBlocks } from '@/components/blocks/render-blocks'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { SetAlternates } from '@/components/layout/set-alternates'
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
@@ -43,8 +44,8 @@ export default async function AboutPage({ params }: Props) {
       <>
         <JsonLd data={breadcrumbJsonLd(locale, crumbs)} />
         <SetAlternates hrefs={{ tr: '/tr/sirket/hakkimizda', en: '/en/company/about' }} />
-        <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={crumbs} page={system} fallback={{ title: t('title'), lead: t('lead'), eyebrow: n('company') }} />
-        {system.layout?.length ? <SystemBody locale={locale} page={system} /> : (
+        <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={crumbs} page={system} fallback={{ title: t('title'), lead: t('lead'), eyebrow: n('company') }} />
+        {system.layout?.length ? <SystemBody editing={await isEditingRender()} locale={locale} page={system} /> : (
           <Section theme="light" spacing="md"><Container><EmptyState title={t('emptyTitle')} description={t('emptyDesc')} /></Container></Section>
         )}
       </>

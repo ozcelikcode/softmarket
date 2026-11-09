@@ -1,4 +1,4 @@
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import { RichContent } from '@/components/blocks/rich-text'
 import { TabsIsland } from '@/components/blocks/tabs-island'
 import type { BlockProps } from '@/components/blocks/types'
@@ -28,7 +28,7 @@ export function TabsBlock({ block, locale, ctx }: BlockProps<Block>) {
   }))
   return (
     <BlockShell blockType="tabs" appearance={ctx.appearance} motion={ctx.motion}>
-      {block.heading ? <Heading id={headingId} size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
+      {block.heading ? <Heading id={headingId} size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{editText(ctx, 'heading', block.heading)}</Heading> : null}
       <TabsIsland tabs={tabs} labelledBy={headingId} />
     </BlockShell>
   )

@@ -26,7 +26,7 @@ export async function NewsListBlock({ block, locale, ctx }: BlockProps<Block>) {
   return (
     <BlockShell blockType="newsList" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
-        locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
+        locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description} ctx={ctx} viewAllLabel={block.viewAllLabel}
         viewAll={resolveViewAll(block, '/haberler', c('viewAll'))}
       >
         <div className={gridClass(layout)}>

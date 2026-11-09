@@ -1,4 +1,4 @@
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import { RichContent } from '@/components/blocks/rich-text'
 import type { BlockProps } from '@/components/blocks/types'
 import { Heading } from '@/components/ui/heading'
@@ -7,9 +7,9 @@ import { cn } from '@/lib/utils'
 import type { FAQBlock as Block, Faq } from '@/payload-types'
 
 export function FAQBlock({ block, locale, ctx }: BlockProps<Block>) {
-  const items: { id: string; question: string; answer: unknown }[] =
+  const items: { id: string; question: string; answer: unknown; path?: string }[] =
     block.source === 'inline'
-      ? (block.items ?? []).map((it, i) => ({ id: it.id ?? `i${i}`, question: it.question, answer: it.answer }))
+      ? (block.items ?? []).map((it, i) => ({ id: it.id ?? `i${i}`, question: it.question, answer: it.answer, path: `items.${i}.question` }))
       : (block.faqs ?? []).flatMap((f) => {
           const faq = relOf<Faq>(f)
           return faq?.question ? [{ id: String(faq.id), question: faq.question, answer: faq.answer }] : []
@@ -17,11 +17,11 @@ export function FAQBlock({ block, locale, ctx }: BlockProps<Block>) {
   if (!items.length) return null
   return (
     <BlockShell blockType="faq" appearance={ctx.appearance} motion={ctx.motion} tone="raised" container={{ size: 'narrow' }}>
-      {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
+      {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{editText(ctx, 'heading', block.heading)}</Heading> : null}
       <div>
         {items.map((it) => (
           <details key={it.id} className="border-b border-border py-4">
-            <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-offset-4">{it.question}</summary>
+            <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-offset-4">{it.path ? editText(ctx, it.path, it.question) : it.question}</summary>
             <div className="pt-4"><RichContent data={it.answer} locale={locale} /></div>
           </details>
         ))}

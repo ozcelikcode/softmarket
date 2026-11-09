@@ -9,6 +9,7 @@ import { CtaBand } from '@/components/sections/cta-band'
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
@@ -40,8 +41,8 @@ export default async function PartnersPage({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
-      <SystemBody locale={locale} page={page} fallback={
+      <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody editing={await isEditingRender()} locale={locale} page={page} fallback={
         <CtaBand
           title={t('becomeTitle')} lead={t('becomeLead')}
           actions={<Button asChild size="lg"><AppLink href="/iletisim" locale={locale}>{t('becomeCta')}</AppLink></Button>}

@@ -8,6 +8,7 @@ import { getTranslations } from 'next-intl/server'
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Container } from '@/components/ui/container'
@@ -35,8 +36,8 @@ export default async function CareersPage({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
-      <SystemBody locale={locale} page={page} listing={
+      <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody editing={await isEditingRender()} locale={locale} page={page} listing={
         <Container size="narrow" className="max-w-[56rem]">
           {jobs.length ? (
             <ul className="overflow-hidden rounded-lg border border-border bg-surface">

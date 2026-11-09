@@ -9,6 +9,7 @@ import { getTranslations } from 'next-intl/server'
 
 import { FallbackHome } from '@/components/home/fallback-home'
 import { CmsPageContent } from '@/components/pages/cms-page'
+import { isEditingRender } from '@/lib/preview'
 import { JsonLd } from '@/components/sections/json-ld'
 import { getContactSettings, getHomePage, mediaOf } from '@/lib/content'
 import { initLocale } from '@/lib/page-utils'
@@ -65,7 +66,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <JsonLd data={organization} />
-      {page ? <CmsPageContent page={page} locale={locale} crumbLabel={c('breadcrumb')} /> : <FallbackHome locale={locale} />}
+      {page ? <CmsPageContent editing={await isEditingRender()} page={page} locale={locale} crumbLabel={c('breadcrumb')} /> : <FallbackHome locale={locale} />}
     </>
   )
 }

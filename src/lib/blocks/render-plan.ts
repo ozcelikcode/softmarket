@@ -15,7 +15,15 @@ export type BlockContext = {
   headingAs: 'h1' | 'h2'
   /** First block of a page whose top is CMS-driven (it sits under the fixed header). */
   pageTop: boolean
+  /**
+   * V5 visual editor: present only when the page was planned with `editing` (draft mode + re-validated staff,
+   * `getPreviewUser()`). Never set on public/ISR renders, so the editor markers never reach public HTML.
+   */
+  edit?: BlockEdit
 }
+
+/** Stored row id (or `virtual:<type>` in product compatibility mode); `hidden` blocks render faded in the editor. */
+export type BlockEdit = { id: string; hidden: boolean }
 
 export type PlannedBlock<B> = { block: B; key: string; ctx: BlockContext }
 
@@ -54,6 +62,12 @@ export type PlanOptions = {
   firstHeroH1?: boolean
   /** Block types that have a renderer; unknown types are skipped (never thrown on). */
   isKnown?: (blockType: string) => boolean
+  /**
+   * V5 visual editor: set ONLY for a draft-mode request with a staff user (`getPreviewUser()`). Adds `ctx.edit` (the
+   * editor markers) and keeps hidden blocks, flagged, so the editor can show and unhide them. Visible blocks get
+   * exactly the public plan (h1, anchors, LCP protection, motion).
+   */
+  editing?: boolean
 }
 
 /**
@@ -61,19 +75,35 @@ export type PlanOptions = {
  * in the HTML even if stored data bypassed validation).
  */
 export function planBlocks<B extends PlannableBlock>(blocks: readonly B[] | null | undefined, options: PlanOptions = {}): PlannedBlock<B>[] {
-  const { firstHeroH1 = false, isKnown = () => true } = options
-  const visible = (blocks ?? []).flatMap((block) => {
+  const { firstHeroH1 = false, isKnown = () => true, editing = false } = options
+  const entries = (blocks ?? []).flatMap((block) => {
     if (!block || typeof block.blockType !== 'string' || !isKnown(block.blockType)) return []
     const appearance = resolveAppearance(block as Parameters<typeof resolveAppearance>[0])
-    return appearance.hidden ? [] : [{ block, appearance }]
+    return appearance.hidden && !editing ? [] : [{ block, appearance }]
   })
-  const h1Index = firstHeroH1 ? visible.findIndex(({ block }) => block.blockType === 'hero') : -1
+  const visible = entries.filter(({ appearance }) => !appearance.hidden)
+  const h1Block = firstHeroH1 ? visible.find(({ block }) => block.blockType === 'hero')?.block : undefined
   const seen = new Set<string>()
   // Data-bound/conditional blocks can return null (including empty queries), and spacers/dividers or
   // missing listing slots provide no LCP content. Protect candidates until a content wrapper is certain
   // to render; guessing from the stored index would let an empty predecessor bypass LCP protection.
   let hasContentBefore = false
-  return visible.map(({ block, appearance }, index) => {
+  let index = 0
+  let hiddenIndex = 0
+  const editOf = (block: B, hidden: boolean): { edit?: BlockEdit } =>
+    editing && typeof block.id === 'string' && block.id ? { edit: { id: block.id, hidden } } : {}
+  return entries.map(({ block, appearance }) => {
+    if (appearance.hidden) {
+      // Editing only: a hidden block is shown faded; it never takes the h1, an anchor or the LCP slot.
+      const { anchor: _anchor, ...rest } = appearance
+      const motion = resolveMotion(block as Parameters<typeof resolveMotion>[0], { animation: rest.animation, protect: true })
+      const at = 1000 + hiddenIndex++
+      return {
+        block,
+        key: block.id ?? `${block.blockType}-h${at}`,
+        ctx: { appearance: rest, motion, index: at, headingAs: 'h2' as const, pageTop: false, ...editOf(block, true) },
+      }
+    }
     let resolved = appearance
     if (appearance.anchor) {
       if (seen.has(appearance.anchor)) {
@@ -86,10 +116,11 @@ export function planBlocks<B extends PlannableBlock>(blocks: readonly B[] | null
       protect: !hasContentBefore || LCP_BLOCK_TYPES.includes(block.blockType),
     })
     if (hasIntroContent(block)) hasContentBefore = true
+    const at = index++
     return {
       block,
-      key: block.id ?? `${block.blockType}-${index}`,
-      ctx: { appearance: resolved, motion, index, headingAs: index === h1Index ? 'h1' : 'h2', pageTop: firstHeroH1 && index === 0 },
+      key: block.id ?? `${block.blockType}-${at}`,
+      ctx: { appearance: resolved, motion, index: at, headingAs: block === h1Block ? 'h1' : 'h2', pageTop: firstHeroH1 && at === 0, ...editOf(block, false) },
     }
   })
 }

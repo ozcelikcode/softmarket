@@ -641,6 +641,7 @@ export interface Product {
    * Filled automatically on first publish.
    */
   publishedAt?: string | null;
+  editorVersion?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -996,6 +997,7 @@ export interface Page {
    * Filled automatically on first publish; editable.
    */
   publishedAt?: string | null;
+  editorVersion?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -5517,6 +5519,7 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   sortOrder?: T;
   publishedAt?: T;
+  editorVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -6044,6 +6047,7 @@ export interface PagesSelect<T extends boolean = true> {
   pageType?: T;
   systemKey?: T;
   publishedAt?: T;
+  editorVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

@@ -8,6 +8,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }
 
 import { composeProductLayout, PRODUCT_BOUND_BLOCKS } from '../../src/lib/blocks/product-composition'
 import { compatFilteredRows } from '../../src/editor/canvas/rules'
+import { VERSION_CONFLICT_STATUS } from '../../src/editor/canvas/concurrency'
 
 /*
  * V5 visual editor on real (temporary) SQLite. The editor only changes the Payload form; what reaches the
@@ -16,7 +17,9 @@ import { compatFilteredRows } from '../../src/editor/canvas/rules'
  * - no-op round trip: TR and EN read without fallback, saved back unchanged => identical documents (Lexical too),
  * - an EN inline edit changes only the EN value; TR stays, empty EN fields are not filled with TR fallback,
  * - block ids survive moves/duplicates in both locales; the V2 "Teklif İste" rule still rejects removal,
- * - materialising a compatibility product keeps the visible page (filtered duplicates become hidden rows).
+ * - materialising a compatibility product keeps the visible page (filtered duplicates become hidden rows),
+ * - optimistic concurrency (P1): a save carrying a stale `editorVersion` gets 409 and changes nothing; of two
+ *   concurrent saves from the same base exactly one wins; writes without a version (MCP/import) pass.
  */
 let payload: Payload
 let dir: string
@@ -30,7 +33,7 @@ const lexical = (text: string) => ({
       children: [{ type: 'text', text, format: 1, detail: 0, mode: 'normal', style: '', version: 1 }] }],
   },
 })
-const VOLATILE = new Set(['updatedAt', 'createdAt', '_status'])
+const VOLATILE = new Set(['updatedAt', 'createdAt', '_status', 'editorVersion'])
 const strip = (doc: Record<string, unknown>) => Object.fromEntries(Object.entries(doc).filter(([k]) => !VOLATILE.has(k)))
 const read = async (collection: 'products' | 'pages', id: number, locale: 'tr' | 'en') =>
   (await payload.findByID({ collection, id, locale, fallbackLocale: false, draft: true, depth: 0, overrideAccess: true })) as unknown as Record<string, unknown>
@@ -144,4 +147,69 @@ describe('visual editor saves (temp SQLite)', () => {
     expect(composed.blocks.filter((b) => !b.appearance?.hidden).map((b) => b.blockType)).toEqual(visibleBefore)
     expect(after.filter((b) => b.appearance?.hidden).map((b) => b.blockType)).toEqual(['hero', 'featureGrid'])
   })
+
+  describe('optimistic concurrency (editorVersion)', () => {
+    const save = (id: number, version: string | undefined, data: Record<string, unknown>, opts: { autosave?: boolean } = {}) =>
+      payload.update({ collection: 'products', id, locale: 'tr', draft: true, autosave: opts.autosave ?? true, overrideAccess: true, data: { ...data, ...(version ? { editorVersion: version } : {}), _status: 'draft' } as never })
+
+    it('reads expose the latest draft updatedAt as editorVersion; a save returns the next one', async () => {
+      const doc = await read('products', productId, 'tr')
+      expect(doc.editorVersion).toBe(doc.updatedAt)
+      const saved = (await save(productId, doc.editorVersion as string, { tagline: 'Sürüm 1' })) as unknown as Record<string, unknown>
+      expect(saved.editorVersion).toBe(saved.updatedAt)
+      expect((await read('products', productId, 'tr')).editorVersion).toBe(saved.updatedAt)
+      // Chained saves from the returned version keep working (autosave, then a manual draft save).
+      const next = (await save(productId, saved.editorVersion as string, { tagline: 'Sürüm 2' })) as unknown as Record<string, unknown>
+      await save(productId, next.editorVersion as string, { tagline: 'Sürüm 3' }, { autosave: false })
+      expect((await read('products', productId, 'tr')).tagline).toBe('Sürüm 3')
+    })
+
+    it('a stale version is rejected with 409 and nothing changes; writes without a version (MCP/import) pass', async () => {
+      const base = (await read('products', productId, 'tr')).editorVersion as string
+      await save(productId, undefined, { tagline: 'MCP yazımı' }) // e.g. MCP updateProducts / content:import
+      const before = await read('products', productId, 'tr')
+      await expect(save(productId, base, { tagline: 'Eski editör' })).rejects.toMatchObject({ status: VERSION_CONFLICT_STATUS })
+      expect(strip(await read('products', productId, 'tr'))).toEqual(strip(before))
+      expect((await read('products', productId, 'tr')).tagline).toBe('MCP yazımı')
+      await expect(save(productId, 'not-a-date', { tagline: 'x' })).rejects.toMatchObject({ status: 400 })
+    })
+
+    it('plain concurrent writes (no version) are serialised: both land, later writes stay visible', async () => {
+      await Promise.all(['A', 'B', 'C'].map((x) => payload.update({ collection: 'products', id: productId, locale: 'tr', draft: true, overrideAccess: true, data: { summary: `Eşzamanlı ${x}` } as never })))
+      expect(String((await read('products', productId, 'tr')).summary)).toMatch(/^Eşzamanlı [ABC]$/)
+      await payload.update({ collection: 'products', id: productId, locale: 'tr', draft: true, overrideAccess: true, data: { summary: 'Sonra' } as never })
+      expect((await read('products', productId, 'tr')).summary).toBe('Sonra')
+    })
+
+    it('pages are guarded too', async () => {
+      const base = (await read('pages', pageId, 'tr')).editorVersion as string
+      await payload.update({ collection: 'pages', id: pageId, locale: 'tr', draft: true, overrideAccess: true, data: { title: 'Dışarıdan' } as never })
+      await expect(payload.update({ collection: 'pages', id: pageId, locale: 'tr', draft: true, autosave: true, overrideAccess: true, data: { title: 'Editör', editorVersion: base } as never }))
+        .rejects.toMatchObject({ status: VERSION_CONFLICT_STATUS })
+      expect((await read('pages', pageId, 'tr')).title).toBe('Dışarıdan')
+    })
+    it('two concurrent saves from the same base: exactly one wins, the other gets 409, no data is lost', async () => {
+      const base = (await read('products', productId, 'tr')).editorVersion as string
+      const results = await Promise.allSettled([
+        save(productId, base, { tagline: 'Sekme A' }),
+        save(productId, base, { tagline: 'Sekme B' }),
+      ])
+      const won = results.filter((r) => r.status === 'fulfilled') as unknown as PromiseFulfilledResult<Record<string, unknown>>[]
+      const lost = results.filter((r) => r.status === 'rejected') as PromiseRejectedResult[]
+      expect(won).toHaveLength(1)
+      expect(lost).toHaveLength(1)
+      // Transactions are queued (db-serial-transactions): the second re-reads the version after the first commit.
+      expect(lost[0]!.reason).toMatchObject({ status: VERSION_CONFLICT_STATUS })
+      const stored = await read('products', productId, 'tr')
+      expect(stored.tagline).toBe(won[0]!.value.tagline)
+      expect(stored.editorVersion).toBe(won[0]!.value.updatedAt)
+      // The editor that lost reloads (fresh version) and saves again: accepted and visible.
+      const again = await save(productId, stored.editorVersion as string, { tagline: 'Yeniden yüklendi' }) as unknown as Record<string, unknown>
+      const after = await read('products', productId, 'tr')
+      expect(after.tagline).toBe('Yeniden yüklendi')
+      expect(after.editorVersion).toBe(again.updatedAt)
+    })
+
+  })
 })
+

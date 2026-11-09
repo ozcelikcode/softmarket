@@ -3,6 +3,7 @@ import { assertIsolatedE2E } from './lib/e2e-isolation'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { withDbQueryLogging } from './lib/db-query-log'
+import { withSerialTransactions } from './lib/db-serial-transactions'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
@@ -69,13 +70,14 @@ const smtpHost = process.env.SMTP_HOST?.trim()
 // Omitting email selects Payload's built-in console adapter, without DNS lookup.
 const smtpConfigured = smtpHost && !smtpHost.startsWith('CHANGE_') && process.env.SMTP_FROM
 
-const databaseAdapter = sqliteAdapter({
+// Transactions of this process are queued (one SQLite writer; see src/lib/db-serial-transactions.ts).
+const databaseAdapter = withSerialTransactions(sqliteAdapter({
   push: false,
   client: { url: process.env.DATABASE_URI || 'file:./data/softmarket.db' },
   wal: true,
   busyTimeout: 5000,
   transactionOptions: { behavior: 'immediate' },
-})
+}), { timeoutMs: 5000 })
 
 export default buildConfig({
   admin: {

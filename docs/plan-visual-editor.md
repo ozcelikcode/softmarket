@@ -364,3 +364,32 @@ Geçişte ayrıca [3.85.2](https://github.com/payloadcms/payload/releases/tag/v3
 **Testler:** `visual-editor-fields.test.tsx` (74: şema↔allowlist, blok başına public işaretsiz / editing işaretli / round-trip), `visual-editor-bridge.test.ts` (33), `visual-editor-db.test.ts` (5), `client-bundle-guard` (+3), `admin-labels` (+1); e2e `tests/e2e/isolated/visual-editor.spec.ts` 16 senaryo + mevcut block-order = 17/17. `pnpm test --maxWorkers=1`: 70 dosya / 1154 test, 1 kırmızı = `content-import.test.ts › rejects media outside` (main'de de kırmızı: `content/legal/tr/eula.md` git'te yok, yalnız ana çalışma dizininde; V5 ilgisiz).
 
 **Açık kalanlar:** popup önizlemede düzenleme yok; tabs sekme etiketi, testimonial isim/rol, stats değeri, zengin metin ve linkler yalnız formdan; Lexical alanında form geçmişi (REPLACE_STATE) geri alımı doğrulanmadı; çakışma kontrolü odak + 15 sn yoklama (anlık değil); boş zorunlu alanlı yeni blok taslakta kalır, yayın/import Payload doğrulamasıyla reddeder; kullanıcının kendi 8 görev denemesi; ikinci dalga koleksiyonlar.
+
+
+### V5 denetim notu — 2026-11-09
+
+V5 kaydındaki “hepsi yeşil” ve sıfır veri kaybı iddiaları üretim kabulü için yeterli değil. `updatedAt` denetimi periyodik ve yazımdan bağımsızdır; Payload autosave devam eder, dış yazım denetimden önce üzerine yazılabilir. Sunucu tarafında atomik sürüm kontrolü/koşullu yazım doğrulanana kadar eşzamanlılık kapısı açık kalır. Önceki TR/EN kapısı boş fallback alanında Escape senaryosunu kapsamıyordu; bu yol düzeltildi. Hatalı flush sonrası dil geçişi ve UTF-8 keepalive sınırı da düzeltildi. Tüm bloklar, roller ve tarayıcılar için kapsamlı yeniden doğrulama gereklidir.
+
+### V5 P1 kapanış kaydı — 2026-11-09
+
+**Payload `lockDocuments` (3.93) ne sağlıyor:** belge açıkken kilidi tutan kullanıcıdan BAŞKA bir kullanıcının admin'de açmasını/güncellemesini engeller (`checkDocumentLockStatus`). Aynı kullanıcının başka sekmesi, aynı kullanıcının API anahtarıyla MCP ve ilk kaydedenin autosave'i kapsanmaz; autosave'li koleksiyonlarda Payload'un "stale data" kontrolü de kapalıdır. Yetmediği için kendi kontrolümüz eklendi (kilit açık kalır).
+
+**Çözüm (şema değişikliği yok):** `src/editor/canvas/concurrency.ts` — pages/products'a sanal gizli `editorVersion` alanı (afterRead = okunan belgenin `updatedAt`'i; draft okumada son draft sürümü; DB kolonu yok) + ilk collection `beforeChange` kancası. Admin formu (görsel + klasik; autosave, taslak kaydet, yayınla, pagehide flush) sürümü taşır; kanca aynı transaction içinde (`req`) son draft `updatedAt`'i okur, uyuşmazsa `APIError` **409**. Sürüm taşımayan yazımlar (MCP, content:import, Local API, betikler) değişmeden geçer; ardından editörün ilk kaydı 409 alır. İstemci (`admin/host.tsx`, `admin/sync.ts`): form sürümü Payload kayıtlarından/flush'tan/geri al-yinele sonrası güncel tutulur; başarısız kayıttan hemen sonra çakışma kontrolü; uyarıda **Birleştir ve kaydet** (alan bazında üç yönlü: taban = son kaydedilen, uzak = güncel draft, yerel = form; iki tarafta değişende yerel kalır ve listelenir; `form.reset` + yeni sürüm), **Değişikliklerimi kopyala** (değişen alanların JSON'u, pano + seçilebilir metin), **Yeniden yükle** (onaylı). Yerel değişiklik 409'da formda kalır.
+
+**Yarış penceresi:** okuma-karşılaştırma-yazma aynı SQLite transaction'ında (`BEGIN IMMEDIATE`). Ölçümde libsql'in eşzamanlı ikinci transaction'ı busy-timeout'suz yeni bağlantıda açtığı ve BEGIN'de `SQLITE_BUSY` verdiği, ardından aynı süreçteki yazımların okumalarda görünmediği (kayıp güncelleme) görüldü (Payload/libsql davranışı, V5 öncesinden). `src/lib/db-serial-transactions.ts` süreç içi transaction'ları sıraya koyar (5 sn zaman aşımı, commit/rollback'te serbest); iki eşzamanlı kayıttan biri temiz 409 alır.
+
+**Kanıt:** `visual-editor-db.test.ts` 10/10 (eski sürüm 409 + veri değişmez, sürümsüz yazım geçer, iki eşzamanlı kayıt: 1 kazanır 1 × 409, sonra yeniden yükleyip kaydetme görünür, üç eşzamanlı sürümsüz yazım + sonraki yazım görünür, pages de korumalı), `db-serial-transactions.test.ts` 3/3, e2e `P1: …409…merge` (REST/MCP benzeri dış yazım → editör autosave 409, dış özet korunur, başlık yalnız formda kalır, kopyala, birleştir → ikisi birden kaydedilir, sonraki düzenlemeler normal kaydolur).
+
+**QA P2 (Terra) incelendi ve korundu:** boş EN fallback'inde Escape boş değeri geri yazar; başarısız/yarışan kayıtta dil geçişi durur; geri alma geçmişi dile göre ayrılır (Host anahtarı locale); keepalive sınırı UTF-8 bayt, yalnız aynı istekler birleşir. Ek düzeltme: geri al/yinele eski anlık görüntünün sürümünü geri yüklemez (aksi halde 409).
+
+| Kapı (V4) | Sonuç (2026-11-09, `.next-v5`, Chromium) |
+|---|---|
+| Veri round-trip | 0 fark (DB testi, products+pages TR/EN; `editorVersion` hariç) |
+| Lexical | birebir |
+| TR/EN | 0 sızıntı: e2e T6 + Escape fallback + DB testi |
+| Eşzamanlılık / veri kaybı 0 | **kapandı**: sunucu 409 + transaction sırası; e2e P1 + DB eşzamanlı testi |
+| Public bundle | /tr ve ürün mobil LH (3 koşu medyan): Perf 100, CLS 0, JS 129,62 KB (main 129,31), editör izi yok |
+| Güvenlik | sahte postMessage 5 varyant + anonim admin/preview/HTML/script: yeşil |
+| MCP / import | MCP `findProducts` + `content:import --dry-run` (0 hata) önceki koşuda; P1 sürümsüz yazımları değiştirmez (DB testi) |
+
+İzole e2e (3400, `E2E_SOURCE_DB` kopya, `E2E_NEXT_DIST_DIR`): **20/20**. `pnpm test --maxWorkers=1`: 71 dosya / 1163 test, tek kırmızı kapsam dışı `content-import › rejects media outside` (worktree'de `content/legal/tr/eula.md` yok). Typecheck/lint temiz.

@@ -1,3 +1,8 @@
+## V5 denetim düzeltmeleri (2026-11-09)
+
+- QA P2 (Terra): EN boş fallback'te Escape, başarısız kayıtla dil geçişi, UTF-8 keepalive, dile göre undo geçmişi düzeltildi.
+- P1 kapandı: sanal `editorVersion` + `beforeChange` 409 (aynı transaction), süreç içi SQLite transaction sırası (`src/lib/db-serial-transactions.ts`; libsql eşzamanlı BEGIN'de SQLITE_BUSY + görünmeyen yazım vardı), editörde Birleştir/Kopyala/Yeniden yükle. MCP/import sürümsüz geçer. İzole e2e 20/20, 71 dosya/1163 test (1 kapsam dışı kırmızı), LH JS 129,62 KB. Ayrıntı plan 'V5 P1 kapanış kaydı'.
+
 ## V5 — Görsel editör (Payload-native canvas), dal `feat/visual-editor` (2026-11-09)
 
 - Ürün/sayfa belgeleri doğrudan görsel editörde açılır (`openByDefault` + `beforeDocumentControls` host, dar form `custom.scss`); klasik form ziyaret başına. Kod `src/editor/canvas/**` (fields, protocol zod/mini v2, rules, history, bridge, admin/{host,reveal,sync,palette,tour}, plugin), işaretler yalnız `isEditingRender()`.

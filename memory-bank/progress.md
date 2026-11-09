@@ -1,3 +1,8 @@
+## V5 denetim düzeltmeleri (2026-11-09)
+
+- QA P2 (Terra): EN boş fallback'te Escape, başarısız kayıtla dil geçişi, UTF-8 keepalive, dile göre undo geçmişi düzeltildi.
+- P1 kapandı: sanal `editorVersion` + `beforeChange` 409 (aynı transaction), süreç içi SQLite transaction sırası (`src/lib/db-serial-transactions.ts`; libsql eşzamanlı BEGIN'de SQLITE_BUSY + görünmeyen yazım vardı), editörde Birleştir/Kopyala/Yeniden yükle. MCP/import sürümsüz geçer. İzole e2e 20/20, 71 dosya/1163 test (1 kapsam dışı kırmızı), LH JS 129,62 KB. Ayrıntı plan 'V5 P1 kapanış kaydı'.
+
 ## V5 — Görsel editör (2026-11-09, `feat/visual-editor`)
 
 - Uygulandı: varsayılan görsel düzen, sertleştirilmiş köprü (origin+source+strict şema, id+locale, allowlist yollar), inline düz metin kapsamı, palet, çekmece odaklama, sürükle/klavye, gizli blok rozetleri, geri al/yinele, flush + çakışma, tur, TR/EN etiketler. V4 kapılarının tamamı yeşil; e2e 17/17; LH Perf 100, JS 129,62 KB.

@@ -89,6 +89,8 @@ export interface Config {
     'support-tickets': SupportTicket;
     'support-ticket-messages': SupportTicketMessage;
     licenses: License;
+    orders: Order;
+    'payment-events': PaymentEvent;
     forms: Form;
     'form-submissions': FormSubmission;
     search: Search;
@@ -136,6 +138,8 @@ export interface Config {
     'support-tickets': SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'support-ticket-messages': SupportTicketMessagesSelect<false> | SupportTicketMessagesSelect<true>;
     licenses: LicensesSelect<false> | LicensesSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    'payment-events': PaymentEventsSelect<false> | PaymentEventsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
@@ -3791,6 +3795,19 @@ export interface Edition {
    * Lower numbers appear first in lists.
    */
   sortOrder?: number | null;
+  /**
+   * "Buy online" is shown only while payments are on in site settings and this edition has a valid price; otherwise "Request a quote" stays.
+   */
+  saleMode?: ('quote' | 'buy') | null;
+  /**
+   * Amounts are integers in minor units (1,250.00 = 125000). A currency left empty is not sold.
+   */
+  pricing?: {
+    taxMode?: ('inclusive' | 'exclusive') | null;
+    tryMinor?: number | null;
+    usdMinor?: number | null;
+    eurMinor?: number | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -3940,6 +3957,118 @@ export interface License {
    * Visible to administrators only.
    */
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  orderNumber: string;
+  customer?: (number | null) | Customer;
+  status: 'pending' | 'paid' | 'fulfilled' | 'failed' | 'refunded' | 'cancelled';
+  items: {
+    /**
+     * Product and seat count are taken from this edition.
+     */
+    edition?: (number | null) | Edition;
+    /**
+     * Stable identifier used in quotes and license assignment (e.g. ERP-PRO-1Y). Do not change later.
+     */
+    sku: string;
+    title: string;
+    licenseType: 'perpetual' | 'subscription';
+    /**
+     * Subscription length. Leave empty for perpetual licenses.
+     */
+    durationMonths?: number | null;
+    seats: number;
+    taxMode: 'inclusive' | 'exclusive';
+    unitNetMinor: number;
+    vatRateBasisPoints: number;
+    vatMinor: number;
+    lineTotalMinor: number;
+    license?: (number | null) | License;
+    id?: string | null;
+  }[];
+  currency: 'TRY' | 'USD' | 'EUR';
+  subtotalMinor: number;
+  vatMinor: number;
+  totalMinor: number;
+  provider: 'iyzico' | 'stripe';
+  providerEnv?: ('sandbox' | 'live') | null;
+  providerRef?: string | null;
+  providerPaymentId?: string | null;
+  idempotencyKey: string;
+  locale?: ('tr' | 'en') | null;
+  paidAt?: string | null;
+  fulfilledAt?: string | null;
+  refundedAt?: string | null;
+  cancelledAt?: string | null;
+  failureReason?: string | null;
+  billing: {
+    type: 'individual' | 'corporate';
+    name: string;
+    company?: string | null;
+    identityNumber?: string | null;
+    taxNumber?: string | null;
+    taxOffice?: string | null;
+    email: string;
+    phone?: string | null;
+    addressLine?: string | null;
+    district?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+  };
+  consents?: {
+    preInformationVersion?: string | null;
+    distanceSalesVersion?: string | null;
+    digitalWaiverAccepted?: boolean | null;
+    acceptedAt?: string | null;
+    ip?: string | null;
+    userAgent?: string | null;
+    snapshotSha256?: string | null;
+  };
+  contractSnapshot?: string | null;
+  /**
+   * Amount mismatch or late payment: no license is assigned automatically.
+   */
+  requiresReview?: boolean | null;
+  invoice?: {
+    number?: string | null;
+    issuedAt?: string | null;
+    note?: string | null;
+  };
+  /**
+   * Visible to staff only.
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-events".
+ */
+export interface PaymentEvent {
+  id: number;
+  provider: 'iyzico' | 'stripe';
+  eventId: string;
+  /**
+   * Provider and event ID; the same notification is never processed twice.
+   */
+  eventKey: string;
+  type: string;
+  order?: (number | null) | Order;
+  signatureVerified?: boolean | null;
+  bodySha256: string;
+  status: 'received' | 'processed' | 'ignored' | 'error';
+  failureCode?: string | null;
+  receivedAt: string;
+  processedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4437,6 +4566,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'licenses';
         value: number | License;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'payment-events';
+        value: number | PaymentEvent;
       } | null)
     | ({
         relationTo: 'forms';
@@ -5774,6 +5911,15 @@ export interface EditionsSelect<T extends boolean = true> {
   durationMonths?: T;
   seats?: T;
   sortOrder?: T;
+  saleMode?: T;
+  pricing?:
+    | T
+    | {
+        taxMode?: T;
+        tryMinor?: T;
+        usdMinor?: T;
+        eurMinor?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -6256,6 +6402,106 @@ export interface LicensesSelect<T extends boolean = true> {
   seats?: T;
   status?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderNumber?: T;
+  customer?: T;
+  status?: T;
+  items?:
+    | T
+    | {
+        edition?: T;
+        sku?: T;
+        title?: T;
+        licenseType?: T;
+        durationMonths?: T;
+        seats?: T;
+        taxMode?: T;
+        unitNetMinor?: T;
+        vatRateBasisPoints?: T;
+        vatMinor?: T;
+        lineTotalMinor?: T;
+        license?: T;
+        id?: T;
+      };
+  currency?: T;
+  subtotalMinor?: T;
+  vatMinor?: T;
+  totalMinor?: T;
+  provider?: T;
+  providerEnv?: T;
+  providerRef?: T;
+  providerPaymentId?: T;
+  idempotencyKey?: T;
+  locale?: T;
+  paidAt?: T;
+  fulfilledAt?: T;
+  refundedAt?: T;
+  cancelledAt?: T;
+  failureReason?: T;
+  billing?:
+    | T
+    | {
+        type?: T;
+        name?: T;
+        company?: T;
+        identityNumber?: T;
+        taxNumber?: T;
+        taxOffice?: T;
+        email?: T;
+        phone?: T;
+        addressLine?: T;
+        district?: T;
+        city?: T;
+        postalCode?: T;
+        country?: T;
+      };
+  consents?:
+    | T
+    | {
+        preInformationVersion?: T;
+        distanceSalesVersion?: T;
+        digitalWaiverAccepted?: T;
+        acceptedAt?: T;
+        ip?: T;
+        userAgent?: T;
+        snapshotSha256?: T;
+      };
+  contractSnapshot?: T;
+  requiresReview?: T;
+  invoice?:
+    | T
+    | {
+        number?: T;
+        issuedAt?: T;
+        note?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-events_select".
+ */
+export interface PaymentEventsSelect<T extends boolean = true> {
+  provider?: T;
+  eventId?: T;
+  eventKey?: T;
+  type?: T;
+  order?: T;
+  signatureVerified?: T;
+  bodySha256?: T;
+  status?: T;
+  failureCode?: T;
+  receivedAt?: T;
+  processedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -7722,6 +7968,57 @@ export interface SiteSetting {
      * Form used on the demo request page.
      */
     demoForm?: (number | null) | Form;
+    /**
+     * With "Request a quote", prices, checkout and order screens never appear on the site. Switching back closes new sales at once; existing orders are kept.
+     */
+    mode?: ('quote-only' | 'payments') | null;
+    /**
+     * Keys live only in server environment variables, never here. The server also decides test/live.
+     */
+    providers?: {
+      iyzico?: {
+        enabled?: boolean | null;
+      };
+      /**
+       * Off by default: Stripe does not serve companies based in Türkiye. Can be enabled only with PAYMENTS_STRIPE_ENABLED=true on the server.
+       */
+      stripe?: {
+        enabled?: boolean | null;
+      };
+    };
+    /**
+     * Fill in as decided by the accountant. A currency without a rule is not sold.
+     */
+    vat?: {
+      try?: {
+        /**
+         * Empty: no sales in this currency.
+         */
+        rule?: ('rate' | 'exempt') | null;
+        ratePercent?: number | null;
+        rateBasisPoints?: number | null;
+      };
+      usd?: {
+        /**
+         * Empty: no sales in this currency.
+         */
+        rule?: ('rate' | 'exempt') | null;
+        ratePercent?: number | null;
+        rateBasisPoints?: number | null;
+      };
+      eur?: {
+        /**
+         * Empty: no sales in this currency.
+         */
+        rule?: ('rate' | 'exempt') | null;
+        ratePercent?: number | null;
+        rateBasisPoints?: number | null;
+      };
+    };
+    /**
+     * Written automatically when payments are switched off; provider notifications are processed for 72 hours after it.
+     */
+    quoteSince?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -7989,6 +8286,47 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         quoteForm?: T;
         demoForm?: T;
+        mode?: T;
+        providers?:
+          | T
+          | {
+              iyzico?:
+                | T
+                | {
+                    enabled?: T;
+                  };
+              stripe?:
+                | T
+                | {
+                    enabled?: T;
+                  };
+            };
+        vat?:
+          | T
+          | {
+              try?:
+                | T
+                | {
+                    rule?: T;
+                    ratePercent?: T;
+                    rateBasisPoints?: T;
+                  };
+              usd?:
+                | T
+                | {
+                    rule?: T;
+                    ratePercent?: T;
+                    rateBasisPoints?: T;
+                  };
+              eur?:
+                | T
+                | {
+                    rule?: T;
+                    ratePercent?: T;
+                    rateBasisPoints?: T;
+                  };
+            };
+        quoteSince?: T;
       };
   updatedAt?: T;
   createdAt?: T;

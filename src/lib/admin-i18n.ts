@@ -25,6 +25,7 @@ export const ADMIN_GROUPS = {
   content: loc('İçerik', 'Content'),
   support: loc('Destek', 'Support'),
   licenses: loc('Lisanslar', 'Licenses'),
+  sales: loc('Satış', 'Sales'),
   site: loc('Site', 'Site'),
   forms: loc('Formlar', 'Forms'),
 } as const
@@ -37,6 +38,7 @@ const GROUP_BY_LEGACY: Record<string, Localized> = {
   Content: ADMIN_GROUPS.content,
   Support: ADMIN_GROUPS.support,
   Licenses: ADMIN_GROUPS.licenses,
+  Sales: ADMIN_GROUPS.sales,
   Site: ADMIN_GROUPS.site,
   Forms: ADMIN_GROUPS.forms,
 }
@@ -63,6 +65,8 @@ export const COLLECTION_LABELS: Record<string, RowEntry> = {
   'support-tickets': ['Destek talebi', 'Support ticket', 'Destek talepleri', 'Support tickets'],
   'support-ticket-messages': ['Talep mesajı', 'Ticket message', 'Talep mesajları', 'Ticket messages'],
   licenses: ['Lisans', 'License', 'Lisanslar', 'Licenses'],
+  orders: ['Sipariş', 'Order', 'Siparişler', 'Orders'],
+  'payment-events': ['Ödeme bildirimi', 'Payment event', 'Ödeme bildirimleri', 'Payment events'],
   // Plugin collections (labels set through plugin overrides in payload.config).
   forms: ['Form', 'Form', 'Formlar', 'Forms'],
   'form-submissions': ['Form gönderimi', 'Form submission', 'Form gönderimleri', 'Form submissions'],

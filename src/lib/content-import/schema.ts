@@ -37,6 +37,8 @@ export function fieldsSchema(fields: Field[]): Schema {
   const required: string[] = []
   for (const field of flatFields(fields)) {
     if (!('name' in field) || field.type === 'join' || field.type === 'ui') continue
+    // Commerce fields (prices, sale mode, payment switch, VAT) are admin/MCP-only: the seed schema rejects them.
+    if ((field.custom as { contentImport?: unknown } | undefined)?.contentImport === false) continue
     // Users are never a seed relationship. Forms use stable title, all others use TR slug / SKU.
     if (field.type === 'relationship' && field.relationTo === 'users') continue
     properties[field.name] = fieldSchema(field)

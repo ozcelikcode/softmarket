@@ -59,9 +59,11 @@ describe('three-layer mode matrix', () => {
     expect(resolveEditionMode(resolveCommerceGate({ env: ON, siteSettings: payments }), {})).toEqual({ action: 'quote', reason: 'edition_quote' })
   })
 
-  it('accepts legacy plan spellings as aliases', () => {
-    expect(readSiteMode({ commerce: { mode: 'payment' } })).toBe('payments')
-    expect(readEditionSaleMode({ saleMode: 'purchase' })).toBe('buy')
+  it('P2-S: only the stored spellings open a layer; former plan spellings fail closed', () => {
+    expect(readSiteMode({ commerce: { mode: 'payments' } })).toBe('payments')
+    expect(readEditionSaleMode({ saleMode: 'buy' })).toBe('buy')
+    for (const mode of ['payment', 'Payments', 'PAYMENTS', 'quote', ' payments']) expect(readSiteMode({ commerce: { mode } })).toBe('quote-only')
+    for (const mode of ['purchase', 'Buy', 'buy ', 'payments']) expect(readEditionSaleMode({ saleMode: mode })).toBe('quote')
   })
 })
 
@@ -110,7 +112,7 @@ describe('provider routing (P0: iyzico primary)', () => {
 describe('resolveEditionOffer (fail-to-quote)', () => {
   const gate = resolveCommerceGate({ env: ON, siteSettings: payments })
   const vat = { TRY: { kind: 'rate', rateBasisPoints: 2000 }, USD: { kind: 'exempt' } }
-  const edition = { saleMode: 'buy', pricing: { taxMode: 'inclusive', TRY: 120_00, USD: 50_00, EUR: 45_00 } }
+  const edition = { saleMode: 'buy', pricing: { taxMode: 'inclusive', tryMinor: 120_00, usdMinor: 50_00, eurMinor: 45_00 } }
   const base = { gate, edition, vatSettings: vat, availableProviders: ['iyzico'] as const, stripeEnabled: false, stripeCurrencies: [] }
 
   it('offers only currencies with price + VAT rule + available provider', () => {
@@ -127,8 +129,8 @@ describe('resolveEditionOffer (fail-to-quote)', () => {
     expect(resolveEditionOffer({ ...base, vatSettings: undefined }).kind).toBe('quote')
     expect(resolveEditionOffer({ ...base, availableProviders: [] }).kind).toBe('quote')
     expect(resolveEditionOffer({ ...base, edition: { saleMode: 'buy' } }).kind).toBe('quote')
-    expect(resolveEditionOffer({ ...base, edition: { saleMode: 'buy', pricing: { TRY: 100 } } }).kind).toBe('quote')
-    expect(resolveEditionOffer({ ...base, edition: { saleMode: 'buy', pricing: { taxMode: 'inclusive', TRY: 1.5 } } }).kind).toBe('quote')
+    expect(resolveEditionOffer({ ...base, edition: { saleMode: 'buy', pricing: { tryMinor: 100 } } }).kind).toBe('quote')
+    expect(resolveEditionOffer({ ...base, edition: { saleMode: 'buy', pricing: { taxMode: 'inclusive', tryMinor: 1.5 } } }).kind).toBe('quote')
     expect(resolveEditionOffer({ ...base, edition: { ...edition, saleMode: 'quote' } }).kind).toBe('quote')
     expect(resolveEditionOffer({ ...base, gate: resolveCommerceGate({ env: {}, siteSettings: payments }) }).kind).toBe('quote')
   })

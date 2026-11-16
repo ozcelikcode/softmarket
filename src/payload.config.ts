@@ -33,8 +33,10 @@ import { Faqs } from './collections/Faqs'
 import { Industries } from './collections/Industries'
 import { Licenses } from './collections/Licenses'
 import { Media } from './collections/Media'
+import { Orders } from './collections/Orders'
 import { Pages } from './collections/Pages'
 import { Partners } from './collections/Partners'
+import { PaymentEvents } from './collections/PaymentEvents'
 import { Posts } from './collections/Posts'
 import { ProductFamilies } from './collections/ProductFamilies'
 import { Products } from './collections/Products'
@@ -134,7 +136,10 @@ export default buildConfig({
     SupportTicketMessages,
     // License assignment
     Licenses,
-  ].map(localizeCollection).map((collection) => ['users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages'].includes(collection.slug)
+    // Sales (P2-S schema; server-written, never public, not in the MCP allowlist)
+    Orders,
+    PaymentEvents,
+  ].map(localizeCollection).map((collection) => ['users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages', 'orders', 'payment-events'].includes(collection.slug)
     ? collection : withPublicRevalidation(collection)),
   globals: [Header, Footer, SiteSettings].map(localizeGlobal).map(withGlobalRevalidation),
   editor: lexicalEditor(),

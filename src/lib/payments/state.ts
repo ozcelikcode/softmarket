@@ -11,7 +11,8 @@ import type { Currency, ProviderId, ProviderPaymentState } from './types'
  * retrieve() result, never from a webhook/callback body.
  */
 
-export type OrderStatus = 'pending' | 'paid' | 'fulfilled' | 'failed' | 'refunded' | 'cancelled'
+export const ORDER_STATUSES = ['pending', 'paid', 'fulfilled', 'failed', 'refunded', 'cancelled'] as const
+export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
 const TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   pending: ['paid', 'failed', 'cancelled'],

@@ -22,6 +22,7 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Marketing: `solutions`*, `industries`, `case-studies`*, `posts`*, `careers`, `partners`, `pages`*, `media`.
 - Support: `docs`* (slug unique per product+locale), `releases` (unique product+version), `downloads` (file→media, os, access public|licensed), `faqs`, `support-tickets` (messages array).
 - Licenses: `licenses` (CSPRNG key unique, product denormalised from edition).
+- Sales (P2-S, payments still off): `orders` (orderNumber/idempotencyKey unique, items[].license, billing TCKN/VKN, consents) and `payment-events` (eventKey unique, body SHA-256 only). Store `src/lib/payments/store/**` (BEGIN IMMEDIATE, conditional writes, one licence per order). Editions `saleMode`/`pricing.*Minor` and `site-settings.commerce.{mode,providers,vat,quoteSince}`: staff read, admin write (commerce switch panel-only, not API key), never in content:import.
 - Plugin: `forms`, `form-submissions`, `search` (products, docs, faqs, posts). Globals: `header`, `footer`, `site-settings`.
 - `*` = drafts+versions. Content fields `localized`; slugs via `slugField()` (`src/fields/slug.ts`): auto from title, unique per locale.
 
@@ -33,6 +34,7 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - `licenses`: read = admin or owner customer; create/update/delete = admin only. Server code uses `overrideAccess: true`. Customers NEVER write them.
 - `support-tickets`: read/update = staff or owner; customers create for themselves and may only append messages (hook-enforced).
 - `downloads`/`media`: `public` for everyone; `licensed` only for staff or customers with a valid license (active, started, not expired) for the product. `downloads` hook syncs `media.visibility/licensedProducts` (fail-closed).
+- `orders`: read = staff or owner customer (any commerce mode); create/delete = nobody (server `overrideAccess`); update = admin, only invoice/notes/requiresReview; billing/consents hidden from editors. `payment-events`: read admin, nothing else. Both NOT in the MCP allowlist.
 - `users`: admins manage; staff edit self; roles field admin-only. First user becomes admin. `site-settings` update = admin.
 
 ## Tanıtım, teklif ve lisans atama

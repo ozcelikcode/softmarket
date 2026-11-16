@@ -1,6 +1,6 @@
 # Plan — Seçimli Online Ödeme ("Teklif iste" / "Ödeme al")
 
-> Durum: **P1 şemasız çekirdek yazıldı** (`src/lib/payments/**`, rotaya/UI'ye bağlı değil). Şema ve rotalar kullanıcı onayı ve §9'daki girdilerden sonra başlar.
+> Durum: **P1 şemasız çekirdek yazıldı**; **P2-S şema + store yazıldı (2026-11-16, QA bekliyor, canlı DB'ye uygulanmadı)**: migration `20261116_141401_p2_payments_commerce`, `orders`/`payment-events`, `editions.saleMode/pricing`, `site-settings.commerce.{mode,providers,vat,quoteSince}`, `src/lib/payments/store/**`. Rota/UI/webhook yok (P3–P5).
 > Kaynaklar: `memory-bank/*`, `AGENTS.md`, `docs/implementation-plan.md` (ilk plan §5 ödeme akışı), `docs/plan-visual-editor.md` (V0–V6, şema sırası), migration'lar `20261106_151826_remove_online_sales` ve `20261107_092304_remove_sales_legal_fields`, mevcut kod (`Editions`, `Licenses`, `Customers`, `SiteSettings`, `src/access`, `src/lib/{licenses,portal,forms,email,mcp,csp,request-guards,legal-draft}`, `middleware.ts`, ürün sayfası, `EditionCard`, portal `/hesap`).
 
 ## Kullanıcı isteği ve kararları
@@ -343,6 +343,7 @@ Kurallar: yazan ≠ denetleyen. Ödeme fazlarında QA **en yüksek effort** ile 
 - **Dosyalar:** `src/collections/{Orders,PaymentEvents}.ts`, `Editions.ts` (saleMode, pricing, field access), `Pages.ts` (`commerceLegal`), `src/globals/SiteSettings.ts` (sekme, hazırlık doğrulaması, `quoteSince` hook'u), `src/access/*` (orders kuralları), `payload.config.ts` kayıt, `admin-i18n.ts` (TR/EN), `src/migrations/<ts>_p2_payments_commerce.{ts,json}` (elle denetimli up, korumalı down), `payload-types.ts`, `content/seed/schema.json` (fiyat reddi korunur), `src/lib/mcp.ts` (değişmez: orders yok; `commerce` field guard).
 - **Kabul:** §2.5 migration testi. Kopya DB'de `content:import --dry-run` 0 hata. `admin-labels.test.ts` yeşil. Site HTML'i değişmez (mode=quote). MCP araç listesi değişmez (69 ± 0).
 - **Riskler:** Drizzle'ın kilit tablosu için `__new_` üretmesi → elle `ADD` ile değiştirilir. Enum ad uzunluğu.
+- **Uygulandı (2026-11-16):** tek yazım `quote-only|payments` ve `quote|buy` (takma adlar kaldırıldı, okumada da quote). Fiyat alanları `pricing.{taxMode,tryMinor,usdMinor,eurMinor}` (tam sayı minor unit; admin şimdilik kuruş girer). KDV para birimi başına `commerce.vat.{try,usd,eur}.{rule,ratePercent,rateBasisPoints}` (admin yüzde girer, hook baz puanı yazar; çekirdek `readVatSettings` yalnız tutarlı baz puanı okur). Yeni alanlar yalnız staff okur (public HTML aynı), yalnız panel admin yazar (API key/MCP sessizce düşer; edition fiyatı admin MCP ile yazılabilir), `custom.contentImport:false` ile seed şemasında yok. S2 için ayar eklenmedi (karar sabit davranış). `pages.commerceLegal` ve hazırlık doğrulamasının yasal/şirket/SMTP maddeleri P3/P7'ye kaldı; mod doğrulaması şimdilik yetenek + açık sağlayıcı + en az bir KDV kuralı ister.
 
 ### P3 — Mod kapısı ve görünürlük (1,5–2 gün)
 

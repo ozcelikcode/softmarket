@@ -1,3 +1,10 @@
+## P2-S ödeme şeması + store — 2026-11-16 (QA bekliyor, commit yok, canlı DB'ye uygulanmadı)
+
+- Migration `20261116_141401_p2_payments_commerce`: up yalnız 3 CREATE TABLE (`orders`, `orders_items`, `payment_events`) + 21 indeks + 20 ADD COLUMN (`editions` 5, `site_settings` 13, `payload_locked_documents_rels` 2). Elle güvenli down: satış/kilit satırı varsa reddeder, yoksa yalnız eklenenleri kaldırır (rebuild/DELETE yok). Kopya DB: migrate + `content:import --dry-run` 0 hata, integrity ok.
+- Tek yazım: `quote-only|payments`, `quote|buy` (takma adlar kaldırıldı). Fiyat `editions.pricing.{taxMode,tryMinor,usdMinor,eurMinor}`; KDV `site-settings.commerce.vat.{try,usd,eur}` (yüzde girilir, baz puan saklanır). Yeni alanlar staff okur, admin yazar; commerce anahtarı API key ile yazılamaz; content:import reddeder (`custom.contentImport:false`).
+- `orders`: okuma staff + sahip müşteri; create/delete nobody; admin yalnız invoice/notes/requiresReview. `payment-events`: okuma admin. MCP'de yok.
+- Store `src/lib/payments/store/**`: BEGIN IMMEDIATE (V5 kuyruğu), koşullu `license_id IS NULL` ve `status = from` yazımları, çakışmada tam rollback, yan etkiler commit + bağımsız okuma doğrulaması sonrası. Testler `tests/unit/payments-{db,schema}.test.ts`; eski migration testlerine P2-S up eklendi.
+
 ## V5 P1 bağımsız denetim — 2026-11-10
 
 - P1: aynı transaction ID'sinde eşzamanlı bitirme erken kilit açıyordu; bitirme promise'i paylaşıldı. Timestamp yerine ham tüm-dil snapshot SHA-256 token'ı (ilk sanal alan, DB kolonu yok); aynı ms/saat geri alma testli.
@@ -247,3 +254,5 @@
 
 ## 2026-11-16 V5 ana dala alındı
 - typecheck, lint, 73 dosya / 1188 birim test (maxWorkers=1), prod build, `test:e2e` 19 + `test:e2e:isolated` 20 (visual-editor dahil) geçti. Migration testi (~45 s, serializer'dan bağımsız; main'de aynı) zaman aşımı 240 s; content-import medya testi kendi fixture'ını üretir.
+
+- P2-S denetimi: sipariş satırı/net/KDV toplamları tutarlılığı, payment-event commit doğrulaması ve terminal durum koruması, fulfillment commit doğrulaması ve commerce verisi bulunan migration down koruması eklendi; izole SQLite regresyonları eklendi.

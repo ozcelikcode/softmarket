@@ -1,19 +1,19 @@
 import { isValidMinor } from './money'
 import { computeAmounts, readVatRule, type AmountBreakdown, type TaxMode } from './tax'
-import { CURRENCIES, type Currency, type ProviderId } from './types'
+import { CURRENCIES, PRICE_FIELDS, type Currency, type EDITION_SALE_MODES, type ProviderId, type SITE_COMMERCE_MODES } from './types'
 
 /**
  * Three-layer commerce mode (outermost wins), all pure and fail-closed:
  *   1. env PAYMENTS_ENABLED === 'true'            (operator capability)
  *   2. site-settings.commerce.mode                 ('quote-only' | 'payments')
  *   3. edition.saleMode                            ('quote' | 'buy')
- * The Payload schema does not exist yet (P2-S). Inputs are `unknown`; any missing or unknown
- * value is read as "quote only". The legacy plan spellings ('payment', 'purchase') are accepted
- * as aliases until P2-S fixes the stored values.
+ * Inputs are `unknown`; any missing or unknown value is read as "quote only" (fail-closed).
+ * P2-S fixed the stored spellings to exactly 'payments' and 'buy' (types.ts). The former plan
+ * spellings ('payment', 'purchase') are NOT aliases: they were never stored and read as quote.
  */
 
-export type SiteCommerceMode = 'quote-only' | 'payments'
-export type EditionSaleMode = 'quote' | 'buy'
+export type SiteCommerceMode = (typeof SITE_COMMERCE_MODES)[number]
+export type EditionSaleMode = (typeof EDITION_SALE_MODES)[number]
 
 /** S3: after switching to quote-only, provider webhooks keep being processed for 72 hours. */
 export const WEBHOOK_DRAIN_MS = 72 * 60 * 60 * 1000
@@ -28,12 +28,12 @@ function prop(obj: unknown, key: string): unknown {
 
 export function readSiteMode(siteSettings: unknown): SiteCommerceMode {
   const mode = prop(prop(siteSettings, 'commerce'), 'mode')
-  return mode === 'payments' || mode === 'payment' ? 'payments' : 'quote-only'
+  return mode === 'payments' ? 'payments' : 'quote-only'
 }
 
 export function readEditionSaleMode(edition: unknown): EditionSaleMode {
   const mode = prop(edition, 'saleMode')
-  return mode === 'buy' || mode === 'purchase' ? 'buy' : 'quote'
+  return mode === 'buy' ? 'buy' : 'quote'
 }
 
 export type CommerceGate = {
@@ -112,7 +112,7 @@ export type EditionOffer = { kind: 'buy'; prices: PriceOffer[] } | { kind: 'quot
  * a valid price, a VAT rule, and an available (enabled + configured) provider. A broken "Buy"
  * button can never appear.
  *
- * `edition.pricing` expected (P2-S): `{ taxMode: 'inclusive'|'exclusive', TRY?: minor, USD?: minor, EUR?: minor }`.
+ * `edition.pricing` (P2-S schema): `{ taxMode: 'inclusive'|'exclusive', tryMinor?, usdMinor?, eurMinor? }` (integer minor units).
  */
 export function resolveEditionOffer(input: {
   gate: CommerceGate
@@ -129,7 +129,7 @@ export function resolveEditionOffer(input: {
 
   const prices: PriceOffer[] = []
   for (const currency of CURRENCIES) {
-    const priceMinor = prop(pricing, currency)
+    const priceMinor = prop(pricing, PRICE_FIELDS[currency])
     if (!isValidMinor(priceMinor)) continue
     const provider = providerForCurrency(currency, input)
     if (!input.availableProviders.includes(provider)) continue

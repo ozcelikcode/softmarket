@@ -81,6 +81,9 @@ it('F7 up/down in a transaction preserves every pre-existing row; legacy links s
   const { migrations } = await import('../../src/migrations')
   const pageBuilder = migrations.find((m) => m.name === '20261107_144850_page_builder_pages')!
   await pageBuilder.up(args() as never)
+  // P2-S adds site_settings.commerce_* (independent of F7): applied for the reads, removed again below.
+  const payments = migrations.find((m) => m.name === '20261116_141401_p2_payments_commerce')!
+  await payments.up(args() as never)
   const header = await payload.findGlobal({ slug: 'header', locale: 'tr', depth: 0, overrideAccess: true })
   expect(header.navItems?.[0]?.link).toMatchObject({ type: 'external', url: '/tr/urunler', label: 'Ürünler' })
   expect(header.navItems?.[1]?.children?.[0]).toMatchObject({ link: { url: '/tr/kariyer' }, description: 'Ekibimize katılın.' })
@@ -98,6 +101,7 @@ it('F7 up/down in a transaction preserves every pre-existing row; legacy links s
   await run(`INSERT INTO header_nav_items_columns_links(_order,_parent_id,id,link_type,link_route) VALUES(1,'col-1','cl-1','route','kariyer')`)
   await run(`INSERT INTO header_utility_links(_order,_parent_id,id,link_type,link_route) VALUES(1,1,'u-1','route','iletisim')`)
   await run(`UPDATE site_settings SET brand_accent='#0f766e', motion='none' WHERE id=1`)
+  await payload.db.drizzle.transaction(async (db) => payments.down({ db, payload, req: {} } as never))
   await payload.db.drizzle.transaction(async (db) => pageBuilder.down({ db, payload, req: {} } as never))
   await payload.db.drizzle.transaction(async (db) => migration.down({ db, payload, req: {} } as never))
   expect(await rows()).toEqual(before)

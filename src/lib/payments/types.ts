@@ -1,6 +1,6 @@
 /**
- * P1 payment core: shared types. Server-only by design (adapters import node:crypto).
- * No Payload schema exists yet; these types are hand-written and independent of payload-types.
+ * Payment core: shared types. Server-only by design (adapters import node:crypto).
+ * Hand-written and independent of payload-types; the P2-S schema is built from the constants here.
  */
 
 export const CURRENCIES = ['TRY', 'USD', 'EUR'] as const
@@ -9,7 +9,19 @@ export type Currency = (typeof CURRENCIES)[number]
 export const PROVIDER_IDS = ['iyzico', 'stripe'] as const
 export type ProviderId = (typeof PROVIDER_IDS)[number]
 
-export type ProviderEnv = 'sandbox' | 'live'
+export const PROVIDER_ENVS = ['sandbox', 'live'] as const
+export type ProviderEnv = (typeof PROVIDER_ENVS)[number]
+
+/*
+ * Stored spellings (P2-S). These are the ONLY values written to the database; the schema options
+ * (site-settings.commerce.mode, editions.saleMode, editions.pricing.taxMode) are built from them.
+ */
+export const SITE_COMMERCE_MODES = ['quote-only', 'payments'] as const
+export const EDITION_SALE_MODES = ['quote', 'buy'] as const
+export const TAX_MODES = ['inclusive', 'exclusive'] as const
+
+/** editions.pricing.<field>: integer minor units (kuruş/cent) per currency; empty = no sale in that currency. */
+export const PRICE_FIELDS = { TRY: 'tryMinor', USD: 'usdMinor', EUR: 'eurMinor' } as const satisfies Record<Currency, string>
 
 /** Minimal fetch signature so adapters can be tested without network. */
 export type FetchLike = (

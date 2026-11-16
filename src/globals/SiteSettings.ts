@@ -1,7 +1,177 @@
-import type { GlobalConfig } from 'payload'
+import type { Field, FieldAccess, GlobalConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, isAdmin, isAdminOrEditorField, isAdminUser } from '@/access'
 import { normalizeHex, validateAccent } from '@/lib/brand'
+import { readCapability } from '@/lib/payments/mode'
+import { percentToBasisPoints, readVatSettings, VAT_GROUPS, VAT_RULE_KINDS } from '@/lib/payments/settings'
+import { CURRENCIES, SITE_COMMERCE_MODES } from '@/lib/payments/types'
+
+/*
+ * P2-S commerce switch (plan §1.2). Default `quote-only` hides the payment system completely. Staff read these
+ * fields (public reads and HTML stay unchanged; server code reads with overrideAccess). Only an admin in a PANEL
+ * session writes them: an API key (MCP) cannot switch payments on, enable a provider or change VAT. Field access
+ * silently drops such a write. Never accepted by content:import. Provider secrets live only in env.
+ */
+const panelAdmin: FieldAccess = ({ req: { user } }) =>
+  isAdminUser(user) && (user as { _strategy?: string } | null)?._strategy !== 'api-key'
+const commerceAccess = { read: isAdminOrEditorField, create: panelAdmin, update: panelAdmin }
+const noImport = { contentImport: false }
+type Sibling = Partial<Record<string, unknown>>
+const bilingual = (tr: string, en: string) => `${tr} / ${en}`
+
+const vatGroup = (currency: (typeof CURRENCIES)[number]): Field => ({
+  name: VAT_GROUPS[currency],
+  type: 'group',
+  label: { tr: `${currency} KDV`, en: `${currency} VAT` },
+  fields: [
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'rule',
+          type: 'select',
+          label: { tr: 'Kural', en: 'Rule' },
+          admin: { description: { tr: 'Boş: bu para biriminde satış kapalı.', en: 'Empty: no sales in this currency.' } },
+          options: [
+            { label: { tr: 'Oran', en: 'Rate' }, value: VAT_RULE_KINDS[0] },
+            { label: { tr: 'İstisna', en: 'Exempt' }, value: VAT_RULE_KINDS[1] },
+          ],
+        },
+        {
+          name: 'ratePercent',
+          type: 'number',
+          min: 0,
+          max: 100,
+          label: { tr: 'Oran (%)', en: 'Rate (%)' },
+          admin: { condition: (_, sibling) => sibling?.rule === 'rate', step: 0.01 },
+          validate: (value: number | null | undefined, { siblingData }: { siblingData: Sibling }) =>
+            siblingData?.rule !== 'rate' || percentToBasisPoints(value) !== null
+              ? true
+              : bilingual('0 ile 100 arasında, en çok 2 ondalık.', 'Between 0 and 100, at most 2 decimals.'),
+        },
+        {
+          // Stored integer basis points (20 % = 2000) derived from the percent; the only value tax.ts reads.
+          name: 'rateBasisPoints',
+          type: 'number',
+          admin: { hidden: true, readOnly: true },
+          hooks: {
+            beforeValidate: [({ siblingData }) => (siblingData?.rule === 'rate' ? percentToBasisPoints(siblingData.ratePercent) : null)],
+          },
+        },
+      ],
+    },
+  ],
+})
+
+const commerceFields: Field[] = [
+  {
+    name: 'mode',
+    type: 'select',
+    defaultValue: 'quote-only',
+    access: commerceAccess,
+    custom: noImport,
+    label: { tr: 'Satış modu', en: 'Sales mode' },
+    options: [
+      { label: { tr: 'Teklif iste (ödeme kapalı)', en: 'Request a quote (payments off)' }, value: SITE_COMMERCE_MODES[0] },
+      { label: { tr: 'Ödeme al', en: 'Take payments' }, value: SITE_COMMERCE_MODES[1] },
+    ],
+    admin: {
+      description: {
+        tr: '"Teklif iste" seçiliyken fiyat, satın alma ve sipariş ekranları sitede hiç görünmez. Teklif moduna dönünce yeni satış hemen kapanır; mevcut siparişler korunur.',
+        en: 'With "Request a quote", prices, checkout and order screens never appear on the site. Switching back closes new sales at once; existing orders are kept.',
+      },
+    },
+    validate: (value: unknown, { previousValue, siblingData }: { previousValue?: unknown; siblingData: Sibling }) => {
+      if (value !== 'payments') return true
+      const missing: string[] = []
+      if (previousValue !== 'payments' && !readCapability(process.env)) missing.push(bilingual('sunucuda PAYMENTS_ENABLED=true', 'PAYMENTS_ENABLED=true on the server'))
+      const providers = (siblingData?.providers ?? {}) as Record<string, { enabled?: unknown } | undefined>
+      if (!Object.values(providers).some((p) => p?.enabled === true)) missing.push(bilingual('en az bir açık ödeme sağlayıcısı', 'at least one enabled payment provider'))
+      if (Object.keys(readVatSettings({ commerce: siblingData })).length === 0) missing.push(bilingual('en az bir para birimi için KDV kuralı', 'a VAT rule for at least one currency'))
+      return missing.length ? `${bilingual('Ödeme modu için eksik', 'Payments mode needs')}: ${missing.join('; ')}` : true
+    },
+  },
+  {
+    name: 'providers',
+    type: 'group',
+    access: commerceAccess,
+    custom: noImport,
+    label: { tr: 'Ödeme sağlayıcıları', en: 'Payment providers' },
+    admin: {
+      description: {
+        tr: 'Anahtarlar yalnız sunucu ortam değişkenlerindedir; burada saklanmaz. Test/canlı ortamı da sunucu belirler.',
+        en: 'Keys live only in server environment variables, never here. The server also decides test/live.',
+      },
+    },
+    fields: [
+      {
+        name: 'iyzico',
+        type: 'group',
+        label: { tr: 'iyzico', en: 'iyzico' },
+        fields: [{ name: 'enabled', type: 'checkbox', defaultValue: false, label: { tr: 'Açık', en: 'Enabled' } }],
+      },
+      {
+        name: 'stripe',
+        type: 'group',
+        label: { tr: 'Stripe', en: 'Stripe' },
+        admin: {
+          description: {
+            tr: 'Varsayılan kapalı: Stripe Türkiye merkezli şirketlere hizmet vermez. Yalnız sunucu izin verirse (PAYMENTS_STRIPE_ENABLED=true) açılabilir.',
+            en: 'Off by default: Stripe does not serve companies based in Türkiye. Can be enabled only with PAYMENTS_STRIPE_ENABLED=true on the server.',
+          },
+        },
+        fields: [{
+          name: 'enabled',
+          type: 'checkbox',
+          defaultValue: false,
+          label: { tr: 'Açık', en: 'Enabled' },
+          validate: (value: unknown, { previousValue }: { previousValue?: unknown }) =>
+            value !== true || previousValue === true || process.env.PAYMENTS_STRIPE_ENABLED === 'true'
+              ? true
+              : bilingual('Stripe sunucuda kapalı (PAYMENTS_STRIPE_ENABLED).', 'Stripe is off on the server (PAYMENTS_STRIPE_ENABLED).'),
+        }],
+      },
+    ],
+  },
+  {
+    name: 'vat',
+    type: 'group',
+    access: commerceAccess,
+    custom: noImport,
+    label: { tr: 'KDV (para birimi başına)', en: 'VAT (per currency)' },
+    admin: {
+      description: {
+        tr: 'Mali müşavirin kararına göre doldurun. Kuralı boş olan para biriminde satış yapılmaz.',
+        en: 'Fill in as decided by the accountant. A currency without a rule is not sold.',
+      },
+    },
+    fields: CURRENCIES.map(vatGroup),
+  },
+  {
+    // S3 drain window start: written by the hook on payments → quote-only, never from input.
+    name: 'quoteSince',
+    type: 'date',
+    access: { read: isAdminOrEditorField },
+    custom: noImport,
+    label: { tr: 'Teklif moduna geçiş zamanı', en: 'Switched to quote mode at' },
+    admin: {
+      readOnly: true,
+      date: { pickerAppearance: 'dayAndTime' },
+      description: {
+        tr: 'Ödeme modundan çıkıldığında otomatik yazılır; sağlayıcı bildirimleri bundan sonra 72 saat işlenir.',
+        en: 'Written automatically when payments are switched off; provider notifications are processed for 72 hours after it.',
+      },
+    },
+    hooks: {
+      beforeChange: [({ siblingData, previousSiblingDoc }) => {
+        const previous = (previousSiblingDoc ?? {}) as Sibling
+        const next = siblingData?.mode ?? previous.mode
+        if (previous.mode === 'payments' && next !== 'payments') return new Date().toISOString()
+        return previous.quoteSince ?? null
+      }],
+    },
+  },
+]
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -174,6 +344,12 @@ export const SiteSettings: GlobalConfig = {
                   admin: { description: 'Form for all editions ("Teklif İste").' },
                 },
                 { name: 'demoForm', type: 'relationship', relationTo: 'forms' },
+                {
+                  type: 'collapsible',
+                  label: { tr: 'Satış ve ödeme', en: 'Sales & payments' },
+                  admin: { initCollapsed: true },
+                  fields: commerceFields,
+                },
               ],
             },
           ],

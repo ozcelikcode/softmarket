@@ -244,3 +244,6 @@
 
 ## 2026-11-08 V4 karar kaydı
 - V4 karar: native canvas kazandı; Puck pilot dalı ve worktree kaldırıldı, raporlar `docs/editor-pilot/` altında. Sonraki: V5 (`feat/visual-editor`).
+
+## 2026-11-16 V5 ana dala alındı
+- typecheck, lint, 73 dosya / 1188 birim test (maxWorkers=1), prod build, `test:e2e` 19 + `test:e2e:isolated` 20 (visual-editor dahil) geçti. Migration testi (~45 s, serializer'dan bağımsız; main'de aynı) zaman aşımı 240 s; content-import medya testi kendi fixture'ını üretir.

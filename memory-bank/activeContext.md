@@ -258,3 +258,7 @@ Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince günce
 ## 2026-11-08 V4 görsel editör kararı
 - Karar: Payload-native canvas. Puck bırakıldı (etiket `archive/pilot-puck`). Ayrıntı: `docs/editor-pilot/decision.md`.
 - Sıradaki: V5 `feat/visual-editor`. Görsel editör varsayılan, form dar yan panel.
+
+## 2026-11-16 V5 main'de
+- V5 görsel editör `main`e alındı (merge dff005b, düzeltmeler d40cb7f). Eşzamanlılık: `editorVersion` anlık-görüntü hash'i + 409, süreç içi transaction sırası, istemci merge. Pilot worktree'ler kaldırıldı; etiket `archive/pilot-native-canvas` (yerel).
+- Sıradaki: ödeme P2-S şeması, ikinci dalga koleksiyonlar, V6 kabul.

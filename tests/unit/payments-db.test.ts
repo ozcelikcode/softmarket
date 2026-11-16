@@ -202,6 +202,7 @@ describe('P2-S through Payload', () => {
       expect(own).not.toHaveProperty('notes')
       expect(own).not.toHaveProperty('idempotencyKey')
       expect(own).not.toHaveProperty('requiresReview')
+      expect(own).not.toHaveProperty('notifications')
       const [ad] = (await payload.find({ collection: 'orders', user: admin, overrideAccess: false, where: { id: { equals: aliceOrder } } })).docs as unknown as Record<string, unknown>[]
       expect(ad.billing).toMatchObject({ type: 'individual' })
     })
@@ -218,11 +219,13 @@ describe('P2-S through Payload', () => {
       }
       const updated = await payload.update({
         collection: 'orders', id: aliceOrder, user: admin, overrideAccess: false, depth: 0,
-        data: { status: 'refunded', totalMinor: 1, customer: Number(bob.id), invoice: { number: 'GIB2026000001' }, notes: 'checked', requiresReview: true } as never,
+        data: { status: 'refunded', totalMinor: 1, customer: Number(bob.id), invoice: { number: 'GIB2026000001' }, notes: 'checked', requiresReview: true, notifications: { attempts: 42, lastError: 'injected' } } as never,
       })
       const stored = await payload.findByID({ collection: 'orders', id: aliceOrder, overrideAccess: true, depth: 0 })
       expect(stored).toMatchObject({ status: 'fulfilled', totalMinor: 1200_00, customer: Number(alice.id), invoice: { number: 'GIB2026000001' }, notes: 'checked', requiresReview: true })
       expect(updated.status).toBe('fulfilled')
+      expect(stored.notifications?.attempts).not.toBe(42)
+      expect(stored.notifications?.lastError).not.toBe('injected')
     })
 
     it('delete: nobody (not even admin)', async () => {

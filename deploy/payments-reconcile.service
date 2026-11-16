@@ -1,0 +1,20 @@
+# Example (plan P4): completes/cancels pending orders from the provider and retries crashed fulfilments.
+# Install with payments-reconcile.timer; no-op (exit 0) while PAYMENTS_ENABLED is not "true".
+[Unit]
+Description=SoftMarket payments reconcile
+After=network-online.target softmarket.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=softmarket
+Group=softmarket
+WorkingDirectory=/opt/softmarket/current
+EnvironmentFile=/etc/softmarket.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env pnpm payments:reconcile
+TimeoutStartSec=600
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/softmarket/shared/data

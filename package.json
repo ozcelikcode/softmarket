@@ -35,7 +35,8 @@
     "ensure-forms": "tsx scripts/ensure-forms.ts",
     "search:reindex": "tsx scripts/reindex-search.ts",
     "content:import": "tsx scripts/content-import.ts",
-    "media:regenerate": "tsx scripts/media-regenerate.ts"
+    "media:regenerate": "tsx scripts/media-regenerate.ts",
+    "payments:reconcile": "tsx scripts/payments-reconcile.ts"
   },
   "dependencies": {
     "@payloadcms/db-sqlite": "3.93.0",

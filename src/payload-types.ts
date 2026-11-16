@@ -4038,6 +4038,18 @@ export interface Order {
   };
   contractSnapshot?: string | null;
   /**
+   * Written by the server; prevents duplicate e-mails.
+   */
+  notifications?: {
+    confirmationSentAt?: string | null;
+    licenseSentAt?: string | null;
+    reviewAlertSentAt?: string | null;
+    attempts?: number | null;
+    lastError?: string | null;
+    nextAttemptAt?: string | null;
+    leaseUntil?: string | null;
+  };
+  /**
    * Amount mismatch or late payment: no license is assigned automatically.
    */
   requiresReview?: boolean | null;
@@ -6479,6 +6491,17 @@ export interface OrdersSelect<T extends boolean = true> {
         snapshotSha256?: T;
       };
   contractSnapshot?: T;
+  notifications?:
+    | T
+    | {
+        confirmationSentAt?: T;
+        licenseSentAt?: T;
+        reviewAlertSentAt?: T;
+        attempts?: T;
+        lastError?: T;
+        nextAttemptAt?: T;
+        leaseUntil?: T;
+      };
   requiresReview?: T;
   invoice?:
     | T

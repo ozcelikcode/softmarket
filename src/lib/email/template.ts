@@ -1,4 +1,10 @@
 export type EmailLocale = 'tr' | 'en'
+
+/** Same rule as payload.config: empty/`CHANGE_` host or no sender = Payload console adapter (logs whole messages). */
+export const isSmtpConfigured = (env: Record<string, string | undefined> = process.env) => {
+  const host = env.SMTP_HOST?.trim()
+  return Boolean(host && !host.startsWith('CHANGE_') && env.SMTP_FROM)
+}
 export const emailLocale = (user: unknown): EmailLocale =>
   user && typeof user === 'object' && (user as { preferredLocale?: unknown }).preferredLocale === 'en' ? 'en' : 'tr'
 

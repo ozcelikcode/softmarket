@@ -224,6 +224,22 @@ export const Orders: CollectionConfig = {
         access: { read: staffOrCustomer },
         label: { tr: 'Sözleşme kopyası (onay anı)', en: 'Contract copy (at acceptance)' },
       },
+      {
+        // P4 notification delivery state (src/lib/payments/notify.ts): written only by server code with conditional
+        // SQL. Staff-only, no buyer data: timestamps, an attempt counter and a short error code.
+        name: 'notifications', type: 'group', label: { tr: 'Bildirim teslimi', en: 'Notification delivery' },
+        access: { read: isAdminOrEditorField },
+        admin: { description: { tr: 'Sunucu yazar; e-posta tekrar gönderimini önler.', en: 'Written by the server; prevents duplicate e-mails.' } },
+        fields: [
+          dateField('confirmationSentAt', 'Sipariş onayı gönderildi', 'Order confirmation sent'),
+          dateField('licenseSentAt', 'Lisans e-postası gönderildi', 'License e-mail sent'),
+          dateField('reviewAlertSentAt', 'İnceleme uyarısı gönderildi', 'Review alert sent'),
+          { name: 'attempts', type: 'number', label: { tr: 'Başarısız deneme', en: 'Failed attempts' } },
+          { name: 'lastError', type: 'text', label: { tr: 'Son hata kodu', en: 'Last error code' } },
+          dateField('nextAttemptAt', 'Sonraki deneme', 'Next attempt'),
+          dateField('leaseUntil', 'Gönderim kilidi', 'Delivery lease until'),
+        ],
+      },
     ]),
     {
       name: 'requiresReview', type: 'checkbox', defaultValue: false,

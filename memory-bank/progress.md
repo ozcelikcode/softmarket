@@ -1,3 +1,11 @@
+## P4 bildirim denetimi — 2026-11-16 (commit yok)
+
+- Reconcile gönderilemeyen/kilitli bildirimlerle dolu batch yüzünden hazır siparişleri atlamaz; yeni inceleme ve lisans ataması bildirim deneme bütçesini yeniler. Bildirim migration down teslim durumu varsa reddeder. İzole SQLite regresyonları eklendi; canlı DB ve 3100 sürecine dokunulmadı. Açık P2: reconcile pending/paid sorgularının sabit ilk sayfası, sürekli hatalı kayıtlarla dolarsa sonraki siparişler bekleyebilir. Güncel kapılar: typecheck/lint başarılı, tam test 85 dosya / 1407 test başarılı; commit edilebilir: hayır (açık P2).
+
+## P4 bildirim kalıcılığı — 2026-11-16 (commit yok)
+
+- `notify.ts`, `orders.notifications`, migration `20261116_175713_p4_order_notifications`; testler `payments-p4-db` (+7) ve `payments-p4n-db` (migration up/down). Canlı DB'ye uygulanmadı. Ayrıntı `docs/plan-payments.md` P4 kaydı.
+
 ## P4 bağımsız denetim — 2026-11-16 (commit yok)
 
 - Callback yönlendirmesi, kapalı adaptör 404, doğrulanmamış sağlayıcı hatası ve koşullu iptal düzeltildi; CLI lisans e-postası ve kalıcı bildirim garantisi açık. Ayrıntı `docs/plan-payments.md` P4 kaydı.

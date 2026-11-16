@@ -1,6 +1,7 @@
 import { sql } from '@payloadcms/db-sqlite'
 import type { Payload } from 'payload'
 
+import { ORDER_FULFILMENT_CONTEXT } from '@/lib/email/license-assigned'
 import { planFulfillment, type FulfillmentOrderView, type FulfillmentStore } from '../idempotency'
 import { canTransition, type OrderStatus } from '../state'
 import { withPaymentTransaction, type PaymentTx } from './transaction'
@@ -11,8 +12,8 @@ import { withPaymentTransaction, type PaymentTx } from './transaction'
  *   prepareLicense hook generates the CSPRNG key, product, seats and subscription end) → conditional
  *   `orders_items.license_id IS NULL` link → conditional `paid → fulfilled` → COMMIT.
  * Any conditional write that does not affect exactly one row rolls everything back (no licence survives).
- * Customers never write licences: issuance is server code only. The licence e-mail stays in the licenses
- * afterChange hook, which already defers to after() and re-reads the committed licence.
+ * Customers never write licences: issuance is server code only. Licences are created with ORDER_FULFILMENT_CONTEXT,
+ * so the licenses afterChange hook does not e-mail them; the order notification queue (notify.ts) does, once.
  */
 
 type Id = number | string
@@ -68,6 +69,7 @@ export function createFulfillmentStore(payload: Payload, tx: PaymentTx): Fulfill
         overrideAccess: true,
         req: tx.req,
         depth: 0,
+        context: { [ORDER_FULFILMENT_CONTEXT]: true },
         data: { customer: Number(customer), edition: Number(edition), startsAt: order.paidAt ?? new Date().toISOString(), status: 'active' } as never,
       })
       return license.id
@@ -84,7 +86,9 @@ export function createFulfillmentStore(payload: Payload, tx: PaymentTx): Fulfill
       const now = new Date().toISOString()
       const stamp = STAMP[to]
       return tx.run(stamp
-        ? sql`UPDATE orders SET status = ${to}, ${sql.raw(stamp)} = ${now}, updated_at = ${now} WHERE id = ${orderId} AND status = ${from}`
+        ? sql`UPDATE orders SET status = ${to}, ${sql.raw(stamp)} = ${now}, updated_at = ${now},
+            notifications_attempts = NULL, notifications_next_attempt_at = NULL, notifications_last_error = NULL
+            WHERE id = ${orderId} AND status = ${from}`
         : sql`UPDATE orders SET status = ${to}, updated_at = ${now} WHERE id = ${orderId} AND status = ${from}`)
     },
   }

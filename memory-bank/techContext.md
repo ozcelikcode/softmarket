@@ -44,7 +44,7 @@
 
 ## Araç ve ekip modeli (`takim-lideri` skill'i)
 - Skill: `~/.claude/skills/takim-lideri/SKILL.md`. Ana Opus lider kod yazmaz; işi alt ajanlara dağıtır.
-- Ajan dağılımı: Gemini 3.8 Flash (agy) tarama; GPT 6 Luna angarya; Claude Opus alt ajan çekirdek mimari; GPT 6.1 Terra ağır backend; Claude Sonnet 5.5 frontend/tasarım; GPT 6.1 Sol rutin ve QA; Claude Haiku 5.5 metin ve doküman; GPT 6 Astra ve Gemini 4 Argon danışmanlık.
+- Ajan dağılımı (2026-11-16 güncel): Gemini 4 Hydrogen medium/high/xhigh (agy) tarama, Flash kullanılmaz; Opus/Argon/Fable 5.2 kritik dışı kullanılmaz ve Medium üstüne çıkmaz, Sonnet 5.5 High tasarım; GPT 6 Luna angarya; Claude Opus alt ajan çekirdek mimari; GPT 6.1 Terra ağır backend; Claude Sonnet 5.5 frontend/tasarım; GPT 6.1 Sol rutin ve QA; Claude Haiku 5.5 metin ve doküman; GPT 6 Astra ve Gemini 4 Argon danışmanlık.
 - Kural: **yazan ≠ denetleyen.** Claude kodunu GPT Sol/Terra (High) denetler.
 - Her faz sonunda çapraz QA zorunlu.
 - Kota dengesi: Claude yoğun fazlardan (2-3) sonra GPT'ye geçilir.

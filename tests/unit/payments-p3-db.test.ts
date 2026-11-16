@@ -126,11 +126,11 @@ describe('product detail by mode', () => {
     await setSite(PAYMENTS)
     const d = (await detail())!
     const bySku = Object.fromEntries(d.editions.map((e, i) => [e.sku, d.commerce.editions[i]!]))
-    expect(bySku['BUY-1']).toMatchObject({ kind: 'buy', checkout: false, taxMode: 'inclusive' })
+    expect(bySku['BUY-1']).toMatchObject({ kind: 'buy', checkout: true, taxMode: 'inclusive' })
     expect((bySku['BUY-1'] as { prices: { currency: string; totalMinor: number }[] }).prices.map((p) => [p.currency, p.totalMinor])).toEqual([['TRY', 125000], ['USD', 4000]])
     expect(bySku['QUOTE-1']).toEqual({ kind: 'quote' })
     expect(bySku['BUY-NOPRICE']).toEqual({ kind: 'quote' })
-    expect(d.commerce.heroPrimary).toBe('quote') // checkout flag off
+    expect(d.commerce.heroPrimary).toBe('buy') // checkout is open (P5 flag on)
     for (const e of d.editions) expect(Object.keys(e)).not.toEqual(expect.arrayContaining(['pricing']))
   })
 

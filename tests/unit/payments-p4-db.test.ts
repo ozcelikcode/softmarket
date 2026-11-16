@@ -380,7 +380,7 @@ describe('iyzico callback', () => {
     }
     const unknown = await handleIyzicoCallback(deps, callback('token=unknownToken1234'))
     expect(unknown.status).toBe(303)
-    expect(unknown.headers.get('location')).toBe('https://shop.example/tr/hesap')
+    expect(unknown.headers.get('location')).toBe('/tr/hesap/siparisler?donus=1')
     expect((await handleIyzicoCallback(deps, callback('token=' + 'x'.repeat(20 * 1024)))).status).toBe(400)
     expect(provider.calls).toBe(calls)
   })
@@ -391,7 +391,7 @@ describe('iyzico callback', () => {
     provider.states.set(unpaid.token, { paymentStatus: 'INIT_THREEDS', price: '1200.00', currency: 'TRY', conversationId: unpaid.orderNumber })
     const res = await handleIyzicoCallback(deps, callback(`token=${unpaid.token}&status=success&paymentStatus=SUCCESS`))
     expect(res.status).toBe(303)
-    expect(res.headers.get('location')).toBe('https://shop.example/tr/hesap')
+    expect(res.headers.get('location')).toBe('/tr/hesap/siparisler?donus=1')
     expect((await orderOf(unpaid.id)).status).toBe('pending')
 
     provider.mode = 'network'

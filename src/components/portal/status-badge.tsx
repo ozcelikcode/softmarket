@@ -19,3 +19,9 @@ const TICKET_VARIANT = { open: 'accent', pending: 'warning', resolved: 'success'
 export const TicketBadge = ({ status, label }: { status: keyof typeof TICKET_VARIANT; label: string }) => (
   <Badge variant={TICKET_VARIANT[status] ?? 'neutral'}>{label}</Badge>
 )
+
+const ORDER_VARIANT = { pending: 'warning', paid: 'success', fulfilled: 'success', failed: 'danger', refunded: 'neutral', cancelled: 'neutral' } as const
+
+export const OrderBadge = ({ status, label }: { status: keyof typeof ORDER_VARIANT; label: string }) => (
+  <Badge variant={ORDER_VARIANT[status] ?? 'neutral'}>{label}</Badge>
+)

@@ -32,6 +32,8 @@ export const SEGMENTS_EN: Record<string, string> = {
   'sifre-sifirla': 'reset-password',
   dogrula: 'verify',
   talepler: 'tickets',
+  'satin-al': 'checkout',
+  siparisler: 'orders',
   yeni: 'new',
   ara: 'search',
   arama: 'search',
@@ -70,6 +72,9 @@ export const CANONICAL_PATHS = [
   '/hesap/talepler',
   '/hesap/talepler/yeni',
   '/hesap/talepler/[id]',
+  '/hesap/satin-al/[sku]',
+  '/hesap/siparisler',
+  '/hesap/siparisler/[no]',
   '/hesap/giris',
   '/hesap/kayit',
   '/hesap/sifremi-unuttum',
@@ -85,7 +90,7 @@ export const CANONICAL_PATHS = [
  * GraphQL enum names). Only canonical routes with at most one dynamic segment are offered;
  * token/ID-based portal pages are excluded. Add new keys only: stored links reference them.
  */
-const ROUTE_EXCLUDED = new Set<string>(['/hesap/sifre-sifirla', '/hesap/dogrula', '/hesap/talepler/[id]'])
+const ROUTE_EXCLUDED = new Set<string>(['/hesap/sifre-sifirla', '/hesap/dogrula', '/hesap/talepler/[id]', '/hesap/satin-al/[sku]', '/hesap/siparisler/[no]'])
 /** F6 landing pages (`[locale]/[slug]`). Link-only: not a next-intl pathname, so EN rewrites are unaffected. */
 export const LANDING_ROUTE = '/[slug]'
 export const LINK_ROUTES: readonly string[] = [

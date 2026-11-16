@@ -33,7 +33,7 @@ export function sanitizeNext(raw: unknown): string {
   if (url.origin !== BASE) return PORTAL_HOME
   const path = canonicalPortalPath(url.pathname).replace(/\/$/, '')
   if (path !== PORTAL_HOME && !path.startsWith(`${PORTAL_HOME}/`)) return PORTAL_HOME
-  if (!/^\/hesap(?:\/(?:lisanslar|indirmeler|profil|talepler(?:\/(?:yeni|[1-9]\d*))?))?$/.test(path)) return PORTAL_HOME
+  if (!/^\/hesap(?:\/(?:lisanslar|indirmeler|profil|talepler(?:\/(?:yeni|[1-9]\d*))?|siparisler(?:\/SM-\d{6}-[0-9A-HJKMNP-TV-Z]{6})?|satin-al\/[A-Z0-9][A-Z0-9-]{1,63}))?$/.test(path)) return PORTAL_HOME
   const second = path.split('/')[2]
   if (second && AUTH_SEGMENTS.has(second)) return PORTAL_HOME
   const search = /^\?[\w\-=&.]*$/.test(url.search) ? url.search : ''

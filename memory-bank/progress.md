@@ -1,3 +1,9 @@
+## P5 checkout UI + portal siparişleri — 2026-11-16 (QA bekliyor, commit yok, şemasız)
+
+- P5 QA: normal üretim derlemesinde loopback ödeme sağlayıcısı ortam değişkeniyle açılamaz; ayrı `SOFTMARKET_E2E_BUILD=1` derlemesi ve izole DB gerekir. E2E derlemesi dağıtılmamalıdır. Fatura verilerini içeren sözleşme kopyası editörden gizlendi; alıcı VKN görüntülemede maskelendi. Ortamı belirsiz CLI süreçleri de loopback sağlayıcıyı reddeder. Son QA: typecheck/lint temiz, 87 dosya/1462 test geçti; izole build başarılı, tarayıcılı E2E PID kısıtı nedeniyle çalıştırılmadı.
+- `/hesap/satin-al/[sku]` (EN `checkout`), `/hesap/siparisler[/no]` (EN `orders`), `startCheckoutAction` + `createCheckoutOrder` (sunucuda fiyat/KDV, form jetonu idempotency, sözleşme kopyası SHA), CSP form-action yalnız checkout yolunda, `CHECKOUT_READY=true` (varsayılan kurulumda `open` kapalı; teklif modu HTML'i HEAD ile birebir). Callback 303 → göreli `/{dil}/hesap/siparisler?donus=1` → oturumdaki müşterinin son siparişi.
+- P3 önbellek bulgusu düzeltildi: capability açıkken `getCommerceState` her render'ı dinamik yapar; build ortamında `PAYMENTS_ENABLED=true` gerekir (aksi halde ödeme kapalıya düşer). Izole e2e sahte iyzico (`scripts/e2e-fake-iyzico.ts`, port 3500): 28/28. Ayrıntı `docs/plan-payments.md` P5 kaydı.
+
 ## P4 bildirim denetimi — 2026-11-16 (commit yok)
 
 - Reconcile gönderilemeyen/kilitli bildirimlerle dolu batch yüzünden hazır siparişleri atlamaz; yeni inceleme ve lisans ataması bildirim deneme bütçesini yeniler. Bildirim migration down teslim durumu varsa reddeder. İzole SQLite regresyonları eklendi; canlı DB ve 3100 sürecine dokunulmadı. Açık P2: reconcile pending/paid sorgularının sabit ilk sayfası, sürekli hatalı kayıtlarla dolarsa sonraki siparişler bekleyebilir. Güncel kapılar: typecheck/lint başarılı, tam test 85 dosya / 1407 test başarılı; commit edilebilir: hayır (açık P2).

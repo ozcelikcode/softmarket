@@ -85,12 +85,18 @@ export async function readWebhookWindow(deps: Pick<PaymentsDeps, 'payload' | 'en
   return isWebhookProcessingAllowed({ capability: true, siteMode: readSiteMode(settings), quoteSince: commerce?.quoteSince, now: deps.now() })
 }
 
-/**
- * Customer order page (P5 route `/hesap/siparisler/<no>` ↔ `/account/orders/<no>`). Until P5 ships the route is not
- * rendered, but no checkout can start either (`checkoutReady` is false), so nobody is redirected here yet.
- */
+/** Customer order page (P5 route `/hesap/siparisler/<no>` ↔ `/account/orders/<no>`). */
 export function orderPagePath(locale: unknown, orderNumber: string): string {
   return locale === 'en' ? `/en/account/orders/${encodeURIComponent(orderNumber)}` : `/tr/hesap/siparisler/${encodeURIComponent(orderNumber)}`
+}
+
+/**
+ * Where the iyzico callback sends the browser (303). The order number is deliberately NOT in the URL (the callback
+ * carries no session and must answer known and unknown tokens alike): the list page with `?donus=1` resolves the
+ * newest order of the SIGNED-IN customer and redirects to it, so the number never travels through a cross-site hop.
+ */
+export function orderReturnPath(locale: unknown): string {
+  return locale === 'en' ? '/en/account/orders?donus=1' : '/tr/hesap/siparisler?donus=1'
 }
 
 /** Short, log-safe code for any processing error (never the message of a foreign error). */

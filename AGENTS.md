@@ -44,6 +44,15 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Anahtar create sırasında sunucuda `src/lib/licenses/generate.ts` ile üretilir. Ürün ve koltuk sayısı sürümden alınır; abonelik bitişi başlangıç + ay süresidir.
 - SMTP host boş veya `CHANGE_` ile başlıyorsa Payload konsol adaptörü kullanılır.
 
+## Ödeme: checkout ve siparişler (P5)
+
+- Yüzey yalnız `getCommerceState().checkoutOpen` iken açık: env `PAYMENTS_ENABLED=true` + site modu `payments` + sağlayıcı + KDV + yasal sayfalar hazır; varsayılan kurulumda her şey teklif modunda. `CHECKOUT_READY` bayrağı açık (tek başına bir şey açmaz).
+- Rotalar: TR `/hesap/satin-al/[sku]`, `/hesap/siparisler[/no]` ↔ EN `/account/checkout/[sku]`, `/account/orders[/no]`. Checkout kapalı/sürüm satın alınamaz ise teklif sayfasına yönlenir (fail-to-quote); siparişler her modda salt okunur görünür. Müşteri başkasının sipariş numarasında 404 alır.
+- `startCheckoutAction` (`src/lib/portal/checkout-actions.ts`) → `createCheckoutOrder` (`src/lib/payments/checkout.ts`): fiyat/KDV/sağlayıcı/sözleşme metni sunucuda hesaplanır, formdan tutar okunmaz; aynı form jetonu tek sipariş üretir; sözleşme kopyası `src/lib/payments/contract.ts`. JS'siz çalışır (POST→303).
+- Callback 303 hedefi göreli `/{dil}/hesap/siparisler?donus=1`; sayfa oturumdaki müşterinin son siparişine yönlendirir (numara URL'de taşınmaz).
+- **Build ortamında `PAYMENTS_ENABLED=true` olmalı:** capability açıkken `getCommerceState` her render'ı dinamik yapar (mod DB'de çalışma anında değişir); capability'siz build + capability'li süreç = ödeme gizli (kapalıya düşer) ve yeniden build gerekir.
+- İzole e2e: `E2E_NEXT_DIST_DIR=.next-<ad> pnpm test:e2e:isolated` (build ortamı `PAYMENTS_ENABLED=true` + kopya DB); sahte iyzico `scripts/e2e-fake-iyzico.ts` (port 3500) için ayrı `SOFTMARKET_E2E_BUILD=1` derlemesi ve `assertIsolatedE2E` gerekir; bu derlemeyi dağıtmayın.
+
 ## Faz 8a: JSON içerik importu
 
 - `pnpm content:import [directory|file.json] [--dry-run] [--legal]`; varsayılan `content/seed`. `make seed` = ensure-forms + content:import.

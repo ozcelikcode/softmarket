@@ -3,7 +3,7 @@ import type { Where } from 'payload'
 import { readLimitedBody } from './body'
 import { bodySha256, ORDER_NUMBER_RE, paymentEventKey } from './idempotency'
 import { MAX_WEBHOOK_BYTES } from './providers/http'
-import { errorCode, readWebhookWindow, type PaymentsDeps } from './runtime'
+import { errorCode, orderReturnPath, readWebhookWindow, type PaymentsDeps } from './runtime'
 import { createPaymentEventStore } from './store/events'
 import { syncOrderFromProvider } from './sync'
 import type { ProviderId, VerifiedWebhookEvent } from './types'
@@ -140,7 +140,7 @@ export function callbackErrorPage(status: number): Response {
 /**
  * The customer's browser POSTs `token` here cross-site after the hosted page (plan §3/§4.2). No session cookie
  * arrives (SameSite=Lax) and none is needed: only the token is read, the body's payment status is never trusted,
- * the order is synced from a server-side retrieve, and the answer is always a 303 to the account (or a static
+ * the order is synced from a server-side retrieve, and the answer is always a 303 to the order list (a RELATIVE Location: the browser resolves it against the origin it just posted to, so no public-origin setting is involved) or a static
  * error page for a missing or malformed token). The account requires its usual authentication.
  */
 export async function handleIyzicoCallback(deps: PaymentsDeps, request: Request): Promise<Response> {
@@ -161,12 +161,14 @@ export async function handleIyzicoCallback(deps: PaymentsDeps, request: Request)
     return callbackErrorPage(400)
   }
   let orderId: number | string | undefined
+  let orderLocale: string | undefined
   try {
     const { docs } = await deps.payload.find({
       collection: 'orders', where: { and: [{ provider: { equals: 'iyzico' } }, { providerRef: { equals: token } }] },
-      limit: 1, depth: 0, overrideAccess: true, select: { orderNumber: true },
+      limit: 1, depth: 0, overrideAccess: true, select: { orderNumber: true, locale: true },
     })
     orderId = (docs[0] as { id: number | string } | undefined)?.id
+    orderLocale = (docs[0] as { locale?: string } | undefined)?.locale
   } catch (error) {
     deps.log.error(`callback lookup failed code=${errorCode(error)}`)
     return callbackErrorPage(503)
@@ -174,7 +176,7 @@ export async function handleIyzicoCallback(deps: PaymentsDeps, request: Request)
   // Syntactically valid unknown tokens get the same redirect as known tokens.
   if (orderId === undefined) {
     deps.log.warn('callback rejected reason=unknown_token')
-    return new Response(null, { status: 303, headers: { Location: `${deps.origin}/tr/hesap`, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } })
+    return new Response(null, { status: 303, headers: { Location: orderReturnPath('tr'), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } })
   }
   try {
     const outcome = await syncOrderFromProvider(deps, orderId)
@@ -185,6 +187,6 @@ export async function handleIyzicoCallback(deps: PaymentsDeps, request: Request)
   }
   return new Response(null, {
     status: 303,
-    headers: { Location: `${deps.origin}/tr/hesap`, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' },
+    headers: { Location: orderReturnPath(orderLocale), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' },
   })
 }

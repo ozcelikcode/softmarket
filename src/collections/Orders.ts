@@ -1,6 +1,6 @@
 import { ValidationError, type CollectionBeforeValidateHook, type CollectionConfig, type Field, type FieldAccess } from 'payload'
 
-import { isAdmin, isAdminField, isAdminOrEditorField, isAdminOrEditorUser, isAdminUser, isCustomerUser, isOwnerCustomer, nobody } from '@/access'
+import { isAdmin, isAdminField, isAdminOrEditorField, isAdminUser, isCustomerUser, isOwnerCustomer, nobody } from '@/access'
 import { BUYER_TYPES, isValidTckn, isValidVkn } from '@/lib/payments/identity'
 import { generateOrderNumber, ORDER_NUMBER_RE } from '@/lib/payments/idempotency'
 import { isValidMinor } from '@/lib/payments/money'
@@ -18,7 +18,6 @@ import { LICENSE_TYPES } from './Editions'
 
 const nobodyField: FieldAccess = () => false
 const adminOrCustomer: FieldAccess = ({ req: { user } }) => isAdminUser(user) || isCustomerUser(user)
-const staffOrCustomer: FieldAccess = ({ req: { user } }) => isAdminOrEditorUser(user) || isCustomerUser(user)
 type Sibling = Partial<Record<string, unknown>>
 const msg = (tr: string, en: string) => `${tr} / ${en}`
 const requiredMinor = (value: unknown) => isValidMinor(value) ? true : msg('Geçersiz tutar (kuruş/cent).', 'Invalid amount (minor units).')
@@ -221,7 +220,7 @@ export const Orders: CollectionConfig = {
       },
       {
         name: 'contractSnapshot', type: 'textarea',
-        access: { read: staffOrCustomer },
+        access: { read: adminOrCustomer },
         label: { tr: 'Sözleşme kopyası (onay anı)', en: 'Contract copy (at acceptance)' },
       },
       {

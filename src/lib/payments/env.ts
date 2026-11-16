@@ -1,3 +1,4 @@
+import { assertIsolatedE2E } from '../e2e-isolation'
 import { readSecret, type SecretValue } from './secret'
 import { CURRENCIES, type Currency, type ProviderEnv } from './types'
 
@@ -37,12 +38,24 @@ export type PaymentsEnvConfig = {
 }
 
 type Env = Record<string, string | undefined>
+declare const __SOFTMARKET_E2E_BUILD__: boolean
 
-const isProduction = (env: Env) => env.NODE_ENV === 'production'
+/** Production accepts a fake provider only in a separately compiled E2E artifact and isolated data directory. */
+export function isLocalProviderAllowed(env: Env = process.env): boolean {
+  if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') return true
+  // Unbundled CLIs have no build constant: runtime environment flags cannot enable the override.
+  if (typeof __SOFTMARKET_E2E_BUILD__ === 'undefined' || !__SOFTMARKET_E2E_BUILD__ || env.E2E_ISOLATED !== '1') return false
+  try {
+    assertIsolatedE2E(env)
+    return true
+  } catch {
+    return false
+  }
+}
 
 /** Local fake-provider override (isolated e2e). Refused in production. */
 function isLocalOverride(url: string, env: Env): boolean {
-  if (isProduction(env)) return false
+  if (!isLocalProviderAllowed(env)) return false
   try {
     const u = new URL(url)
     return (u.protocol === 'http:' || u.protocol === 'https:') && (u.hostname === '127.0.0.1' || u.hostname === 'localhost') && !u.username && !u.password && u.pathname === '/' && !u.search && !u.hash

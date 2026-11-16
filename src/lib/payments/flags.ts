@@ -1,6 +1,6 @@
 /**
- * P3 feature flag. Checkout does not exist yet (P5): while this is `false`, a "Buy" action can never lead to a
- * checkout URL. Prices are still shown in payments mode, the buy button is disabled, "Teklif İste" stays.
- * P5 flips it once the checkout route, portal orders and e-mails ship (plan §8 P5 acceptance).
+ * Checkout feature flag. P5 flipped it on: the checkout route (`/hesap/satin-al/[sku]`), portal orders and order
+ * e-mails ship. It is NOT what opens payments: `open` (env capability + site mode + provider + VAT + legalReady)
+ * must still hold, so a default install stays quote-only and no buy action or checkout page is reachable.
  */
-export const CHECKOUT_READY = false
+export const CHECKOUT_READY = true

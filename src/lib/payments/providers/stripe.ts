@@ -1,4 +1,4 @@
-import type { StripeConfig } from '../env'
+import { isLocalProviderAllowed, type StripeConfig } from '../env'
 import { PaymentError } from '../errors'
 import { isValidMinor } from '../money'
 import { verifyStripeSignature } from '../signature/stripe'
@@ -80,7 +80,7 @@ export function createStripeProvider(deps: StripeProviderDeps): PaymentProvider 
     } catch {
       parsed = null
     }
-    const local = process.env.NODE_ENV !== 'production' && config.env === 'sandbox' && /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(config.apiBase) && !!parsed && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost')
+    const local = isLocalProviderAllowed() && config.env === 'sandbox' && /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(config.apiBase) && !!parsed && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost')
     if (!parsed || parsed.username || parsed.password || !['http:', 'https:'].includes(parsed.protocol) || (!local && (parsed.protocol !== 'https:' || parsed.hostname !== 'checkout.stripe.com'))) {
       throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'url' })
     }

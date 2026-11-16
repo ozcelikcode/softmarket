@@ -103,7 +103,8 @@ describe('server-only boundary: no client component reaches server payment code'
     const p4 = ['runtime', 'events', 'sync', 'fulfill', 'reconcile', 'route', 'body']
     const importers = walk(SRC).filter((file) => importsOf(file).some((dep) => p4.some((m) => dep === join(SRC, `lib/payments/${m}.ts`))))
       .map((p) => p.slice(SRC.length + 1))
-    for (const file of importers) expect(file).toMatch(/^(lib\/payments\/|lib\/email\/order-|app\/\(payload\)\/api\/payments\/)/)
+    // P5: the checkout Server Action and the Stripe-return sync are the only portal modules that build payment deps.
+    for (const file of importers) expect(file).toMatch(/^(lib\/payments\/|lib\/email\/order-|app\/\(payload\)\/api\/payments\/|lib\/portal\/checkout-(actions|orders)\.ts$)/)
   })
 })
 

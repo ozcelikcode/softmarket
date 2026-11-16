@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { forbiddenActionOrigin, legacySearchPath } from './lib/request-guards'
 
 import { routing } from './i18n/routing'
-import { contentSecurityPolicy, usesNonce } from './lib/csp'
+import { checkoutFormActionSources, contentSecurityPolicy, isCheckoutPath, usesNonce } from './lib/csp'
 
 const localize = createMiddleware(routing)
 const DRAFT_COOKIE = '__prerender_bypass'
@@ -53,7 +53,11 @@ export default function middleware(request: NextRequest) {
   const enabled = process.env.CSP_ENABLED !== 'false'
   const dynamic = usesNonce(pathname)
   const nonce = enabled && dynamic ? btoa(crypto.randomUUID()) : undefined
-  const policy = contentSecurityPolicy({ nonce, development: process.env.NODE_ENV === 'development' })
+  const policy = contentSecurityPolicy({
+    nonce,
+    development: process.env.NODE_ENV === 'development',
+    formActionExtra: isCheckoutPath(pathname) ? checkoutFormActionSources(process.env) : [],
+  })
   if (nonce) {
     headers.set('x-nonce', nonce)
     // Next reads this request header to nonce its own framework scripts, even

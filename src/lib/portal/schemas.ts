@@ -111,3 +111,10 @@ export const issueFields = (error: z.ZodError): Record<string, string> =>
 
 export const formStrings = (data: FormData, keys: readonly string[]): Record<string, unknown> =>
   Object.fromEntries(keys.map((k) => [k, data.getAll(k).length > 1 ? null : (data.get(k) ?? undefined)]))
+
+/** Checkout form state (P5). `values` re-populates the form after a server-side validation round trip (also without JS). */
+export type CheckoutFormState = {
+  status: 'idle' | 'invalid' | 'rate' | 'error' | 'unverified' | 'legal' | 'provider' | 'unavailable'
+  errors?: Record<string, string>
+  values?: Record<string, string>
+}

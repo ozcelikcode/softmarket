@@ -28,7 +28,7 @@ const edition = (over: Record<string, unknown> = {}) => ({
 describe('computeCommerceState (env × site mode × provider × VAT)', () => {
   it('is open only when every layer agrees', () => {
     const s = computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings() })
-    expect(s).toMatchObject({ capability: true, siteMode: 'payments', open: true, availableProviders: ['iyzico'], checkoutReady: false, checkoutOpen: false })
+    expect(s).toMatchObject({ capability: true, siteMode: 'payments', open: true, availableProviders: ['iyzico'], checkoutReady: true, checkoutOpen: true })
   })
 
   const closed: [string, Record<string, string | undefined>, unknown][] = [
@@ -56,8 +56,10 @@ describe('computeCommerceState (env × site mode × provider × VAT)', () => {
     expect(computeCommerceState({ env: {}, siteSettings: settings(), checkoutReady: true }).checkoutOpen).toBe(false)
   })
 
-  it('the shipped flag is off (no checkout exists before P5)', () => {
-    expect(computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings() }).checkoutReady).toBe(false)
+  it('the shipped flag is on (P5 checkout exists); `open` still gates everything', () => {
+    expect(computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings() }).checkoutReady).toBe(true)
+    expect(computeCommerceState({ legalReady: true, env: {}, siteSettings: settings() }).checkoutOpen).toBe(false)
+    expect(computeCommerceState({ legalReady: false, env: ENV_OK, siteSettings: settings() }).checkoutOpen).toBe(false)
   })
 
   it('closedCommerceState is fully closed', () => {
@@ -228,7 +230,7 @@ describe('readiness checklist', () => {
     expect(r.environment).toBe('sandbox')
     expect(r.ready).toBe(true)
     for (const id of ['capability', 'provider-env', 'provider-enabled', 'vat', 'buy-editions', 'legal', 'smtp']) expect(level(r, id)).toBe('ok')
-    expect(level(r, 'checkout')).toBe('info')
+    expect(level(r, 'checkout')).toBe('ok')
     expect(r.items.find((i) => i.id === 'buy-editions')!.detail!.en).toBe('1 ready, 1 without a usable price')
     expect(JSON.stringify(r)).not.toMatch(/"k"|"s"|IYZICO_SECRET/)
   })

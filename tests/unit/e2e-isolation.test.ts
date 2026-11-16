@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { assertIsolatedE2E } from '../../src/lib/e2e-isolation'
+import { isLocalProviderAllowed, readPaymentsEnv } from '../../src/lib/payments/env'
 
 const dirs: string[] = []
 const temp = (prefix: string) => {
@@ -28,6 +29,15 @@ function fixture() {
 }
 
 describe('isolated E2E fail-closed boundaries', () => {
+  it('refuses a fake provider in a normal production build even with a valid isolated directory and runtime flags', () => {
+    const { env } = fixture()
+    const production = { ...env, NODE_ENV: 'production', SOFTMARKET_E2E_BUILD: '1', PAYMENTS_ENABLED: 'true', IYZICO_API_KEY: 'sandbox-key', IYZICO_SECRET_KEY: 'sandbox-secret', IYZICO_BASE_URL: 'http://127.0.0.1:3500' }
+    expect(assertIsolatedE2E(production)).toBeTruthy()
+    expect(isLocalProviderAllowed(production)).toBe(false)
+    expect(readPaymentsEnv(production).iyzico).toBeUndefined()
+    expect(isLocalProviderAllowed({ ...production, NODE_ENV: undefined })).toBe(false)
+    expect(readPaymentsEnv({ ...production, NODE_ENV: undefined }).iyzico).toBeUndefined()
+  })
   it('accepts only the physical temporary DB and uploads pair', () => {
     const { env, root } = fixture()
     expect(assertIsolatedE2E(env)).toEqual({ root, database: join(root, 'db.sqlite'), uploads: join(root, 'uploads') })

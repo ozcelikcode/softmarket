@@ -10,6 +10,10 @@ const port = 3400
 // Inherited by the webServer and workers; no shared password and no credentials on disk.
 process.env.E2E_ADMIN_EMAIL ||= `e2e-${randomUUID()}@example.test`
 process.env.E2E_ADMIN_PASSWORD ||= randomBytes(32).toString('hex')
+// Payments e2e customers (verified, seeded into the temp DB copy by scripts/e2e-seed-payments.ts).
+process.env.E2E_CUSTOMER_EMAIL ||= `buyer-${randomUUID()}@example.test`
+process.env.E2E_CUSTOMER2_EMAIL ||= `other-${randomUUID()}@example.test`
+process.env.E2E_CUSTOMER_PASSWORD ||= randomBytes(24).toString('hex')
 export default defineConfig({
   testDir: './tests/e2e/isolated',
   timeout: 90_000,

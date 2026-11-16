@@ -44,7 +44,9 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-  webpack: (config) => {
+  webpack: (config, { webpack }) => {
+    // A compile-time constant, unavailable to unbundled production CLIs and immutable at runtime.
+    config.plugins.push(new webpack.DefinePlugin({ __SOFTMARKET_E2E_BUILD__: JSON.stringify(process.env.SOFTMARKET_E2E_BUILD === '1') }))
     config.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],

@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 
-import type { IyzicoConfig } from '../env'
+import { isLocalProviderAllowed, type IyzicoConfig } from '../env'
 import { PaymentError } from '../errors'
 import { iyzicoEventId } from '../idempotency'
 import { decimalToMinor, isValidMinor, minorToDecimal } from '../money'
@@ -104,7 +104,7 @@ export function createIyzicoProvider(deps: IyzicoProviderDeps): PaymentProvider 
     } catch {
       throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'paymentPageUrl' })
     }
-    const local = process.env.NODE_ENV !== 'production' && config.env === 'sandbox' && /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(config.baseUrl) && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost')
+    const local = isLocalProviderAllowed() && config.env === 'sandbox' && /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(config.baseUrl) && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost')
     if (parsed.username || parsed.password || (parsed.protocol !== 'https:' && parsed.protocol !== 'http:')) throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'paymentPageUrl' })
     if (parsed.protocol !== 'https:' && !local) throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'paymentPageUrl' })
     if (!local && !/(^|\.)iyzipay\.com$|(^|\.)iyzico\.com$/.test(parsed.hostname)) {

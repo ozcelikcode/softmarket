@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Read-only SQLite backup; all Payload writes and uploads stay in a private temporary directory.
-# Requires a production build: NEXT_DIST_DIR=.next-prod pnpm build (or E2E_NEXT_DIST_DIR=.next-<name>).
+# Payments require a dedicated build: SOFTMARKET_E2E_BUILD=1 PAYMENTS_ENABLED=true NEXT_DIST_DIR=.next-e2e pnpm build.
+# Never deploy this build. Set E2E_NEXT_DIST_DIR=.next-e2e when running the suite.
 # E2E_SOURCE_DB: read-only source of the copy (default data/softmarket.db; QA runs pass their own DB copy).
 set +x # Do not expose credentials even when invoked with bash -x / inherited xtrace.
 set -euo pipefail
@@ -18,9 +19,14 @@ fi
 TEMP_ROOT="$(node -e 'console.log(require("node:fs").realpathSync(require("node:os").tmpdir()))')"
 DIR="$(mktemp -d "$TEMP_ROOT/softmarket-e2e-isolated.XXXXXX")"
 CHILD=''
+FAKE=''
 cleanup() {
   local status=$?
   trap - EXIT INT TERM
+  if [[ -n "$FAKE" ]]; then
+    kill -TERM -- "-$FAKE" 2>/dev/null || true
+    wait "$FAKE" 2>/dev/null || true
+  fi
   if [[ -n "$CHILD" ]]; then
     kill -TERM -- "-$CHILD" 2>/dev/null || true
     for ((attempt=0; attempt<50; attempt++)); do
@@ -62,11 +68,23 @@ export PAYLOAD_CONFIG_PATH="$PWD/src/payload.config.ts"
 export PAYLOAD_SECRET="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
 # Never use inherited live SMTP credentials for a copied database.
 export SMTP_HOST='' SMTP_FROM=''
+# Payments e2e: loopback fake iyzico requires a dedicated E2E build and assertIsolatedE2E.
+export PAYMENTS_ENABLED=true IYZICO_API_KEY="sandbox-e2e-$(node -e 'console.log(require("node:crypto").randomBytes(8).toString("hex"))')"
+export IYZICO_SECRET_KEY="sandbox-e2e-secret-$(node -e 'console.log(require("node:crypto").randomBytes(16).toString("hex"))')"
+export IYZICO_BASE_URL='http://127.0.0.1:3500'
 # Avoid a package-manager wrapper detaching its children into additional process groups.
 node --import tsx scripts/e2e-seed-admin.ts &
 CHILD=$!
 wait "$CHILD"
 CHILD=''
+if [[ -n "${E2E_CUSTOMER_EMAIL:-}" ]]; then
+  node --import tsx scripts/e2e-seed-payments.ts &
+  CHILD=$!
+  wait "$CHILD"
+  CHILD=''
+fi
+node --import tsx scripts/e2e-fake-iyzico.ts &
+FAKE=$!
 # Use the installed shim: it execs Node and preserves pnpm's required NODE_PATH.
 ./node_modules/.bin/next start --hostname 127.0.0.1 --port 3400 &
 CHILD=$!

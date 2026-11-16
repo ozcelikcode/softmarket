@@ -64,6 +64,7 @@ export const VISUAL_EDITOR_LABELS = {
     reloadLoses: loc('Yeniden yüklenince kaydedilmemiş değişiklikleriniz kaybolur. Devam edilsin mi?', 'Reloading discards your unsaved changes. Continue?'),
     merged: loc('Güncel sürümle birleştirildi; otomatik kaydedilecek.', 'Merged with the latest version; it will autosave.'),
     mergedBoth: loc('İki tarafta da değişen alanlarda sizinki kaldı', 'Fields changed on both sides kept your version'),
+    mergeConflicts: loc('Birleştirme kaydedilmedi; çakışan alanları kopyalayıp yeniden yükleyin', 'Merge was not saved; copy the conflicting fields and reload'),
   },
   palette: {
     title: loc('Blok ekle', 'Add block'),

@@ -86,7 +86,8 @@ describe(`migration ${NAME}`, () => {
       await later.down(args())
     }
     expect(product.layout?.[0]).toMatchObject({ blockType: 'cta', style: 'card', appearance: { theme: 'auto', spacing: 'md', align: 'center', hidden: false } })
-  }, 60000)
+    // Six later migrations up and down again (SQLite table rebuilds): ~65 s locally since V1/V2 joined the chain.
+  }, 240000)
 
   it('down drops only the new columns and keeps the data; up is repeatable', async () => {
     await migration.down(args())

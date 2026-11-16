@@ -13,10 +13,9 @@ import type { FormState } from 'payload'
  * the keepalive limit cannot outlive the page: `beforeunload` then asks the browser to confirm leaving. The
  * request goes through the normal REST auth/access/validation chain (cookie session of the staff user).
  *
- * Conflict (P1): every admin save carries the form's `editorVersion` (the draft `updatedAt` it was loaded/saved
- * at); the server rejects a stale one with 409 inside the write transaction (src/editor/canvas/concurrency.ts), so
- * a change made elsewhere is never overwritten. The watcher below only makes that visible early: a failed save,
- * focus, tab return or a 15 s poll compares the latest draft `updatedAt` with the form's version and shows the
+ * Conflict (P1): document-form saves carry an opaque `editorVersion` snapshot token; the server rejects a stale
+ * one with 409 inside the write transaction (src/editor/canvas/concurrency.ts). The watcher makes that visible
+ * early: a failed save, focus, tab return or a 15 s poll compares the latest draft token with the form and shows the
  * reload/merge warning; flushing pauses meanwhile. Payload's document lock still keeps a second user out.
  */
 
@@ -49,7 +48,7 @@ export function useAutosaveFlush({ doc, fields, modified, paused, onSaved, onCon
   modified: boolean
   paused: boolean
   /** New version after an accepted flush. */
-  onSaved: (version: string) => void
+  onSaved: (version: string, values: Record<string, unknown>) => void
   /** The server rejected the flush: the document changed elsewhere (409). */
   onConflict: () => void
 }) {
@@ -61,7 +60,10 @@ export function useAutosaveFlush({ doc, fields, modified, paused, onSaved, onCon
   const flush = useCallback(async (mode: 'keepalive' | 'await'): Promise<boolean> => {
     const s = state.current
     if (!s.doc || !s.modified || s.paused) return !s.modified
-    const body = JSON.stringify({ ...stableValues(s.fields), [VERSION_FIELD]: formVersion(s.fields), _status: 'draft' })
+    const version = formVersion(s.fields)
+    if (!version) return false
+    const values = stableValues(s.fields)
+    const body = JSON.stringify({ ...values, [VERSION_FIELD]: version, _status: 'draft' })
     if (mode === 'keepalive' && !fitsKeepalive(body)) return false
     const url = autosaveURL(s.doc)
     const key = `${url}\n${body}`
@@ -72,11 +74,14 @@ export function useAutosaveFlush({ doc, fields, modified, paused, onSaved, onCon
           method: 'PATCH', credentials: 'same-origin', keepalive: mode === 'keepalive', cache: 'no-store',
           headers: { 'Content-Type': 'application/json' }, body,
         })
+        if (state.current.doc !== s.doc) return false
         if (res.status === 409) { state.current.onConflict(); return false }
         if (!res.ok) return false
         const json = (await res.json().catch(() => null)) as { doc?: { editorVersion?: string; updatedAt?: string } } | null
-        const version = json?.doc?.editorVersion ?? json?.doc?.updatedAt
-        if (version) state.current.onSaved(version)
+        const next = json?.doc?.editorVersion
+        // An old request must never advance a different document/locale, or roll back a newer own save.
+        if (!next || state.current.doc !== s.doc || formVersion(state.current.fields) !== version) return false
+        state.current.onSaved(next, values)
         return true
       } catch {
         return false
@@ -109,7 +114,7 @@ export function useAutosaveFlush({ doc, fields, modified, paused, onSaved, onCon
 }
 
 export function useConflictWatch({ doc, version, busy, intervalMs = 15_000 }: {
-  doc: Omit<Doc, 'locale'> | null
+  doc: Doc | null
   /** The form's `editorVersion` (null: not known yet / not guarded). */
   version: string | null
   /** A save is in flight (its result is not known yet). */
@@ -123,12 +128,12 @@ export function useConflictWatch({ doc, version, busy, intervalMs = 15_000 }: {
   const read = useCallback(async (): Promise<string | null> => {
     const d = ref.current.doc
     if (!d) return null
-    const q = new URLSearchParams({ depth: '0', draft: 'true', 'select[updatedAt]': 'true' })
+    const q = new URLSearchParams({ depth: '0', draft: 'true', locale: d.locale, 'fallback-locale': 'null' })
     try {
       const res = await fetch(`${d.apiBase}/${encodeURIComponent(d.collection)}/${encodeURIComponent(String(d.id))}?${q}`, { credentials: 'same-origin', cache: 'no-store' })
       if (!res.ok) return null
-      const json = (await res.json()) as { updatedAt?: string }
-      return typeof json.updatedAt === 'string' ? json.updatedAt : null
+      const json = (await res.json()) as { editorVersion?: string }
+      return ref.current.doc === d && typeof json.editorVersion === 'string' ? json.editorVersion : null
     } catch {
       return null
     }

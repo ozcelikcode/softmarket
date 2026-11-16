@@ -1,7 +1,7 @@
 import { mkdtempSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import type { Payload } from 'payload'
+import { join, resolve } from 'node:path'
+import type { Payload, PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
@@ -152,17 +152,127 @@ describe('visual editor saves (temp SQLite)', () => {
     const save = (id: number, version: string | undefined, data: Record<string, unknown>, opts: { autosave?: boolean } = {}) =>
       payload.update({ collection: 'products', id, locale: 'tr', draft: true, autosave: opts.autosave ?? true, overrideAccess: true, data: { ...data, ...(version ? { editorVersion: version } : {}), _status: 'draft' } as never })
 
-    it('reads expose the latest draft updatedAt as editorVersion; a save returns the next one', async () => {
+    it('reads expose a snapshot token; a save returns a token usable for the next save', async () => {
       const doc = await read('products', productId, 'tr')
-      expect(doc.editorVersion).toBe(doc.updatedAt)
+      expect(doc.editorVersion).toMatch(/^[a-f0-9]{64}$/)
       const saved = (await save(productId, doc.editorVersion as string, { tagline: 'Sürüm 1' })) as unknown as Record<string, unknown>
-      expect(saved.editorVersion).toBe(saved.updatedAt)
-      expect((await read('products', productId, 'tr')).editorVersion).toBe(saved.updatedAt)
+      expect(saved.editorVersion).not.toBe(doc.editorVersion)
+      expect((await read('products', productId, 'tr')).editorVersion).toBe(saved.editorVersion)
       // Chained saves from the returned version keep working (autosave, then a manual draft save).
       const next = (await save(productId, saved.editorVersion as string, { tagline: 'Sürüm 2' })) as unknown as Record<string, unknown>
       await save(productId, next.editorVersion as string, { tagline: 'Sürüm 3' }, { autosave: false })
       expect((await read('products', productId, 'tr')).tagline).toBe('Sürüm 3')
     })
+
+    it('tokens cover both locales, independent of locale/fallback/depth; anonymous reads do not expose them', async () => {
+      const tr = await read('products', productId, 'tr')
+      const en = await read('products', productId, 'en')
+      expect(en.editorVersion).toBe(tr.editorVersion)
+      const populated = await payload.findByID({ collection: 'products', id: productId, draft: true, locale: 'en', depth: 2 })
+      expect(populated.editorVersion).toBe(tr.editorVersion)
+      await payload.update({ collection: 'products', id: productId, locale: 'en', draft: true, data: { title: 'Remote English' } })
+      await expect(save(productId, tr.editorVersion as string, { title: 'Stale Turkish' })).rejects.toMatchObject({ status: 409 })
+      const anon = await payload.findByID({ collection: 'products', id: productId, overrideAccess: false, user: null })
+      expect(anon).not.toHaveProperty('editorVersion')
+      for (const table of ['products', '_products_v', 'pages', '_pages_v']) {
+        const columns = await payload.db.drizzle.$client.execute(`PRAGMA table_info(${table})`)
+        expect(columns.rows.some((row) => /editor.?version/i.test(String(row.name)))).toBe(false)
+      }
+    })
+
+    it('the installed REST handler returns a usable version for draft/publish; stale writes still get 409', async () => {
+      const { createLocalReq } = await import('payload')
+      const admin = await payload.create({ collection: 'users', data: { email: 'v5-audit@example.test', password: 'Audit-test-password-123!', roles: ['admin'] } })
+      const { updateByIDHandler } = await import(resolve('node_modules/payload/dist/collections/endpoints/updateByID.js'))
+      const update = async (data: Record<string, unknown>, draft: boolean) => {
+        const req = await createLocalReq({ user: { ...admin, collection: 'users' } }, payload)
+        req.payloadAPI = 'REST'
+        req.locale = 'en'
+        req.fallbackLocale = null
+        req.routeParams = { collection: 'pages', id: String(pageId) }
+        req.query = { draft: String(draft), autosave: String(draft), locale: 'en', depth: '0' }
+        req.data = data
+        return (await (await updateByIDHandler(req)).json()).doc as { editorVersion: string }
+      }
+      const base = await read('pages', pageId, 'en')
+      const saved = await update({ title: 'REST draft', layout: [], editorVersion: base.editorVersion }, true)
+      expect(saved.editorVersion).toBe((await read('pages', pageId, 'en')).editorVersion)
+      await expect(update({ title: 'REST stale', editorVersion: base.editorVersion }, false)).rejects.toMatchObject({ status: 409 })
+      const published = await update({ title: 'REST published', _status: 'published', editorVersion: saved.editorVersion }, false)
+      expect(published.editorVersion).toBe((await read('pages', pageId, 'en')).editorVersion)
+    })
+
+    it('rejects stale snapshots even when updatedAt repeats or the clock goes backwards', async () => {
+      const time = Date.now()
+      vi.useFakeTimers({ toFake: ['Date'] })
+      try {
+        vi.setSystemTime(time)
+        await save(productId, undefined, { tagline: 'clock base' })
+        const base = await read('products', productId, 'tr')
+        await save(productId, base.editorVersion as string, { tagline: 'same millisecond' })
+        const current = await read('products', productId, 'tr')
+        expect(current.updatedAt).toBe(base.updatedAt)
+        expect(current.editorVersion).not.toBe(base.editorVersion)
+        await expect(save(productId, base.editorVersion as string, { tagline: 'lost update' })).rejects.toMatchObject({ status: 409 })
+        vi.setSystemTime(time - 60_000)
+        await save(productId, current.editorVersion as string, { tagline: 'clock moved back' })
+        await expect(save(productId, current.editorVersion as string, { tagline: 'lost again' })).rejects.toMatchObject({ status: 409 })
+      } finally { vi.useRealTimers() }
+    })
+
+    it('blank/null tokens cannot opt out; omitted versions, duplicate, bulk update and intentional restore retain their API contract', async () => {
+      for (const editorVersion of ['', null]) {
+        await expect(payload.update({ collection: 'pages', id: pageId, draft: true, data: { title: 'bad', editorVersion } })).rejects.toMatchObject({ status: 400 })
+      }
+      const copy = await payload.create({ collection: 'pages', duplicateFromID: pageId, data: { title: 'Duplicate', slug: 'duplicate-audit' } })
+      expect(copy.id).not.toBe(pageId)
+      const bulk = await payload.update({ collection: 'pages', where: { id: { equals: copy.id } }, data: { title: 'Bulk' }, draft: true })
+      expect(bulk.errors).toEqual([])
+      const versions = await payload.findVersions({ collection: 'pages', where: { parent: { equals: copy.id } }, sort: 'updatedAt', limit: 1 })
+      const { createLocalReq } = await import('payload')
+      const req = await createLocalReq({}, payload)
+      const stale = await read('pages', copy.id, 'tr')
+      await payload.restoreVersion({ collection: 'pages', id: versions.docs[0]!.id, draft: true, req })
+      await expect(payload.update({ collection: 'pages', id: copy.id, draft: true, req, data: { title: 'stale after restore', editorVersion: stale.editorVersion } as never }))
+        .rejects.toMatchObject({ status: 409 })
+      const latest = await read('pages', copy.id, 'tr')
+      await payload.update({ collection: 'pages', id: copy.id, draft: false, locale: 'en', data: { title: 'Publish English', layout: [], _status: 'published', editorVersion: latest.editorVersion } as never })
+    })
+
+    it('merged layouts are still checked by the server V2 constraints', async () => {
+      const doc = await read('products', productId, 'tr')
+      const rows = doc.layout as { blockType: string }[]
+      await expect(save(productId, doc.editorVersion as string, { layout: rows.filter((row) => row.blockType !== 'productEditions') })).rejects.toMatchObject({ status: 400 })
+      const saved = await save(productId, doc.editorVersion as string, { layout: [...rows.slice(1), rows[0]] })
+      // The existing V2 contract normalises a misplaced hero to the first position.
+      expect(saved.layout?.[0]?.blockType).toBe('productHero')
+    })
+
+    it('nested Local API calls share req; outside reads bypass the writer queue; mixed concurrent load drains without leaked sessions', async () => {
+      const transactionID = await payload.db.beginTransaction()
+      const req = { transactionID } as Partial<PayloadRequest>
+      try {
+        await payload.update({ collection: 'pages', id: pageId, draft: true, req, data: { title: 'In outer transaction' } })
+        const readStart = performance.now()
+        await payload.find({ collection: 'pages', overrideAccess: false, user: null, depth: 0 })
+        expect(performance.now() - readStart).toBeLessThan(2000)
+      } finally { await payload.db.rollbackTransaction(transactionID!) }
+      const started = performance.now()
+      const reads: number[] = []
+      const results = await Promise.allSettled([
+        ...Array.from({ length: 30 }, (_, i) => payload.update({ collection: 'pages', id: pageId, draft: true, data: { title: `Load ${i}` } })),
+        ...Array.from({ length: 30 }, async () => {
+          const start = performance.now()
+          await payload.find({ collection: 'pages', overrideAccess: false, user: null, depth: 0 })
+          reads.push(performance.now() - start)
+        }),
+      ])
+      const errors = results.filter((result) => result.status === 'rejected')
+      console.info('V5 concurrency load', JSON.stringify({ writes: 30, reads: 30, errors: errors.length, durationMs: Math.round(performance.now() - started), maxReadMs: Math.round(Math.max(...reads)) }))
+      expect(errors).toEqual([])
+      expect(Object.keys(payload.db.sessions ?? {})).toHaveLength(0)
+      expect((await read('pages', pageId, 'tr')).title).toBe('Load 29')
+    }, 20_000)
 
     it('a stale version is rejected with 409 and nothing changes; writes without a version (MCP/import) pass', async () => {
       const base = (await read('products', productId, 'tr')).editorVersion as string
@@ -172,6 +282,7 @@ describe('visual editor saves (temp SQLite)', () => {
       expect(strip(await read('products', productId, 'tr'))).toEqual(strip(before))
       expect((await read('products', productId, 'tr')).tagline).toBe('MCP yazımı')
       await expect(save(productId, 'not-a-date', { tagline: 'x' })).rejects.toMatchObject({ status: 400 })
+      await expect(save(productId, before.updatedAt as string, { tagline: 'old editor open across deployment' })).rejects.toMatchObject({ status: 409 })
     })
 
     it('plain concurrent writes (no version) are serialised: both land, later writes stay visible', async () => {
@@ -202,12 +313,12 @@ describe('visual editor saves (temp SQLite)', () => {
       expect(lost[0]!.reason).toMatchObject({ status: VERSION_CONFLICT_STATUS })
       const stored = await read('products', productId, 'tr')
       expect(stored.tagline).toBe(won[0]!.value.tagline)
-      expect(stored.editorVersion).toBe(won[0]!.value.updatedAt)
+      expect(stored.editorVersion).toBe(won[0]!.value.editorVersion)
       // The editor that lost reloads (fresh version) and saves again: accepted and visible.
       const again = await save(productId, stored.editorVersion as string, { tagline: 'Yeniden yüklendi' }) as unknown as Record<string, unknown>
       const after = await read('products', productId, 'tr')
       expect(after.tagline).toBe('Yeniden yüklendi')
-      expect(after.editorVersion).toBe(again.updatedAt)
+      expect(after.editorVersion).toBe(again.editorVersion)
     })
 
   })

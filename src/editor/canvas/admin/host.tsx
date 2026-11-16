@@ -9,6 +9,7 @@ import type { FormState } from 'payload'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { BlockPalette, type PaletteBlock } from '@/editor/canvas/admin/palette'
+import { contentValues, mergeChanges, sameValue } from '@/editor/canvas/admin/merge'
 import { revealRow } from '@/editor/canvas/admin/reveal'
 import { formVersion, stableValues, useAutosaveFlush, useConflictWatch, VERSION_FIELD } from '@/editor/canvas/admin/sync'
 import { EditorTour, tourSeen } from '@/editor/canvas/admin/tour'
@@ -43,8 +44,8 @@ const DEVICES = [
 ] as const
 const LOCALES = ['tr', 'en'] as const
 
-type ClientField = { type?: string; name?: string; fields?: ClientField[]; tabs?: { fields?: ClientField[] }[]; blocks?: ClientBlock[]; blockReferences?: (string | ClientBlock)[] }
-type ClientBlock = { slug: string; labels?: { singular?: unknown }; imageURL?: string; admin?: { group?: unknown } }
+type ClientField = { type?: string; name?: string; virtual?: unknown; admin?: { readOnly?: boolean }; fields?: ClientField[]; tabs?: { fields?: ClientField[] }[]; blocks?: ClientBlock[]; blockReferences?: (string | ClientBlock)[] }
+type ClientBlock = ClientField & { slug: string; labels?: { singular?: unknown }; imageURL?: string; admin?: { group?: unknown; readOnly?: boolean } }
 type Row = { id: string; blockType?: string; collapsed?: boolean }
 
 function findLayoutField(fields: ClientField[] | undefined): ClientField | undefined {
@@ -90,7 +91,7 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
   const preview = useLivePreviewContext()
   const { iframeRef, isLivePreviewing, setIsLivePreviewing, breakpoint, setBreakpoint, isLivePreviewEnabled } = preview
   const [fields, dispatchFields] = useAllFormFields()
-  const { moveFieldRow, removeFieldRow, addFieldRow, setModified, reset } = useForm()
+  const { moveFieldRow, removeFieldRow, addFieldRow, setModified, reset, setDisabled } = useForm()
   const { data: savedData } = useDocumentInfo()
   const modified = useFormModified()
   const processing = useFormProcessing()
@@ -112,6 +113,12 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
   const [saveError, setSaveError] = useState(false)
   const [copyText, setCopyText] = useState<string | null>(null)
   const [mergeNote, setMergeNote] = useState<string[] | null>(null)
+  const [mergeConflicts, setMergeConflicts] = useState<string[]>([])
+  const [merging, setMerging] = useState(false)
+  const mergingRef = useRef(false)
+  const baseRef = useRef<Record<string, unknown> | null>(null)
+  const contentFields = useMemo(() => (getEntityConfig({ collectionSlug: collection }) as { fields?: ClientField[] })?.fields ?? [], [collection, getEntityConfig])
+  const content = useCallback((values: Record<string, unknown>) => contentValues(values, contentFields), [contentFields])
 
   const fieldsRef = useRef(fields)
   fieldsRef.current = fields
@@ -325,6 +332,7 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
+      if (mergingRef.current) return
       const msg = acceptMessage(event, { origin: window.location.origin, source: iframeRef.current?.contentWindow ?? null }, bridgeMessage)
       if (!msg) return
       if (apply(msg) === 'wait') deferred.current = { msg, until: Date.now() + 5000 }
@@ -335,6 +343,7 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
 
   /* ---------- save guards ---------- */
   const doc = useMemo(() => ({ apiBase, collection, id }), [apiBase, collection, id])
+  const localDoc = useMemo(() => ({ ...doc, locale: localeCode }), [doc, localeCode])
   /* ---------- optimistic concurrency (editorVersion, see src/editor/canvas/concurrency.ts) ---------- */
   const version = formVersion(fields)
   const setVersion = useCallback((next: string) => {
@@ -342,59 +351,77 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
   }, [dispatchFields])
   // Payload's own saves update the document data; the form's version follows it (no "modified" change).
   const savedVersion = (savedData as { editorVersion?: string } | undefined)?.editorVersion
-  useEffect(() => { if (savedVersion) setVersion(savedVersion) }, [savedVersion, setVersion])
-  const { conflict, clear, check } = useConflictWatch({ doc, version, busy: processing || background })
+  useEffect(() => {
+    if (savedVersion) {
+      baseRef.current = content((savedData ?? {}) as Record<string, unknown>)
+      setVersion(savedVersion)
+    }
+  }, [content, savedData, savedVersion, setVersion])
+  const { conflict, clear, check, report } = useConflictWatch({ doc: localDoc, version, busy: processing || background })
   const flush = useAutosaveFlush({
-    doc: useMemo(() => ({ ...doc, locale: localeCode }), [doc, localeCode]),
-    fields, modified, paused: Boolean(conflict), onSaved: setVersion, onConflict: () => void check(0),
+    doc: localDoc,
+    fields, modified, paused: Boolean(conflict) || merging,
+    onSaved: (next, values) => { baseRef.current = content(values); setVersion(next) },
+    onConflict: () => report('409'),
   })
-  // A save just ended but the form is still modified: it failed (409 when the document changed elsewhere).
+  // Publish failures may clear modified in Payload too; check every completed save.
   const busy = processing || background
   const wasBusy = useRef(false)
   useEffect(() => {
-    if (wasBusy.current && !busy && modified) void check(0)
+    if (wasBusy.current && !busy) void check(0)
     wasBusy.current = busy
-  }, [busy, check, modified])
+  }, [busy, check])
 
   /** Fields whose local value differs from the last saved/loaded document (what would be lost on reload). */
   const localChanges = useCallback(() => {
-    const local = stableValues(fieldsRef.current)
-    const base = (savedData ?? {}) as Record<string, unknown>
-    return Object.fromEntries(Object.entries(local).filter(([k, v]) => JSON.stringify(v ?? null) !== JSON.stringify(base[k] ?? null)))
-  }, [savedData])
+    const local = content(stableValues(fieldsRef.current))
+    const base = baseRef.current ?? {}
+    return Object.fromEntries(Object.entries(local).filter(([k, v]) => !sameValue(v, base[k])))
+  }, [content])
 
   /**
-   * Three-way merge per top-level field: base = last saved/loaded document, remote = latest draft, local = form.
-   * Unchanged locally -> remote; changed locally only or identical -> local; changed on both -> local (listed).
+   * Three-way merge: content fields recursively, arrays by stable row ID; Lexical stays atomic.
+   * Conflicting values/deletions/orders stop the merge without writing either side.
    * The form is rebuilt from the merged values at the remote version and saved by the normal autosave.
    */
   const merge = useCallback(async () => {
-    const q = new URLSearchParams({ depth: '0', draft: 'true', locale: localeCode, 'fallback-locale': 'null' })
-    const res = await fetch(`${apiBase}/${collection}/${encodeURIComponent(String(id))}?${q}`, { credentials: 'same-origin', cache: 'no-store' })
-    if (!res.ok) return
-    const remote = (await res.json()) as Record<string, unknown>
-    const base = (savedData ?? {}) as Record<string, unknown>
-    const merged: Record<string, unknown> = { ...remote }
-    const both: string[] = []
-    for (const [key, value] of Object.entries(stableValues(fieldsRef.current))) {
-      const l = JSON.stringify(value ?? null)
-      const b = JSON.stringify(base[key] ?? null)
-      const r = JSON.stringify(remote[key] ?? null)
-      if (l === b) continue
-      merged[key] = value
-      if (r !== b && r !== l) both.push(key)
+    if (mergingRef.current || processing || background) return
+    mergingRef.current = true
+    setMerging(true)
+    setDisabled(true)
+    try {
+      const q = new URLSearchParams({ depth: '0', draft: 'true', locale: localeCode, 'fallback-locale': 'null' })
+      const res = await fetch(`${apiBase}/${collection}/${encodeURIComponent(String(id))}?${q}`, { credentials: 'same-origin', cache: 'no-store' })
+      if (!res.ok) throw new Error('Could not read latest draft')
+      const remote = (await res.json()) as Record<string, unknown>
+      if (typeof remote[VERSION_FIELD] !== 'string') throw new Error('Missing editor version')
+      const { values, conflicts } = mergeChanges(baseRef.current ?? {}, content(stableValues(fieldsRef.current)), content(remote))
+      setMergeConflicts(conflicts)
+      if (conflicts.length) return
+      await reset({ ...remote, ...values })
+      baseRef.current = content(remote)
+      setVersion(remote[VERSION_FIELD])
+      setModified(true)
+      // Undo snapshots predate this remote version and would silently restore discarded remote content.
+      historyRef.current = emptyHistory()
+      setHistory(historyRef.current)
+      settled.current = null
+      setMergeNote([])
+      setCopyText(null)
+      clear()
+      setSaveError(false)
+    } catch {
+      setSaveError(true)
+    } finally {
+      mergingRef.current = false
+      setMerging(false)
+      setDisabled(false)
     }
-    merged[VERSION_FIELD] = remote.updatedAt
-    await reset(merged)
-    setVersion(String(remote.updatedAt))
-    setModified(true)
-    setMergeNote(both)
-    setCopyText(null)
-    clear()
-  }, [apiBase, clear, collection, id, localeCode, reset, savedData, setModified, setVersion])
+  }, [apiBase, background, clear, collection, content, id, localeCode, processing, reset, setDisabled, setModified, setVersion])
 
   const switchLocale = useCallback(async (code: 'tr' | 'en') => {
     if (code === localeCode) return
+    if (mergingRef.current) { setSaveError(true); return }
     const before = JSON.stringify(stableValues(fieldsRef.current))
     if (!(await flush('await')) || before !== JSON.stringify(stableValues(fieldsRef.current))) { setSaveError(true); return }
     setSaveError(false)
@@ -493,7 +520,7 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
       {conflict ? (
         <div role="alert" data-ve="conflict" style={{ flexBasis: '100%', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '8px 10px', borderRadius: 4, background: 'var(--theme-warning-100, #fef3c7)', color: 'var(--theme-warning-800, #78350f)' }}>
           <span style={{ flex: '1 1 260px' }}>{t(V.bar.conflict, lang)}</span>
-          <button type="button" style={btn(true)} data-ve="merge" onClick={() => void merge()}>{t(V.bar.merge, lang)}</button>
+          <button type="button" disabled={merging || busy} style={btn(true)} data-ve="merge" onClick={() => void merge()}>{t(V.bar.merge, lang)}</button>
           <button type="button" style={btn()} data-ve="copy" onClick={() => {
             const text = JSON.stringify(localChanges(), null, 2)
             setCopyText(text)
@@ -501,6 +528,7 @@ function Host({ collection, id }: { collection: CanvasCollection; id: string | n
           }}>{t(V.bar.copy, lang)}</button>
           <button type="button" style={btn()} data-ve="reload" title={t(V.bar.reloadLoses, lang)}
             onClick={() => { if (window.confirm(t(V.bar.reloadLoses, lang))) window.location.reload() }}>{t(V.bar.reload, lang)}</button>
+          {mergeConflicts.length ? <span data-ve="merge-conflicts">{t(V.bar.mergeConflicts, lang)}: {mergeConflicts.join(', ')}</span> : null}
           {copyText !== null ? (
             <textarea readOnly data-ve="copy-text" aria-label={t(V.bar.copy, lang)} value={copyText} rows={6}
               onFocus={(e) => e.currentTarget.select()} style={{ flexBasis: '100%', font: '12px/1.4 ui-monospace, monospace' }} />

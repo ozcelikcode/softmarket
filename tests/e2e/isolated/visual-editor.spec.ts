@@ -26,7 +26,7 @@ async function login(request: APIRequestContext, base: string) {
 }
 
 type Block = { id: string; blockType: string; heading?: string; appearance?: { hidden?: boolean }; motion?: { preset?: string; duration?: string } }
-type Doc = { id: number; title: string; slug: string; layout: Block[]; family: { slug: string } | number; updatedAt: string }
+type Doc = { id: number; title: string; slug: string; layout: Block[]; family: { slug: string } | number; updatedAt: string; editorVersion?: string }
 
 const draft = async (request: APIRequestContext, collection: string, id: number, locale = 'tr') =>
   (await (await request.get(`/api/${collection}/${id}?draft=true&depth=1&locale=${locale}&fallback-locale=null`)).json()) as Doc
@@ -382,14 +382,14 @@ test('P1: an editor save based on a stale version is rejected (409); the other w
   await openEditor(page, productPath)
   // The admin form carries the version it was loaded at.
   const loaded = await draft(ctx.request, 'products', product.id)
-  expect((loaded as unknown as { editorVersion?: string }).editorVersion).toBe(loaded.updatedAt)
+  expect(loaded.editorVersion).toMatch(/^[a-f0-9]{64}$/)
   // A write elsewhere (MCP / script / another tab): no version -> accepted.
   const outside = `MCP özeti ${Date.now()}`
   const other = await ctx.browser()!.newContext({ baseURL: base })
   await login(other.request, base)
   expect((await other.request.patch(`/api/products/${product.id}?locale=tr&draft=true`, { data: { summary: outside }, headers: { Origin: base } })).status()).toBe(200)
   // Replaying the editor's own request with the stale version is refused by the server.
-  const stale = await other.request.patch(`/api/products/${product.id}?locale=tr&draft=true&autosave=true`, { data: { summary: 'stale', editorVersion: loaded.updatedAt }, headers: { Origin: base } })
+  const stale = await other.request.patch(`/api/products/${product.id}?locale=tr&draft=true&autosave=true`, { data: { summary: 'stale', editorVersion: loaded.editorVersion }, headers: { Origin: base } })
   expect(stale.status()).toBe(409)
   await other.close()
   // The editor (not reloaded) edits the title: its autosave is rejected, nothing is overwritten.

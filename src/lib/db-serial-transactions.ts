@@ -27,6 +27,7 @@ export function serializeTransactions(db: Tx, { timeoutMs = 5000 } = {}): Tx {
   const rollback = db.rollbackTransaction
   let tail: Promise<void> = Promise.resolve()
   const held = new Map<Id, () => void>()
+  const ending = new Map<Id, Promise<void>>()
 
   db.beginTransaction = async function (this: Tx, options?: unknown) {
     let release!: () => void
@@ -57,14 +58,28 @@ export function serializeTransactions(db: Tx, { timeoutMs = 5000 } = {}): Tx {
   }
   const end = (original: Tx['commitTransaction']) => async function (this: Tx, incoming: Id | Promise<Id | null>) {
     const id = await Promise.resolve(incoming).catch(() => null)
-    try {
-      await original.call(this, incoming)
-    } finally {
-      if (id !== null && id !== undefined) {
+    if (id === null || id === undefined) return original.call(this, incoming)
+    // Payload deletes its session BEFORE awaiting the physical COMMIT/ROLLBACK. A second end call would
+    // otherwise return immediately and release our writer while the first call is still using SQLite.
+    // Like Payload's own second end call, the duplicate only waits: the failure belongs to the first caller.
+    const pending = ending.get(id)
+    if (pending) return pending.catch(() => undefined)
+    const done = Promise.resolve().then(async () => {
+      try {
+        await original.call(this, id)
+      } catch (error) {
+        // Do not admit the next writer before cleanup of a failed commit has finished.
+        // A failing cleanup must not replace the commit error the caller needs to see.
+        if (original === commit) await rollback.call(this, id).catch(() => undefined)
+        throw error
+      } finally {
         held.get(id)?.()
         held.delete(id)
+        ending.delete(id)
       }
-    }
+    })
+    ending.set(id, done)
+    return done
   }
   db.commitTransaction = end(commit)
   db.rollbackTransaction = end(rollback)

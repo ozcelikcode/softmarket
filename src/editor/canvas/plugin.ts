@@ -1,6 +1,6 @@
 import type { CollectionConfig, Plugin } from 'payload'
 
-import { editorVersionField, guardEditorVersion } from '@/editor/canvas/concurrency'
+import { clearEditorRestoreContext, editorVersionField, guardEditorVersion, savedEditorVersion } from '@/editor/canvas/concurrency'
 import { VISUAL_EDITOR_COLLECTIONS } from '@/editor/canvas/rules'
 
 export const VISUAL_EDITOR_HOST = '@/editor/canvas/admin/host#VisualEditorHost'
@@ -20,8 +20,13 @@ export const visualEditor = (collections: readonly string[] = VISUAL_EDITOR_COLL
     collections.includes(c.slug)
       ? {
           ...c,
-          fields: [...c.fields, editorVersionField],
-          hooks: { ...c.hooks, beforeChange: [guardEditorVersion, ...(c.hooks?.beforeChange ?? [])] },
+          fields: [editorVersionField, ...c.fields],
+          hooks: {
+            ...c.hooks,
+            beforeOperation: [clearEditorRestoreContext, ...(c.hooks?.beforeOperation ?? [])],
+            beforeChange: [guardEditorVersion, ...(c.hooks?.beforeChange ?? [])],
+            afterChange: [...(c.hooks?.afterChange ?? []), savedEditorVersion],
+          },
           admin: {
             ...c.admin,
             livePreview: { ...c.admin?.livePreview, openByDefault: true },

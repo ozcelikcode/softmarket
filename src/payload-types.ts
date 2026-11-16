@@ -472,6 +472,7 @@ export interface Media {
  */
 export interface Product {
   id: number;
+  editorVersion?: string | null;
   title: string;
   /**
    * Short line shown below the title.
@@ -615,14 +616,6 @@ export interface Product {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
   /**
    * Part of the page address. Generated from "title" when empty; lowercase letters, digits and hyphens only.
    */
@@ -641,7 +634,14 @@ export interface Product {
    * Filled automatically on first publish.
    */
   publishedAt?: string | null;
-  editorVersion?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -833,6 +833,7 @@ export interface HeroBlock {
  */
 export interface Page {
   id: number;
+  editorVersion?: string | null;
   /**
    * Shown in the browser tab and admin lists.
    */
@@ -972,14 +973,6 @@ export interface Page {
         | ListingBlock
       )[]
     | null;
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
   /**
    * Use "home" for the home page. Generated from the title when empty.
    */
@@ -997,7 +990,14 @@ export interface Page {
    * Filled automatically on first publish; editable.
    */
   publishedAt?: string | null;
-  editorVersion?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -5440,6 +5440,7 @@ export interface NewsListBlockSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  editorVersion?: T;
   title?: T;
   tagline?: T;
   summary?: T;
@@ -5506,6 +5507,12 @@ export interface ProductsSelect<T extends boolean = true> {
   releases?: T;
   downloads?: T;
   docs?: T;
+  slug?: T;
+  family?: T;
+  industries?: T;
+  featured?: T;
+  sortOrder?: T;
+  publishedAt?: T;
   meta?:
     | T
     | {
@@ -5513,13 +5520,6 @@ export interface ProductsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  slug?: T;
-  family?: T;
-  industries?: T;
-  featured?: T;
-  sortOrder?: T;
-  publishedAt?: T;
-  editorVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -5986,6 +5986,7 @@ export interface PartnersSelect<T extends boolean = true> {
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
+  editorVersion?: T;
   title?: T;
   hero?:
     | T
@@ -6036,6 +6037,10 @@ export interface PagesSelect<T extends boolean = true> {
         newsList?: T | NewsListBlockSelect<T>;
         listing?: T | ListingBlockSelect<T>;
       };
+  slug?: T;
+  pageType?: T;
+  systemKey?: T;
+  publishedAt?: T;
   meta?:
     | T
     | {
@@ -6043,11 +6048,6 @@ export interface PagesSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  slug?: T;
-  pageType?: T;
-  systemKey?: T;
-  publishedAt?: T;
-  editorVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

@@ -1,3 +1,17 @@
+## P3 bağımsız denetim — 2026-11-16 (commit yok)
+
+- P1 kapandı: açık ödeme HTML/RSC'si ISR'dan env kapalıyken de HIT dönüyordu (production'da yeniden üretildi). Açık ödeme yüzeyleri `unstable_noStore`, teklif modu ISR; Next bailout content/DB catch dışında. Ödeme modu ISR HIT hedefi güvenlik için kaldırıldı.
+- P2: aynı-origin mutlak/normalize yasal URL filtresi, hatalı fiyat girişinden sonra reset, hazırlık fiyat/KDV/sağlayıcı uyumu ve aktif sağlayıcı test/canlı/KARMA rozeti düzeltildi. Saf/SQLite ve gerçek React DOM regresyonları eklendi.
+- Production render 6/6: açık fiyat; DB quote/env off fiyat yok, satış yasal 404. Anonim REST/GraphQL ve draft/staff sınırları doğrulandı. P3 sınırı: slug yeniden adlandırılırsa satış türü tanınmaz (`commerceLegal` sonraki faz). Ayrıntı `docs/plan-payments.md` P3 denetim kaydı.
+- Son kapılar: typecheck/lint 0 hata, tam test 80 dosya/1339 test (296 sn), son kodla açık/quote iki build, production render 9/9, diff-check temiz. Build/scratchpad silindi, tsconfig geri alındı. Canlı DB, 3100, `.next`, techContext korunuyor; P3 commit edilebilir EVET.
+
+## P3 mod kapısı ve görünürlük — 2026-11-16 (QA bekliyor, commit yok, şemasız, checkout yok)
+
+- `getCommerceState` (env + site-settings.commerce + sağlayıcı/KDV; fail-closed, env yoksa DB'ye dokunmaz), `resolveProductActions`, `EditionCard` buy/quote, hero birincil eylem, fiyat biçimi (sunucu Intl, TR/EN), JSON-LD `offers`, yasal satış sayfası slug sabiti (footer/`/yasal` 404/sitemap), admin hazırlık `ui` alanı, ondalık fiyat girişi (`price-minor-field`), i18n mesajları. `checkoutReady=false`: "Satın al" devre dışı, checkout linki yok; P5 açar.
+- Şema/migration yok (kopya DB `migrate:create` = "No schema changes detected"). Quote modunda ürün HTML'i P3 öncesiyle birebir aynı (dondurulmuş eski kart + build karşılaştırması). Testler: `tests/unit/payments-p3{,-render,-db}.test`. Ayrıntı `docs/plan-payments.md` P3 uygulama kaydı.
+- Doğrulama: 78 dosya/1313 test yeşil; quote modunda DOM+JSON-LD HEAD ile birebir (21/21), ödeme modu kopya DB'de doğru, Lighthouse Perf 100/JS ~129,6 KB.
+- Açık: `pages.commerceLegal` şema önerisi (onay bekliyor), `legalReady` P7'de `open`'a katılır, checkout P5.
+
 ## P2-S ödeme şeması + store — 2026-11-16 (QA bekliyor, commit yok, canlı DB'ye uygulanmadı)
 
 - Migration `20261116_141401_p2_payments_commerce`: up yalnız 3 CREATE TABLE (`orders`, `orders_items`, `payment_events`) + 21 indeks + 20 ADD COLUMN (`editions` 5, `site_settings` 13, `payload_locked_documents_rels` 2). Elle güvenli down: satış/kilit satırı varsa reddeder, yoksa yalnız eklenenleri kaldırır (rebuild/DELETE yok). Kopya DB: migrate + `content:import --dry-run` 0 hata, integrity ok.

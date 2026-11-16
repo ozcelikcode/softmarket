@@ -3,7 +3,10 @@ import { cache } from 'react'
 import { getPayload } from 'payload'
 
 import { routePath } from '@/i18n/paths'
+import { getCommerceState } from '@/lib/commerce/state'
+import { isCommerceLegalHref } from '@/lib/payments/legal'
 import { pagePath } from '@/lib/system-pages'
+import { serverUrl } from '@/lib/server-url'
 import type { Locale } from '@/i18n/routing'
 import { publicText, safeHref } from '@/lib/utils'
 
@@ -116,6 +119,13 @@ const getPublicReference = cache(async (collection: keyof typeof referenceSelect
 )
 
 async function resolvePublicLink(link: LinkGroup, locale: Locale): Promise<NavLink | null> {
+  const resolved = await resolvePublicLinkRaw(link, locale)
+  // P3: links to the sales legal pages exist only while the payments surface is open (state is read lazily).
+  if (resolved && isCommerceLegalHref(resolved.href, serverUrl()) && !(await getCommerceState()).open) return null
+  return resolved
+}
+
+async function resolvePublicLinkRaw(link: LinkGroup, locale: Locale): Promise<NavLink | null> {
   if (link?.type === 'external' || link?.type === 'route') return resolveLink(link)
   const ref = link?.reference
   if (!ref || !Object.hasOwn(referenceSelect, ref.relationTo)) return null

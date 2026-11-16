@@ -73,9 +73,20 @@ export async function ProductHeroSection({ block, locale, ctx, slots }: BlockPro
       className={ctx.appearance.separator === 'top' ? 'border-t' : undefined}
       actions={
         <>
-          {/* Required primary action ("Teklif İste"), on every product page. */}
-          <Button asChild size="lg"><AppLink href={`/teklif-iste?urun=${enc(productSlug)}`} locale={locale}>{t('quote')}</AppLink></Button>
-          <Button asChild size="lg" variant="secondary"><AppLink href={`${path}#surumler`} locale={locale}>{t('editions')}</AppLink></Button>
+          {data.commerce?.heroPrimary === 'buy' ? (
+            <>
+              {/* Payments open with a purchasable edition (checkout ready): "Satın al" leads, "Teklif İste" stays. */}
+              <Button asChild size="lg"><AppLink href={`${path}#surumler`} locale={locale}>{t('buy')}</AppLink></Button>
+              <Button asChild size="lg" variant="secondary"><AppLink href={`/teklif-iste?urun=${enc(productSlug)}`} locale={locale}>{t('quote')}</AppLink></Button>
+              <Button asChild size="lg" variant="ghost"><AppLink href={`${path}#surumler`} locale={locale}>{t('editions')}</AppLink></Button>
+            </>
+          ) : (
+            <>
+              {/* Required primary action ("Teklif İste"), on every product page. */}
+              <Button asChild size="lg"><AppLink href={`/teklif-iste?urun=${enc(productSlug)}`} locale={locale}>{t('quote')}</AppLink></Button>
+              <Button asChild size="lg" variant="secondary"><AppLink href={`${path}#surumler`} locale={locale}>{t('editions')}</AppLink></Button>
+            </>
+          )}
           {brochure && safeHref(brochure.url) ? (
             <Button asChild size="lg" variant="ghost"><a href={brochure.url!} download>{t('brochure')}<ArrowDownToLine aria-hidden /></a></Button>
           ) : null}
@@ -211,7 +222,7 @@ export async function ProductEditionsSection({ block, locale, ctx, slots }: Bloc
         <SectionHeading title={t('editions')} className="mb-12" {...headingAlign(ctx)} />
         {editions.length ? (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {editions.map((e) => <EditionCard key={e.id} edition={e} productSlug={productSlug} locale={locale} />)}
+            {editions.map((e, i) => <EditionCard key={e.id} edition={e} productSlug={productSlug} locale={locale} action={data.commerce?.editions[i]} />)}
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-border-strong/60 p-10 text-center">

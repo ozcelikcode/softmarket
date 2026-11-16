@@ -16,6 +16,7 @@ import { composeProductLayout, PRODUCT_BOUND_BLOCKS } from '@/lib/blocks/product
 import { getProductDetail, getProductVariants, mediaOf } from '@/lib/content'
 import { isEditingRender } from '@/lib/preview'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
+import { productOffersJsonLd } from '@/lib/payments/json-ld'
 import { absoluteUrl, breadcrumbJsonLd, buildMetadata, seoText, siteUrl } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string; family: string; product: string }> }
@@ -43,7 +44,7 @@ export default async function ProductPage({ params }: Props) {
   const { family: familySlug, product: productSlug } = await params
   const data = await getProductDetail(locale, familySlug, productSlug)
   if (!data) notFound()
-  const { family, product, editions, downloads, docSlug } = data
+  const { family, product, editions, downloads, docSlug, commerce } = data
   const [c, pt, variants, editing] = await Promise.all([
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'products' }),
@@ -79,6 +80,8 @@ export default async function ProductPage({ params }: Props) {
     category: family.title,
     brand: { '@type': 'Brand', name: 'SoftMarket' },
     ...(image ? { image: image.startsWith('http') ? image : `${siteUrl()}${image}` } : {}),
+    // Payments mode only, valid priced editions only; a quote-only site's JSON-LD has no `offers` key.
+    ...productOffersJsonLd(editions, commerce?.editions, absoluteUrl(path, locale)),
   }
 
   return (
@@ -90,13 +93,13 @@ export default async function ProductPage({ params }: Props) {
       {mode === 'compat' ? (
         <>
           <RenderBlocks blocks={blocks.slice(0, PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale} editing={editing}
-            slots={{ product: { family, product, editions, downloads, docSlug, productSlug, path, trail, sections } }} />
+            slots={{ product: { family, product, editions, commerce, downloads, docSlug, productSlug, path, trail, sections } }} />
           {/* Keep the old planning boundary: the first extra CMS block retains its LCP-safe motion. */}
           <RenderBlocks blocks={blocks.slice(PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale} editing={editing} />
         </>
       ) : (
         <RenderBlocks blocks={blocks as LayoutBlock[]} locale={locale} editing={editing}
-          slots={{ product: { family, product, editions, downloads, docSlug, productSlug, path, trail, sections } }} />
+          slots={{ product: { family, product, editions, commerce, downloads, docSlug, productSlug, path, trail, sections } }} />
       )}
     </>
   )

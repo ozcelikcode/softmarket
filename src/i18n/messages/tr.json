@@ -127,6 +127,12 @@
     "docsLead": "Kurulum ve kullanım kılavuzları destek merkezindedir.",
     "openDocs": "Dokümanları aç",
     "brochure": "Broşür",
+    "buy": "Satın al",
+    "buySoon": "Online satın alma yakında. Şimdilik teklif isteyebilirsiniz.",
+    "corporateQuote": "Kurumsal teklif iste",
+    "vatIncluded": "KDV dahil",
+    "vatExcluded": "KDV hariç",
+    "vatExempt": "KDV istisna",
     "checksum": "SHA-256"
   },
   "os": {

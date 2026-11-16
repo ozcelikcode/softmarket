@@ -65,6 +65,12 @@ const vatGroup = (currency: (typeof CURRENCIES)[number]): Field => ({
 
 const commerceFields: Field[] = [
   {
+    // P3 read-only readiness checklist (`ui`: no DB column, no schema change).
+    name: 'readiness',
+    type: 'ui',
+    admin: { components: { Field: '@/admin/fields/commerce-readiness#CommerceReadiness' } },
+  },
+  {
     name: 'mode',
     type: 'select',
     defaultValue: 'quote-only',

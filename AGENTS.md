@@ -129,6 +129,14 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Payload iç bağımlılıkları (yükseltmede `tests/e2e/isolated/visual-editor.spec.ts` zorunlu): BEM sınıfları `.collection-edit--is-live-previewing`, `.collection-edit__main`, `.live-preview-window`, satır `#layout-row-N`, `.collapsible-field__collapsible.collapsible--collapsed .collapsible__toggle`, `SET_ROW_COLLAPSED` / `REPLACE_STATE` / `DUPLICATE_ROW` form eylemleri, `#action-save`, `config.blocksMap`.
 - E2E: `E2E_SOURCE_DB=<db kopyası> E2E_NEXT_DIST_DIR=.next-<ad> pnpm test:e2e:isolated` (3400, geçici kopya; 16 senaryo: T1–T8, geri al, gizli blok, kapanışta flush, çakışma, sahte postMessage, anonim erişim).
 
+## Satış kapısı ve görünürlük (P3, checkout yok)
+
+- Tek karar noktası `getCommerceState()` (`src/lib/commerce/state.ts`; saf çekirdek `src/lib/payments/commerce-state.ts`): `open` = env `PAYMENTS_ENABLED=true` + `site-settings.commerce.mode='payments'` + açık VE env'de tanımlı sağlayıcı + en az bir KDV kuralı. Fiyat/satın al/yasal satış sayfası/offers kodu env'i ya da global'i doğrudan okumaz. Env capability yoksa DB okunmaz; hata = kapalı (yalnız teklif).
+- `checkoutReady` (`src/lib/payments/flags.ts`) `false`: ödeme modunda bile "Satın al" devre dışı düğmedir, checkout linki yoktur (P5 açar). `resolveProductActions` (`src/lib/payments/actions.ts`) sürüm/hero eylemlerinin tek kaynağıdır; "Teklif İste" her durumda kalır, quote modunda HTML P3 öncesiyle birebir aynıdır (`tests/fixtures/legacy-edition-card.tsx` ile testli).
+- Fiyat alanları staff-only; `getProductDetail` onları yalnız `open` iken `overrideAccess` ile okur ve ham halini sayfaya vermez (`commerce` eylemleri verilir). Public REST/GraphQL/Local API'de sızıntı yok (testli).
+- Satış yasal sayfaları slug sabitiyle (`src/lib/payments/legal.ts`) ayrılır; `open` değilken 404 + sitemap dışı + footer/header linki yok. Şema alanı (`pages.commerceLegal`) önerildi, eklenmedi.
+- Admin: site-settings "Satış ve ödeme" bölümünde salt okunur hazırlık listesi (`ui` alanı) ve fiyat için ondalık giriş bileşeni (`1.250,00`; saklama yine tam sayı minor unit). Şema değişmez.
+
 ## Yeni şirket kurulumu (starter)
 
 - `content/templates/starter/` boş DB'de çalışan nötr site üretir: globals (header/footer/site-settings), ana sayfa (hero, productFamilies, cta), 9 sistem sayfası, 1 örnek aile + ürün + sürüm (`STARTER-ORNEK-URUN`). Yasal sayfa yoktur.

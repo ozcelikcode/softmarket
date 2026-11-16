@@ -3,7 +3,9 @@ import type { Where } from 'payload'
 
 import type { Locale } from '@/i18n/routing'
 import { routing } from '@/i18n/routing'
+import { getCommerceState } from '@/lib/commerce/state'
 import { isLegalDraft } from '@/lib/legal-draft'
+import { resolveProductActions } from '@/lib/payments/actions'
 import { readAs } from '@/lib/preview'
 import { getPayloadClient, safe } from '@/lib/site'
 import { HOME_SLUG, isLandingPage, isReservedSlug, LANDING_PAGE_TYPES, type SystemKey } from '@/lib/system-pages'
@@ -103,6 +105,8 @@ export const getFamily = cache((locale: Locale, slug: string) =>
   }).then((r) => (r.docs[0] as ProductFamily | undefined) ?? null), null))
 
 export const getProductDetail = cache(async (locale: Locale, familySlug: string, productSlug: string) => {
+  // Keep the payment cache bailout outside `safe`, which handles content read failures.
+  const commerce = await getCommerceState()
   return safe(async () => {
     const payload = await getPayloadClient()
     const family = await getFamily(locale, familySlug)
@@ -118,13 +122,17 @@ export const getProductDetail = cache(async (locale: Locale, familySlug: string,
     })
     const product = found.docs[0] as Product | undefined
     if (!product) return null
+    // P3: price/sale-mode fields are staff-only. They are read (server side, overrideAccess) ONLY while the
+    // payments surface is open; a quote-only site runs the exact pre-P3 query and gets no commerce data.
     const [editions, downloads, doc] = await Promise.all([
       payload.find({
-        collection: 'editions', ...anon(locale), limit: 20, depth: 0, sort: 'sortOrder',
+        collection: 'editions', ...(commerce.open ? { locale, overrideAccess: true as const, draft: false as const } : anon(locale)),
+        limit: 20, depth: 0, sort: 'sortOrder',
         where: { product: { equals: product.id } },
         select: {
           title: true, sku: true, description: true, highlights: true,
           licenseType: true, durationMonths: true, seats: true, sortOrder: true,
+          ...(commerce.open ? { saleMode: true, pricing: true } : {}),
         },
       }).then((r) => r.docs as Edition[]).catch(() => [] as Edition[]),
       // Anonymous access returns only public downloads; licensed ones never reach this page.
@@ -140,7 +148,17 @@ export const getProductDetail = cache(async (locale: Locale, familySlug: string,
         select: { slug: true },
       }).then((r) => (r.docs[0] as Pick<Doc, 'slug'> | undefined)?.slug ?? null).catch(() => null),
     ])
-    return { family, product, editions, downloads, docSlug: doc }
+    // Offers are resolved with the raw commerce fields, which are then dropped: pages only see the resolved actions.
+    const actions = resolveProductActions({ editions, state: commerce })
+    const publicEditions = commerce.open
+      ? editions.map((e) => {
+          const rest = { ...e } as Partial<Edition>
+          delete rest.saleMode
+          delete rest.pricing
+          return rest as Edition
+        })
+      : editions
+    return { family, product, editions: publicEditions, downloads, docSlug: doc, commerce: actions }
   }, null)
 })
 

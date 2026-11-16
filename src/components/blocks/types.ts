@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import type { Crumb } from '@/components/ui/breadcrumb'
 import type { BlockContext } from '@/lib/blocks/render-plan'
 import type { ProductSectionId } from '@/lib/blocks/product-composition'
+import type { EditionAction } from '@/lib/payments/actions'
 import type { Download, Edition, Page, Product, ProductFamily } from '@/payload-types'
 
 /**
@@ -18,6 +19,8 @@ export type ProductSlot = {
   family: Pick<ProductFamily, 'title'>
   product: Product
   editions: Edition[]
+  /** P3: resolved commerce actions (aligned with `editions`); absent = quote only (pre-P3 markup). */
+  commerce?: { editions: EditionAction[]; heroPrimary: 'quote' | 'buy' }
   downloads: Download[]
   docSlug: string | null
   productSlug: string

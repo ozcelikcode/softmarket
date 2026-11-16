@@ -127,6 +127,12 @@
     "docsLead": "Setup and usage guides live in the support center.",
     "openDocs": "Open documentation",
     "brochure": "Brochure",
+    "buy": "Buy",
+    "buySoon": "Online purchase is coming soon. You can request a quote for now.",
+    "corporateQuote": "Request a corporate quote",
+    "vatIncluded": "VAT included",
+    "vatExcluded": "VAT excluded",
+    "vatExempt": "VAT exempt",
     "checksum": "SHA-256"
   },
   "os": {

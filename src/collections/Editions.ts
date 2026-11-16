@@ -51,8 +51,8 @@ const commerceFields = [
     label: { tr: 'Fiyat', en: 'Pricing' },
     admin: {
       description: {
-        tr: 'Tutarlar kuruş/cent cinsinden tam sayıdır (1.250,00 TL = 125000). Boş bırakılan para biriminde satış yapılmaz.',
-        en: 'Amounts are integers in minor units (1,250.00 = 125000). A currency left empty is not sold.',
+        tr: 'Tutarı normal biçimde girin (1.250,00); virgül ya da nokta olur. Sistem kuruş/cent olarak saklar. Boş bırakılan para biriminde satış yapılmaz.',
+        en: 'Enter the amount normally (1,250.00); comma or dot both work. It is stored in minor units. A currency left empty is not sold.',
       },
     },
     fields: [
@@ -72,11 +72,13 @@ const commerceFields = [
           name: PRICE_FIELDS[currency],
           type: 'number',
           min: 0,
-          label: { tr: `${currency} fiyatı (kuruş/cent)`, en: `${currency} price (minor units)` },
+          label: { tr: `${currency} fiyatı`, en: `${currency} price` },
+          // Decimal entry box; the stored value stays integer minor units (see src/admin/fields/price-minor-field.tsx).
+          admin: { components: { Field: '@/admin/fields/price-minor-field#PriceMinorField' } },
           validate: (value: number | null | undefined) =>
             value === null || value === undefined || (isValidMinor(value) && value > 0)
               ? true
-              : 'Pozitif tam sayı olmalı (kuruş/cent). / Must be a positive integer (minor units).',
+              : 'Geçerli bir tutar girin (örn. 1.250,00). / Enter a valid amount (e.g. 1,250.00).',
         })),
       },
     ],

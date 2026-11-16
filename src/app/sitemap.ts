@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { unstable_cache } from 'next/cache'
 
+import { getCommerceState } from '@/lib/commerce/state'
 import { getSitemapEntries } from '@/lib/content'
+import { isCommerceLegalHref } from '@/lib/payments/legal'
 import { getSupportSitemapEntries } from '@/lib/support'
 import { routing } from '@/i18n/routing'
 import { absoluteUrl } from '@/lib/seo'
@@ -40,7 +42,12 @@ const cachedEntries = unstable_cache(
 )
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const cms = await cachedEntries()
+  // Sales legal pages are listed only while payments are open (the cached entries stay mode-independent).
+  const [cached, commerce] = await Promise.all([cachedEntries(), getCommerceState()])
+  const cms = commerce.open ? cached : cached.map((e) => ({
+    ...e,
+    paths: Object.fromEntries(Object.entries(e.paths).filter(([, p]) => !isCommerceLegalHref(p))) as typeof e.paths,
+  })).filter((e) => Object.keys(e.paths).length)
   const entries: MetadataRoute.Sitemap = []
   const push = (
     paths: Partial<Record<(typeof routing.locales)[number], string>>,

@@ -3800,7 +3800,7 @@ export interface Edition {
    */
   saleMode?: ('quote' | 'buy') | null;
   /**
-   * Amounts are integers in minor units (1,250.00 = 125000). A currency left empty is not sold.
+   * Enter the amount normally (1,250.00); comma or dot both work. It is stored in minor units. A currency left empty is not sold.
    */
   pricing?: {
     taxMode?: ('inclusive' | 'exclusive') | null;

@@ -10,6 +10,8 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { RenderBlocks } from '@/components/blocks/render-blocks'
+import { getCommerceState } from '@/lib/commerce/state'
+import { isCommerceLegalSlug } from '@/lib/payments/legal'
 import { isEditingRender } from '@/lib/preview'
 import { SetAlternates } from '@/components/layout/set-alternates'
 import { JsonLd } from '@/components/sections/json-ld'
@@ -22,6 +24,17 @@ import { breadcrumbJsonLd, buildMetadata, seoText } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
+/**
+ * Sales legal pages (distance sales, pre-information, refund) exist only while payments are open: otherwise 404 (no
+ * noindex page, no sitemap entry). Staff in draft mode may still preview them before payments are switched on.
+ */
+async function assertVisible(slug: string) {
+  if (!isCommerceLegalSlug(slug)) return
+  if ((await getCommerceState()).open) return
+  if (await isEditingRender()) return
+  notFound()
+}
+
 const variantPaths = async (id: number) => {
   const slugs = await getSlugVariants('pages', id)
   return Object.fromEntries(Object.entries(slugs).map(([l, s]) => [l, `/yasal/${enc(s!)}`]))
@@ -30,6 +43,7 @@ const variantPaths = async (id: number) => {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
   const { slug } = await params
+  await assertVisible(slug)
   const page = await getPage(locale, slug, { legalOnly: true })
   if (!page) notFound()
   return buildMetadata({
@@ -41,6 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LegalPage({ params }: Props) {
   const locale = await initLocale(params)
   const { slug } = await params
+  await assertVisible(slug)
   const page = await getPage(locale, slug, { legalOnly: true })
   if (!page) notFound()
   const [t, c, variants] = await Promise.all([

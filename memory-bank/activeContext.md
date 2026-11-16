@@ -1,3 +1,8 @@
+## P4 bağımsız denetim — 2026-11-16 (commit yok)
+
+- Callback sipariş numarası taşımadan hesap sayfasına yönlenir; kapalı adaptör Payload açılmadan 404. Reconcile doğrulanmamış sağlayıcı hatasını iptal kanıtı saymaz; inceleme ve değişen referans koşullu iptalde korunur.
+- Açık: lisans hook'u CLI `after()` bağlamı yokken anahtar e-postasını gönderemiyor; şemasız commit sonrası e-posta kalıcı teslim garantisi yok. Checkout açılmadan çözülmeli; ayrıntı `docs/plan-payments.md` P4 kaydı.
+
 ## P3 bağımsız denetim — 2026-11-16 (commit yok)
 
 - P1 kapandı: açık ödeme HTML/RSC'si ISR'dan env kapalıyken de HIT dönüyordu (production'da yeniden üretildi). Açık ödeme yüzeyleri `unstable_noStore`, teklif modu ISR; Next bailout content/DB catch dışında. Ödeme modu ISR HIT hedefi güvenlik için kaldırıldı.
@@ -284,3 +289,13 @@ Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince günce
 - Sıradaki: ödeme P2-S şeması, ikinci dalga koleksiyonlar, V6 kabul.
 
 - P2-S denetimi: sipariş satırı/net/KDV toplamları tutarlılığı, payment-event commit doğrulaması ve terminal durum koruması, fulfillment commit doğrulaması ve commerce verisi bulunan migration down koruması eklendi; izole SQLite regresyonları eklendi.
+
+## 2026-11-16 Ödeme P4 (commit yok)
+- Webhook/callback/reconcile yazıldı (şemasız). Karar: `server-only` paketi yok (CLI/vitest'i kırar) → istemci import grafiği testi. Drain dışı imzalı olay `ignored` + 200, imzasız 404. SMTP yoksa sipariş e-postası atlanır. Sıradaki: P4 bağımsız QA, sonra P5 checkout UI; sandbox anahtarlarıyla iyzico webhook/retrieve doğrulaması.
+
+## P7 commerceLegal bağımsız denetim — 2026-11-16 (tamamlandı, commit yok)
+
+- EN fallback/boş-gizli hukuki metinle legalReady açılması, eksik yer tutucu algılama, eşzamanlı taslak tür çakışması, yeniden adlandırılmış yasal URL sızıntısı ve importer symlink okuması düzeltildi. Header/footer iç referans projeksiyonu korundu; TR/EN metin tutarlılığı düzeltmeleri yapıldı.
+- Teknik taslak kontrolü hukukçu onayını doğrulamaz (P3); kılavuz ve plan açıklar. Ayrıntı `docs/plan-payments.md` P7 denetim kaydı.
+- Canlı DB/3100/.next, P4 dosyaları, techContext ve commit korunuyor. Migration değişmedi; geçici SQLite up/down ve NULL/UNIQUE/sürüm testleri var. Kapı sonucu aşağıda.
+- Son kapılar: `pnpm typecheck` ve `pnpm lint` exit 0; `pnpm test --maxWorkers=1`: **84 dosya / 1397 test, tamamı geçti (314,55 sn)**. P4 kaynaklı kırık yok. `git diff --check` temiz. **P7 migration canlıya güvenli: EVET; P7 kapsamı commit edilebilir: EVET** (commit atılmadı).

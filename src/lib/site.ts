@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 
 import { routePath } from '@/i18n/paths'
 import { getCommerceState } from '@/lib/commerce/state'
-import { isCommerceLegalHref } from '@/lib/payments/legal'
+import { isCommerceLegalPage, legalHrefTarget } from '@/lib/payments/legal'
 import { pagePath } from '@/lib/system-pages'
 import { serverUrl } from '@/lib/server-url'
 import type { Locale } from '@/i18n/routing'
@@ -98,7 +98,7 @@ export const getPayloadClient = cache(() => getPayload({ config }))
 // Read references separately: linkField.maxDepth=1 otherwise leaves a product's family as an ID.
 // Projection and depth prevent traversal into unrelated records or protected uploads.
 const referenceSelect = {
-  pages: { slug: true, pageType: true, systemKey: true },
+  pages: { slug: true, pageType: true, systemKey: true, commerceLegal: true },
   'product-families': { slug: true },
   products: { slug: true, family: true },
   solutions: { slug: true },
@@ -108,6 +108,11 @@ const referenceSelect = {
   careers: { slug: true },
   docs: { slug: true, product: true },
 } as const
+
+// Payload 3.93's SQLite projection drops nested polymorphic relations when only the parent group/array is
+// selected as `true`. Select link leaves explicitly so page references reach the visibility gate.
+const navLinkSelect = { type: true, newTab: true, reference: true, route: true, routeParam: true, url: true, label: true } as const
+const navRowSelect = { link: navLinkSelect, description: true } as const
 
 const getPublicReference = cache(async (collection: keyof typeof referenceSelect, id: number | string, locale: Locale) =>
   safe(async () => (await getPayloadClient()).findByID({
@@ -120,10 +125,27 @@ const getPublicReference = cache(async (collection: keyof typeof referenceSelect
 
 async function resolvePublicLink(link: LinkGroup, locale: Locale): Promise<NavLink | null> {
   const resolved = await resolvePublicLinkRaw(link, locale)
-  // P3: links to the sales legal pages exist only while the payments surface is open (state is read lazily).
-  if (resolved && isCommerceLegalHref(resolved.href, serverUrl()) && !(await getCommerceState()).open) return null
+  const target = resolved && legalHrefTarget(resolved.href, serverUrl())
+  if (target && !(await getCommerceState()).open) {
+    const sales = await isSalesLegalTarget(target.slug, target.locale ?? locale)
+    if (sales) return null
+  }
   return resolved
 }
+
+const isSalesLegalTarget = cache(async (slug: string, locale: Locale) => {
+  if (isCommerceLegalPage({ slug })) return true
+  // A route/external link carries no page ID. Resolve the current published page to catch renamed sales texts.
+  // A failed read cannot establish that the target is safe to expose.
+  return safe(async () => {
+    const result = await (await getPayloadClient()).find({
+      collection: 'pages', locale, depth: 0, limit: 1, overrideAccess: false, user: null, draft: false,
+      where: { and: [{ pageType: { equals: 'legal' } }, { slug: { equals: slug } }] },
+      select: { commerceLegal: true, slug: true },
+    })
+    return result.docs.some(isCommerceLegalPage)
+  }, true)
+})
 
 async function resolvePublicLinkRaw(link: LinkGroup, locale: Locale): Promise<NavLink | null> {
   if (link?.type === 'external' || link?.type === 'route') return resolveLink(link)
@@ -132,6 +154,8 @@ async function resolvePublicLinkRaw(link: LinkGroup, locale: Locale): Promise<Na
   const id = typeof ref.value === 'object' && ref.value && 'id' in ref.value ? ref.value.id : ref.value
   if (typeof id !== 'string' && typeof id !== 'number') return null
   const doc = await getPublicReference(ref.relationTo as keyof typeof referenceSelect, id, locale)
+  // P7: a page marked with `commerceLegal` is a sales legal page whatever its slug is.
+  if (doc && ref.relationTo === 'pages' && (doc as { commerceLegal?: unknown }).commerceLegal && !(await getCommerceState()).open) return null
   return doc ? resolveLink({ ...link, reference: { relationTo: ref.relationTo, value: doc } }) : null
 }
 
@@ -229,7 +253,14 @@ export const getHeaderNav = cache(async (locale: Locale) => {
   const data = await safe(
     async () => (await getPayloadClient()).findGlobal({
       slug: 'header', locale, depth: 0, overrideAccess: false, user: null, draft: false,
-      select: { navItems: true, cta: true, announcement: true, utility: true },
+      select: {
+        navItems: { ...navRowSelect, megaMenu: true, children: navRowSelect,
+          columns: { title: true, links: navRowSelect },
+          featured: { title: true, description: true, image: true, link: navLinkSelect } },
+        cta: { link: navLinkSelect, secondary: navLinkSelect },
+        announcement: { enabled: true, text: true, dismissible: true, link: navLinkSelect },
+        utility: { links: { link: navLinkSelect }, showSearch: true, showLanguage: true, showAccount: true },
+      },
     }),
     null,
   )
@@ -295,7 +326,8 @@ export const getFooterData = cache(async (locale: Locale) => {
   const data = await safe(
     async () => (await getPayloadClient()).findGlobal({
       slug: 'footer', locale, depth: 0, overrideAccess: false, user: null, draft: false,
-      select: { columns: true, legalLinks: true, copyright: true, brandBlurb: true, showContact: true, showSocial: true },
+      select: { columns: { title: true, links: { link: navLinkSelect } }, legalLinks: { link: navLinkSelect },
+        copyright: true, brandBlurb: true, showContact: true, showSocial: true },
     }),
     null,
   )

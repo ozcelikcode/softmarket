@@ -19,6 +19,7 @@ Bu politika, [ŞİRKET UNVANI] web sitesinde kullanılan çerezleri ve benzer te
 | `payload-token` | Zorunlu (oturum) | Şirket | Yalnızca yetkili Şirket personelinin yönetim paneli oturumu. | [SÜRE — DOĞRULA] | Ziyaretçi ve müşteriler için kullanılmaz. |
 | Cloudflare Turnstile çerezleri | Zorunlu (güvenlik) | Cloudflare | Form gönderimlerinde bot ve kötüye kullanım korumasını sağlar. | [SÜRE — DOĞRULA] | Turnstile etkin olduğunda yüklenir. |
 | Analitik | Çerezsiz | Cloudflare | Toplu ve kişisel olmayan ziyaret istatistikleri. | Çerez yok | Cloudflare Web Analytics, tarayıcıda çerez oluşturmaz. [DOĞRULA: etkin mi] |
+| Ödeme sayfası çerezleri | Zorunlu (güvenlik/ödeme) | Ödeme kuruluşu | Çevrimiçi satın alma etkinse, ödeme kuruluşunun güvenli ödeme sayfasında ödemenin tamamlanması ve dolandırıcılığın önlenmesi. | Ödeme kuruluşunun politikasına göre | Şirket sitesinde değil, ödeme kuruluşunun sayfasında oluşur; ayrıntı için ödeme kuruluşunun politikasına bakınız. [DOĞRULA: ödeme kuruluşu çerezleri ve yönlendirme biçimi] |
 
 Sitemizde pazarlama veya reklam amaçlı çerez kullanılmamaktadır. [DOĞRULA: uygulamada bu iddianın doğruluğu]
 

@@ -2,7 +2,7 @@ import { readPaymentsEnv } from './env'
 import { computeCommerceState } from './commerce-state'
 import { resolveEditionOffer } from './mode'
 import { CHECKOUT_READY } from './flags'
-import { COMMERCE_LEGAL_SLUGS } from './legal'
+import { evaluateLegal, type LegalFact } from './legal'
 import { readVatSettings } from './settings'
 import { CURRENCIES } from './types'
 
@@ -13,13 +13,14 @@ import { CURRENCIES } from './types'
 export type ReadinessLevel = 'ok' | 'missing' | 'info'
 export type ReadinessItem = { id: string; level: ReadinessLevel; label: { tr: string; en: string }; detail?: { tr: string; en: string } }
 
-export type LegalPageFact = { slug: string; published: boolean; draft: boolean }
+/** One published sales legal page (`pages.commerceLegal` set) per locale, with its draft-banner/placeholder state. */
+export type LegalPageFact = LegalFact
 export type ReadinessInput = {
   env: Record<string, string | undefined>
   siteSettings: unknown
   /** Editions as stored (admin read). */
   editions: unknown[]
-  /** Pages found for the sales legal slugs (any locale). */
+  /** Pages marked with `commerceLegal`, per locale (see `readLegalFacts`). */
   legalPages: LegalPageFact[]
 }
 
@@ -44,7 +45,8 @@ export function buildReadiness(input: ReadinessInput): { items: ReadinessItem[];
   const vatCurrencies = CURRENCIES.filter((c) => vat[c])
 
   const buyEditions = input.editions.filter((e) => prop(e, 'saleMode') === 'buy')
-  const state = computeCommerceState({ env: input.env, siteSettings: input.siteSettings })
+  const legal = evaluateLegal(input.legalPages)
+  const state = computeCommerceState({ env: input.env, siteSettings: input.siteSettings, legalReady: legal.ready })
   // Readiness also applies before switching modes; validate the same currency/VAT/provider path as the page.
   const pricedBuy = buyEditions.filter((edition) => resolveEditionOffer({
     gate: { capability: true, siteMode: 'payments', checkoutOpen: true }, edition,
@@ -52,9 +54,7 @@ export function buildReadiness(input: ReadinessInput): { items: ReadinessItem[];
     stripeEnabled: state.stripeEnabled, stripeCurrencies: state.stripeCurrencies,
   }).kind === 'buy')
 
-  const legalOk = (list: readonly string[]) =>
-    input.legalPages.some((p) => list.includes(p.slug) && p.published && !p.draft)
-  const legalKinds = [0, 1, 2].map((i) => legalOk([COMMERCE_LEGAL_SLUGS.tr[i]!, COMMERCE_LEGAL_SLUGS.en[i]!]))
+  const legalKinds = Object.values(legal.kinds)
 
   const environments = new Set([
     ...(iyzicoOn && cfg.iyzico ? [cfg.iyzico.env] : []),
@@ -73,8 +73,8 @@ export function buildReadiness(input: ReadinessInput): { items: ReadinessItem[];
       { tr: vatCurrencies.length ? `Hazır: ${vatCurrencies.join(', ')}` : 'Hiçbiri hazır değil', en: vatCurrencies.length ? `Ready: ${vatCurrencies.join(', ')}` : 'None ready' }),
     item('buy-editions', pricedBuy.length > 0, 'Fiyatı girilmiş "Satın al" sürümü', 'A "Buy online" edition with a price',
       { tr: `${pricedBuy.length} hazır, ${buyEditions.length - pricedBuy.length} kullanılabilir fiyatı yok`, en: `${pricedBuy.length} ready, ${buyEditions.length - pricedBuy.length} without a usable price` }),
-    item('legal', legalKinds.every(Boolean), 'Satış yasal sayfaları yayında ve taslak değil (mesafeli satış, ön bilgilendirme, iade)',
-      'Sales legal pages published and not draft (distance sales, pre-information, refund)',
+    item('legal', legal.ready, 'Satış yasal sayfaları yayında ve taslak değil, TR ve EN (mesafeli satış, ön bilgilendirme, iade)',
+      'Sales legal pages published and not draft, TR and EN (distance sales, pre-information, refund)',
       { tr: `${legalKinds.filter(Boolean).length}/3 hazır`, en: `${legalKinds.filter(Boolean).length}/3 ready` }),
     item('smtp', isSmtpConfigured(input.env), 'SMTP yapılandırılmış (sipariş e-postaları)', 'SMTP configured (order e-mails)'),
     {
@@ -83,7 +83,7 @@ export function buildReadiness(input: ReadinessInput): { items: ReadinessItem[];
       detail: CHECKOUT_READY ? undefined : { tr: 'Henüz yok: "Satın al" düğmesi etkin değil, "Teklif İste" geçerli.', en: 'Not available yet: the "Buy" button stays disabled, "Request a quote" applies.' },
     },
   ]
-  // "ready" = everything that gates the surface today (checkout and legal come with P5/P7 and do not block).
-  const gating = ['capability', 'provider-env', 'provider-enabled', 'vat', 'buy-editions']
+  // "ready" = everything that gates the surface (legal joined with P7; checkout comes with P5 and does not block).
+  const gating = ['capability', 'provider-env', 'provider-enabled', 'vat', 'buy-editions', 'legal']
   return { items, environment, ready: items.filter((i) => gating.includes(i.id)).every((i) => i.level === 'ok') }
 }

@@ -36,7 +36,7 @@ const edition = {
 } as unknown as Edition
 const priced = { ...edition, saleMode: 'buy', pricing: { taxMode: 'inclusive', tryMinor: 125000, usdMinor: 4000 } }
 const actionsFor = (editions: unknown[], checkoutReady: boolean, env = ENV) =>
-  resolveProductActions({ editions, state: computeCommerceState({ env, siteSettings: SITE, checkoutReady }) })
+  resolveProductActions({ editions, state: computeCommerceState({ legalReady: true, env, siteSettings: SITE, checkoutReady }) })
 
 describe('quote-only: byte-identical to the pre-P3 markup', () => {
   it.each(['tr', 'en'])('EditionCard (%s) default action equals the frozen legacy component', async (locale) => {

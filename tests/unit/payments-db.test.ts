@@ -21,6 +21,7 @@ const run = (q: string) => payload.db.drizzle.$client.execute(q)
 type Migration = { name: string; up: (a: never) => Promise<void>; down: (a: never) => Promise<void> }
 type MigrateArgs = NonNullable<Parameters<Payload['db']['migrate']>[0]>['migrations']
 let migration: Migration
+let later: Migration[] = []
 const args = () => ({ db: payload.db.drizzle, payload, req: {} }) as never
 const savedEnv = { ...process.env }
 
@@ -38,8 +39,9 @@ beforeAll(async () => {
     .toBe(realpathSync(join(dir, 'test.db')))
   const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
   const index = migrations.findIndex((m) => m.name === NAME)
-  expect(index).toBe(migrations.length - 1)
+  expect(index).toBeGreaterThanOrEqual(0)
   migration = migrations[index]
+  later = migrations.slice(index + 1)
   await payload.db.migrate({ migrations: migrations.slice(0, index) as unknown as MigrateArgs })
   // Pre-P2-S rows, including a document lock (the table up() adds columns to).
   for (const q of [
@@ -150,6 +152,8 @@ const licensesOf = async (customer: number) =>
 
 describe('P2-S through Payload', () => {
   beforeAll(async () => {
+    // Migrations added after P2-S (the Payload config needs their columns).
+    for (const m of later) await m.up(args())
     const u = async (email: string, roles: string[]) => payload.create({ collection: 'users', overrideAccess: true, data: { email, password, roles } as never })
     const a = await u('admin@p2s.test', ['admin'])
     admin = asUser(a, 'users')

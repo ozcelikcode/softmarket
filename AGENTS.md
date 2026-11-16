@@ -144,3 +144,10 @@ Her görev başında `memory-bank/` altındaki tüm dosyaları oku; önemli değ
 - Sıra: `pnpm migrate` → `pnpm ensure-forms` → `pnpm content:import content/templates/starter --dry-run` → aynı komut `--dry-run`sız. İdempotenttir; sonra admin `Site ayarları`ndan ad, logo, vurgu rengi; örnek aile/ürünü kendi kayıtlarınla değiştir. Demo içerik (`content/seed`) ayrıdır; silme komutu yoktur.
 - Yasal metinler hazır olunca `--legal`. Starter izole SQLite testi: `tests/unit/starter-template-db.test.ts`.
 - Admin etiketleri (TR/EN) `src/lib/admin-i18n.ts` sözlüğünden gelir (`payload.config.ts` uygular); yeni koleksiyon/alan eklerken sözlüğe gir. `tests/unit/admin-labels.test.ts` eksik/İngilizce kalıntıyı yakalar. Live Preview breakpoint `label` düz string kalmalı (Payload React child olarak basar).
+
+## Ödeme P4: webhook, callback, reconcile
+
+- Rotalar (yalnız POST): `/api/payments/iyzico/webhook`, `/api/payments/iyzico/callback`, `/api/payments/stripe/webhook`. `PAYMENTS_ENABLED` ≠ `true` ise DB'ye dokunmadan 404; Stripe adaptörü kapalıyken 404. Mantık `src/lib/payments/{events,sync,fulfill,reconcile,runtime,body}.ts`; rota dosyaları yalnız bağlar.
+- Olay = tetik, sağlayıcı = gerçek: imza → `payment-events` kaydı → sunucu `retrieve` → koşullu durum geçişi → `fulfilPaidOrder` (tek transaction, tek lisans) → commit sonrası e-posta (`src/lib/email/order-*.ts`; SMTP yoksa atlanır). Tutar/para birimi/referans uyuşmazlığı = `requiresReview`, lisans yok; uyarı `PAYMENTS_ALERT_EMAIL`.
+- Gövde 256 KB okunurken sınırlanır. Drain dışı imzalı olay `ignored` + 200; imzasız 404. Hata/`SQLITE_BUSY` → 500 (sağlayıcı yeniden dener).
+- `pnpm payments:reconcile [--dry-run]` + `deploy/payments-reconcile.{service,timer}` (15 dk). Log'a e-posta/TCKN/VKN/anahtar/gövde yazma (testli). Payments sunucu modüllerini `'use client'` dosyalardan import etme (`payments-p4.test.ts` grafiği tarar; `server-only` paketi CLI/test'i kırdığı için kullanılmıyor).

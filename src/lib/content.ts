@@ -258,7 +258,7 @@ const getPageCached = cache((locale: Locale, serializedSlugs: string, legalOnly:
     if (legalOnly) and.push({ pageType: { equals: 'legal' } })
     return (await getPayloadClient()).find({
       collection: 'pages', ...(await readAs(locale)), limit: 1, depth: 2, where: { and },
-      select: { title: true, slug: true, layout: true, meta: true, pageType: true, updatedAt: true },
+      select: { title: true, slug: true, layout: true, meta: true, pageType: true, commerceLegal: true, updatedAt: true },
       populate,
     }).then((r) => (r.docs[0] as Page | undefined) ?? null)
   }, null))
@@ -385,7 +385,8 @@ export const getProductVariants = cache((id: number) =>
 
 /* ------------------------------------------------------------------- sitemap */
 
-export type SitemapEntry = { paths: Partial<Record<Locale, string>>; lastModified?: string }
+/** `commerce`: a sales legal page (`pages.commerceLegal`), listed only while payments are open. */
+export type SitemapEntry = { paths: Partial<Record<Locale, string>>; lastModified?: string; commerce?: boolean }
 
 /** Every published URL, with the per-locale slug (docs missing a slug in a locale are skipped there). */
 export const getSitemapEntries = cache(() =>
@@ -397,9 +398,9 @@ export const getSitemapEntries = cache(() =>
         collection, ...base, depth: collection === 'products' ? 1 : 0, where,
         select: collection === 'products'
           ? { slug: true, family: true, updatedAt: true }
-          : collection === 'pages' ? { slug: true, pageType: true, systemKey: true, updatedAt: true } : { slug: true, updatedAt: true },
+          : collection === 'pages' ? { slug: true, pageType: true, systemKey: true, commerceLegal: true, updatedAt: true } : { slug: true, updatedAt: true },
         populate: { 'product-families': { slug: true } },
-      }).then((r) => r.docs as unknown as { id: number; slug?: unknown; family?: unknown; pageType?: string | null; systemKey?: string | null; updatedAt?: string }[])
+      }).then((r) => r.docs as unknown as { id: number; slug?: unknown; family?: unknown; pageType?: string | null; systemKey?: string | null; commerceLegal?: string | null; updatedAt?: string }[])
         .catch(() => [])
     const [families, products, solutions, cases, posts, careers, pages, homePageId] = await Promise.all([
       list('product-families'), list('products'), list('solutions'), list('case-studies'), list('posts'),
@@ -438,7 +439,7 @@ export const getSitemapEntries = cache(() =>
       const slugs = pickLocales(d.slug)
       const paths: SitemapEntry['paths'] = {}
       for (const l of routing.locales) if (slugs[l] && !draftByLocale[l]?.has(d.id)) paths[l] = `/yasal/${encodeURIComponent(slugs[l]!)}`
-      if (Object.keys(paths).length) entries.push({ paths, lastModified: d.updatedAt })
+      if (Object.keys(paths).length) entries.push({ paths, lastModified: d.updatedAt, ...(d.commerceLegal ? { commerce: true } : {}) })
     }
     // Landing pages (`/[slug]`): templates, system pages, the home slug and reserved slugs never get a URL.
     for (const d of pages) {

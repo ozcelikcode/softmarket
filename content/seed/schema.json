@@ -7048,6 +7048,13 @@
                   "about"
                 ]
               },
+              "commerceLegal": {
+                "enum": [
+                  "distanceSales",
+                  "preInformation",
+                  "refund"
+                ]
+              },
               "publishedAt": {
                 "type": "string",
                 "minLength": 1
@@ -7422,6 +7429,13 @@
                   "support",
                   "contact",
                   "about"
+                ]
+              },
+              "commerceLegal": {
+                "enum": [
+                  "distanceSales",
+                  "preInformation",
+                  "refund"
                 ]
               },
               "publishedAt": {

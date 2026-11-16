@@ -31,6 +31,13 @@ Except where the law permits, you may not:
 - rent, sell, transfer or sublicense the Software;
 - use the Software beyond the number of seats in the license.
 
+## 3A. While online sales are enabled: purchased licenses, refunds and cancellation
+
+- For a License bought through an online order, the [Distance Sales Agreement](mesafeli-satis-sozlesmesi.md), the [Pre-Information Form](on-bilgilendirme-formu.md) and the [Refund and Withdrawal Policy](iade-ve-cayma.md) also apply; if they conflict with this EULA, the provision that complies with the applicable consumer legislation prevails. [HUKUK İNCELEMESİ: order of precedence]
+- A paid License becomes active when the payment is confirmed. The License of an order whose payment is refunded, cancelled or reversed by a chargeback is cancelled, and you must stop using the Software immediately.
+- Subscription licenses do not renew automatically. Renewal at the end of the term is made through a new order or quote.
+- The scope and exception of the right of withdrawal for a License delivered instantly in electronic form are explained in the Refund and Withdrawal Policy.
+
 ## 4. Updates and support
 
 Updates and support covered by your license are provided under the license conditions and the service level offered by the Licensor. Update files are available from the licensed download area.

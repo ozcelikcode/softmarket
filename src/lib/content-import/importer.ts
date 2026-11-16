@@ -286,7 +286,18 @@ export async function importContent(options: {
   return { creates, updates }
 }
 
+/** File name (= TR slug) → sales legal kind (`pages.commerceLegal`, plan §5). Other legal files stay unmarked. */
+export const COMMERCE_LEGAL_FILES: Record<string, string> = {
+  'mesafeli-satis-sozlesmesi.md': 'distanceSales',
+  'on-bilgilendirme-formu.md': 'preInformation',
+  'iade-ve-cayma.md': 'refund',
+}
+
 export async function loadLegal(root: string): Promise<Source> {
+  root = await realpath(root)
+  for (const locale of ['tr', 'en']) {
+    if (await realpath(resolve(root, locale)) !== resolve(root, locale)) throw new Error(`${locale}: legal directory cannot be a symlink`)
+  }
   const names = (await readdir(resolve(root, 'tr'))).filter(f => f.endsWith('.md')).sort()
   const english = (await readdir(resolve(root, 'en'))).filter(f => f.endsWith('.md')).sort()
   if (JSON.stringify(names) !== JSON.stringify(english)) throw new Error(`${root}: TR/EN legal file names must match`)
@@ -294,9 +305,11 @@ export async function loadLegal(root: string): Promise<Source> {
   for (const name of names) {
     const entry: RecordInput = { tr: {}, en: {} }
     for (const locale of ['tr', 'en'] as const) {
-      const raw = await readFile(resolve(root, locale, name), 'utf8')
+      const path = resolve(root, locale, name)
+      if (await realpath(path) !== path || !(await stat(path)).isFile()) throw new Error(`${path}: legal file must be a regular file, not a symlink`)
+      const raw = await readFile(path, 'utf8')
       const text = raw.replace(/\]\(([a-z0-9-]+)\.md\)/g, `](/${locale}/${locale === 'tr' ? 'yasal' : 'legal'}/$1)`)
-      entry[locale] = { slug: name.slice(0, -3), title: text.match(/^#\s+(.+)$/m)?.[1] ?? name.slice(0, -3), pageType: 'legal', layout: [{ blockType: 'richText', content: { markdown: text } }] }
+      entry[locale] = { slug: name.slice(0, -3), title: text.match(/^#\s+(.+)$/m)?.[1] ?? name.slice(0, -3), pageType: 'legal', ...(COMMERCE_LEGAL_FILES[name] ? { commerceLegal: COMMERCE_LEGAL_FILES[name] } : {}), layout: [{ blockType: 'richText', content: { markdown: text } }] }
     }
     pages.push(entry)
   }

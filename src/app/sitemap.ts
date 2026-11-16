@@ -44,7 +44,7 @@ const cachedEntries = unstable_cache(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Sales legal pages are listed only while payments are open (the cached entries stay mode-independent).
   const [cached, commerce] = await Promise.all([cachedEntries(), getCommerceState()])
-  const cms = commerce.open ? cached : cached.map((e) => ({
+  const cms = commerce.open ? cached : cached.filter((e) => !('commerce' in e && e.commerce)).map((e) => ({
     ...e,
     paths: Object.fromEntries(Object.entries(e.paths).filter(([, p]) => !isCommerceLegalHref(p))) as typeof e.paths,
   })).filter((e) => Object.keys(e.paths).length)

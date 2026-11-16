@@ -31,6 +31,13 @@ Yasaların izin verdiği durumlar dışında şunları yapamazsınız:
 - Yazılımı üçüncü kişilere kiralamak, satmak, devretmek veya alt lisans vermek,
 - Yazılımı lisansta belirtilen koltuk sayısının üzerinde kullanmak.
 
+## 3A. Çevrimiçi satış etkinleştirildiğinde: satın alınan lisanslar, iade ve iptal
+
+- Çevrimiçi sipariş ile satın alınan Lisans için ayrıca [Mesafeli Satış Sözleşmesi](mesafeli-satis-sozlesmesi.md), [Ön Bilgilendirme Formu](on-bilgilendirme-formu.md) ve [İade ve Cayma Politikası](iade-ve-cayma.md) geçerlidir; bu EULA ile çelişmeleri halinde ilgili tüketici mevzuatına uygun olan hüküm uygulanır. [HUKUK İNCELEMESİ: öncelik sırası]
+- Ücretli Lisans, ödemenin doğrulanmasıyla etkinleşir. Ödemesi iade edilen, iptal edilen veya geri ödeme (chargeback) ile sonuçlanan siparişin Lisans'ı iptal edilir; bu durumda Yazılım'ın kullanımını derhal durdurmanız gerekir.
+- Abonelik lisansları süre sonunda kendiliğinden yenilenmez. Süre sonunda yenileme yeni sipariş veya teklif ile yapılır.
+- Elektronik ortamda anında teslim edilen Lisans için cayma hakkının kapsamı ve istisnası İade ve Cayma Politikası'nda açıklanmıştır.
+
 ## 4. Güncellemeler ve destek
 
 Lisansınız kapsamındaki güncellemeler ve destek hizmetleri, lisans koşullarına ve Lisans Veren'in sunduğu hizmet düzeyine göre sağlanır. Güncelleme dosyaları, lisanslı indirme alanından erişilebilir.

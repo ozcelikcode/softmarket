@@ -991,6 +991,10 @@ export interface Page {
   systemKey?:
     ('products' | 'solutions' | 'news' | 'customers' | 'careers' | 'partners' | 'support' | 'contact' | 'about') | null;
   /**
+   * Empty = not a sales legal page. Marked pages are visible only while payments are open; one page per type.
+   */
+  commerceLegal?: ('distanceSales' | 'preInformation' | 'refund') | null;
+  /**
    * Filled automatically on first publish; editable.
    */
   publishedAt?: string | null;
@@ -6186,6 +6190,7 @@ export interface PagesSelect<T extends boolean = true> {
   slug?: T;
   pageType?: T;
   systemKey?: T;
+  commerceLegal?: T;
   publishedAt?: T;
   meta?:
     | T

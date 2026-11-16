@@ -31,7 +31,13 @@ Through our website and customer portal we may process:
 - **Cookie data:** the session identifier described in our Cookie Policy.
 - **Analytics data:** aggregated visit statistics collected without cookies and not directly identifying you (Cloudflare Web Analytics). [DOĞRULA: whether the analytics tool is active and where it is hosted]
 
-We do not process payment card or other financial payment data through this site, because the site does not offer online sales or payments.
+**Online purchases (only while the Company has enabled this feature; otherwise the quote process applies):**
+
+- **Order and invoice data:** order number and date, purchased product/edition (SKU), license type, term, seat count, amount, tax and currency; invoice name or company name, billing address, Turkish ID number (individual buyer) or tax ID number and tax office (corporate buyer), e-mail and phone; invoice number. [HUKUK İNCELEMESİ: whether the Turkish ID number is mandatory for invoicing, and data minimisation]
+- **Contract and consent records:** the version and summary of the pre-information and distance sales agreement texts valid at the time of the order, the consent to immediate performance (withdrawal exception), and the time and IP address of the consents.
+- **Payment transaction data:** the transaction/payment ID issued by the payment institution, payment status, amount, currency, masked data such as the last four card digits and card type, and refund and chargeback records.
+
+Card number, expiry date and security code (CVV) are entered on the payment institution's secure page; the Company does not see, process or store them.
 
 ## 3. Purposes of processing
 
@@ -39,6 +45,7 @@ We do not process payment card or other financial payment data through this site
 - Creating, verifying and managing your customer account; providing licenses, downloads and support.
 - Tracking and answering support requests.
 - Keeping license records and fulfilling contractual obligations.
+- While online sales are enabled: taking orders, confirming payments, issuing licenses automatically and notifying you by e-mail, issuing invoices, handling refunds and chargebacks, keeping contract and pre-information documents for the statutory period, and preventing fraud.
 - Keeping the site secure and preventing abuse and automated attacks.
 - Complying with legal obligations and answering lawful requests from authorities.
 - Measuring service quality using cookieless, aggregated analytics.
@@ -48,8 +55,8 @@ We do not process payment card or other financial payment data through this site
 
 Under Article 5(2) KVKK:
 
-- The processing is necessary for establishing or performing a contract (e.g., customer account, license, support request).
-- It is expressly provided for by law or needed for compliance with a legal obligation (e.g., keeping server access logs) [HUKUK İNCELEMESİ].
+- The processing is necessary for establishing or performing a contract (e.g., customer account, license, support request, order and payment).
+- It is expressly provided for by law or needed for compliance with a legal obligation (e.g., keeping server access logs; issuing invoices and keeping ledgers/documents; keeping distance-contract documents) [HUKUK İNCELEMESİ: statutory bases].
 - It is necessary for our legitimate interests (site security, measuring service quality), provided these do not harm your fundamental rights and freedoms.
 
 Explicit consent under Article 5(1) KVKK is requested only for marketing communications and for the explicit consent checkbox in forms. You may withdraw your consent at any time; withdrawal does not affect the lawfulness of processing carried out before it.
@@ -60,6 +67,9 @@ Your personal data may be transferred, limited to the purposes above, to:
 
 - **Hosting and infrastructure:** our server hosting provider [SAĞLAYICI — DOĞRULA] and the object storage provider used for encrypted backups [SAĞLAYICI VE BÖLGE — DOĞRULA].
 - **Bot protection:** Cloudflare Turnstile. Some technical information from your browser is processed during verification. [HUKUK İNCELEMESİ: assessment of cross-border transfer]
+- **Payment institution (while online sales are enabled):** [ÖDEME KURULUŞU — örn. iyzico], a licensed payment institution established in Türkiye, for collecting and refunding payments. The order amount, currency and the information the payer provides for the payment are shared with it; card data is entered directly with the payment institution. The payment institution may also act as a separate controller under its own notice.
+- **Foreign payment provider (only if separately enabled):** if a payment provider established abroad (such as Stripe) is used, data for the related payments is transferred abroad. In that case appropriate safeguards under Article 9 KVKK (including a standard contract and notification to the Board) are put in place or explicit consent is obtained. [HUKUK İNCELEMESİ: cross-border transfer mechanism and Board notification; this item must be removed from publication until such a provider is actually enabled]
+- **Invoicing and accounting:** the accountant/software provider used for invoicing and bookkeeping [SAĞLAYICI — DOĞRULA].
 - **E-mail delivery:** the SMTP provider used for notification e-mails [SAĞLAYICI — DOĞRULA].
 - **Public authorities:** where legally required.
 
@@ -67,6 +77,7 @@ Your personal data may be transferred, limited to the purposes above, to:
 
 - Form and request records: [SAKLAMA SÜRESİ — DOĞRULA].
 - Customer account and license records: after the account or contractual relationship ends, [SAKLAMA SÜRESİ — DOĞRULA].
+- Order, invoice and payment records: distance-contract documents for at least three years; invoices and ledgers/documents for the period set by tax and commercial legislation [SAKLAMA SÜRESİ — HUKUK İNCELEMESİ]. Orders are not deleted before the statutory retention period expires; after that period they are deleted or anonymised.
 - Server access logs: [SAKLAMA SÜRESİ — HUKUK İNCELEMESİ].
 - Backups: deleted automatically after [SAKLAMA SÜRESİ — DOĞRULA].
 

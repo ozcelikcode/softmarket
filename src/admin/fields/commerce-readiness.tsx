@@ -1,9 +1,8 @@
 import type { UIFieldServerComponent } from 'payload'
 
 import { isAdminUser } from '@/access'
-import { isLegalDraft } from '@/lib/legal-draft'
-import { COMMERCE_LEGAL_SLUGS } from '@/lib/payments/legal'
-import { buildReadiness, type LegalPageFact } from '@/lib/payments/readiness'
+import { readLegalFacts } from '@/lib/commerce/legal-facts'
+import { buildReadiness } from '@/lib/payments/readiness'
 
 /*
  * Read-only readiness checklist inside site-settings "Satış ve ödeme" (a `ui` field: no DB column, no schema).
@@ -19,18 +18,11 @@ export const CommerceReadiness: UIFieldServerComponent = async ({ payload, i18n,
   const lang = i18n?.language === 'en' ? 'en' : 'tr'
   let model: ReturnType<typeof buildReadiness> | null = null
   try {
-    const [siteSettings, editions, ...pages] = await Promise.all([
+    const [siteSettings, editions, legalPages] = await Promise.all([
       payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: true, select: { commerce: true } }),
       payload.find({ collection: 'editions', depth: 0, limit: 500, pagination: false, overrideAccess: true, select: { saleMode: true, pricing: true } }),
-      ...(['tr', 'en'] as const).map((locale) => payload.find({
-        collection: 'pages', locale, depth: 0, limit: 20, pagination: false, overrideAccess: true, draft: false,
-        where: { and: [{ pageType: { equals: 'legal' } }, { slug: { in: [...COMMERCE_LEGAL_SLUGS[locale]] } }, { _status: { equals: 'published' } }] },
-        select: { slug: true, layout: true },
-      })),
+      readLegalFacts(payload),
     ])
-    const legalPages: LegalPageFact[] = pages.flatMap((r) => r.docs.map((d) => ({
-      slug: String((d as { slug?: unknown }).slug ?? ''), published: true, draft: isLegalDraft((d as { layout?: unknown }).layout),
-    })))
     model = buildReadiness({ env: process.env, siteSettings, editions: editions.docs, legalPages })
   } catch {
     model = null

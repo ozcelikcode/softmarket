@@ -11,7 +11,7 @@ Bu koşullar, [ŞİRKET UNVANI] ("Şirket") tarafından işletilen web sitesi, d
 
 Site; Şirket'in yazılım ürünlerini tanıtır, teklif ve demo talebi almayı sağlar, destek merkezinde doküman ve indirme sunar ve müşteri portalında lisans, indirme ve destek talebi hizmetlerini sunar.
 
-Sitede online satış, sipariş veya ödeme yapılmamaktadır. Ürün fiyatları ve sözleşme koşulları, teklif sürecinde Şirket tarafından ayrıca bildirilir.
+Şirket, bazı ürün sürümleri için Site üzerinden çevrimiçi satın alma (sipariş ve ödeme) sunabilir; bu özellik yalnızca Şirket tarafından etkinleştirildiğinde ve ilgili sürümde "Satın al" seçeneği görünüyorsa kullanılabilir. Aksi halde (ve her sürümde ayrıca) ürün fiyatları ve sözleşme koşulları, teklif sürecinde Şirket tarafından bildirilir. Çevrimiçi satın alma, aşağıdaki 4A bölümüne ve satış sırasında sunulan Ön Bilgilendirme Formu, Mesafeli Satış Sözleşmesi ve İade ve Cayma Politikası'na tabidir.
 
 ## 2. Teklif ve demo talepleri
 
@@ -32,6 +32,15 @@ Sitede online satış, sipariş veya ödeme yapılmamaktadır. Ürün fiyatları
 - Lisanslı yazılım indirmeleri yalnızca geçerli bir lisansınız olan ürünler için sunulur.
 - Lisans anahtarınız gizlidir; paylaşılması ihlal sayılır.
 - Yazılımın kullanımı, son kullanıcı lisans sözleşmesi (EULA) ve ilgili ürün sözleşmesine tabidir.
+
+## 4A. Çevrimiçi satın alma (etkinleştirildiğinde)
+
+- Sipariş; ürün/sürüm seçimi, fatura bilgilerinin girilmesi, Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi'nin onaylanması ve ödemenin tamamlanmasıyla verilir. Sipariş, ödemenin ödeme kuruluşunca doğrulanmasıyla tamamlanır; Lisans doğrulamadan sonra hesabınıza otomatik tanımlanır.
+- Fiyatlar sipariş özetinde gösterilen para biriminde ve vergi durumuyla geçerlidir. Ödeme, anlaşmalı ödeme kuruluşu üzerinden alınır; kart bilgileriniz Şirket tarafından görülmez veya saklanmaz.
+- Lisans elektronik ortamda anında teslim edilir. Tüketici alıcılar için cayma hakkı, Mesafeli Sözleşmeler Yönetmeliği m. 15 kapsamındaki anında ifa istisnası nedeniyle, ifaya onayınızla başlandıktan sonra kullanılamaz; ayrıntılar [İade ve Cayma Politikası](iade-ve-cayma.md) metnindedir. [HUKUK İNCELEMESİ]
+- Kurumsal (vergi kimlik numaralı) alıcılar için tüketici hükümleri uygulanmaz.
+- Şirket; hatalı fiyat/ürün bilgisi, ödeme doğrulanamaması veya dolandırıcılık şüphesi halinde siparişi iptal edip ödemeyi iade edebilir. [HUKUK İNCELEMESİ]
+- İlgili belgeler: [Mesafeli Satış Sözleşmesi](mesafeli-satis-sozlesmesi.md), [Ön Bilgilendirme Formu](on-bilgilendirme-formu.md), [İade ve Cayma Politikası](iade-ve-cayma.md).
 
 ## 5. Destek talepleri
 
@@ -72,4 +81,4 @@ Bu koşullar Türkiye Cumhuriyeti kanunlarına tabidir. Uyuşmazlıklarda [YETK�
 
 ---
 
-**Not (hukuk incelemesi için):** Sitede online satış ve ödeme bulunmadığından, 6502 sayılı Tüketicinin Korunması Hakkında Kanun kapsamındaki mesafeli sözleşme ve ön bilgilendirme yükümlülüklerinin uygulanmayacağı değerlendirilmiştir. Bu değerlendirmenin hukuk danışmanınca teyit edilmesi gerekir.
+**Not (hukuk incelemesi için):** Çevrimiçi satın alma etkin olduğunda 6502 sayılı Tüketicinin Korunması Hakkında Kanun kapsamındaki mesafeli sözleşme ve ön bilgilendirme yükümlülükleri uygulanır; bunun için ayrı Ön Bilgilendirme Formu, Mesafeli Satış Sözleşmesi ve İade ve Cayma Politikası hazırlanmıştır. Çevrimiçi satış kapalıyken yalnızca teklif süreci geçerlidir ve bu belgeler sitede gösterilmez. Metinlerin bu iki durumu doğru ayırdığının hukuk danışmanınca teyit edilmesi gerekir.

@@ -645,6 +645,17 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 
 ---
 
+### Satış yasal sayfaları
+
+Çevrimiçi satış (ödeme) açılacaksa üç yasal sayfa gerekir: **mesafeli satış sözleşmesi**, **ön bilgilendirme formu**, **iade ve cayma politikası**.
+
+- Sayfalar "Sayfalar" koleksiyonunda, **Sayfa türü = Hukuki** olan kayıtlardır. Kenar çubuğundaki **Satış yasal sayfası türü** alanından hangisi olduğu seçilir (her tür yalnız bir sayfada olabilir; alan yalnız Hukuki sayfada görünür).
+- Taslak metinler `content/legal/{tr,en}/` altındadır ve hukukçu onayı gerektirir. Üstteki "TASLAK" bandı ve `[KÖŞELİ]` alanlar silinene dek sayfa `noindex` kalır, sitemap'e girmez ve **ödeme açılamaz**.
+- Bu otomatik kontrol hukukçu onayını doğrulamaz: bandı ve tüm yer tutucuları silmek teknik kapıyı geçebilir. Hukukçu incelemesini ve onayını yayın sorumlusu ayrıca almalıdır. Boş/gizli metin ve eksik EN çevirisi hazır sayılmaz.
+- Hazır olunca bandı ve köşeli alanları (şirket unvanı, MERSİS, adres, vergi dairesi/no, KEP, ETBİS no) gerçek bilgilerle değiştirip **TR ve EN** sayfayı yayınlayın. Site ayarları > "Satış ve ödeme" hazırlık listesindeki "yasal sayfalar" satırı 3/3 olmalıdır.
+- Ödeme kapalıyken (yalnız teklif) bu üç sayfa ziyaretçiye 404 verir; menü/footer bağlantıları, sitemap'ten de çıkar. Taslak önizlemesi personele açıktır.
+- Sayfalar `pnpm content:import --legal` ile yüklenir (dosya adından tür atanır); bu komut mevcut aynı slug kayıtlarının iki dildeki metinlerini de değiştirip yayınlar; hukukçu onaylı metinlerin üzerine taslak yazabilir. Önce DB/uploads kopyasında `--dry-run --legal` ile inceleyin, canlıda yalnız onaylı kaynaklarla çalıştırın.
+
 ## 8. Çeviri (TR ve EN)
 
 ### 8.1 Diller

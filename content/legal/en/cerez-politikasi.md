@@ -19,6 +19,7 @@ Cookies are small text files that a website stores in your browser. They are use
 | `payload-token` | Strictly necessary (session) | Company | Session for authorised Company staff in the content management panel only. | [SÜRE — DOĞRULA] | Not set for visitors or customers. |
 | Cloudflare Turnstile cookies | Strictly necessary (security) | Cloudflare | Bot and abuse protection on form submissions. | [SÜRE — DOĞRULA] | Loaded when Turnstile is enabled. |
 | Analytics | Cookieless | Cloudflare | Aggregated, non-personal visit statistics. | No cookie | Cloudflare Web Analytics does not write cookies to your browser. [DOĞRULA: whether active] |
+| Payment page cookies | Strictly necessary (security/payment) | Payment institution | While online purchase is enabled, completing payment and preventing fraud on the payment institution's secure page. | Per the payment institution's policy | Set on the payment institution's page, not on the Company site; see its policy for details. [DOĞRULA: payment institution cookies and redirect method] |
 
 The Site does not use marketing or advertising cookies. [DOĞRULA: confirm this against the implementation]
 

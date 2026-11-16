@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig, TextFieldSingleValidation, Where } from 'payload'
+import { ValidationError, type Access, type CollectionBeforeValidateHook, type CollectionConfig, type TextFieldSingleValidation, type Where } from 'payload'
 
 import { isAdminOrEditor, isAdminOrEditorUser } from '@/access'
 import { pageLayoutField, publishedAtField } from '@/fields/common'
@@ -49,6 +49,59 @@ const validatePageSlug: TextFieldSingleValidation = async (value, options) => {
   return true
 }
 
+export const COMMERCE_LEGAL_KINDS = ['distanceSales', 'preInformation', 'refund'] as const
+const COMMERCE_LEGAL_LABELS: Record<(typeof COMMERCE_LEGAL_KINDS)[number], [string, string]> = {
+  distanceSales: ['Mesafeli satış sözleşmesi', 'Distance sales agreement'],
+  preInformation: ['Ön bilgilendirme formu', 'Pre-information form'],
+  refund: ['İade ve cayma politikası', 'Refund and withdrawal policy'],
+}
+
+/**
+ * `commerceLegal` is meaningful only on legal pages and each kind may belong to one page (plan §5). The DB unique
+ * index backs it, but drafts live in `_pages_v`, so the check also runs here with a localized message.
+ */
+const enforceCommerceLegal: CollectionBeforeValidateHook = async ({ data, originalDoc, req }) => {
+  const id = (originalDoc as { id?: number | string } | undefined)?.id
+  if (!data) return data
+  const type = ('pageType' in data ? data.pageType : originalDoc?.pageType) as string | undefined
+  const kind = 'commerceLegal' in data ? data.commerceLegal : originalDoc?.commerceLegal
+  if (type !== 'legal') {
+    data.commerceLegal = null
+    return data
+  }
+  if (kind == null || kind === '') {
+    if ('commerceLegal' in data) data.commerceLegal = null
+    return data
+  }
+  // Payload skips built-in select validation on autosaved drafts.
+  if (!(COMMERCE_LEGAL_KINDS as readonly unknown[]).includes(kind)) {
+    throw new ValidationError({ collection: 'pages', req, errors: [{ path: 'commerceLegal',
+      message: req.i18n?.language === 'en' ? 'Invalid sales legal type.' : 'Geçersiz satış yasal türü.',
+    }] }, req.t)
+  }
+  // A draft may reserve a different kind from the published document. Check both snapshots, within the
+  // caller's serialized write transaction; a UNIQUE version index would also reject this page's own history.
+  for (const draft of [false, true]) {
+    const clash = await req.payload.find({
+      collection: 'pages', depth: 0, limit: 1, pagination: false, overrideAccess: true, draft, req,
+      where: { and: [{ commerceLegal: { equals: kind } }, ...(id ? [{ id: { not_equals: id } }] : [])] },
+      select: { commerceLegal: true },
+    })
+    if (clash.docs.length) {
+      const en = req.i18n?.language === 'en'
+      throw new ValidationError({
+        collection: 'pages',
+        errors: [{
+          path: 'commerceLegal',
+          message: en ? 'Another page already uses this sales legal type; only one page per type.' : 'Bu satış yasal türünü başka bir sayfa kullanıyor; her tür için yalnız bir sayfa olabilir.',
+        }],
+        req,
+      }, req.t)
+    }
+  }
+  return data
+}
+
 /** Free-form block pages: home, landing pages, system page copy (F6), legal texts and templates. */
 export const Pages: CollectionConfig = {
   slug: 'pages',
@@ -62,6 +115,7 @@ export const Pages: CollectionConfig = {
   },
   // F8: autosave (~2 s) drives Live Preview. Autosaved drafts only write `_pages_v`; the revalidation hook
   // skips them (src/lib/revalidate.ts), so they never purge the ISR cache.
+  hooks: { beforeValidate: [enforceCommerceLegal] },
   versions: { maxPerDoc: 50, drafts: { autosave: { interval: PAGES_AUTOSAVE_INTERVAL } } },
   fields: [
     {
@@ -147,6 +201,23 @@ export const Pages: CollectionConfig = {
         description: L(
           'Bu kaydı sabit bir sayfaya bağlar: başlık bölümü ve bloklar o sayfada görünür. Her sistem sayfası için tek kayıt.',
           'Binds this record to a fixed route: its header and blocks render there. One record per system page.',
+        ),
+      },
+    },
+    {
+      name: 'commerceLegal',
+      type: 'select',
+      unique: true,
+      index: true,
+      label: L('Satış yasal sayfası türü', 'Sales legal page type'),
+      options: COMMERCE_LEGAL_KINDS.map((key) => opt(key, COMMERCE_LEGAL_LABELS[key][0], COMMERCE_LEGAL_LABELS[key][1])),
+      hooks: { beforeDuplicate: [() => null] },
+      admin: {
+        position: 'sidebar',
+        condition: (data) => data?.pageType === 'legal',
+        description: L(
+          'Boş = satış yasal sayfası değil. Seçilen türler yalnız ödeme modu açıkken görünür; her tür tek sayfada olabilir.',
+          'Empty = not a sales legal page. Marked pages are visible only while payments are open; one page per type.',
         ),
       },
     },

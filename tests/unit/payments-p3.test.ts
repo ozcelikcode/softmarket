@@ -6,7 +6,7 @@ import { closedCommerceState, computeCommerceState } from '../../src/lib/payment
 import { QUOTE_ACTION, resolveProductActions } from '../../src/lib/payments/actions'
 import { displayMinor, formatMoney, splitPrices, taxLabelKey } from '../../src/lib/payments/format'
 import { productOffersJsonLd } from '../../src/lib/payments/json-ld'
-import { COMMERCE_LEGAL_SLUGS, isCommerceLegalHref, isCommerceLegalSlug } from '../../src/lib/payments/legal'
+import { COMMERCE_LEGAL_KINDS, COMMERCE_LEGAL_SLUGS, isCommerceLegalHref, isCommerceLegalSlug } from '../../src/lib/payments/legal'
 import { formatMinorForInput, parsePriceInput } from '../../src/lib/payments/price-input'
 import { buildReadiness } from '../../src/lib/payments/readiness'
 
@@ -27,7 +27,7 @@ const edition = (over: Record<string, unknown> = {}) => ({
 
 describe('computeCommerceState (env × site mode × provider × VAT)', () => {
   it('is open only when every layer agrees', () => {
-    const s = computeCommerceState({ env: ENV_OK, siteSettings: settings() })
+    const s = computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings() })
     expect(s).toMatchObject({ capability: true, siteMode: 'payments', open: true, availableProviders: ['iyzico'], checkoutReady: false, checkoutOpen: false })
   })
 
@@ -51,13 +51,13 @@ describe('computeCommerceState (env × site mode × provider × VAT)', () => {
   })
 
   it('checkoutOpen needs the checkoutReady flag in addition to open', () => {
-    expect(computeCommerceState({ env: ENV_OK, siteSettings: settings(), checkoutReady: true }).checkoutOpen).toBe(true)
-    expect(computeCommerceState({ env: ENV_OK, siteSettings: settings(), checkoutReady: false }).checkoutOpen).toBe(false)
+    expect(computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings(), checkoutReady: true }).checkoutOpen).toBe(true)
+    expect(computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings(), checkoutReady: false }).checkoutOpen).toBe(false)
     expect(computeCommerceState({ env: {}, siteSettings: settings(), checkoutReady: true }).checkoutOpen).toBe(false)
   })
 
   it('the shipped flag is off (no checkout exists before P5)', () => {
-    expect(computeCommerceState({ env: ENV_OK, siteSettings: settings() }).checkoutReady).toBe(false)
+    expect(computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings() }).checkoutReady).toBe(false)
   })
 
   it('closedCommerceState is fully closed', () => {
@@ -66,7 +66,7 @@ describe('computeCommerceState (env × site mode × provider × VAT)', () => {
 })
 
 describe('resolveProductActions (fail-to-quote matrix)', () => {
-  const open = (checkoutReady = false) => computeCommerceState({ env: ENV_OK, siteSettings: settings(), checkoutReady })
+  const open = (checkoutReady = false) => computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings(), checkoutReady })
   const run = (editions: unknown[], state = open()) => resolveProductActions({ editions, state })
 
   it('quote-only / closed: every edition is quote and the hero stays on "Teklif İste"', () => {
@@ -84,7 +84,7 @@ describe('resolveProductActions (fail-to-quote matrix)', () => {
   })
 
   it('currencies without VAT or without price are dropped (USD without a VAT rule is not sold)', () => {
-    const state = computeCommerceState({ env: ENV_OK, siteSettings: settings({ vat: { try: { rule: 'rate', ratePercent: 20, rateBasisPoints: 2000 } } }) })
+    const state = computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings({ vat: { try: { rule: 'rate', ratePercent: 20, rateBasisPoints: 2000 } } }) })
     const a = run([edition()], state).editions[0]!
     expect(a.kind === 'buy' && a.prices.map((p) => p.currency)).toEqual(['TRY'])
     expect(run([edition({ pricing: { taxMode: 'inclusive', usdMinor: 5000 } })], state).editions[0]).toEqual(QUOTE_ACTION)
@@ -120,7 +120,7 @@ describe('resolveProductActions (fail-to-quote matrix)', () => {
 })
 
 describe('price display', () => {
-  const state = computeCommerceState({ env: ENV_OK, siteSettings: settings({ vat: { try: { rule: 'rate', ratePercent: 20, rateBasisPoints: 2000 }, usd: { rule: 'exempt' } } }) })
+  const state = computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings({ vat: { try: { rule: 'rate', ratePercent: 20, rateBasisPoints: 2000 }, usd: { rule: 'exempt' } } }) })
   const prices = (e: unknown) => {
     const a = resolveProductActions({ editions: [e], state }).editions[0]!
     if (a.kind !== 'buy') throw new Error('expected buy')
@@ -160,7 +160,7 @@ describe('price display', () => {
 })
 
 describe('JSON-LD offers', () => {
-  const state = computeCommerceState({ env: ENV_OK, siteSettings: settings() })
+  const state = computeCommerceState({ legalReady: true, env: ENV_OK, siteSettings: settings() })
   const editions = [{ sku: 'PRO', title: 'Pro' }, { sku: 'Q', title: 'Quote' }]
 
   it('quote-only: no `offers` key at all', () => {
@@ -212,12 +212,14 @@ describe('commerce legal slugs', () => {
   })
 })
 
+const ALL_LEGAL = COMMERCE_LEGAL_KINDS.flatMap((kind) => (['tr', 'en'] as const).map((locale) => ({ kind, locale, published: true, draft: false })))
+
 describe('readiness checklist', () => {
   const full = {
     env: { ...ENV_OK, SMTP_HOST: 'smtp.example.com', SMTP_FROM: 'a@b.c' },
     siteSettings: settings(),
     editions: [edition(), edition({ sku: 'NP', pricing: { taxMode: 'inclusive' } }), edition({ sku: 'Q', saleMode: 'quote' })],
-    legalPages: COMMERCE_LEGAL_SLUGS.tr.map((slug) => ({ slug, published: true, draft: false })),
+    legalPages: ALL_LEGAL,
   }
   const level = (r: ReturnType<typeof buildReadiness>, id: string) => r.items.find((i) => i.id === id)!.level
 
@@ -232,7 +234,7 @@ describe('readiness checklist', () => {
   })
 
   it('flags what is missing', () => {
-    const r = buildReadiness({ env: {}, siteSettings: null, editions: [], legalPages: [{ slug: COMMERCE_LEGAL_SLUGS.tr[0], published: true, draft: true }] })
+    const r = buildReadiness({ env: {}, siteSettings: null, editions: [], legalPages: [{ kind: 'distanceSales', locale: 'tr', published: true, draft: true }] })
     expect(r.ready).toBe(false)
     expect(r.environment).toBeNull()
     for (const id of ['capability', 'provider-env', 'provider-enabled', 'vat', 'buy-editions', 'legal', 'smtp']) expect(level(r, id)).toBe('missing')

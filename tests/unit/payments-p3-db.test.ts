@@ -58,8 +58,14 @@ beforeAll(async () => {
   // Validation refuses a priced-less buy edition; a stale/legacy row is simulated in SQL (fail-to-quote on read).
   await make('BUY-NOPRICE', {})
   await run(`UPDATE editions SET sale_mode = 'buy' WHERE sku = 'BUY-NOPRICE'`)
-  for (const slug of legalSlugs) {
-    await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: slug, slug, pageType: 'legal', layout: [], _status: 'published' } as never })
+  // P7: `open` also needs the three marked, published, non-draft sales pages (pages.commerceLegal).
+  const kinds: Record<string, string> = { 'mesafeli-satis-sozlesmesi': 'distanceSales', 'on-bilgilendirme-formu': 'preInformation', 'iade-ve-cayma': 'refund' }
+  for (const slug of [...legalSlugs, 'on-bilgilendirme-formu', 'iade-ve-cayma']) {
+    const layout = [{ blockType: 'richText', content: { root: { type: 'root', format: '', indent: 0, version: 1, direction: null, children: [
+      { type: 'paragraph', format: '', indent: 0, version: 1, direction: null, children: [{ type: 'text', text: 'Reviewed legal text.', format: 0, mode: 'normal', style: '', detail: 0, version: 1 }] },
+    ] } } }]
+    const legal = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: slug, slug, pageType: 'legal', layout, _status: 'published', ...(kinds[slug] ? { commerceLegal: kinds[slug] } : {}) } as never })
+    await payload.update({ collection: 'pages', id: legal.id, overrideAccess: true, locale: 'en', data: { title: slug, slug, layout: legal.layout, _status: 'published' } as never })
   }
   await payload.updateGlobal({
     slug: 'footer', overrideAccess: true, locale: 'tr',
@@ -252,6 +258,32 @@ describe('sales legal pages follow the mode', () => {
     expect(await footer()).toEqual(['mesafeli-satis-sozlesmesi', 'eula'])
     await expect(legalPage('mesafeli-satis-sozlesmesi')).resolves.toBeTruthy()
     expect((await sitemapUrls()).some((u) => u.includes('mesafeli-satis-sozlesmesi'))).toBe(true)
+  })
+
+  it('renamed field-marked legal pages stay out of route/absolute/reference navigation, sitemap and public routes', async () => {
+    await setSite({ ...PAYMENTS, mode: 'quote-only' })
+    const original = (await payload.find({ collection: 'pages', where: { commerceLegal: { equals: 'refund' } } })).docs[0]!
+    await payload.update({ collection: 'pages', id: original.id, locale: 'tr', data: { slug: 'yeni-iade' } })
+    await payload.update({ collection: 'pages', id: original.id, locale: 'en', data: { slug: 'new-refund' } })
+    try {
+      const links = [
+        { type: 'route', route: 'yasal_slug', routeParam: 'yeni-iade', label: 'route' },
+        { type: 'external', url: 'http://127.0.0.1:3100/en/legal/%6eew-refund?x=1', label: 'absolute' },
+        { type: 'internal', reference: { relationTo: 'pages', value: original.id }, label: 'reference' },
+      ]
+      await payload.updateGlobal({ slug: 'footer', locale: 'tr', data: { columns: [{ title: 'Sales', links: links.map((link) => ({ link })) }] } as never })
+      await payload.updateGlobal({ slug: 'header', locale: 'tr', data: { cta: { link: links[2] } } as never })
+      expect((await site.getFooterData('tr')).columns).toEqual([])
+      expect((await site.getHeaderNav('tr')).cta).toBeNull()
+      await expect(legalPage('yeni-iade')).rejects.toMatchObject({ digest: expect.stringMatching(/404/) })
+      expect((await sitemapUrls()).some((u) => /yeni-iade|new-refund/.test(u))).toBe(false)
+      await setSite(PAYMENTS)
+      expect((await site.getFooterData('tr')).columns[0]?.links.map((l) => l.label)).toEqual(['route', 'absolute', 'reference'])
+      expect((await site.getHeaderNav('tr')).cta?.label).toBe('reference')
+    } finally {
+      await payload.update({ collection: 'pages', id: original.id, locale: 'tr', data: { slug: 'iade-ve-cayma' } })
+      await payload.update({ collection: 'pages', id: original.id, locale: 'en', data: { slug: 'iade-ve-cayma' } })
+    }
   })
 
   it('no env capability: closed again even though the stored mode is payments', async () => {

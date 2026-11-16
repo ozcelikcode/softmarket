@@ -251,7 +251,7 @@ describe('content import', () => {
     const source = await loadLegal(resolve('content/legal'))
     validateSeed(source.seed, source.file)
     const pages = source.seed.pages as { tr: Data; en: Data }[]
-    expect(pages).toHaveLength(5)
+    expect(pages).toHaveLength(8)
     expect(pages.every(p => p.tr.pageType === 'legal' && p.en.pageType === 'legal')).toBe(true)
     expect(pages.find(p => p.tr.slug === 'kvkk-aydinlatma')).toBeTruthy()
     expect(await readFile('content/legal/tr/kvkk-aydinlatma.md', 'utf8')).toContain('Cloudflare Web Analytics')

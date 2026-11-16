@@ -11,7 +11,7 @@ import { notFound } from 'next/navigation'
 
 import { RenderBlocks } from '@/components/blocks/render-blocks'
 import { getCommerceState } from '@/lib/commerce/state'
-import { isCommerceLegalSlug } from '@/lib/payments/legal'
+import { isCommerceLegalPage } from '@/lib/payments/legal'
 import { isEditingRender } from '@/lib/preview'
 import { SetAlternates } from '@/components/layout/set-alternates'
 import { JsonLd } from '@/components/sections/json-ld'
@@ -25,11 +25,12 @@ import { breadcrumbJsonLd, buildMetadata, seoText } from '@/lib/seo'
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
 /**
- * Sales legal pages (distance sales, pre-information, refund) exist only while payments are open: otherwise 404 (no
- * noindex page, no sitemap entry). Staff in draft mode may still preview them before payments are switched on.
+ * Sales legal pages (`pages.commerceLegal`; the P3 slug list only while the field is empty) exist only while
+ * payments are open: otherwise 404 (no noindex page, no sitemap entry). Staff in draft mode may still preview
+ * them before payments are switched on. Ordinary legal pages stay on the static/ISR path.
  */
-async function assertVisible(slug: string) {
-  if (!isCommerceLegalSlug(slug)) return
+async function assertVisible(page: { commerceLegal?: unknown; slug?: unknown }) {
+  if (!isCommerceLegalPage(page)) return
   if ((await getCommerceState()).open) return
   if (await isEditingRender()) return
   notFound()
@@ -43,9 +44,9 @@ const variantPaths = async (id: number) => {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
   const { slug } = await params
-  await assertVisible(slug)
   const page = await getPage(locale, slug, { legalOnly: true })
   if (!page) notFound()
+  await assertVisible(page)
   return buildMetadata({
     locale, path: `/yasal/${enc(slug)}`, ...seoText(page.meta, page.title), image: mediaOf(page.meta?.image)?.url,
     variants: await variantPaths(page.id), noindex: isLegalDraft(page.layout),
@@ -55,9 +56,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LegalPage({ params }: Props) {
   const locale = await initLocale(params)
   const { slug } = await params
-  await assertVisible(slug)
   const page = await getPage(locale, slug, { legalOnly: true })
   if (!page) notFound()
+  await assertVisible(page)
   const [t, c, variants] = await Promise.all([
     getTranslations({ locale, namespace: 'legal' }),
     getTranslations({ locale, namespace: 'common' }),

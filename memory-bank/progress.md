@@ -1,3 +1,13 @@
+## P4 bağımsız denetim — 2026-11-16 (commit yok)
+
+- Callback yönlendirmesi, kapalı adaptör 404, doğrulanmamış sağlayıcı hatası ve koşullu iptal düzeltildi; CLI lisans e-postası ve kalıcı bildirim garantisi açık. Ayrıntı `docs/plan-payments.md` P4 kaydı.
+- Kontroller: typecheck/lint geçti; ödeme paketi 16 dosya/439 test geçti, son P4 DB 18/18; tam paket 84 dosya, 1387 geçti/6 başarısız (`legal-draft.test.ts`, eşzamanlı P7 kapsamı). Commit edilebilir: hayır.
+
+## P4 sağlayıcılar/webhook/fulfillment — 2026-11-16 (QA bekliyor, commit yok, şemasız)
+
+- Rotalar `src/app/(payload)/api/payments/{iyzico/webhook,iyzico/callback,stripe/webhook}`, çekirdek `src/lib/payments/{body,runtime,events,sync,fulfill,reconcile,route}.ts`, e-posta `src/lib/email/order-{confirmation,review}.ts`, CLI `pnpm payments:reconcile`, `deploy/payments-reconcile.{service,timer}`. `checkoutReady` hâlâ false.
+- Testler `tests/unit/payments-p4{,-db}.test.ts` (10 + 17): imza/boyut, tek lisans (tekrar + eşzamanlı webhook/callback), review, drain, retrieve hatası/busy → 500 + tekrar, callback, reconcile, e-posta, log PII taraması. Ayrıntı ve açıklar `docs/plan-payments.md` P4 uygulama kaydı.
+
 ## P3 bağımsız denetim — 2026-11-16 (commit yok)
 
 - P1 kapandı: açık ödeme HTML/RSC'si ISR'dan env kapalıyken de HIT dönüyordu (production'da yeniden üretildi). Açık ödeme yüzeyleri `unstable_noStore`, teklif modu ISR; Next bailout content/DB catch dışında. Ödeme modu ISR HIT hedefi güvenlik için kaldırıldı.
@@ -270,3 +280,10 @@
 - typecheck, lint, 73 dosya / 1188 birim test (maxWorkers=1), prod build, `test:e2e` 19 + `test:e2e:isolated` 20 (visual-editor dahil) geçti. Migration testi (~45 s, serializer'dan bağımsız; main'de aynı) zaman aşımı 240 s; content-import medya testi kendi fixture'ını üretir.
 
 - P2-S denetimi: sipariş satırı/net/KDV toplamları tutarlılığı, payment-event commit doğrulaması ve terminal durum koruması, fulfillment commit doğrulaması ve commerce verisi bulunan migration down koruması eklendi; izole SQLite regresyonları eklendi.
+
+## P7 commerceLegal bağımsız denetim — 2026-11-16 (tamamlandı, commit yok)
+
+- EN fallback/boş-gizli hukuki metinle legalReady açılması, eksik yer tutucu algılama, eşzamanlı taslak tür çakışması, yeniden adlandırılmış yasal URL sızıntısı ve importer symlink okuması düzeltildi. Header/footer iç referans projeksiyonu korundu; TR/EN metin tutarlılığı düzeltmeleri yapıldı.
+- Teknik taslak kontrolü hukukçu onayını doğrulamaz (P3); kılavuz ve plan açıklar. Ayrıntı `docs/plan-payments.md` P7 denetim kaydı.
+- Canlı DB/3100/.next, P4 dosyaları, techContext ve commit korunuyor. Migration değişmedi; geçici SQLite up/down ve NULL/UNIQUE/sürüm testleri var. Kapı sonucu aşağıda.
+- Son kapılar: `pnpm typecheck` ve `pnpm lint` exit 0; `pnpm test --maxWorkers=1`: **84 dosya / 1397 test, tamamı geçti (314,55 sn)**. P4 kaynaklı kırık yok. `git diff --check` temiz. **P7 migration canlıya güvenli: EVET; P7 kapsamı commit edilebilir: EVET** (commit atılmadı).

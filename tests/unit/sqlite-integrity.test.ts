@@ -143,12 +143,12 @@ describe('Phase 8a real SQLite import', () => {
       sources: [{ file: 'example.json', seed: { ...example, version: 1 as const } }, legal],
       markdown: markdown => convertMarkdownToLexical({ markdown, editorConfig }), log: () => {},
     })
-    expect(await run()).toEqual({ creates: 8, updates: 0 })
+    expect(await run()).toEqual({ creates: 11, updates: 0 })
     const first = await payload.find({ collection: 'products', locale: 'tr', depth: 0, where: { slug: { equals: 'ornek-urun' } } })
     const row = first.docs[0].layout![0].id
     const versions = async () => (await payload.db.drizzle.$client.execute('SELECT count(*) AS n FROM _products_v')).rows[0].n
     const beforeVersions = await versions()
-    expect(await run()).toEqual({ creates: 0, updates: 8 })
+    expect(await run()).toEqual({ creates: 0, updates: 11 })
     expect(await versions()).toBe(beforeVersions)
     const second = await payload.find({ collection: 'products', locale: 'en', fallbackLocale: false, depth: 0, where: { slug: { equals: 'example-product' } } })
     expect(second.docs).toHaveLength(1)
@@ -157,7 +157,7 @@ describe('Phase 8a real SQLite import', () => {
     const tr = await payload.findByID({ collection: 'products', id: first.docs[0].id, locale: 'tr', fallbackLocale: false, depth: 0 })
     expect(tr.layout![0]).toMatchObject({ id: row, heading: 'Örnek Ürün' })
     const pages = await payload.find({ collection: 'pages', where: { pageType: { equals: 'legal' } }, locale: 'en', fallbackLocale: false })
-    expect(pages.docs).toHaveLength(5)
+    expect(pages.docs).toHaveLength(8)
     expect(pages.docs.every(p => p._status === 'published')).toBe(true)
     const text = pages.docs.find(p => p.slug === 'kvkk-aydinlatma')!.layout![0]
     expect(text.blockType).toBe('richText')

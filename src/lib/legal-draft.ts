@@ -2,6 +2,8 @@ import { hasPlaceholder } from '@/lib/utils'
 
 /** Draft banner used by the legal Markdown sources (`> **TASLAK — ...` / `> **DRAFT — ...`). */
 const DRAFT_BANNER = /(?:^|[^\p{L}])(?:TASLAK|DRAFT)\s*[—–-]/iu
+// Legal templates also use slash-separated labels and review notes with mixed-case explanations.
+const LEGAL_PLACEHOLDER = /\[\p{Lu}[\p{Lu}\d _/—–-]*(?:[:—–][^\[\]\r\n]*)?\]/u
 
 /**
  * True while a legal page still carries an unreviewed-draft banner or `[UPPERCASE]` placeholders anywhere in its
@@ -27,5 +29,19 @@ export function isLegalDraft(layout: unknown): boolean {
   }
   visit(layout)
   const joined = parts.join('')
-  return DRAFT_BANNER.test(text) || hasPlaceholder(text) || DRAFT_BANNER.test(joined) || hasPlaceholder(joined)
+  return DRAFT_BANNER.test(text) || hasPlaceholder(text) || LEGAL_PLACEHOLDER.test(text)
+    || DRAFT_BANNER.test(joined) || hasPlaceholder(joined) || LEGAL_PLACEHOLDER.test(joined)
+}
+
+/** Only visible rich text can supply a legal body; an empty block or hidden contract is not a reviewed text. */
+export function hasLegalBody(layout: unknown): boolean {
+  const hasText = (value: unknown): boolean => {
+    if (Array.isArray(value)) return value.some(hasText)
+    if (!value || typeof value !== 'object') return false
+    const node = value as Record<string, unknown>
+    return (node.type === 'text' && typeof node.text === 'string' && Boolean(node.text.trim()))
+      || Object.values(node).some(hasText)
+  }
+  return Array.isArray(layout) && layout.some((block) => block?.blockType === 'richText'
+    && !block.appearance?.hidden && hasText(block.content))
 }

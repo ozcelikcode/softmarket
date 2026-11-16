@@ -27,12 +27,19 @@ Bu politika, [ŞİRKET UNVANI] ("Şirket") tarafından işletilen web sitesi ve 
 
 - Hesabınıza tanımlanan lisansların ürün, sürüm, koltuk, tarih ve durum bilgileri; lisanslı indirme erişim kayıtları.
 
-Sitemiz üzerinden ödeme, kart veya banka bilgisi toplanmaz.
+**Sipariş, fatura ve ödeme (yalnızca çevrimiçi satış etkin olduğunda)**
+
+- Siparişte girdiğiniz fatura bilgileri: ad soyad veya unvan, adres, e-posta, telefon, T.C. kimlik numarası (bireysel) veya vergi kimlik numarası ve vergi dairesi (kurumsal).
+- Sipariş içeriği, tutar, onayladığınız ön bilgilendirme/sözleşme sürümleri ve cayma hakkı istisnası onayı ile tarih ve IP kaydı.
+- Ödeme kuruluşundan gelen işlem durumu ve maskeli kart bilgisi (son dört hane). Kart numarası, son kullanma tarihi ve CVV ödeme kuruluşunun sayfasında girilir; bizim sistemlerimize ulaşmaz ve saklanmaz.
+
+Çevrimiçi satış etkin değilken sitemiz üzerinden ödeme, kart veya banka bilgisi toplanmaz.
 
 ## 2. Bilgileri nasıl kullanıyoruz
 
 - Talep ettiğiniz demo, teklif ve bilgi taleplerine yanıt vermek.
 - Müşteri hesabınızı, lisanslarınızı, indirmelerinizi ve destek taleplerinizi yönetmek.
+- Çevrimiçi satış etkin olduğunda: siparişinizi ve ödemenizi işlemek, lisansınızı tanımlamak, fatura düzenlemek, iade ve itirazları yönetmek, sözleşme belgelerini yasal süre boyunca saklamak, dolandırıcılığı önlemek.
 - Hesabınızın güvenliğini sağlamak; şifre sıfırlama ve e-posta doğrulama süreçlerini yürütmek.
 - Spam, kötüye kullanım ve otomatik saldırıları önlemek.
 - Site performansını ve içeriklerin kullanımını çerezsiz, toplu olarak ölçmek.
@@ -46,6 +53,8 @@ Bilgilerinizi satmayız. Yalnızca hizmetin işletilmesi için gerekli ölçüde
 - Sunucu, barındırma ve yedekleme sağlayıcıları ([SAĞLAYICI — DOĞRULA]).
 - Bot koruması sağlayan Cloudflare Turnstile.
 - E-posta iletim hizmeti ([SAĞLAYICI — DOĞRULA]).
+- Ödeme kuruluşu (çevrimiçi satış etkin olduğunda): [ÖDEME KURULUŞU — örn. iyzico]. Yurt dışında yerleşik bir ödeme sağlayıcısı yalnızca ayrıca etkinleştirilirse kullanılır; bu durumda ilgili ödemelerin verileri yurt dışına aktarılır ve KVKK Aydınlatma Metni'ndeki güvenceler uygulanır. [HUKUK İNCELEMESİ]
+- Fatura ve muhasebe hizmeti sağlayıcıları ([SAĞLAYICI — DOĞRULA]).
 - Yetkili kamu kurum ve kuruluşları (yasal talep halinde).
 
 Form bildirimleri, ilgili talebi yanıtlamakla görevli Şirket personeline iletilir. Personel erişimi rol ve görev esasına göre sınırlıdır.
@@ -53,6 +62,8 @@ Form bildirimleri, ilgili talebi yanıtlamakla görevli Şirket personeline ilet
 ## 4. Verilerin saklanması
 
 Bilgiler, işlenme amacının gerektirdiği süre boyunca ve yasal saklama yükümlülükleri çerçevesinde saklanır. Ayrıntılı süreler için KVKK Aydınlatma Metni'ne bakınız. [SAKLAMA SÜRELERİ — DOĞRULA]
+
+Sipariş, fatura ve ödeme kayıtları; mesafeli sözleşme belgeleri için en az üç yıl, fatura ve muhasebe belgeleri için vergi ve ticaret mevzuatındaki süre boyunca saklanır; siparişler bu süre dolmadan silinmez. [SAKLAMA SÜRESİ — HUKUK İNCELEMESİ]
 
 Sunucu veritabanı düzenli olarak yedeklenir; yedekler [SAKLAMA SÜRESİ — DOĞRULA] süreyle tutulur ve bu süre sonunda otomatik olarak silinir.
 

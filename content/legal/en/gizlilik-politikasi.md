@@ -27,12 +27,19 @@ This policy explains how personal data is processed when you visit the website a
 
 - Product, edition, seats, dates and status of licenses assigned to your account; access records for licensed downloads.
 
-The Site does not collect payment card or bank details, because there is no online checkout.
+**Orders, invoices and payments (only while online sales are enabled)**
+
+- Billing details you enter in an order: name or company name, address, e-mail, phone, Turkish ID number (individual) or tax ID number and tax office (corporate).
+- Order contents, amount, the versions of the pre-information/agreement you confirmed and your consent to the withdrawal exception, with date and IP record.
+- Transaction status and masked card data (last four digits) from the payment institution. Card number, expiry date and CVV are entered on the payment institution's page; they do not reach our systems and are not stored.
+
+While online sales are not enabled, the Site does not collect payment card or bank details.
 
 ## 2. How we use information
 
 - To respond to demo, quote and information requests.
 - To manage your customer account, licenses, downloads and support tickets.
+- While online sales are enabled: to process your order and payment, issue your license, issue invoices, handle refunds and chargebacks, keep contract documents for the statutory period and prevent fraud.
 - To keep your account secure, including password reset and e-mail verification.
 - To prevent spam, abuse and automated attacks.
 - To measure site performance and content use in aggregated, cookieless form.
@@ -46,6 +53,8 @@ We do not sell personal data. We share it only as necessary to operate the servi
 - Server, hosting and backup providers ([SAĞLAYICI — DOĞRULA]).
 - Cloudflare Turnstile, for bot protection.
 - E-mail delivery provider ([SAĞLAYICI — DOĞRULA]).
+- Payment institution (while online sales are enabled): [ÖDEME KURULUŞU — örn. iyzico]. A payment provider established abroad is used only if separately enabled; in that case data for the related payments is transferred abroad and the safeguards in the Data Protection Notice apply. [HUKUK İNCELEMESİ]
+- Invoicing and accounting service providers ([SAĞLAYICI — DOĞRULA]).
 - Public authorities, where legally required.
 
 Form notifications are sent to Company staff responsible for handling the request. Staff access is limited by role and need.
@@ -53,6 +62,8 @@ Form notifications are sent to Company staff responsible for handling the reques
 ## 4. Retention
 
 Information is kept for as long as needed for the purpose and as required by legal retention obligations. See the Data Protection Notice for details. [SAKLAMA SÜRELERİ — DOĞRULA]
+
+Order, invoice and payment records are kept for at least three years for distance-contract documents, and for the period set by tax and commercial legislation for invoices and accounting documents; orders are not deleted before that. [SAKLAMA SÜRESİ — HUKUK İNCELEMESİ]
 
 Database backups are kept for [SAKLAMA SÜRESİ — DOĞRULA] and then deleted automatically.
 

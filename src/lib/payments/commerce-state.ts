@@ -14,8 +14,8 @@ import type { Currency, ProviderId } from './types'
  *          configured in env) AND >= 1 currency with a VAT rule.
  *   checkoutOpen = open AND checkoutReady (P5 flag): only then a "Buy" action may link to a checkout.
  *
- * `legalReady` (three published, non-draft sales pages) joins `open` with the P7 legal texts; until then the
- * admin readiness list reports it but it does not block.
+ * `legalReady` (three published, non-draft sales pages, `pages.commerceLegal`, both locales) is part of `open`
+ * (P7): a draft/placeholder legal text can never open payments. Absent input = false (fail-closed).
  */
 export type CommerceState = {
   capability: boolean
@@ -25,6 +25,8 @@ export type CommerceState = {
   stripeEnabled: boolean
   stripeCurrencies: Currency[]
   vatSettings: Partial<Record<Currency, VatRule>>
+  /** Distance sales, pre-information and refund pages are published and not draft. */
+  legalReady: boolean
   /** Payments surface visible: prices, buy actions, sales legal pages, JSON-LD offers. */
   open: boolean
   checkoutReady: boolean
@@ -39,6 +41,8 @@ export function computeCommerceState(input: {
   env: Record<string, string | undefined>
   siteSettings: unknown
   checkoutReady?: boolean
+  /** Result of `evaluateLegal`; omitted = not ready. */
+  legalReady?: boolean
 }): CommerceState {
   const env = readPaymentsEnv(input.env)
   const gate = resolveCommerceGate({ env: input.env, siteSettings: input.siteSettings })
@@ -47,7 +51,8 @@ export function computeCommerceState(input: {
   if (enabled('iyzico') && env.iyzico) availableProviders.push('iyzico')
   if (enabled('stripe') && env.stripe) availableProviders.push('stripe')
   const vatSettings = readVatSettings(input.siteSettings)
-  const open = readCapability(input.env) && gate.checkoutOpen && availableProviders.length > 0 && Object.keys(vatSettings).length > 0
+  const legalReady = input.legalReady === true
+  const open = legalReady && readCapability(input.env) && gate.checkoutOpen && availableProviders.length > 0 && Object.keys(vatSettings).length > 0
   const checkoutReady = input.checkoutReady ?? CHECKOUT_READY
   return {
     capability: gate.capability,
@@ -57,6 +62,7 @@ export function computeCommerceState(input: {
     stripeEnabled: availableProviders.includes('stripe'),
     stripeCurrencies: env.stripeCurrencies,
     vatSettings,
+    legalReady,
     open,
     checkoutReady,
     checkoutOpen: open && checkoutReady,

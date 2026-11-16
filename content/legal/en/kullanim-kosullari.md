@@ -11,7 +11,7 @@ These terms govern use of the website, support center and customer portal (the "
 
 The Site presents the Company's software products, lets you request quotes and demos, provides documentation and downloads in the support center, and offers license, download and support-ticket services in the customer portal.
 
-The Site does not offer online sales, orders or payments. Prices and contract terms are communicated separately during the quote process.
+The Company may offer online purchase (orders and payments) on the Site for some product editions; this is available only while the Company has enabled it and a "Buy" option is shown for the edition. Otherwise (and for any edition in addition), prices and contract terms are communicated by the Company during the quote process. Online purchase is governed by section 4A below and by the Pre-Information Form, Distance Sales Agreement and Refund and Withdrawal Policy presented at checkout.
 
 ## 2. Quote and demo requests
 
@@ -32,6 +32,15 @@ The Site does not offer online sales, orders or payments. Prices and contract te
 - Licensed software downloads are available only for products for which you hold a valid license.
 - Your license key is confidential. Sharing it is a breach of these terms.
 - Use of software is governed by the End User License Agreement (EULA) and any product agreement that applies.
+
+## 4A. Online purchase (when enabled)
+
+- An order is placed by choosing a product/edition, entering billing details, confirming the Pre-Information Form and the Distance Sales Agreement and completing payment. The order is completed when the payment institution confirms the payment; the License is then assigned to your account automatically.
+- Prices apply in the currency and tax treatment shown in the order summary. Payment is taken through a contracted payment institution; the Company does not see or store your card details.
+- The License is delivered electronically and immediately. For consumer buyers, because of the instant-performance exception in article 15 of the Distance Contracts Regulation, the right of withdrawal cannot be exercised once performance has begun with your consent; details are in the [Refund and Withdrawal Policy](iade-ve-cayma.md). [HUKUK İNCELEMESİ]
+- Consumer provisions do not apply to corporate buyers (with a tax ID number).
+- The Company may cancel an order and refund the payment in case of wrong price/product information, payment that cannot be verified or suspected fraud. [HUKUK İNCELEMESİ]
+- Related documents: [Distance Sales Agreement](mesafeli-satis-sozlesmesi.md), [Pre-Information Form](on-bilgilendirme-formu.md), [Refund and Withdrawal Policy](iade-ve-cayma.md).
 
 ## 5. Support tickets
 
@@ -72,4 +81,4 @@ These terms are governed by the laws of the Republic of Türkiye. [YETKİLİ MAH
 
 ---
 
-**Note for legal review:** Because the Site does not offer online sales or payments, distance-contract and prior-information obligations under Law No. 6502 on Consumer Protection are assessed as not applicable. Legal counsel should confirm this assessment.
+**Note for legal review:** While online purchase is enabled, the distance-contract and prior-information obligations under Consumer Protection Law No. 6502 apply; separate Pre-Information Form, Distance Sales Agreement and Refund and Withdrawal Policy texts are prepared for this. While online sales are off, only the quote process applies and those documents are not shown on the Site. Legal counsel should confirm that the texts separate these two situations correctly.

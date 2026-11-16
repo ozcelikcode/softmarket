@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Read-only SQLite backup; all Payload writes and uploads stay in a private temporary directory.
-# Requires a production build: NEXT_DIST_DIR=.next-prod pnpm build
+# Requires a production build: NEXT_DIST_DIR=.next-prod pnpm build (or E2E_NEXT_DIST_DIR=.next-<name>).
+# E2E_SOURCE_DB: read-only source of the copy (default data/softmarket.db; QA runs pass their own DB copy).
 set +x # Do not expose credentials even when invoked with bash -x / inherited xtrace.
 set -euo pipefail
 set -m # Each owned background job gets its own process group.
@@ -50,7 +51,13 @@ with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as src:
 PY
 export E2E_ISOLATED=1 E2E_ISOLATED_DIR="$DIR"
 export DATABASE_URI="$(node -e 'console.log(require("node:url").pathToFileURL(require("node:path").join(process.argv[1], "db.sqlite")).href)' "$DIR")"
-export UPLOADS_DIR="$DIR/uploads" NEXT_DIST_DIR=.next-prod
+# Build dir of the production build under test (default .next-prod); only `.next-<name>` directories.
+DIST="${E2E_NEXT_DIST_DIR:-.next-prod}"
+if [[ ! "$DIST" =~ ^\.next-[a-z0-9-]+$ ]]; then
+  echo 'E2E_NEXT_DIST_DIR must be a .next-<name> build directory.' >&2
+  exit 1
+fi
+export UPLOADS_DIR="$DIR/uploads" NEXT_DIST_DIR="$DIST"
 export PAYLOAD_CONFIG_PATH="$PWD/src/payload.config.ts"
 export PAYLOAD_SECRET="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
 # Never use inherited live SMTP credentials for a copied database.

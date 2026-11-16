@@ -1,3 +1,19 @@
+## V5 P1 bağımsız denetim — 2026-11-10
+
+- P1: aynı transaction ID'sinde eşzamanlı bitirme erken kilit açıyordu; bitirme promise'i paylaşıldı. Timestamp yerine ham tüm-dil snapshot SHA-256 token'ı (ilk sanal alan, DB kolonu yok); aynı ms/saat geri alma testli.
+- P1/P2: blok/dizi ID bazlı merge; Lexical/değer/silme/sıra çakışmasında yazmaz. Flush tabanı güncellenir, merge eski undo'yu temizler; gecikmiş yanıt/locale, gizli sekme 409, boş/null token ve restore 409 düzeltildi. Sürümsüz API/bulk ve açık restore kasıtlı koşulsuzdur. Anonim token görünmez; kopya şema içerik alanlarıyla sınırlı.
+- Odaklı 4 dosya/36 test geçti; 30 yazım + 30 okuma: 0 hata, 1579 ms, max read 190 ms. Typecheck/lint temiz; tam paket 73 dosya/1186 test: 1184 geçti, 2 kırmızı (kapsam dışı media fixture ve eski migration 60 sn timeout; aynı migration 120 sn geçici sınırda 3/3 geçti). Ana dala kabul HAYIR: build/tarayıcı E2E eksik ve standart kapı kırmızı. Commit index.lock sandbox engeliyle oluşmadı; çalışma ağacında. Verilen scratchpad DB yok: 3531 build/E2E yapılamadı. Canlı DB/3100/ana repo/şema korunuyor. Ayrıntı `docs/qa/v5-concurrency-audit.md`.
+
+## V5 denetim düzeltmeleri (2026-11-09)
+
+- QA P2 (Terra): EN boş fallback'te Escape, başarısız kayıtla dil geçişi, UTF-8 keepalive, dile göre undo geçmişi düzeltildi.
+- P1 kapandı: sanal `editorVersion` + `beforeChange` 409 (aynı transaction), süreç içi SQLite transaction sırası (`src/lib/db-serial-transactions.ts`; libsql eşzamanlı BEGIN'de SQLITE_BUSY + görünmeyen yazım vardı), editörde Birleştir/Kopyala/Yeniden yükle. MCP/import sürümsüz geçer. İzole e2e 20/20, 71 dosya/1163 test (1 kapsam dışı kırmızı), LH JS 129,62 KB. Ayrıntı plan 'V5 P1 kapanış kaydı'.
+
+## V5 — Görsel editör (2026-11-09, `feat/visual-editor`)
+
+- Uygulandı: varsayılan görsel düzen, sertleştirilmiş köprü (origin+source+strict şema, id+locale, allowlist yollar), inline düz metin kapsamı, palet, çekmece odaklama, sürükle/klavye, gizli blok rozetleri, geri al/yinele, flush + çakışma, tur, TR/EN etiketler. V4 kapılarının tamamı yeşil; e2e 17/17; LH Perf 100, JS 129,62 KB.
+- Açık: popup önizleme, bazı alanlar yalnız formda (tabs etiketi, testimonial isim/rol, stats değeri, zengin metin), Lexical geri alım doğrulanmadı, çakışma yoklaması 15 sn, kullanıcı 8 görev denemesi, ikinci dalga koleksiyonlar.
+
 ## content:import karar b denetimi (2026-11-08)
 
 - P2: korunacak seed layout'u silinmeden önce ilişki/Markdown dönüşümünden geçiyordu; kullanılmayan eski referans import ve dry-run'ı hata ile durdurabiliyordu. `importer.ts` layout'u dönüşümden önce çıkarır; önce başarısız olan regresyonlar düzeltmeyle geçti.

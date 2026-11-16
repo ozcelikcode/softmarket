@@ -1,6 +1,7 @@
 import { ArrowDownToLine, ArrowRight, Lock } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
+import { docFieldAttrs, editText } from '@/components/blocks/block-shell'
 import { RichContent } from '@/components/blocks/rich-text'
 import type { BlockProps } from '@/components/blocks/types'
 import { EditionCard } from '@/components/product/edition-card'
@@ -66,7 +67,7 @@ export async function ProductHeroSection({ block, locale, ctx, slots }: BlockPro
   return (
     <PageHero
       locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} theme={ctx.appearance.theme}
-      eyebrow={family.title} title={product.title} lead={product.tagline ?? product.summary}
+      eyebrow={family.title} title={editText(ctx, 'title', product.title, 'doc')} lead={product.tagline ? editText(ctx, 'tagline', product.tagline, 'doc') : editText(ctx, 'summary', product.summary, 'doc')}
       enter={isVirtualBlock(block) ? undefined : heroMotion(ctx.motion)}
       asideMotion={parallax}
       className={ctx.appearance.separator === 'top' ? 'border-t' : undefined}
@@ -127,7 +128,7 @@ export function ProductOverviewSection({ block, ctx, slots }: BlockProps<Product
   return (
     <div id={PRODUCT_SECTION_IDS.productOverview} className={anchor(ctx)}>
       <Section theme={ctx.appearance.theme} spacing={ctx.appearance.spacing} {...blockAttrs(block)} className={sectionClass(ctx, '') || undefined}>
-        <Container {...anim(0, ctx.motion, 'container')}><p className={cn('max-w-3xl text-h3 font-normal text-text text-pretty', ctx.appearance.align === 'center' && 'mx-auto text-center')}>{summary}</p></Container>
+        <Container {...anim(0, ctx.motion, 'container')}><p className={cn('max-w-3xl text-h3 font-normal text-text text-pretty', ctx.appearance.align === 'center' && 'mx-auto text-center')}>{editText(ctx, 'summary', summary, 'doc')}</p></Container>
       </Section>
     </div>
   )
@@ -142,7 +143,7 @@ export async function ProductFeaturesSection({ block, locale, ctx, slots }: Bloc
       <Container>
         <SectionHeading title={t('features')} className="mb-10" {...headingAlign(ctx)} />
         {/* Item reveal (pre-V2: subtle per card); the block's motion drives it. */}
-        <FeatureGrid animation={ctx.motion} features={features.map((f) => ({ title: f.title, description: f.description ?? undefined, icon: f.icon ? <NamedIcon name={f.icon} /> : undefined }))} />
+        <FeatureGrid animation={ctx.motion} features={features.map((f, i) => ({ title: f.title, description: f.description ?? undefined, icon: f.icon ? <NamedIcon name={f.icon} /> : undefined, ...(ctx.edit ? { edit: { title: docFieldAttrs(ctx, `features.${i}.title`), description: docFieldAttrs(ctx, `features.${i}.description`) } } : {}) }))} />
       </Container>
     </Section>
   )

@@ -10,6 +10,7 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { RenderBlocks } from '@/components/blocks/render-blocks'
+import { isEditingRender } from '@/lib/preview'
 import { SetAlternates } from '@/components/layout/set-alternates'
 import { JsonLd } from '@/components/sections/json-ld'
 import { PageHero } from '@/components/sections/page-hero'
@@ -54,7 +55,7 @@ export default async function LegalPage({ params }: Props) {
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
       <SetAlternates hrefs={alternateHrefs(variants)} />
       <PageHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} eyebrow={t('title')} title={page.title} lead={date ? t('updated', { date }) : undefined} />
-      <RenderBlocks blocks={page.layout} locale={locale} />
+      <RenderBlocks blocks={page.layout} locale={locale} editing={await isEditingRender()} />
     </>
   )
 }

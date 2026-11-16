@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import type { BlockProps } from '@/components/blocks/types'
 import { VideoFacade } from '@/components/blocks/video-facade'
 import { Heading } from '@/components/ui/heading'
@@ -20,14 +20,14 @@ export async function VideoEmbedBlock({ block, locale, ctx }: BlockProps<Block>)
   const title = block.heading || block.caption || 'Video'
   return (
     <BlockShell blockType="videoEmbed" appearance={ctx.appearance} motion={ctx.motion} container={{ size: 'narrow', className: 'max-w-[60rem]' }}>
-      {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{block.heading}</Heading> : null}
+      {block.heading ? <Heading size="h2" className={cn('mb-8', alignClass(ctx.appearance))}>{editText(ctx, 'heading', block.heading)}</Heading> : null}
       <VideoFacade
         embedUrl={src}
         title={title}
         playLabel={c('playVideo')}
         poster={<MediaImage media={block.poster} alt="" sizes="(min-width: 1024px) 60rem, 100vw" className="absolute inset-0" />}
       />
-      {block.caption ? <p className={cn('mt-3 text-small text-muted', alignClass(ctx.appearance))}>{block.caption}</p> : null}
+      {block.caption ? <p className={cn('mt-3 text-small text-muted', alignClass(ctx.appearance))}>{editText(ctx, 'caption', block.caption)}</p> : null}
     </BlockShell>
   )
 }

@@ -4,6 +4,7 @@ export function generateStaticParams() { return routing.locales.map((locale) => 
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { JsonLd } from '@/components/sections/json-ld'
 import { Container } from '@/components/ui/container'
 import { getSystemPage, mediaOf } from '@/lib/content'
@@ -44,8 +45,8 @@ export default async function SupportPage({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
-      <SystemBody locale={locale} page={page} listing={<Container>
+      <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody editing={await isEditingRender()} locale={locale} page={page} listing={<Container>
       <SupportSearch locale={locale} />
       <SupportFilters locale={locale} path="/destek/dokumantasyon" products={products} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

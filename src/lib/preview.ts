@@ -36,3 +36,9 @@ export async function readAs(locale: Locale) {
     ? { locale, overrideAccess: false as const, user, draft: true as const }
     : { locale, overrideAccess: false as const, user: null, draft: false as const }
 }
+
+/**
+ * V5 visual editor: editor markers (`data-block-id`, `data-field-path` …) are rendered only for this request kind:
+ * draft mode AND a re-validated staff session. Public/ISR renders never call into headers (see getPreviewUser).
+ */
+export const isEditingRender = async (): Promise<boolean> => Boolean(await getPreviewUser())

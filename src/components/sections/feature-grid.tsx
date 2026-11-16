@@ -4,7 +4,8 @@ import type { ResolvedMotion } from '@/fields/block-motion'
 import { anim, type AnimKind } from '@/lib/anim'
 import { cn } from '@/lib/utils'
 
-export type Feature = { icon?: ReactNode; title: string; description?: string }
+/** `edit`: V5 visual editor markers (editing renders only). */
+export type Feature = { icon?: ReactNode; title: string; description?: string; edit?: { title?: Record<string, string>; description?: Record<string, string> } }
 
 /** Column count follows the item count so the last row never leaves empty cells (4 items = 2x2 / 4x1, never 3+1). */
 function gridCols(count: number, columns: 2 | 3 | 4) {
@@ -40,8 +41,8 @@ export function FeatureGrid({
             {f.icon ? (
               <span className={cn('inline-flex text-accent [&_svg]:size-6', plain ? 'mb-4' : 'mb-5')}>{f.icon}</span>
             ) : null}
-            <h3 className="text-h4 text-text">{f.title}</h3>
-            {f.description ? <p className="mt-2 text-small text-muted">{f.description}</p> : null}
+            <h3 className="text-h4 text-text" {...f.edit?.title}>{f.title}</h3>
+            {f.description ? <p className="mt-2 text-small text-muted" {...f.edit?.description}>{f.description}</p> : null}
           </div>
         </li>
       ))}

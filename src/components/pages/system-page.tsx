@@ -38,7 +38,7 @@ export function systemMeta(page: CmsPage | null | undefined, fallback: Fallback)
 }
 
 export function SystemHero({
-  locale, crumbLabel, crumbs, page, fallback, aside, className,
+  locale, crumbLabel, crumbs, page, fallback, aside, className, editing = false,
 }: {
   locale: string
   crumbLabel: string
@@ -47,15 +47,19 @@ export function SystemHero({
   fallback: Fallback
   aside?: ReactNode
   className?: string
+  /** V5 visual editor: `Boolean(await getPreviewUser())` only; marks hero.eyebrow/title/lead for inline editing. */
+  editing?: boolean
 }) {
   const text = systemHeroText(page, fallback)
+  const mark = (field: 'eyebrow' | 'title' | 'lead', value: string | undefined) =>
+    editing && page && value ? <span data-doc-field={`hero.${field}`}>{value}</span> : value
   const actions = page?.hero?.actions?.length
     ? <Actions actions={page.hero.actions} locale={locale} className="mt-0" />
     : undefined
   return (
     <PageHero
       locale={locale} crumbLabel={crumbLabel} crumbs={crumbs}
-      eyebrow={text.eyebrow} title={text.title} lead={text.lead} actions={actions} aside={aside} className={className}
+      eyebrow={mark('eyebrow', text.eyebrow)} title={mark('title', text.title)} lead={mark('lead', text.lead)} actions={actions} aside={aside} className={className}
     />
   )
 }
@@ -69,12 +73,14 @@ export function SystemHero({
  * - record with a `listing` block: blocks in order, the list at the block's position (hidden block = no list)
  */
 export function SystemBody({
-  locale, page, listing, fallback,
+  locale, page, listing, fallback, editing = false,
 }: {
   locale: string
   page: CmsPage | null | undefined
   listing?: ReactNode
   fallback?: ReactNode
+  /** V5 visual editor: `Boolean(await getPreviewUser())` only. */
+  editing?: boolean
 }) {
   const defaultList = listing ? <ListingSection appearance={resolveAppearance({ blockType: 'listing' })}>{listing}</ListingSection> : null
   if (!page) return <>{defaultList}{fallback}</>
@@ -83,7 +89,7 @@ export function SystemBody({
   return (
     <>
       {placed ? null : defaultList}
-      <RenderBlocks blocks={blocks} locale={locale} slots={listing ? { listing } : undefined} />
+      <RenderBlocks blocks={blocks} locale={locale} slots={listing ? { listing } : undefined} editing={editing} />
     </>
   )
 }

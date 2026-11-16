@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, symlink, truncate, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, truncate, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
@@ -297,7 +297,18 @@ describe('content import', () => {
     expect(() => validateSeed(invalid, 'bad.json')).toThrow()
   })
   it('rejects media outside the media directory', async () => {
-    await expect(safeMediaPath(resolve('content/seed'), '../legal/tr/eula.md')).rejects.toThrow('outside')
+    // Own fixture: `content/seed/media` is git-ignored, so a fresh checkout has no media directory to resolve.
+    const root = await mkdtemp(resolve(tmpdir(), 'softmarket-media-outside-'))
+    try {
+      await mkdir(resolve(root, 'seed/media'), { recursive: true })
+      await mkdir(resolve(root, 'legal/tr'), { recursive: true })
+      await writeFile(resolve(root, 'legal/tr/eula.md'), '# fixture\n')
+      await writeFile(resolve(root, 'seed/media/inside.png'), 'x')
+      await expect(safeMediaPath(resolve(root, 'seed'), '../legal/tr/eula.md')).rejects.toThrow('outside')
+      await expect(safeMediaPath(resolve(root, 'seed'), 'media/inside.png')).resolves.toBe(await realpath(resolve(root, 'seed/media/inside.png')))
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
   })
   it('rejects symlink escapes, a linked media root, and oversized files', async () => {
     const root = await mkdtemp(resolve(tmpdir(), 'softmarket-media-'))

@@ -26,7 +26,7 @@ export async function ProductFamiliesBlock({ block, locale, ctx }: BlockProps<Bl
   return (
     <BlockShell blockType="productFamilies" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
-        locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
+        locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description} ctx={ctx} viewAllLabel={block.viewAllLabel}
         viewAll={resolveViewAll(block, '/urunler', c('viewAll'))}
       >
         <div className={gridClass(layout)}>

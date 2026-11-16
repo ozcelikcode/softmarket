@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
 import { Actions } from '@/components/blocks/actions'
-import { BlockShell } from '@/components/blocks/block-shell'
+import { BlockShell, editText, fieldAttrs } from '@/components/blocks/block-shell'
 import { HeroVideo } from '@/components/blocks/hero-video'
 import type { BlockProps } from '@/components/blocks/types'
 import { AppLink } from '@/components/ui/app-link'
@@ -27,7 +27,7 @@ export function heroVariant(value: Block['variant']): HeroVariant {
  * Framed product family list (the pre-F6 home hero panel): first published families with product counts,
  * a skeleton + "catalog coming" note when there are none.
  */
-async function FamiliesPanel({ locale, title }: { locale: string; title?: string | null }) {
+async function FamiliesPanel({ locale, title, titleAttrs }: { locale: string; title?: string | null; titleAttrs?: ReturnType<typeof fieldAttrs> }) {
   const [{ docs, counts }, t] = await Promise.all([loadHeroFamilies(locale), getTranslations({ locale, namespace: 'home' })])
   const families = docs.slice(0, HERO_PANEL_FAMILIES)
   return (
@@ -37,7 +37,7 @@ async function FamiliesPanel({ locale, title }: { locale: string; title?: string
           <div aria-hidden className="flex gap-1.5">
             <span className="size-2.5 rounded-full bg-border-strong" /><span className="size-2.5 rounded-full bg-border-strong" /><span className="size-2.5 rounded-full bg-border-strong" />
           </div>
-          <span className="font-mono text-xs text-muted">{title?.trim() || t('panelTitle')}</span>
+          <span className="font-mono text-xs text-muted" {...(title?.trim() ? titleAttrs : {})}>{title?.trim() || t('panelTitle')}</span>
         </div>
         <ul className="mt-5 space-y-2">
           {families.length ? families.map((f) => (
@@ -115,14 +115,14 @@ export function HeroBlock({ block, locale, ctx }: BlockProps<Block>) {
       )}
     >
       <div className={cn('min-w-0', center && 'mx-auto max-w-3xl text-center')}>
-        {block.eyebrow ? <Eyebrow className={variant === 'cinematic' ? 'mb-6' : 'mb-4'} {...enter(0)}>{block.eyebrow}</Eyebrow> : null}
-        <Heading as={ctx.headingAs} size={variant === 'cinematic' ? 'display' : 'h1'} {...enter(1, 'slide')}>{block.heading}</Heading>
-        {block.subheading ? <p className={cn(cinematic ? 'mt-6 max-w-xl' : 'mt-5 max-w-2xl', 'text-lead text-muted text-pretty break-words', center && 'mx-auto')} {...enter(2, 'slide')}>{block.subheading}</p> : null}
+        {block.eyebrow ? <Eyebrow className={variant === 'cinematic' ? 'mb-6' : 'mb-4'} {...enter(0)}>{editText(ctx, 'eyebrow', block.eyebrow)}</Eyebrow> : null}
+        <Heading as={ctx.headingAs} size={variant === 'cinematic' ? 'display' : 'h1'} {...enter(1, 'slide')}>{editText(ctx, 'heading', block.heading)}</Heading>
+        {block.subheading ? <p className={cn(cinematic ? 'mt-6 max-w-xl' : 'mt-5 max-w-2xl', 'text-lead text-muted text-pretty break-words', center && 'mx-auto')} {...enter(2, 'slide')}>{editText(ctx, 'subheading', block.subheading)}</p> : null}
         <div className={center ? '[&>div]:justify-center' : undefined} {...enter(3)}>
-          <Actions actions={block.actions} locale={locale} className={cinematic ? 'mt-10' : 'mt-8'} arrowOnSecondary />
+          <Actions actions={block.actions} locale={locale} className={cinematic ? 'mt-10' : 'mt-8'} arrowOnSecondary ctx={ctx} />
         </div>
       </div>
-      {familiesPanel ? <div className="min-w-0" {...enter(4)}>{parallax ? <div {...parallax}><FamiliesPanel locale={locale} title={block.panelTitle} /></div> : <FamiliesPanel locale={locale} title={block.panelTitle} />}</div> : null}
+      {familiesPanel ? <div className="min-w-0" {...enter(4)}>{parallax ? <div {...parallax}><FamiliesPanel locale={locale} title={block.panelTitle} titleAttrs={fieldAttrs(ctx, 'panelTitle')} /></div> : <FamiliesPanel locale={locale} title={block.panelTitle} titleAttrs={fieldAttrs(ctx, 'panelTitle')} />}</div> : null}
       {hasMedia ? (
         <div className={cn('min-w-0', !sideMedia && 'mt-14')} {...enter(4, 'slide')}>
           <div {...parallax} className={cn('overflow-hidden rounded-xl border border-border bg-surface', variant === 'cinematic' && 'p-1.5 shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--accent)_35%,transparent)]')}>

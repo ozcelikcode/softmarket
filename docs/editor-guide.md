@@ -165,6 +165,37 @@ Live Preview, değişikliğinizi sitenin gerçek görünümünde gösterir. Sayf
 Önizleme yalnız giriş yapmış editör ve yönetici için açılır. Ziyaretçiler taslakları göremez.
 Live Preview; sayfalar, ürünler, ürün aileleri, çözümler, referanslar ve haberlerde vardır. **Şablon** sayfalarında public önizleme yoktur. İlişkili içerik listeleri önizlemede de yalnız yayınlı kayıtları gösterir. Yaklaşık 2 saniyelik otomatik kayıt **Sayfalar** ve **Ürünler** için açıktır; diğer koleksiyonlarda kaydetmeniz gerekir.
 
+### 2.10 Görsel düzenle (sayfalar ve ürünler)
+
+**Sayfalar** ve **Ürünler** kayıtları açılınca doğrudan **görsel düzenleyici** gelir: sağda sitenin gerçek görünümü (büyük tuval), solda dar form paneli. Tuval yayındaki sayfayla aynıdır; yalnız düzenleme çerçeveleri eklenir. Görsel düzenleyici yalnız yönetici ve editörlere görünür; ziyaretçi ve müşteri hesapları açamaz.
+
+**Üst çubuk** (Kaydet/Yayınla düğmelerinin solunda):
+
+| Düğme | Ne yapar |
+|---|---|
+| **Klasik forma geç / Görsel düzenle** | Tek tıkla yalnız forma geçer ve geri döner. Klasik form o ziyarete özeldir; kaydı bir sonraki açışınızda yine görsel düzenleyici gelir. |
+| **↶ / ↷** | Geri al / yinele (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z). Formdaki ve tuvaldeki değişiklikleri adım adım geri alır (en çok 50 adım). |
+| **390 / 768 / 1440 / Sığdır** | Önizleme genişliği: telefon, tablet, masaüstü, panele sığdır. |
+| **TR / EN** | İçerik dili. Geçmeden önce bekleyen değişiklik kaydedilir. |
+| Durum yazısı | Kaydediliyor… / Taslak kaydedildi / Kaydedilmemiş değişiklik. |
+| **İpuçları** | 4 adımlık kısa turu yeniden açar (tur ilk açılışta bir kez kendiliğinden görünür). |
+
+**Bloklarla çalışma (tuvalde):**
+
+1. Bir bloğa tıklayın: mavi çerçeveyle **seçilir**, formda o bloğun satırı açılır ve **Görünüm** ile **Hareket** (Gelişmiş dahil) grupları görünür. Medya, zengin metin, bağlantı adresi ve efekt ayarlarını oradan yaparsınız.
+2. Seçili bloğun araç çubuğu: **↑ / ↓** taşı, **⠿** tutamaçtan sürükleyip başka bloğun üstüne/altına bırak, **Metni düzenle**, **Çoğalt**, **Gizle / Göster**, **Sil** (ikinci tıkta onaylanır), **+ Blok ekle** (seçili bloğun altına; görselli blok listesi, arama kutusu).
+3. **Metni yerinde düzenleme:** seçili bloktaki bir metne (başlık, üst etiket, giriş metni, buton etiketi, kart başlığı/açıklaması, tablo satırı, SSS sorusu…) tekrar tıklayın ve yazın. **Enter** bitirir, **Esc** vazgeçer. Yapıştırılan içerik düz metne çevrilir. Çok satırlı veya 1000 karakterden uzun metinler, zengin metin, görseller ve bağlantı adresleri formdan düzenlenir.
+4. **Gizli bloklar** tuvalde soluk ve "Gizli: ziyaretçiler görmez" rozetiyle görünür; seçip **Göster** ile geri açarsınız. Yayındaki sayfada asla görünmezler.
+5. **Klavye:** tuvale tıkladıktan sonra **↑ / ↓** önceki/sonraki bloğu seçer, **Alt+↑ / Alt+↓** seçili bloğu taşır, **Enter** ilk metni düzenler, **Delete** iki basışta siler, **Esc** seçimi bırakır.
+
+**Ürün sayfası kuralları:** "Ürün: Giriş" hep ilk bloktur (taşınamaz, silinemez, gizlenemez). "Ürün: Sürümler ve Teklif İste" zorunludur: taşınabilir ama silinemez, gizlenemez. Ürün bölümleri çoğaltılamaz. Eski düzendeki (henüz bölüm bloğu olmayan) bir üründe ilk taşıma/ekleme/gizleme işleminde bölümler **otomatik** düzenlenebilir bloklara dönüştürülür; eski düzende gizlenen tekrar bloklar (ör. ikinci Giriş) gizli olarak eklenir, sayfanın görünümü değişmez. Ürün adı, slogan, özet ve özellik kartları da yerinde düzenlenebilir (ürün kaydına yazılır).
+
+**Dil (TR/EN):** EN'de bir alan boşsa tuval TR metnini yedek olarak gösterir; tıklayınca "Bu dilde metin yok" uyarısı çıkar, yazdığınız yalnız EN'e kaydedilir. Hiç yazmazsanız EN boş kalır (TR metni kopyalanmaz).
+
+**Kayıt ve çakışma:** Değişiklikler ~2 sn içinde taslak olarak kaydedilir. Sekmeyi kapatır veya başka sekmeye geçerseniz bekleyen değişiklik hemen gönderilir. Kayıt başka yerden (MCP, başka sekme, içerik importu) değişmişse sizin sonraki kaydınız sunucuda **reddedilir** (diğer değişiklik asla ezilmez) ve üstte uyarı çıkar; yazdığınız ekranda kalır. **Birleştir ve kaydet** güncel sürümü alır; bağımsız alan ve blok değişikliklerini satır kimlikleriyle birleştirir. Aynı metin, zengin metin, satır silme veya sıralama iki tarafta çakışıyorsa kaydetmez ve alanları listeler; değişikliklerinizi kopyalayıp yeniden yükleyin. Başarılı birleştirme önceki geri alma geçmişini temizler. **Değişikliklerimi kopyala** değiştirdiğiniz alanları metin olarak verir. **Yeniden yükle** güncel hali getirir; kaydedilmemiş değişiklikler kaybolur (onay sorulur). Aynı kaydı aynı anda iki kullanıcı açarsa Payload belge kilidi ikinciye uyarı gösterir. Ziyaretçiler değişikliği **Değişiklikleri yayınla** sonrasında görür.
+
+**Sınırlar:** Önizlemeyi ayrı pencerede (açılır pencere simgesi) açarsanız düzenleme araçları çalışmaz; tuvali panelde kullanın. Zengin metin içi geri alma, metin kutusunun kendi geri almasıdır. Çözümler, referanslar ve ürün aileleri için görsel düzenleyici sonraki sürümdedir (Live Preview ile önizleme vardır).
+
 ---
 
 ## 3. Blok kataloğu

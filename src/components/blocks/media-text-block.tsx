@@ -1,5 +1,5 @@
 import { Actions } from '@/components/blocks/actions'
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import { RichContent } from '@/components/blocks/rich-text'
 import type { BlockProps } from '@/components/blocks/types'
 import { Heading } from '@/components/ui/heading'
@@ -19,9 +19,9 @@ export function MediaTextBlock({ block, locale, ctx }: BlockProps<Block>) {
         </div>
       ) : null}
       <div className={cn(alignClass(ctx.appearance), center && '[&>div]:justify-center')}>
-        {block.heading ? <Heading size="h2">{block.heading}</Heading> : null}
+        {block.heading ? <Heading size="h2">{editText(ctx, 'heading', block.heading)}</Heading> : null}
         {block.body ? <RichContent data={block.body} locale={locale} className="mt-5" /> : null}
-        <Actions actions={block.actions} locale={locale} />
+        <Actions actions={block.actions} locale={locale} ctx={ctx} />
       </div>
     </BlockShell>
   )

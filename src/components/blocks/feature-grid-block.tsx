@@ -1,4 +1,4 @@
-import { BlockShell } from '@/components/blocks/block-shell'
+import { BlockShell, editText, fieldAttrs } from '@/components/blocks/block-shell'
 import type { BlockProps } from '@/components/blocks/types'
 import { FeatureGrid } from '@/components/sections/feature-grid'
 import { SectionHeading } from '@/components/ui/heading'
@@ -16,15 +16,16 @@ export function FeatureGridBlock({ block, ctx }: BlockProps<Block>) {
     <BlockShell blockType="featureGrid" appearance={appearance} motion={ctx.motion} animate="items">
       {block.heading ? (
         <div {...anim(0, ctx.motion)}>
-          <SectionHeading title={block.heading} lead={block.intro} align={appearance.align === 'center' ? 'center' : 'left'} className="mb-12" />
+          <SectionHeading title={editText(ctx, 'heading', block.heading)} lead={editText(ctx, 'intro', block.intro)} align={appearance.align === 'center' ? 'center' : 'left'} className="mb-12" />
         </div>
       ) : null}
       <FeatureGrid
         columns={(Number(block.columns) || 3) as 2 | 3 | 4}
         variant={block.style === 'plain' ? 'plain' : 'cards'}
         animation={ctx.motion}
-        features={items.map((it) => ({
+        features={items.map((it, i) => ({
           title: it.title,
+          ...(ctx.edit ? { edit: { title: fieldAttrs(ctx, `items.${i}.title`), description: fieldAttrs(ctx, `items.${i}.description`) } } : {}),
           description: it.description ?? undefined,
           icon: mediaOf(it.image)
             ? <MediaImage media={it.image} sizes="40px" className="size-10 rounded-md object-contain" />

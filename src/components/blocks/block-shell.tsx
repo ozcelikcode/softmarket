@@ -5,6 +5,7 @@ import { Section } from '@/components/ui/section'
 import type { ResolvedMotion } from '@/fields/block-motion'
 import type { ResolvedAppearance } from '@/fields/block-settings'
 import { anim, clipsX } from '@/lib/anim'
+import type { BlockContext } from '@/lib/blocks/render-plan'
 import { cn } from '@/lib/utils'
 
 type ContainerSize = 'narrow' | 'content' | 'wide'
@@ -70,3 +71,34 @@ export function BlockShell({
 
 /** Text alignment helper for block headings/copy. */
 export const alignClass = (appearance: ResolvedAppearance) => (appearance.align === 'center' ? 'text-center' : undefined)
+
+/*
+ * V5 visual editor markers. Rendered ONLY when the render plan carries `ctx.edit` (draft mode + re-validated staff
+ * user); public/ISR HTML never contains them (tests/unit/visual-editor-fields.test.tsx, client-bundle-guard).
+ * `display: contents` keeps the editing render pixel-identical to the published page; a hidden block (editing
+ * only) is shown faded so it can be found and unhidden on the canvas.
+ */
+export function EditableBlock({ ctx, blockType, children }: { ctx: BlockContext; blockType: string; children: ReactNode }) {
+  if (!ctx.edit) return children
+  return ctx.edit.hidden ? (
+    <div data-block-id={ctx.edit.id} data-block-type={blockType} data-block-hidden="" style={{ opacity: 0.45 }}>{children}</div>
+  ) : (
+    <div data-block-id={ctx.edit.id} data-block-type={blockType} style={{ display: 'contents' }}>{children}</div>
+  )
+}
+
+type EditAttrs = { 'data-field-path'?: string; 'data-doc-field'?: string }
+
+/** `data-field-path` (block-relative, see src/editor/canvas/fields.ts) on an element whose text is that field. */
+export const fieldAttrs = (ctx: Pick<BlockContext, 'edit'>, path: string): EditAttrs => (ctx.edit ? { 'data-field-path': path } : {})
+/** `data-doc-field` for a document field rendered by a block (product title, features …). */
+export const docFieldAttrs = (ctx: Pick<BlockContext, 'edit'>, path: string): EditAttrs => (ctx.edit ? { 'data-doc-field': path } : {})
+
+/**
+ * Text node of an inline-editable field: the plain value on public renders, a marked `<span>` in editing renders.
+ * Empty values stay unmarked (nothing to click; they are edited in the form).
+ */
+export function editText(ctx: Pick<BlockContext, 'edit'>, path: string, value: string | null | undefined, scope: 'block' | 'doc' = 'block'): ReactNode {
+  if (!ctx.edit || !value) return value
+  return <span {...(scope === 'doc' ? { 'data-doc-field': path } : { 'data-field-path': path })}>{value}</span>
+}

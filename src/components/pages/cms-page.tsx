@@ -21,19 +21,21 @@ export function startsWithHero(blocks: readonly LayoutBlock[]): boolean {
  * fixed header; otherwise a PageHero with the page title supplies the h1 and the header clearance.
  */
 export function CmsPageContent({
-  page, locale, crumbLabel, crumbs = [],
+  page, locale, crumbLabel, crumbs = [], editing = false,
 }: {
   page: Pick<CmsPage, 'title' | 'layout'>
   locale: string
   crumbLabel: string
   crumbs?: Crumb[]
+  /** V5 visual editor: `Boolean(await getPreviewUser())` only. */
+  editing?: boolean
 }) {
   const blocks = pageBlocksOf(page)
-  if (startsWithHero(blocks)) return <RenderBlocks blocks={blocks} locale={locale} firstHeroH1 />
+  if (startsWithHero(blocks)) return <RenderBlocks blocks={blocks} locale={locale} firstHeroH1 editing={editing} />
   return (
     <>
       <PageHero locale={locale} crumbLabel={crumbLabel} crumbs={crumbs} title={page.title} />
-      <RenderBlocks blocks={blocks} locale={locale} />
+      <RenderBlocks blocks={blocks} locale={locale} editing={editing} />
     </>
   )
 }

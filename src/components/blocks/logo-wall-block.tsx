@@ -1,4 +1,4 @@
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import type { BlockProps } from '@/components/blocks/types'
 import { LogoWall, type Logo } from '@/components/sections/logo-wall'
 import { loadLogos } from '@/lib/blocks/data'
@@ -22,7 +22,7 @@ export async function LogoWallBlock({ block, locale, ctx }: BlockProps<Block>) {
   if (!logos.length) return null
   return (
     <BlockShell blockType="logoWall" appearance={ctx.appearance} motion={ctx.motion} className="border-y border-border">
-      {block.heading ? <p className={cn('mb-8 text-small text-muted', alignClass(ctx.appearance))}>{block.heading}</p> : null}
+      {block.heading ? <p className={cn('mb-8 text-small text-muted', alignClass(ctx.appearance))}>{editText(ctx, 'heading', block.heading)}</p> : null}
       <LogoWall logos={logos} />
     </BlockShell>
   )

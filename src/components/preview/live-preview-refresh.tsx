@@ -2,9 +2,12 @@
 
 import { RefreshRouteOnSave } from '@payloadcms/live-preview-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
 import { EXIT_PREVIEW_ROUTE, safePreviewRedirect } from '@/lib/preview-url'
+
+// V5 visual editor: separate chunk, requested only here (staff draft request) and only inside the admin iframe.
+const CanvasBridge = lazy(() => import('@/editor/canvas/bridge'))
 
 /*
  * F8 draft-mode island (mounted by the locale layout only for a re-validated staff draft request).
@@ -14,7 +17,21 @@ import { EXIT_PREVIEW_ROUTE, safePreviewRedirect } from '@/lib/preview-url'
  */
 export function LivePreviewRefresh({ label }: { label: string }) {
   const router = useRouter()
-  const refresh = useCallback(() => router.refresh(), [router])
+  // While text is edited in place on the canvas, a save-triggered refresh would reset the caret: defer it.
+  const editing = useRef(false)
+  const pending = useRef(false)
+  const refresh = useCallback(() => {
+    if (editing.current) { pending.current = true; return }
+    router.refresh()
+  }, [router])
+  useEffect(() => {
+    const onEditing = (event: Event) => {
+      editing.current = (event as CustomEvent<unknown>).detail === true
+      if (!editing.current && pending.current) { pending.current = false; router.refresh() }
+    }
+    window.addEventListener('sm-canvas-editing', onEditing)
+    return () => window.removeEventListener('sm-canvas-editing', onEditing)
+  }, [router])
   const [origin, setOrigin] = useState<string | null>(null)
   const [standalone, setStandalone] = useState(false)
   const [exitHref, setExitHref] = useState(EXIT_PREVIEW_ROUTE)
@@ -29,6 +46,7 @@ export function LivePreviewRefresh({ label }: { label: string }) {
   return (
     <>
       {origin && <RefreshRouteOnSave refresh={refresh} serverURL={origin} />}
+      {origin && !standalone && <Suspense fallback={null}><CanvasBridge /></Suspense>}
       {standalone && (
         <a
           href={exitHref}

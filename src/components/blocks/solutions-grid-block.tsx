@@ -20,7 +20,7 @@ export async function SolutionsGridBlock({ block, locale, ctx }: BlockProps<Bloc
   return (
     <BlockShell blockType="solutionsGrid" appearance={ctx.appearance} motion={ctx.motion} animate="items">
       <ListFrame
-        locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description}
+        locale={locale} appearance={ctx.appearance} eyebrow={block.eyebrow} heading={block.heading} description={block.description} ctx={ctx} viewAllLabel={block.viewAllLabel}
         viewAll={resolveViewAll(block, '/cozumler', c('viewAll'))}
       >
         <div className={gridClass(layout)}>

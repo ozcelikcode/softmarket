@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { Actions } from '@/components/blocks/actions'
-import { BlockShell } from '@/components/blocks/block-shell'
+import { BlockShell, editText } from '@/components/blocks/block-shell'
 import type { BlockProps } from '@/components/blocks/types'
 import { Heading } from '@/components/ui/heading'
 import { cn } from '@/lib/utils'
@@ -13,15 +13,15 @@ export async function CTABlock({ block, locale, ctx }: BlockProps<Block>) {
   const { appearance } = ctx
   const style = block.style === 'card' || block.style === 'split' ? block.style : 'banner'
   const center = appearance.align === 'center'
-  const actions = <Actions actions={block.actions} locale={locale} fallback={{ label: c('requestQuote'), href: '/teklif-iste' }} />
+  const actions = <Actions actions={block.actions} locale={locale} fallback={{ label: c('requestQuote'), href: '/teklif-iste' }} ctx={ctx} />
 
   if (style === 'split') {
     return (
       <BlockShell blockType="cta" appearance={appearance} motion={ctx.motion}>
         <div className="rounded-xl border border-border bg-surface p-8 sm:p-10 lg:flex lg:items-center lg:justify-between lg:gap-12">
           <div className="max-w-2xl">
-            <Heading as="h2" size="h2">{block.heading}</Heading>
-            {block.body ? <p className="mt-4 text-lead text-muted text-pretty">{block.body}</p> : null}
+            <Heading as="h2" size="h2">{editText(ctx, 'heading', block.heading)}</Heading>
+            {block.body ? <p className="mt-4 text-lead text-muted text-pretty">{editText(ctx, 'body', block.body)}</p> : null}
           </div>
           <div className="shrink-0 lg:[&>div]:mt-0">{actions}</div>
         </div>
@@ -40,10 +40,10 @@ export async function CTABlock({ block, locale, ctx }: BlockProps<Block>) {
       decor={card ? null : <div aria-hidden className="bg-glow pointer-events-none absolute inset-0" />}
     >
       <div className={cn(card && 'rounded-xl border border-border bg-surface p-8 sm:p-12', center && 'text-center')}>
-        <Heading as="h2" size={card ? 'h2' : 'h1'}>{block.heading}</Heading>
+        <Heading as="h2" size={card ? 'h2' : 'h1'}>{editText(ctx, 'heading', block.heading)}</Heading>
         {/* Banner spacing equals the closing CtaBand (pre-F6 home): lead mt-5, buttons mt-9. */}
-        {block.body ? <p className={cn(card ? 'mt-4' : 'mt-5', 'max-w-xl text-lead text-muted text-pretty', center && 'mx-auto')}>{block.body}</p> : null}
-        <div className={cn(center && '[&>div]:justify-center')}>{card ? actions : <Actions actions={block.actions} locale={locale} className="mt-9" fallback={{ label: c('requestQuote'), href: '/teklif-iste' }} />}</div>
+        {block.body ? <p className={cn(card ? 'mt-4' : 'mt-5', 'max-w-xl text-lead text-muted text-pretty', center && 'mx-auto')}>{editText(ctx, 'body', block.body)}</p> : null}
+        <div className={cn(center && '[&>div]:justify-center')}>{card ? actions : <Actions actions={block.actions} locale={locale} className="mt-9" fallback={{ label: c('requestQuote'), href: '/teklif-iste' }} ctx={ctx} />}</div>
       </div>
     </BlockShell>
   )

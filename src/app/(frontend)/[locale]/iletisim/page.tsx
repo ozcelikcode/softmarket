@@ -11,6 +11,7 @@ import type { ReactNode } from 'react'
 import { EmptyState } from '@/components/sections/empty-state'
 import { JsonLd } from '@/components/sections/json-ld'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { Container } from '@/components/ui/container'
 import { LeadFormSection } from '@/components/forms/lead-form-section'
 import { getContactSettings, getSystemPage, mediaOf } from '@/lib/content'
@@ -68,8 +69,8 @@ async function ContactPage({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
-      <SystemBody locale={locale} page={page} listing={
+      <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={{ title: t('title'), lead: t('lead') }} />
+      <SystemBody editing={await isEditingRender()} locale={locale} page={page} listing={
         <Container className="grid gap-12 lg:grid-cols-[1fr_1.1fr]">
           <div>
             {hasAny ? (

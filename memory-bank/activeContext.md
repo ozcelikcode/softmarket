@@ -1,3 +1,21 @@
+## V5 P1 bağımsız denetim — 2026-11-10
+
+- P1: aynı transaction ID'sinde eşzamanlı bitirme erken kilit açıyordu; bitirme promise'i paylaşıldı. Timestamp yerine ham tüm-dil snapshot SHA-256 token'ı (ilk sanal alan, DB kolonu yok); aynı ms/saat geri alma testli.
+- P1/P2: blok/dizi ID bazlı merge; Lexical/değer/silme/sıra çakışmasında yazmaz. Flush tabanı güncellenir, merge eski undo'yu temizler; gecikmiş yanıt/locale, gizli sekme 409, boş/null token ve restore 409 düzeltildi. Sürümsüz API/bulk ve açık restore kasıtlı koşulsuzdur. Anonim token görünmez; kopya şema içerik alanlarıyla sınırlı.
+- Odaklı 4 dosya/36 test geçti; 30 yazım + 30 okuma: 0 hata, 1579 ms, max read 190 ms. Typecheck/lint temiz; tam paket 73 dosya/1186 test: 1184 geçti, 2 kırmızı (kapsam dışı media fixture ve eski migration 60 sn timeout; aynı migration 120 sn geçici sınırda 3/3 geçti). Ana dala kabul HAYIR: build/tarayıcı E2E eksik ve standart kapı kırmızı. Commit index.lock sandbox engeliyle oluşmadı; çalışma ağacında. Verilen scratchpad DB yok: 3531 build/E2E yapılamadı. Canlı DB/3100/ana repo/şema korunuyor. Ayrıntı `docs/qa/v5-concurrency-audit.md`.
+
+## V5 denetim düzeltmeleri (2026-11-09)
+
+- QA P2 (Terra): EN boş fallback'te Escape, başarısız kayıtla dil geçişi, UTF-8 keepalive, dile göre undo geçmişi düzeltildi.
+- P1 kapandı: sanal `editorVersion` + `beforeChange` 409 (aynı transaction), süreç içi SQLite transaction sırası (`src/lib/db-serial-transactions.ts`; libsql eşzamanlı BEGIN'de SQLITE_BUSY + görünmeyen yazım vardı), editörde Birleştir/Kopyala/Yeniden yükle. MCP/import sürümsüz geçer. İzole e2e 20/20, 71 dosya/1163 test (1 kapsam dışı kırmızı), LH JS 129,62 KB. Ayrıntı plan 'V5 P1 kapanış kaydı'.
+
+## V5 — Görsel editör (Payload-native canvas), dal `feat/visual-editor` (2026-11-09)
+
+- Ürün/sayfa belgeleri doğrudan görsel editörde açılır (`openByDefault` + `beforeDocumentControls` host, dar form `custom.scss`); klasik form ziyaret başına. Kod `src/editor/canvas/**` (fields, protocol zod/mini v2, rules, history, bridge, admin/{host,reveal,sync,palette,tour}, plugin), işaretler yalnız `isEditingRender()`.
+- Tüm düz metin alanları yerinde (17 blok + ürün başlık/slogan/özet/özellik + sistem hero), gizli bloklar soluk rozetli, palet görselli, MutationObserver reveal, geri al/yinele, keepalive flush, `updatedAt` çakışma uyarısı, 4 adımlı tur, uyumluluk ürünü ilk yapısal işlemde otomatik somutlaşır.
+- Doğrulama: typecheck/lint, 70 dosya/1154 test (1 kırmızı ön-var: legal md git'te yok), `.next-v5` build, izole e2e 17/17, LH mobil Perf 100 / JS 129,62 KB (main 129,31) / CLS 0, MCP find + import dry-run temiz. Ayrıntı `docs/plan-visual-editor.md` V5 kaydı.
+- 3530 prod sunucu açık (kopya DB `scratchpad/softmarket-v5.db`, admin `v5-admin@example.test`, parola `scratchpad/v5-cred.env`). Push yok; main'e merge kullanıcı QA'sından sonra.
+
 ## V2 güvenlik/kalite denetimi (2026-11-08)
 
 - Kompozisyondaki bütün bağlı blokları kaldırarak uyumluluk moduna dönme açığı kapatıldı: önceki layout ile karşılaştırma, EN/draft/autosave/where toplu güncelleme/eski sürüm restore/import dahil zorunlu editions bloğunu korur. Ham girdide `beforeValidate`, son sınırda `beforeChange`; `hidden: true|"true"|1|"1"` ve çakışan blok ID'leri 400. Kısmi ID güncellemesi ve Duplicate çalışır.

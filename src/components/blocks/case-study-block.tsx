@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import type { BlockProps } from '@/components/blocks/types'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
@@ -22,13 +22,13 @@ export async function CaseStudyBlock({ block, locale, ctx }: BlockProps<Block>) 
   return (
     <BlockShell blockType="caseStudy" appearance={appearance} motion={ctx.motion} animate="items" containerClassName={results.length ? 'grid items-center gap-12 lg:grid-cols-2' : undefined}>
       <div {...anim(0, ctx.motion)} className={alignClass(appearance)}>
-        {block.eyebrow ? <Eyebrow className="mb-4">{block.eyebrow}</Eyebrow> : null}
+        {block.eyebrow ? <Eyebrow className="mb-4">{editText(ctx, 'eyebrow', block.eyebrow)}</Eyebrow> : null}
         <Heading as="h2" size="h1">{study.title}</Heading>
         <p className="mt-3 text-small text-muted">{study.customerName}</p>
         {study.summary ? <p className="mt-5 text-lead text-muted text-pretty">{study.summary}</p> : null}
         {block.showLink !== false ? (
           <Button asChild className="mt-8" variant="secondary">
-            <AppLink href={href} locale={locale}>{block.linkLabel?.trim() || c('learnMore')}<ArrowRight aria-hidden /></AppLink>
+            <AppLink href={href} locale={locale}>{block.linkLabel?.trim() ? editText(ctx, 'linkLabel', block.linkLabel.trim()) : c('learnMore')}<ArrowRight aria-hidden /></AppLink>
           </Button>
         ) : null}
       </div>

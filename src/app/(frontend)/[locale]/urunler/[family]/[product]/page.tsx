@@ -14,6 +14,7 @@ import { SetAlternates } from '@/components/layout/set-alternates'
 import { JsonLd } from '@/components/sections/json-ld'
 import { composeProductLayout, PRODUCT_BOUND_BLOCKS } from '@/lib/blocks/product-composition'
 import { getProductDetail, getProductVariants, mediaOf } from '@/lib/content'
+import { isEditingRender } from '@/lib/preview'
 import { alternateHrefs, enc, initLocale } from '@/lib/page-utils'
 import { absoluteUrl, breadcrumbJsonLd, buildMetadata, seoText, siteUrl } from '@/lib/seo'
 
@@ -43,10 +44,12 @@ export default async function ProductPage({ params }: Props) {
   const data = await getProductDetail(locale, familySlug, productSlug)
   if (!data) notFound()
   const { family, product, editions, downloads, docSlug } = data
-  const [c, pt, variants] = await Promise.all([
+  const [c, pt, variants, editing] = await Promise.all([
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'products' }),
     variantPaths(product.id),
+    // V5 visual editor markers: draft mode + re-validated staff only (never public/ISR).
+    isEditingRender(),
   ])
 
   const path = `/urunler/${enc(familySlug)}/${enc(productSlug)}`
@@ -86,13 +89,13 @@ export default async function ProductPage({ params }: Props) {
 
       {mode === 'compat' ? (
         <>
-          <RenderBlocks blocks={blocks.slice(0, PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale}
+          <RenderBlocks blocks={blocks.slice(0, PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale} editing={editing}
             slots={{ product: { family, product, editions, downloads, docSlug, productSlug, path, trail, sections } }} />
           {/* Keep the old planning boundary: the first extra CMS block retains its LCP-safe motion. */}
-          <RenderBlocks blocks={blocks.slice(PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale} />
+          <RenderBlocks blocks={blocks.slice(PRODUCT_BOUND_BLOCKS.length) as LayoutBlock[]} locale={locale} editing={editing} />
         </>
       ) : (
-        <RenderBlocks blocks={blocks as LayoutBlock[]} locale={locale}
+        <RenderBlocks blocks={blocks as LayoutBlock[]} locale={locale} editing={editing}
           slots={{ product: { family, product, editions, downloads, docSlug, productSlug, path, trail, sections } }} />
       )}
     </>

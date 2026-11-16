@@ -1,4 +1,4 @@
-import { alignClass, BlockShell } from '@/components/blocks/block-shell'
+import { alignClass, BlockShell, editText } from '@/components/blocks/block-shell'
 import type { BlockProps } from '@/components/blocks/types'
 import { MediaImage } from '@/components/ui/media-image'
 import { mediaOf } from '@/lib/content'
@@ -16,7 +16,7 @@ export function TestimonialBlock({ block, ctx }: BlockProps<Block>) {
       <figure className={alignClass(ctx.appearance)}>
         <blockquote className="text-h3 font-medium text-text text-balance break-words">
           <span aria-hidden className="mr-1 text-accent">&ldquo;</span>
-          {block.quote}
+          {editText(ctx, 'quote', block.quote)}
           <span aria-hidden className="ml-1 text-accent">&rdquo;</span>
         </blockquote>
         <figcaption className={cn('mt-8 flex flex-wrap items-center gap-4', center && 'justify-center')}>

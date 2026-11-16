@@ -9,6 +9,7 @@ import { getTranslations } from 'next-intl/server'
 import { JsonLd } from '@/components/sections/json-ld'
 import { EmptyState } from '@/components/sections/empty-state'
 import { SystemBody, SystemHero, systemMeta } from '@/components/pages/system-page'
+import { isEditingRender } from '@/lib/preview'
 import { ProductCard } from '@/components/sections/product-card'
 import { AppLink } from '@/components/ui/app-link'
 import { Container } from '@/components/ui/container'
@@ -49,8 +50,8 @@ async function ProductsPage({ params, searchParams }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
-      <SystemHero locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={fallback} />
-      <SystemBody locale={locale} page={page} listing={
+      <SystemHero editing={await isEditingRender()} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} page={page} fallback={fallback} />
+      <SystemBody editing={await isEditingRender()} locale={locale} page={page} listing={
         <Container>
           {families.length > 1 ? (
             <nav aria-label={t('filter')} className="mb-10 flex flex-wrap gap-2">

@@ -11,6 +11,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 
 import { SetAlternates } from '@/components/layout/set-alternates'
 import { CmsPageContent } from '@/components/pages/cms-page'
+import { isEditingRender } from '@/lib/preview'
 import { JsonLd } from '@/components/sections/json-ld'
 import { localizedHref } from '@/i18n/paths'
 import type { Locale } from '@/i18n/routing'
@@ -63,7 +64,7 @@ export default async function LandingPage({ params }: Props) {
     <>
       <JsonLd data={breadcrumbJsonLd(locale, trail)} />
       <SetAlternates hrefs={alternateHrefs(variants)} />
-      <CmsPageContent page={page} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} />
+      <CmsPageContent editing={await isEditingRender()} page={page} locale={locale} crumbLabel={c('breadcrumb')} crumbs={trail} />
     </>
   )
 }

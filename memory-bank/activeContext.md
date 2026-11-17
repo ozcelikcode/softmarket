@@ -1,3 +1,11 @@
+## Licensing L1 schema (`licensing_core`) — 2026-11-17 (independent audit, no commit, live DB not migrated)
+
+- New collections `license-activations`, `license-status-log`, `security-events`, `security-blocks`, `security-audit` (admin panel session read only, nobody writes through any API, no GraphQL, not in MCP) and global `licensing-settings` (panel admin read, server-only write). Rule suspensions require `mode=suspend` and a valid elapsed `observeUntil`. Enum source `src/lib/licensing/constants.ts`.
+- `licenses`: `publicId`, `maxDevices`, server-stamped `statusReason/statusSource/statusChangedAt`; API key (MCP) cannot set/change `status`; every Payload status change logs one row in the same transaction (`src/lib/licensing/transitions.ts`); delete refused (409) with history. `products.licensing.{enabled,code}` (code unique, immutable, panel admin only, not in import).
+- Migration `20261117_200700_licensing_core`: additive up (9 tables, 2 hand-written partial unique indexes, 9 ADD COLUMN and a collision-checked `public_id` backfill), guarded down without rebuild. Copy DB: 723 tables row-equal, integrity/FK ok, import dry-run ok, down+up identical schema.
+- Audit fixes cover panel authentication, lock isolation, projected and bulk license transitions, draft code validation and uniqueness. Raw-SQL refund/dispute history and summary updates remain L3 work.
+- Gates: Typecheck, lint and `git diff --check` pass. Focused Vitest passed 58 tests in 5 files. Full Vitest passed 1,599 tests in 97 files. Partial-chain migration tests (page-builder, p7, blocks-static, block-motion, blocks-appearance, integrations) now also apply `licensing_core`.
+
 ## G1 independent security audit — 2026-11-17 (no commit, live DB unchanged)
 
 - Fixed anonymous/customer draft reads and customer version-history access with published-only public access and explicit staff-only history access.

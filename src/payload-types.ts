@@ -91,6 +91,11 @@ export interface Config {
     licenses: License;
     orders: Order;
     'payment-events': PaymentEvent;
+    'license-activations': LicenseActivation;
+    'license-status-log': LicenseStatusLog;
+    'security-events': SecurityEvent;
+    'security-blocks': SecurityBlock;
+    'security-audit': SecurityAudit;
     forms: Form;
     'form-submissions': FormSubmission;
     search: Search;
@@ -140,6 +145,11 @@ export interface Config {
     licenses: LicensesSelect<false> | LicensesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     'payment-events': PaymentEventsSelect<false> | PaymentEventsSelect<true>;
+    'license-activations': LicenseActivationsSelect<false> | LicenseActivationsSelect<true>;
+    'license-status-log': LicenseStatusLogSelect<false> | LicenseStatusLogSelect<true>;
+    'security-events': SecurityEventsSelect<false> | SecurityEventsSelect<true>;
+    'security-blocks': SecurityBlocksSelect<false> | SecurityBlocksSelect<true>;
+    'security-audit': SecurityAuditSelect<false> | SecurityAuditSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
@@ -158,12 +168,14 @@ export interface Config {
     footer: Footer;
     'site-settings': SiteSetting;
     integrations: Integration;
+    'licensing-settings': LicensingSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     integrations: IntegrationsSelect<false> | IntegrationsSelect<true>;
+    'licensing-settings': LicensingSettingsSelect<false> | LicensingSettingsSelect<true>;
   };
   locale: 'tr' | 'en';
   widgets: {
@@ -640,6 +652,16 @@ export interface Product {
    * Filled automatically on first publish.
    */
   publishedAt?: string | null;
+  /**
+   * License validation for desktop/server programs. Administrators only.
+   */
+  licensing?: {
+    enabled?: boolean | null;
+    /**
+     * Embedded in programs (e.g. studio-pro); cannot change once saved.
+     */
+    code?: string | null;
+  };
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -3970,7 +3992,35 @@ export interface License {
    * Taken from the edition.
    */
   seats?: number | null;
+  /**
+   * Random ID used by the API; the sequential record number is never exposed.
+   */
+  publicId?: string | null;
+  /**
+   * Number of simultaneously active devices. Empty uses the seat count.
+   */
+  maxDevices?: number | null;
+  /**
+   * Every change is written to the license status log. An API key (MCP) cannot change the status.
+   */
   status: 'active' | 'suspended' | 'revoked' | 'expired';
+  statusReason?:
+    | (
+        | 'manual'
+        | 'payment_refund'
+        | 'payment_dispute'
+        | 'rule_ip_spread'
+        | 'rule_geo_spread'
+        | 'rule_impossible_travel'
+        | 'rule_activation_burst'
+        | 'rule_activation_churn'
+        | 'rule_clone_suspected'
+        | 'expiry'
+        | 'restore'
+      )
+    | null;
+  statusSource?: ('admin' | 'mcp' | 'payment' | 'rule' | 'system' | 'import') | null;
+  statusChangedAt?: string | null;
   /**
    * Visible to administrators only.
    */
@@ -4102,6 +4152,267 @@ export interface PaymentEvent {
   failureCode?: string | null;
   receivedAt: string;
   processedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-activations".
+ */
+export interface LicenseActivation {
+  id: number;
+  /**
+   * Random ID used by the API; the sequential record number is never exposed.
+   */
+  publicId: string;
+  license: number | License;
+  customer?: (number | null) | Customer;
+  product?: (number | null) | Product;
+  status: 'active' | 'deactivated' | 'revoked';
+  endReason?: ('user' | 'admin' | 'customer_portal' | 'rebind' | 'license_revoked' | 'rule') | null;
+  /**
+   * Ed25519 public key (base64url). The private key never leaves the device.
+   */
+  devicePublicKey: string;
+  /**
+   * SHA-256 digest of the device public key.
+   */
+  deviceKeyThumbprint: string;
+  /**
+   * Keyed HMAC; raw hardware data is never stored.
+   */
+  fingerprintHash: string;
+  /**
+   * Editable by the customer in the portal (max 64 characters).
+   */
+  deviceLabel?: string | null;
+  platform?: ('windows' | 'macos' | 'linux' | 'other') | null;
+  arch?: string | null;
+  appVersion?: string | null;
+  /**
+   * Last rotating counter issued, used for clone detection.
+   */
+  counter?: string | null;
+  prevCounter?: string | null;
+  activatedAt: string;
+  lastSeenAt?: string | null;
+  endedAt?: string | null;
+  /**
+   * Truncated prefix only (IPv4 /24, IPv6 /48); cleared after the retention period.
+   */
+  lastIpPrefix?: string | null;
+  /**
+   * Keyed HMAC with a monthly key; the full IP is never stored.
+   */
+  lastIpHash?: string | null;
+  /**
+   * Two-letter country code (only when a country source is enabled).
+   */
+  lastCountry?: string | null;
+  endNonce?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-status-log".
+ */
+export interface LicenseStatusLog {
+  id: number;
+  license: number | License;
+  from: 'active' | 'suspended' | 'revoked' | 'expired';
+  to: 'active' | 'suspended' | 'revoked' | 'expired';
+  reason?:
+    | (
+        | 'manual'
+        | 'payment_refund'
+        | 'payment_dispute'
+        | 'rule_ip_spread'
+        | 'rule_geo_spread'
+        | 'rule_impossible_travel'
+        | 'rule_activation_burst'
+        | 'rule_activation_churn'
+        | 'rule_clone_suspected'
+        | 'expiry'
+        | 'restore'
+      )
+    | null;
+  source: 'admin' | 'mcp' | 'payment' | 'rule' | 'system' | 'import' | 'customer';
+  actorUser?: (number | null) | User;
+  order?: (number | null) | Order;
+  event?: (number | null) | SecurityEvent;
+  ruleKey?: string | null;
+  /**
+   * Do not enter personal data (e-mail, IP, license key).
+   */
+  note?: string | null;
+  at: string;
+  revertOf?: (number | null) | LicenseStatusLog;
+  revertible?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-events".
+ */
+export interface SecurityEvent {
+  id: number;
+  type:
+    | 'activation.created'
+    | 'activation.rebind'
+    | 'activation.ended'
+    | 'activation.seat_limit'
+    | 'activation.burst'
+    | 'activation.churn'
+    | 'activation.clone_suspected'
+    | 'license.ip_spread'
+    | 'license.geo_spread'
+    | 'license.impossible_travel'
+    | 'license.status_changed'
+    | 'license.expired'
+    | 'license.created_via_mcp'
+    | 'api.invalid_license'
+    | 'api.bad_signature'
+    | 'api.replay'
+    | 'api.clock_skew'
+    | 'api.rate_limited'
+    | 'api.blocked_request'
+    | 'auth.admin_login_failed'
+    | 'auth.admin_locked'
+    | 'auth.admin_new_network'
+    | 'auth.portal_login_failed'
+    | 'auth.portal_locked'
+    | 'webhook.bad_signature'
+    | 'system.rule_circuit_open'
+    | 'system.signing_key_rotated'
+    | 'system.events_dropped';
+  severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+  source: 'api' | 'portal' | 'admin' | 'webhook' | 'system' | 'rule';
+  firstSeenAt: string;
+  lastSeenAt: string;
+  count: number;
+  /**
+   * Events with the same key are counted in one row.
+   */
+  dedupeKey: string;
+  license?: (number | null) | License;
+  customer?: (number | null) | Customer;
+  activation?: (number | null) | LicenseActivation;
+  order?: (number | null) | Order;
+  actorUser?: (number | null) | User;
+  /**
+   * Truncated prefix only; cleared after the retention period.
+   */
+  ipPrefix?: string | null;
+  /**
+   * Keyed HMAC; the full IP is never stored.
+   */
+  ipHash?: string | null;
+  country?: string | null;
+  /**
+   * Allow-listed fields per event type; contains no personal data.
+   */
+  detail?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  ruleKey?: string | null;
+  actionTaken?: ('none' | 'notified' | 'throttled' | 'blocked' | 'suspended') | null;
+  triage: 'open' | 'acknowledged' | 'resolved' | 'false_positive';
+  triagedBy?: (number | null) | User;
+  triagedAt?: string | null;
+  triageNote?: string | null;
+  notifyState?: ('pending' | 'sent' | 'failed' | 'skipped') | null;
+  notifyAttempts?: number | null;
+  notifyNextAt?: string | null;
+  notifyLastError?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-blocks".
+ */
+export interface SecurityBlock {
+  id: number;
+  kind: 'ip_prefix' | 'cidr' | 'activation' | 'license' | 'fingerprint';
+  /**
+   * For IPs only a prefix/CIDR; never a full IP address.
+   */
+  value: string;
+  scope: 'api' | 'portal' | 'all';
+  active?: boolean | null;
+  /**
+   * Empty means permanent (administrators only).
+   */
+  expiresAt?: string | null;
+  source: 'admin' | 'rule';
+  reason?: string | null;
+  event?: (number | null) | SecurityEvent;
+  createdBy?: (number | null) | User;
+  liftedAt?: string | null;
+  liftedBy?: (number | null) | User;
+  liftReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-audit".
+ */
+export interface SecurityAudit {
+  id: number;
+  action:
+    | 'license.suspend'
+    | 'license.revoke'
+    | 'license.reactivate'
+    | 'license.restore'
+    | 'activation.deactivate'
+    | 'block.add'
+    | 'block.lift'
+    | 'event.triage'
+    | 'settings.update'
+    | 'signing_key.rotate';
+  actorUser?: (number | null) | User;
+  actorKind: 'admin' | 'system' | 'rule';
+  target?:
+    | ({
+        relationTo: 'licenses';
+        value: number | License;
+      } | null)
+    | ({
+        relationTo: 'license-activations';
+        value: number | LicenseActivation;
+      } | null)
+    | ({
+        relationTo: 'security-blocks';
+        value: number | SecurityBlock;
+      } | null)
+    | ({
+        relationTo: 'security-events';
+        value: number | SecurityEvent;
+      } | null);
+  reason?: string | null;
+  /**
+   * Do not enter personal data (e-mail, IP, license key).
+   */
+  note?: string | null;
+  at: string;
+  /**
+   * Truncated prefix only; cleared after the retention period.
+   */
+  ipPrefix?: string | null;
+  result: 'ok' | 'denied' | 'error';
+  /**
+   * The same request is never processed twice.
+   */
+  nonce?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -5683,6 +5994,12 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   sortOrder?: T;
   publishedAt?: T;
+  licensing?:
+    | T
+    | {
+        enabled?: T;
+        code?: T;
+      };
   meta?:
     | T
     | {
@@ -6441,7 +6758,12 @@ export interface LicensesSelect<T extends boolean = true> {
   startsAt?: T;
   expiresAt?: T;
   seats?: T;
+  publicId?: T;
+  maxDevices?: T;
   status?: T;
+  statusReason?: T;
+  statusSource?: T;
+  statusChangedAt?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -6554,6 +6876,129 @@ export interface PaymentEventsSelect<T extends boolean = true> {
   failureCode?: T;
   receivedAt?: T;
   processedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-activations_select".
+ */
+export interface LicenseActivationsSelect<T extends boolean = true> {
+  publicId?: T;
+  license?: T;
+  customer?: T;
+  product?: T;
+  status?: T;
+  endReason?: T;
+  devicePublicKey?: T;
+  deviceKeyThumbprint?: T;
+  fingerprintHash?: T;
+  deviceLabel?: T;
+  platform?: T;
+  arch?: T;
+  appVersion?: T;
+  counter?: T;
+  prevCounter?: T;
+  activatedAt?: T;
+  lastSeenAt?: T;
+  endedAt?: T;
+  lastIpPrefix?: T;
+  lastIpHash?: T;
+  lastCountry?: T;
+  endNonce?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-status-log_select".
+ */
+export interface LicenseStatusLogSelect<T extends boolean = true> {
+  license?: T;
+  from?: T;
+  to?: T;
+  reason?: T;
+  source?: T;
+  actorUser?: T;
+  order?: T;
+  event?: T;
+  ruleKey?: T;
+  note?: T;
+  at?: T;
+  revertOf?: T;
+  revertible?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-events_select".
+ */
+export interface SecurityEventsSelect<T extends boolean = true> {
+  type?: T;
+  severity?: T;
+  source?: T;
+  firstSeenAt?: T;
+  lastSeenAt?: T;
+  count?: T;
+  dedupeKey?: T;
+  license?: T;
+  customer?: T;
+  activation?: T;
+  order?: T;
+  actorUser?: T;
+  ipPrefix?: T;
+  ipHash?: T;
+  country?: T;
+  detail?: T;
+  ruleKey?: T;
+  actionTaken?: T;
+  triage?: T;
+  triagedBy?: T;
+  triagedAt?: T;
+  triageNote?: T;
+  notifyState?: T;
+  notifyAttempts?: T;
+  notifyNextAt?: T;
+  notifyLastError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-blocks_select".
+ */
+export interface SecurityBlocksSelect<T extends boolean = true> {
+  kind?: T;
+  value?: T;
+  scope?: T;
+  active?: T;
+  expiresAt?: T;
+  source?: T;
+  reason?: T;
+  event?: T;
+  createdBy?: T;
+  liftedAt?: T;
+  liftedBy?: T;
+  liftReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-audit_select".
+ */
+export interface SecurityAuditSelect<T extends boolean = true> {
+  action?: T;
+  actorUser?: T;
+  actorKind?: T;
+  target?: T;
+  reason?: T;
+  note?: T;
+  at?: T;
+  ipPrefix?: T;
+  result?: T;
+  nonce?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -8143,6 +8588,176 @@ export interface Integration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licensing-settings".
+ */
+export interface LicensingSetting {
+  id: number;
+  /**
+   * When off, programs get "temporarily unavailable" and keep running within their offline tolerance.
+   */
+  apiEnabled?: boolean | null;
+  /**
+   * Host name embedded in programs (e.g. licensing.example.com). Do not change it later.
+   */
+  publicHost?: string | null;
+  /**
+   * How often a program tries to renew its lease.
+   */
+  refreshHours: number;
+  /**
+   * Lease validity; at most 30 days.
+   */
+  leaseDays: number;
+  clockSkewSeconds: number;
+  /**
+   * Limits database writes.
+   */
+  seenWriteMinutes: number;
+  /**
+   * Choose the Cloudflare country header only when the site is behind Cloudflare.
+   */
+  countrySource: 'none' | 'cloudflare_header';
+  limits: {
+    ipPrefixPerMinute: number;
+    /**
+     * Exceeding it blocks the IP prefix for a while.
+     */
+    invalidLicensePerIpPerHour: number;
+    ipBlockFirstHours: number;
+    ipBlockRepeatHours: number;
+    activationsPerLicensePerDay: number;
+    requestsPerActivationPerHour: number;
+    badSignaturesPerActivationPerHour: number;
+    /**
+     * Exceeding it makes the API return 503 for a while (process protection).
+     */
+    globalPerSecond: number;
+  };
+  rules: {
+    /**
+     * No license is suspended automatically before this date has passed and the rule is in "Suspend" mode. Empty means never.
+     */
+    observeUntil?: string | null;
+    /**
+     * Exceeding it switches rules to monitoring and raises a critical event (circuit breaker).
+     */
+    maxAutoSuspendsPerHour: number;
+    /**
+     * Distinct IP prefixes within the window.
+     */
+    ipSpread: {
+      /**
+       * Observe: event only. Notify: event and e-mail. Suspend: reversible automatic suspension.
+       */
+      mode: 'off' | 'observe' | 'notify' | 'suspend';
+      threshold: number;
+      windowHours: number;
+      suppressDays: number;
+    };
+    /**
+     * Needs a country source.
+     */
+    geoSpread: {
+      /**
+       * Observe: event only. Notify: event and e-mail. Suspend: reversible automatic suspension.
+       */
+      mode: 'off' | 'observe' | 'notify' | 'suspend';
+      threshold: number;
+      windowHours: number;
+      suppressDays: number;
+    };
+    /**
+     * Needs a country source.
+     */
+    impossibleTravel: {
+      /**
+       * Observe: event only. Notify: event and e-mail. Suspend: reversible automatic suspension.
+       */
+      mode: 'off' | 'observe' | 'notify' | 'suspend';
+      threshold: number;
+      windowHours: number;
+      suppressDays: number;
+    };
+    activationBurst: {
+      /**
+       * Observe: event only. Notify: event and e-mail. Suspend: reversible automatic suspension.
+       */
+      mode: 'off' | 'observe' | 'notify' | 'suspend';
+      threshold: number;
+      windowHours: number;
+      suppressDays: number;
+    };
+    activationChurn: {
+      /**
+       * Observe: event only. Notify: event and e-mail. Suspend: reversible automatic suspension.
+       */
+      mode: 'off' | 'observe' | 'notify' | 'suspend';
+      threshold: number;
+      windowHours: number;
+      suppressDays: number;
+    };
+    cloneSuspected: {
+      /**
+       * Observe: event only. Notify: event and e-mail. Suspend: reversible automatic suspension.
+       */
+      mode: 'off' | 'observe' | 'notify' | 'suspend';
+      threshold: number;
+      windowHours: number;
+      suppressDays: number;
+    };
+  };
+  selfService: {
+    portalDeactivationsPer30Days: number;
+    rebindsPer30Days: number;
+  };
+  notifications: {
+    /**
+     * Empty uses the payments alert address, then the site contact address.
+     */
+    alertEmails?:
+      | {
+          email: string;
+          id?: string | null;
+        }[]
+      | null;
+    minSeverityImmediate: 'info' | 'low' | 'medium' | 'high' | 'critical';
+    dailyDigest?: boolean | null;
+    digestHour: number;
+    customerSuspensionEmail?: boolean | null;
+  };
+  retention: {
+    eventIpDays: number;
+    eventDays: number;
+    activationIpDays: number;
+    /**
+     * After the license ends.
+     */
+    activationRowYears: number;
+    blockDays: number;
+    /**
+     * Commercial record; at least 10 years.
+     */
+    statusLogYears: number;
+    auditYears: number;
+  };
+  signingKeys?:
+    | {
+        kid: string;
+        publicKey: string;
+        createdAt: string;
+        /**
+         * Kept for verification only.
+         */
+        retiredAt?: string | null;
+        revokedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -8483,6 +9098,129 @@ export interface IntegrationsSelect<T extends boolean = true> {
         fromName?: T;
       };
   secrets?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licensing-settings_select".
+ */
+export interface LicensingSettingsSelect<T extends boolean = true> {
+  apiEnabled?: T;
+  publicHost?: T;
+  refreshHours?: T;
+  leaseDays?: T;
+  clockSkewSeconds?: T;
+  seenWriteMinutes?: T;
+  countrySource?: T;
+  limits?:
+    | T
+    | {
+        ipPrefixPerMinute?: T;
+        invalidLicensePerIpPerHour?: T;
+        ipBlockFirstHours?: T;
+        ipBlockRepeatHours?: T;
+        activationsPerLicensePerDay?: T;
+        requestsPerActivationPerHour?: T;
+        badSignaturesPerActivationPerHour?: T;
+        globalPerSecond?: T;
+      };
+  rules?:
+    | T
+    | {
+        observeUntil?: T;
+        maxAutoSuspendsPerHour?: T;
+        ipSpread?:
+          | T
+          | {
+              mode?: T;
+              threshold?: T;
+              windowHours?: T;
+              suppressDays?: T;
+            };
+        geoSpread?:
+          | T
+          | {
+              mode?: T;
+              threshold?: T;
+              windowHours?: T;
+              suppressDays?: T;
+            };
+        impossibleTravel?:
+          | T
+          | {
+              mode?: T;
+              threshold?: T;
+              windowHours?: T;
+              suppressDays?: T;
+            };
+        activationBurst?:
+          | T
+          | {
+              mode?: T;
+              threshold?: T;
+              windowHours?: T;
+              suppressDays?: T;
+            };
+        activationChurn?:
+          | T
+          | {
+              mode?: T;
+              threshold?: T;
+              windowHours?: T;
+              suppressDays?: T;
+            };
+        cloneSuspected?:
+          | T
+          | {
+              mode?: T;
+              threshold?: T;
+              windowHours?: T;
+              suppressDays?: T;
+            };
+      };
+  selfService?:
+    | T
+    | {
+        portalDeactivationsPer30Days?: T;
+        rebindsPer30Days?: T;
+      };
+  notifications?:
+    | T
+    | {
+        alertEmails?:
+          | T
+          | {
+              email?: T;
+              id?: T;
+            };
+        minSeverityImmediate?: T;
+        dailyDigest?: T;
+        digestHour?: T;
+        customerSuspensionEmail?: T;
+      };
+  retention?:
+    | T
+    | {
+        eventIpDays?: T;
+        eventDays?: T;
+        activationIpDays?: T;
+        activationRowYears?: T;
+        blockDays?: T;
+        statusLogYears?: T;
+        auditYears?: T;
+      };
+  signingKeys?:
+    | T
+    | {
+        kid?: T;
+        publicKey?: T;
+        createdAt?: T;
+        retiredAt?: T;
+        revokedAt?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

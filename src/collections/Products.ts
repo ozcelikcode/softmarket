@@ -1,11 +1,13 @@
-import { ValidationError, type BlocksField, type CollectionConfig, type FieldHook } from 'payload'
+import { ValidationError, type BlocksField, type CollectionBeforeOperationHook, type CollectionConfig, type Field, type FieldHook } from 'payload'
 import { blocks as validateBlocks } from 'payload/shared'
 
-import { isAdminOrEditor, publishedOrStaff } from '@/access'
+import { hasPanelAdminSession, isAdminOrEditor, isAdminOrEditorField, isPanelAdminField, publishedOrStaff } from '@/access'
 import { productBlocks } from '@/blocks'
 import { layoutField, publishedAtField, sortOrderField } from '@/fields/common'
 import { slugField } from '@/fields/slug'
 import { normalizeProductLayout, validateProductLayout } from '@/lib/blocks/product-composition'
+import { LICENSING_CODE_RE } from '@/lib/licensing/constants'
+import type { Product } from '@/payload-types'
 
 /** V2: autosave drives Live Preview like `pages` (F8); autosaves only write `_products_v` (no ISR purge). */
 export const PRODUCTS_AUTOSAVE_INTERVAL = 2000
@@ -24,6 +26,93 @@ const enforceProductLayout: FieldHook = ({ value, previousValue, req, path }) =>
   if (result !== true) throw new ValidationError({ errors: [{ path: path.join('.'), message: result }], req }, req.t)
   return next
 }
+
+/** L1: empty input is stored as NULL (several products without a code must not collide on the unique index). */
+const emptyCodeToNull: FieldHook = ({ value }) => (typeof value === 'string' && value.trim() === '' ? null : value)
+
+const validLicensingCode = (value: unknown): value is string => typeof value === 'string' && LICENSING_CODE_RE.test(value)
+
+const validateLicensingGroup: FieldHook = ({ value, path, req }) => {
+  if (value !== undefined && (!value || typeof value !== 'object' || Array.isArray(value))) {
+    throw new ValidationError({ errors: [{ path: path.join('.'), message: 'Licensing settings must be an object.' }], req }, req.t)
+  }
+  return value
+}
+
+const requireCodeWhenEnabled: FieldHook = ({ value, siblingData, previousSiblingDoc, path, req }) => {
+  const code = siblingData.code === undefined ? previousSiblingDoc.code : siblingData.code
+  if (value === true && !validLicensingCode(code)) {
+    throw new ValidationError({ errors: [{ path: path.join('.'), message: 'Set the licensing code before enabling the licensing API.' }], req }, req.t)
+  }
+  return value
+}
+
+/**
+ * L1: `licensing.code` is the lease audience embedded in shipped programs. Once stored it can never change or be
+ * cleared (also not through a draft, autosave, version restore, REST, MCP or Local API).
+ */
+const enforceLicensingCode: FieldHook = async ({ value, previousValue, originalDoc, operation, path, req }) => {
+  if (operation === 'update' && previousValue && value !== previousValue) {
+    throw new ValidationError({ errors: [{ path: path.join('.'), message: 'The licensing code cannot change once set.' }], req }, req.t)
+  }
+  if (value != null && !validLicensingCode(value)) {
+    throw new ValidationError({ errors: [{ path: path.join('.'), message: 'Use 3–41 lowercase letters, digits or hyphens, starting with a letter or digit.' }], req }, req.t)
+  }
+  if (validLicensingCode(value) && (operation === 'create' || value !== previousValue)) {
+    // The main-table unique index cannot see codes reserved by unpublished versions.
+    const { docs } = await req.payload.db.findVersions({
+      collection: 'products',
+      where: {
+        'version.licensing.code': { equals: value },
+        ...(operation === 'update' && originalDoc?.id != null ? { parent: { not_equals: originalDoc.id } } : {}),
+      },
+      limit: 1,
+      pagination: false,
+      req,
+      select: { id: true },
+    })
+    if (docs.length) {
+      throw new ValidationError({ errors: [{ path: path.join('.'), message: 'This licensing code is already used by another product.' }], req }, req.t)
+    }
+  }
+  return value
+}
+
+// A code identifies one product. Parallel bulk saves share a transaction and can race the draft uniqueness check.
+const preventBulkLicensingCodeAssignment: CollectionBeforeOperationHook = ({ args, operation, overrideAccess, req }) => {
+  if (operation === 'update' && 'where' in args && validLicensingCode((args.data as Partial<Product> | undefined)?.licensing?.code)
+    && (overrideAccess || hasPanelAdminSession(req))) {
+    throw new ValidationError({ errors: [{ path: 'licensing.code', message: 'Set the licensing code on an individual product.' }], req }, req.t)
+  }
+}
+
+/*
+ * L1 licensing settings of a product (plan §4.2): staff read, admin panel session write (never a users API key),
+ * never in content:import, hidden from public reads (field read access).
+ */
+const licensingField = {
+  name: 'licensing',
+  type: 'group',
+  hooks: { beforeValidate: [validateLicensingGroup] },
+  access: { read: isAdminOrEditorField, create: isPanelAdminField, update: isPanelAdminField },
+  custom: { contentImport: false },
+  admin: { position: 'sidebar' },
+  fields: [
+    {
+      name: 'enabled',
+      type: 'checkbox',
+      defaultValue: false,
+      hooks: { beforeChange: [requireCodeWhenEnabled] },
+    },
+    {
+      name: 'code',
+      type: 'text',
+      unique: true,
+      maxLength: 41,
+      hooks: { beforeValidate: [emptyCodeToNull], beforeChange: [enforceLicensingCode] },
+    },
+  ],
+} satisfies Field
 
 export const OPERATING_SYSTEMS = [
   { label: 'Windows', value: 'windows' },
@@ -50,6 +139,7 @@ export const Products: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
+  hooks: { beforeOperation: [preventBulkLicensingCodeAssignment] },
   versions: { maxPerDoc: 50, drafts: { autosave: { interval: PRODUCTS_AUTOSAVE_INTERVAL } } },
   fields: [
     {
@@ -141,5 +231,6 @@ export const Products: CollectionConfig = {
     { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
     sortOrderField,
     publishedAtField,
+    licensingField,
   ],
 }

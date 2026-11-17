@@ -68,16 +68,20 @@ describe(`migration ${NAME}`, () => {
     const motion = migrations.find((m) => m.name === '20261108_100715_blocks_motion')!
     // V2 product-bound block tables + products autosave column.
     const productBound = migrations.find((m) => m.name === '20261108_130717_v2_product_bound_blocks')!
+    // L1 licensing columns on products/licenses and locked-document rels.
+    const licensing = migrations.find((m) => m.name === '20261117_200700_licensing_core')!
     await later.up(args())
     await dynamic.up(args())
     await globalsEditable.up(args())
     await pageBuilder.up(args())
     await motion.up(args())
     await productBound.up(args())
+    await licensing.up(args())
     let product
     try {
       product = await payload.findByID({ collection: 'products', id: 1, locale: 'tr', depth: 0, overrideAccess: true })
     } finally {
+      await licensing.down(args())
       await productBound.down(args())
       await motion.down(args())
       await pageBuilder.down(args())

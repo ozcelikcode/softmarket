@@ -133,6 +133,8 @@ describe(`migration ${NAME}`, () => {
     await run(`UPDATE pages_locales SET legal_review_approved_by = NULL`)
     expect((await run('PRAGMA integrity_check')).rows[0]).toMatchObject({ integrity_check: 'ok' })
 
+    // L1 licensing core (independent of this test) is part of the current Payload schema (locked-document rels, products, licenses).
+    await ((await import('../../src/migrations')) as unknown as { migrations: Migration[] }).migrations.find((m) => m.name === '20261117_200700_licensing_core')!.up(args())
     // Rest of the setup on the migrated schema.
     await payload.create({ collection: 'users', overrideAccess: true, data: { ...ADMIN, name: 'Admin', roles: ['admin'], enableAPIKey: true, apiKey: API_KEY } as never })
     await payload.create({ collection: 'users', overrideAccess: true, data: { ...ADMIN2, name: 'Admin 2', roles: ['admin'] } as never })

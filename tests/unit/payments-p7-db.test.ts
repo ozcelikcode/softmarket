@@ -69,6 +69,8 @@ describe(`migration ${NAME}`, () => {
     // Later schema (Entegrasyon ayarları: pages.legalReview, site_settings.company_etbis_no) for the behaviour tests.
     const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
     await migrations.find((m) => m.name === '20261117_092957_integrations_settings')!.up(args())
+    // L1 licensing core (independent of this test) is part of the current Payload schema (locked-document rels, products, licenses).
+    await migrations.find((m) => m.name === '20261117_200700_licensing_core')!.up(args())
     await payload.updateGlobal({ slug: 'site-settings', overrideAccess: true, locale: 'tr', data: {
       company: { legalName: 'Örnek A.Ş.', taxOffice: 'Kadıköy', taxNumber: '1234567890', mersisNo: '0123456789012345', kepAddress: 'ornek@hs01.kep.tr', etbisNo: 'ETBIS-42' },
       contact: { email: 'info@example.test', phone: '+90 212 000 00 00', address: 'İstanbul' },

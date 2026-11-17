@@ -39,6 +39,8 @@ beforeAll(async () => {
   await migrations.find((m) => m.name === '20261116_141401_p2_payments_commerce')!.up({ db: payload.db.drizzle, payload, req: {} } as never)
   await migrations.find((m) => m.name === '20261116_155928_p7_commerce_legal')!.up({ db: payload.db.drizzle, payload, req: {} } as never)
   await migrations.find((m) => m.name === '20261117_092957_integrations_settings')!.up({ db: payload.db.drizzle, payload, req: {} } as never)
+  // L1 licensing core (independent of this test) is part of the current Payload schema (locked-document rels, products, licenses).
+  await migrations.find((m) => m.name === '20261117_200700_licensing_core')!.up({ db: payload.db.drizzle, payload, req: {} } as never)
   // Legacy content: a published page with a hero (animation none) and a feature grid, plus its version.
   await run("INSERT INTO pages(id,_status) VALUES(901,'published')")
   await run("INSERT INTO pages_locales(_parent_id,_locale,title,slug) VALUES(901,'tr','Korunan','korunan'),(901,'en','Preserved','preserved')")

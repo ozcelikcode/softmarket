@@ -45,7 +45,8 @@ beforeAll(async () => {
     .toBe(realpathSync(join(dir, 'test.db')))
   const { migrations } = await import('../../src/migrations')
   const index = migrations.findIndex((m) => m.name === NAME)
-  expect(index).toBe(migrations.length - 1)
+  // Later migrations (e.g. L1 licensing_core) may follow; this test only runs the chain up to G1.
+  expect(index).toBeGreaterThan(0)
   type MigrateArgs = NonNullable<Parameters<typeof payload.db.migrate>[0]>['migrations']
   await payload.db.migrate({ migrations: migrations.slice(0, index) as unknown as MigrateArgs })
   migration = await import('../../src/migrations/20261117_133332_globals_chrome_drafts')

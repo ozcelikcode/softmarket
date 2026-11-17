@@ -1,3 +1,11 @@
+## Licensing L1 schema (`licensing_core`) — 2026-11-17 (independent audit; committed and live-migrated)
+
+- Done: 5 security collections + `licensing-settings` global, license/product fields, transition log hooks, delete guard, migration with partial unique indexes and guarded down, TR/EN admin labels. Record: `docs/plan-licensing-security.md` "L1 implementation record".
+- Live: `20261117_200700_licensing_core` applied to data/softmarket.db on 2026-11-17 (pre-migration backup in gitignored data/backups/); integrity_check ok, foreign_key_check clean, content:import dry-run 0 created / 98 updated. Suite: 97 files / 1599 unit tests, e2e 19, isolated 30. Note: `licensing-settings` is server-write-only in L1 (panel save disabled by design until the L2 endpoint). Deferred L3: refund/dispute raw SQL in admin-actions.ts bypasses status logging.
+- Tests: `licensing-migration`, `licensing-access`, `licensing-transitions-db` (new); `mcp`, `admin-labels`, `globals-drafts-migration` (updated). The final focused Vitest run passed 58 tests in 5 files. Full Vitest passed 1,599 tests in 97 files. Typecheck and lint passed.
+- Audit verified copy migration up/down/up, all 723 original table hashes, integrity, foreign keys, the schema snapshot and seed rollback. Regression tests exercise panel and bearer access, hidden-field predicates, transactional status history, rule gating and draft code reservation.
+- Open: settings-change audit and reason-required status edits (L6), payment raw-SQL transition logging (L3), `licenses.activations` join (L3).
+
 ## G1 independent security audit — 2026-11-17
 
 - Fixed public/customer draft/history exposure, status-less publication of pending drafts, projected-write version truncation/cache staleness, and invalid URL grandfathering through autosave. Regression tests cover direct REST reads, Local API access, publication/rollback, explicit REST/MCP publication, concurrency/restore and URL obfuscation.

@@ -22,6 +22,7 @@ import * as migration_20261116_155928_p7_commerce_legal from './20261116_155928_
 import * as migration_20261116_175713_p4_order_notifications from './20261116_175713_p4_order_notifications';
 import * as migration_20261117_092957_integrations_settings from './20261117_092957_integrations_settings';
 import * as migration_20261117_133332_globals_chrome_drafts from './20261117_133332_globals_chrome_drafts';
+import * as migration_20261117_200700_licensing_core from './20261117_200700_licensing_core';
 
 export const migrations = [
   {
@@ -142,6 +143,11 @@ export const migrations = [
   {
     up: migration_20261117_133332_globals_chrome_drafts.up,
     down: migration_20261117_133332_globals_chrome_drafts.down,
-    name: '20261117_133332_globals_chrome_drafts'
+    name: '20261117_133332_globals_chrome_drafts',
+  },
+  {
+    up: migration_20261117_200700_licensing_core.up,
+    down: migration_20261117_200700_licensing_core.down,
+    name: '20261117_200700_licensing_core'
   },
 ];

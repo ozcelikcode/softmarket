@@ -44,6 +44,23 @@ describe('MCP allowlist and API authentication', () => {
     }
     expect(await adminAPIKeysOnly({ data: { roles: ['editor'], apiKey: 'x', enableAPIKey: true }, originalDoc: { roles: ['admin'] } } as never)).toMatchObject({ enableAPIKey: false, apiKey: null, apiKeyIndex: null })
   })
+  it('L1: keeps licensing/security data out of MCP and blocks API-key status writes', async () => {
+    for (const slug of ['license-activations', 'license-status-log', 'security-events', 'security-blocks', 'security-audit']) expect(mcpCollections).not.toHaveProperty(slug)
+    expect(mcpGlobals).not.toHaveProperty('licensing-settings')
+    const { Licenses } = await import('../../src/collections/Licenses')
+    const { Products } = await import('../../src/collections/Products')
+    const status = Licenses.fields.find((f) => 'name' in f && f.name === 'status') as { access: Record<'create' | 'update', (a: unknown) => unknown> }
+    const licensing = Products.fields.find((f) => 'name' in f && f.name === 'licensing') as { access: Record<'create' | 'update', (a: unknown) => unknown> }
+    const admin = { collection: 'users', roles: ['admin'] }
+    for (const access of [status.access, licensing.access]) {
+      for (const op of ['create', 'update'] as const) {
+        expect(await access[op]({ req: { user: { ...admin, _strategy: 'api-key' } } })).toBe(false)
+        expect(await access[op]({ req: { user: { ...admin, _strategy: 'local-jwt' }, headers: new Headers() } })).toBe(true)
+        expect(await access[op]({ req: { user: { ...admin, _strategy: 'local-jwt' }, headers: new Headers({ authorization: 'Bearer test-jwt' }) } })).toBe(false)
+        expect(await access[op]({ req: { user: { collection: 'users', roles: ['editor'], _strategy: 'local-jwt' } } })).toBe(false)
+      }
+    }
+  })
   it('prevents relationship population and server-side file reads in MCP operations', async () => {
     const find = vi.fn(async () => ({}))
     const update = vi.fn(async () => ({}))

@@ -32,6 +32,11 @@ import { Editions } from './collections/Editions'
 import { Faqs } from './collections/Faqs'
 import { Industries } from './collections/Industries'
 import { Licenses } from './collections/Licenses'
+import { LicenseActivations } from './collections/LicenseActivations'
+import { LicenseStatusLog } from './collections/LicenseStatusLog'
+import { SecurityAudit } from './collections/SecurityAudit'
+import { SecurityBlocks } from './collections/SecurityBlocks'
+import { SecurityEvents } from './collections/SecurityEvents'
 import { Media } from './collections/Media'
 import { Orders } from './collections/Orders'
 import { Pages } from './collections/Pages'
@@ -50,6 +55,7 @@ import { Header } from './globals/Header'
 import { VALIDATION_TRANSLATIONS } from './lib/validation-messages'
 import { SiteSettings } from './globals/SiteSettings'
 import { Integrations } from './globals/Integrations'
+import { LicensingSettings } from './globals/LicensingSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -141,10 +147,19 @@ export default buildConfig({
     // Sales (P2-S schema; server-written, never public, not in the MCP allowlist)
     Orders,
     PaymentEvents,
-  ].map(localizeCollection).map((collection) => ['users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages', 'orders', 'payment-events'].includes(collection.slug)
-    ? collection : withPublicRevalidation(collection)),
+    // Licensing core (L1; server-written, admin panel read only, never public, not in the MCP allowlist)
+    LicenseActivations,
+    LicenseStatusLog,
+    SecurityEvents,
+    SecurityBlocks,
+    SecurityAudit,
+  ].map(localizeCollection).map((collection) => [
+    'users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages', 'orders', 'payment-events',
+    'license-activations', 'license-status-log', 'security-events', 'security-blocks', 'security-audit',
+  ].includes(collection.slug) ? collection : withPublicRevalidation(collection)),
   // `integrations` (keys, SMTP) affects no public page: no revalidation wrapper, never in MCP (src/lib/mcp.ts).
-  globals: [...[Header, Footer, SiteSettings].map(localizeGlobal).map(withGlobalRevalidation), localizeGlobal(Integrations)],
+  // `licensing-settings` (L1) likewise: admin panel only, no revalidation, not in MCP.
+  globals: [...[Header, Footer, SiteSettings].map(localizeGlobal).map(withGlobalRevalidation), localizeGlobal(Integrations), localizeGlobal(LicensingSettings)],
   editor: lexicalEditor(),
   secret,
   // SMTP is resolved on every send (env first, else the admin panel `integrations` global, else console-style log

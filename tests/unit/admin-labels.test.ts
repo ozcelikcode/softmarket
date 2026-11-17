@@ -178,7 +178,7 @@ describe('F10 admin labels (TR + EN)', () => {
 
   it('discovers every collection and global', () => {
     expect(collections.length).toBeGreaterThanOrEqual(20)
-    expect(globals.map((g) => g.slug).sort()).toEqual(['footer', 'header', 'integrations', 'site-settings'])
+    expect(globals.map((g) => g.slug).sort()).toEqual(['footer', 'header', 'integrations', 'licensing-settings', 'site-settings'])
     for (const c of collections) expect(COLLECTION_LABELS[c.slug], c.slug).toBeTruthy()
     for (const g of globals) expect(GLOBAL_LABELS[g.slug], g.slug).toBeTruthy()
   })

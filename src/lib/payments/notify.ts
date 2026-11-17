@@ -4,7 +4,7 @@ import type { Where } from 'payload'
 import { sendOrderConfirmation, sendOrderLicenses, type NotifyOrder } from '@/lib/email/order-confirmation'
 import { sendOrderRefunded } from '@/lib/email/order-refund'
 import { alertRecipient, sendOrderReviewAlert } from '@/lib/email/order-review'
-import { isSmtpConfigured } from '@/lib/email/template'
+import { isEmailConfigured } from '@/lib/email/adapter'
 import type { PaymentsDeps } from './runtime'
 import { journalKey } from './store/journal'
 import { withPaymentTransaction } from './store/transaction'
@@ -182,7 +182,7 @@ export function scheduleOrderNotifications(deps: PaymentsDeps, orderId: Id): voi
 export async function findUndeliveredOrders(deps: PaymentsDeps, limit: number, sendableOnly = false): Promise<{ id: Id; orderNumber: string; kinds: NotifyKind[] }[]> {
   const now = deps.now()
   const nowIso = now.toISOString()
-  if (sendableOnly && !isSmtpConfigured()) return []
+  if (sendableOnly && !(await isEmailConfigured(deps.payload))) return []
   const since = new Date(now.getTime() - NOTIFY_POLICY.maxAgeMs).toISOString()
   // Refund notices: refunded orders whose refund (not order) is recent and whose notice row is still unsent.
   const { docs: notices } = await deps.payload.find({

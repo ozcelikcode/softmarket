@@ -651,10 +651,23 @@ Renk hex biçiminde olmalıdır. `#` ile başlayan 3 veya 6 haneli kod girin; k�
 
 - Sayfalar "Sayfalar" koleksiyonunda, **Sayfa türü = Hukuki** olan kayıtlardır. Kenar çubuğundaki **Satış yasal sayfası türü** alanından hangisi olduğu seçilir (her tür yalnız bir sayfada olabilir; alan yalnız Hukuki sayfada görünür).
 - Taslak metinler `content/legal/{tr,en}/` altındadır ve hukukçu onayı gerektirir. Üstteki "TASLAK" bandı ve `[KÖŞELİ]` alanlar silinene dek sayfa `noindex` kalır, sitemap'e girmez ve **ödeme açılamaz**.
-- Bu otomatik kontrol hukukçu onayını doğrulamaz: bandı ve tüm yer tutucuları silmek teknik kapıyı geçebilir. Hukukçu incelemesini ve onayını yayın sorumlusu ayrıca almalıdır. Boş/gizli metin ve eksik EN çevirisi hazır sayılmaz.
-- Hazır olunca bandı ve köşeli alanları (şirket unvanı, MERSİS, adres, vergi dairesi/no, KEP, ETBİS no) gerçek bilgilerle değiştirip **TR ve EN** sayfayı yayınlayın. Site ayarları > "Satış ve ödeme" hazırlık listesindeki "yasal sayfalar" satırı 3/3 olmalıdır.
+- **Şirket bilgisi yer tutucuları otomatik dolar:** `[ŞİRKET UNVANI]`, `[ADRES]`, `[MERSİS]`, `[VERGİ DAİRESİ/NO]`, `[KEP]`, `[ETBİS NO]`, `[TELEFON]`, `[KVKK İLETİŞİM E-POSTASI]` metinden silinmez; Site ayarları > **Şirket ve iletişim** (unvan, MERSİS, vergi dairesi, vergi no, KEP, ETBİS no; adres, telefon, genel e-posta) doldurulunca sitede, sözleşme kopyasında ve kontrollerde gerçek değerle görünür. Değer boşsa yer tutucu kalır ve sayfa taslak sayılır. Diğer köşeli alanları (`[YÜRÜRLÜK TARİHİ]`, `[HUKUK İNCELEMESİ: …]` vb.) hukukçu ile birlikte metinden düzeltin.
+- **Hukukçu onayı:** Sayfanın kenar çubuğundaki **Hukukçu onayı** (yalnız yönetici, dil başına) alanına onaylayanın adını ve onay tarihini girip kaydedin. Onay o anki başlık ve metne bağlanır: metin sonradan değişirse onay kendiliğinden geçersiz olur; yeniden onay için tarihi güncelleyin. Onaysız satış sayfasıyla ödeme açılmaz. Editör ve API/MCP onay giremez.
+- Hazır olunca bandı ve hukukçu yer tutucularını temizleyip **TR ve EN** sayfayı yayınlayın ve onaylayın. Site ayarları > "Satış ve ödeme" hazırlık listesinde "yasal sayfalar" satırı 3/3 ve "hukukçu onaylı sürüm" 6/6, "Şirket bilgileri tam" satırı ✓ olmalıdır.
 - Ödeme kapalıyken (yalnız teklif) bu üç sayfa ziyaretçiye 404 verir; menü/footer bağlantıları, sitemap'ten de çıkar. Taslak önizlemesi personele açıktır.
 - Sayfalar `pnpm content:import --legal` ile yüklenir (dosya adından tür atanır); bu komut mevcut aynı slug kayıtlarının iki dildeki metinlerini de değiştirip yayınlar; hukukçu onaylı metinlerin üzerine taslak yazabilir. Önce DB/uploads kopyasında `--dry-run --legal` ile inceleyin, canlıda yalnız onaylı kaynaklarla çalıştırın.
+
+### Entegrasyon ayarları (yalnız yönetici)
+
+Yönetim > **Entegrasyon ayarları**: ödeme sağlayıcısı anahtarları ve e-posta (SMTP) hesabı. Editörler bu sayfayı görmez.
+
+- **Üst kutu (salt okunur):** site adresi, ödeme kilidi (`PAYMENTS_ENABLED`), Stripe izni ve şifreleme anahtarı sunucuda belirlenir; burada yalnız görünür. Her sağlayıcı/SMTP için kaynak yazar: **sunucu ayarı** (ortam değişkeni tanımlı; panel değeri yok sayılır), **panel** veya **yok**.
+- **Gizli değerler (anahtarlar, SMTP şifresi):** "Gir/Değiştir" ile yazıp **Anahtarı kaydet**'e basın. Değer şifrelenip saklanır ve **bir daha gösterilmez**; yalnız "Tanımlı · son 4 karakter · güncellenme zamanı" görünür (SMTP şifresinin son karakterleri gösterilmez). "Temizle" kaydı siler. Bu alanlar sayfanın "Kaydet" düğmesinden bağımsızdır.
+- **Ortam:** iyzico ve Stripe için Test (sandbox) / Canlı seçilir; seçili ortamın anahtarları kullanılır, API adresi seçimden gelir. Canlıya geçerken "Canlı ortamı onaylıyorum" kutusu işaretlenmeden kayıt yapılmaz (gerçek kartlardan tahsilat yapılır).
+- **Stripe** yalnız sunucuda izin varsa (`PAYMENTS_STRIPE_ENABLED=true`) kullanılır; test anahtarı `sk_test_`, canlı `sk_live_`, webhook sırrı `whsec_` ile başlamalıdır.
+- **SMTP:** önce sunucu, port, TLS, kullanıcı adı, gönderen adresi/adı girip **sayfayı kaydedin**, sonra şifreyi girin. Sunucu veya kullanıcı değişirse kayıtlı şifre güvenlik gereği geçersiz olur ("Okunamıyor"); yeniden girin. **Test e-postası gönder (bana)** kayıtlı ayarlarla yalnız sizin adresinize ileti yollar (dakikada 1, saatte en çok 5).
+- Sağlayıcıyı sitede açma/kapama ve KDV, Site ayarları > Talepler > **Satış ve ödeme** bölümündedir; hazırlık listesi anahtar kaynağını (panel/sunucu/yok), SMTP'yi, eksik şirket bilgilerini ve hukukçu onayını gösterir.
+- "Şifreleme anahtarı: hayır" görünüyorsa gizli değer kaydedilemez; sunucu yöneticisine `SOFTMARKET_SECRETS_KEY` tanımlatın. Bu anahtar değişir veya kaybolursa kayıtlı değerler "Okunamıyor" olur ve yeniden girilmelidir.
 
 ## 8. Çeviri (TR ve EN)
 

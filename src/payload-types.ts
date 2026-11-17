@@ -157,11 +157,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'site-settings': SiteSetting;
+    integrations: Integration;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    integrations: IntegrationsSelect<false> | IntegrationsSelect<true>;
   };
   locale: 'tr' | 'en';
   widgets: {
@@ -996,6 +998,14 @@ export interface Page {
    * Empty = not a sales legal page. Marked pages are visible only while payments are open; one page per type.
    */
   commerceLegal?: ('distanceSales' | 'preInformation' | 'refund') | null;
+  /**
+   * Fill in when a lawyer approved this language version (admins only). Any later text change voids the approval; update the date to approve again. Sales pages cannot go live without it.
+   */
+  legalReview?: {
+    approvedBy?: string | null;
+    approvedAt?: string | null;
+    approvedHash?: string | null;
+  };
   /**
    * Filled automatically on first publish; editable.
    */
@@ -6210,6 +6220,13 @@ export interface PagesSelect<T extends boolean = true> {
   pageType?: T;
   systemKey?: T;
   commerceLegal?: T;
+  legalReview?:
+    | T
+    | {
+        approvedBy?: T;
+        approvedAt?: T;
+        approvedHash?: T;
+      };
   publishedAt?: T;
   meta?:
     | T
@@ -7977,6 +7994,10 @@ export interface SiteSetting {
     taxNumber?: string | null;
     mersisNo?: string | null;
     kepAddress?: string | null;
+    /**
+     * E-commerce Information System (ETBIS) registration. Legal name, MERSIS, tax, KEP, ETBIS here plus address, phone and general e-mail under Contact fill the [ŞİRKET UNVANI]-style placeholders in legal texts; with a field missing the legal text counts as a draft and payments cannot open.
+     */
+    etbisNo?: string | null;
   };
   contact?: {
     email?: string | null;
@@ -8018,7 +8039,7 @@ export interface SiteSetting {
      */
     mode?: ('quote-only' | 'payments') | null;
     /**
-     * Keys live only in server environment variables, never here. The server also decides test/live.
+     * Keys and the test/live choice live in "Integration settings" (encrypted); a server environment variable, when set, takes precedence. Here a provider is only switched on/off.
      */
     providers?: {
       iyzico?: {
@@ -8065,6 +8086,54 @@ export interface SiteSetting {
      */
     quoteSince?: string | null;
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Payment provider keys and the SMTP account. Secret values are stored encrypted and never shown again; a server environment variable, when set, takes precedence.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "integrations".
+ */
+export interface Integration {
+  id: number;
+  iyzico: {
+    /**
+     * The keys of the selected environment are used; the API address follows this choice (no free-form URL). Switching to live needs an extra confirmation.
+     */
+    environment: 'sandbox' | 'live';
+    confirmLive?: boolean | null;
+  };
+  /**
+   * Used only with PAYMENTS_STRIPE_ENABLED=true on the server (Stripe does not serve companies based in Türkiye).
+   */
+  stripe: {
+    /**
+     * The keys of the selected environment are used; the API address follows this choice (no free-form URL). Switching to live needs an extra confirmation.
+     */
+    environment: 'sandbox' | 'live';
+    confirmLive?: boolean | null;
+  };
+  /**
+   * Save host, port, user and sender first, then enter the password. Changing the host or user invalidates the stored password; enter it again.
+   */
+  smtp?: {
+    host?: string | null;
+    port?: number | null;
+    secure?: boolean | null;
+    user?: string | null;
+    fromAddress?: string | null;
+    fromName?: string | null;
+  };
+  secrets?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -8298,6 +8367,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         taxNumber?: T;
         mersisNo?: T;
         kepAddress?: T;
+        etbisNo?: T;
       };
   contact?:
     | T
@@ -8373,6 +8443,38 @@ export interface SiteSettingsSelect<T extends boolean = true> {
             };
         quoteSince?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "integrations_select".
+ */
+export interface IntegrationsSelect<T extends boolean = true> {
+  iyzico?:
+    | T
+    | {
+        environment?: T;
+        confirmLive?: T;
+      };
+  stripe?:
+    | T
+    | {
+        environment?: T;
+        confirmLive?: T;
+      };
+  smtp?:
+    | T
+    | {
+        host?: T;
+        port?: T;
+        secure?: T;
+        user?: T;
+        fromAddress?: T;
+        fromName?: T;
+      };
+  secrets?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

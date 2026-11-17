@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 import { reconcileOrders } from '../src/lib/payments/reconcile'
-import { createPaymentsDeps, paymentsLogger } from '../src/lib/payments/runtime'
+import { loadPaymentsDeps, paymentsLogger } from '../src/lib/payments/runtime'
 
 /*
  * `pnpm payments:reconcile [--dry-run] [--limit=N]` — completes or cancels pending orders from the provider's truth
@@ -20,7 +20,7 @@ async function main() {
   const tasks: Promise<void>[] = []
   const log = paymentsLogger(payload)
   try {
-    const deps = createPaymentsDeps(payload, {
+    const deps = await loadPaymentsDeps(payload, {
       log,
       // No request context in the CLI: post-commit e-mails start at once and are awaited before exit.
       defer: (task) => void tasks.push(task().catch(() => log.error('post-commit task failed'))),

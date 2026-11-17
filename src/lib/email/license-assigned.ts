@@ -1,6 +1,7 @@
 import type { License } from '@/payload-types'
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 import { after } from 'next/server'
+import { isEmailConfigured } from './adapter'
 import { emailLocale, emailTemplate, type EmailLocale } from './template'
 
 const idOf = (value: number | { id: number }) => typeof value === 'object' ? value.id : value
@@ -43,15 +44,21 @@ export async function buildLicenseEmail(payload: Payload, licenses: LicenseLike[
 export const notifyLicenseAssigned: CollectionAfterChangeHook<License> = async ({ doc, operation, req, context }) => {
   if (operation !== 'create') return doc
   if (context?.[ORDER_FULFILMENT_CONTEXT] === true) return doc
-  // Payload's console adapter logs the entire message, including the license key.
+  // Never hand the key to an unconfigured mailer. Env SMTP (complete) is checked here; without env SMTP the
+  // admin-panel SMTP (integrations) is checked after the response, outside the assignment transaction.
   const smtpHost = process.env.SMTP_HOST?.trim()
-  if (!smtpHost || smtpHost.startsWith('CHANGE_') || !process.env.SMTP_FROM) {
+  const envSmtp = Boolean(smtpHost && !smtpHost.startsWith('CHANGE_'))
+  if (envSmtp && !process.env.SMTP_FROM) {
     req.payload.logger.error('License assignment email skipped: SMTP is not configured.')
     return doc
   }
   try {
     after(async () => {
       try {
+        if (!envSmtp && !(await isEmailConfigured(req.payload))) {
+          req.payload.logger.error('License assignment email skipped: SMTP is not configured.')
+          return
+        }
         // A collection afterChange hook runs before commit. An independent read after
         // the response also rejects rolled-back assignments and reused numeric IDs.
         const committed = await req.payload.findByID({ collection: 'licenses', id: doc.id, depth: 0, overrideAccess: true })

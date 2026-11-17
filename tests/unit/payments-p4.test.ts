@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { readLimitedBody } from '../../src/lib/payments/body'
 import { MAX_WEBHOOK_BYTES } from '../../src/lib/payments/providers/http'
@@ -10,6 +10,11 @@ import { forbiddenActionOrigin } from '../../src/lib/request-guards'
  * P4 pure checks: streaming body limit, server-only boundary (client import graph), middleware/origin guard scope,
  * capability-off routes. The DB flow lives in payments-p4-db.test.ts.
  */
+
+// Routes load Payload only with the capability on (panel credentials live in the DB): a fake instance, never a real DB.
+const fake = vi.hoisted(() => ({ getPayload: vi.fn(async () => ({ findGlobal: async () => ({}) })) }))
+vi.mock('payload', async (importOriginal) => ({ ...(await importOriginal<typeof import('payload')>()), getPayload: fake.getPayload }))
+vi.mock('@payload-config', () => ({ default: {} }))
 
 const streamOf = (chunks: Uint8Array[], onPull?: () => void) => {
   let i = 0
@@ -104,7 +109,8 @@ describe('server-only boundary: no client component reaches server payment code'
     const importers = walk(SRC).filter((file) => importsOf(file).some((dep) => p4.some((m) => dep === join(SRC, `lib/payments/${m}.ts`))))
       .map((p) => p.slice(SRC.length + 1))
     // P5: the checkout Server Action and the Stripe-return sync are the only portal modules that build payment deps.
-    for (const file of importers) expect(file).toMatch(/^(lib\/payments\/|lib\/email\/order-|app\/\(payload\)\/api\/payments\/|lib\/portal\/checkout-(actions|orders)\.ts$)/)
+    // Entegrasyon ayarları: the integrations runtime resolves panel credentials for the same deps.
+    for (const file of importers) expect(file).toMatch(/^(lib\/payments\/|lib\/integrations\/|lib\/email\/order-|app\/\(payload\)\/api\/payments\/|lib\/portal\/checkout-(actions|orders)\.ts$)/)
   })
 })
 
@@ -145,8 +151,9 @@ describe('routes without the env capability', () => {
     expect(await res.text()).toBe('')
     process.env.PAYMENTS_ENABLED = '1'
     expect((await mod.POST(post('{}'))).status).toBe(404)
+    expect(fake.getPayload).not.toHaveBeenCalled()
   })
-  it.each(Object.keys(ROUTES) as (keyof typeof ROUTES)[])('%s → 404 without a configured adapter', async (path) => {
+  it.each(Object.keys(ROUTES) as (keyof typeof ROUTES)[])('%s → 404 without a configured adapter (no env keys, no panel keys)', async (path) => {
     process.env.PAYMENTS_ENABLED = 'true'
     delete process.env.PAYMENTS_STRIPE_ENABLED
     delete process.env.IYZICO_API_KEY

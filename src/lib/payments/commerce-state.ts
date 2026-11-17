@@ -1,4 +1,4 @@
-import { readPaymentsEnv } from './env'
+import { readPaymentsEnv, type PaymentsEnvConfig } from './env'
 import { CHECKOUT_READY } from './flags'
 import { readCapability, resolveCommerceGate, type CommerceGate, type SiteCommerceMode } from './mode'
 import { readVatSettings } from './settings'
@@ -43,8 +43,10 @@ export function computeCommerceState(input: {
   checkoutReady?: boolean
   /** Result of `evaluateLegal`; omitted = not ready. */
   legalReady?: boolean
+  /** Effective credentials (env + admin panel, `loadPaymentsConfig`); omitted = env only. */
+  paymentsConfig?: PaymentsEnvConfig
 }): CommerceState {
-  const env = readPaymentsEnv(input.env)
+  const env = input.paymentsConfig ?? readPaymentsEnv(input.env)
   const gate = resolveCommerceGate({ env: input.env, siteSettings: input.siteSettings })
   const enabled = (id: ProviderId) => prop(prop(prop(prop(input.siteSettings, 'commerce'), 'providers'), id), 'enabled') === true
   const availableProviders: ProviderId[] = []

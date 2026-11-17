@@ -77,6 +77,7 @@ export const GLOBAL_LABELS: Record<string, Localized> = {
   header: loc('Üst menü', 'Header'),
   footer: loc('Alt bilgi', 'Footer'),
   'site-settings': loc('Site ayarları', 'Site settings'),
+  integrations: loc('Entegrasyon ayarları', 'Integration settings'),
 }
 
 /** Tab labels keyed by the original English label. */

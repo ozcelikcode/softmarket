@@ -3,7 +3,7 @@ import type { PayloadRequest } from 'payload'
 import { isAdminUser } from '@/access/roles'
 import { sameOrigin } from '@/lib/portal/guard'
 import { cancelOrder, refundOrder, resendNotifications, type AdminActionResult } from './admin-actions'
-import { createPaymentsDeps, errorCode, type PaymentsDeps } from './runtime'
+import { errorCode, loadPaymentsDeps, type PaymentsDeps } from './runtime'
 
 /*
  * P6 admin-only order endpoints (Payload collection endpoints, so they share Payload's auth):
@@ -46,14 +46,14 @@ const RUN: Record<AdminOrderAction, (deps: PaymentsDeps, id: number | string, ac
 export async function handleAdminOrderAction(
   req: PayloadRequest,
   action: AdminOrderAction,
-  makeDeps: (req: PayloadRequest) => PaymentsDeps = (r) => createPaymentsDeps(r.payload),
+  makeDeps: (req: PayloadRequest) => PaymentsDeps | Promise<PaymentsDeps> = (r) => loadPaymentsDeps(r.payload),
 ): Promise<Response> {
   if (req.method !== 'POST') return json(405, { code: 'method_not_allowed' })
   const guard = guardAdminSession(req)
   if (!guard.ok) return guard.response
   const raw = String((req.routeParams as { id?: unknown } | undefined)?.id ?? '')
   if (!/^\d{1,12}$/.test(raw)) return json(404, { code: 'not_found' })
-  const deps = makeDeps(req)
+  const deps = await makeDeps(req)
   try {
     const result = await RUN[action](deps, Number(raw), guard.actor)
     deps.log.info(`admin action=${action} order_id=${raw} code=${result.code}`)

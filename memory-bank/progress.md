@@ -1,3 +1,13 @@
+## Entegrasyon güvenlik denetimi — 2026-11-17
+
+- Sır güncellemesinde eşzamanlı kayıp, kısa sır gösterimi, okunamayan SMTP'de sahte başarı, eksik şirket bilgisiyle satış açılması, hukuk özetinde satır sınırı ve migration down'da port/TLS kaybı düzeltildi. Typecheck/lint temiz, tam test 91 dosya/1531 test geçti; canlıya migration yapılmadı.
+
+## Entegrasyon ayarları — 2026-11-17 (QA bekliyor, commit yok, canlıya uygulanmadı)
+
+- Yeni versiyonsuz `integrations` global'i (admin; MCP yok): iyzico/Stripe test+canlı anahtarları, ortam (canlı ek onay), SMTP. Sırlar AES-256-GCM, anahtar `SOFTMARKET_SECRETS_KEY` (yoksa kayıt reddedilir; kaybolursa sırlar okunamaz). Write-only uç `POST /api/globals/integrations/secret`, test e-postası `/test-email`. Env tanımlıysa env kazanır.
+- E-posta `softmarketEmailAdapter` her gönderimde env→panel ayarını okur. Yasal şirket yer tutucuları render anında dolar; `pages.legalReview` metne bağlı hukukçu onayı, `legalReady` onay ister. `site-settings.company.etbisNo` eklendi.
+- Migration `20261117_092957_integrations_settings` (CREATE TABLE + 7 ADD COLUMN, korumalı down); kopyada doğrulandı. Test 91/1527, build OK. Ayrıntı `docs/plan-payments.md` "Entegrasyon ayarları kaydı".
+
 ## P6 güvenlik denetimi — 2026-11-17 (commit yok)
 
 - Belirsiz iade kilidi süreyle açılmaz; gecikmiş sağlayıcı sonucu için tekrar iade yasak. Stripe/iyzico sunucu ve belirsiz yanıtları açık ret sayılmaz; iyzico iptal kaydı başarı/tutar/para birimiyle doğrulanır.

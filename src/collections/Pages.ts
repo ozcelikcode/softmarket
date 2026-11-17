@@ -1,12 +1,17 @@
-import { ValidationError, type Access, type CollectionBeforeValidateHook, type CollectionConfig, type TextFieldSingleValidation, type Where } from 'payload'
+import { ValidationError, type Access, type FieldAccess, type CollectionBeforeValidateHook, type CollectionConfig, type TextFieldSingleValidation, type Where } from 'payload'
 
-import { isAdminOrEditor, isAdminOrEditorUser } from '@/access'
+import { isAdminOrEditor, isAdminOrEditorField, isAdminOrEditorUser, isAdminUser } from '@/access'
+import { nextApprovalHash, type LegalReview } from '@/lib/legal-approval'
 import { pageLayoutField, publishedAtField } from '@/fields/common'
 import { linkField } from '@/fields/link'
 import { slugField } from '@/fields/slug'
 import { HOME_SLUG, isReservedSlug, isSystemKey, LANDING_PAGE_TYPES, SYSTEM_KEYS, SYSTEM_PAGES } from '@/lib/system-pages'
 
 export const PAGES_AUTOSAVE_INTERVAL = 2000
+
+const panelAdminField: FieldAccess = ({ req: { user } }) =>
+  isAdminUser(user) && (user as { _strategy?: string } | null)?._strategy !== 'api-key'
+const reviewAccess = { read: isAdminOrEditorField, create: panelAdminField, update: panelAdminField }
 
 const L = (tr: string, en: string) => ({ tr, en })
 const opt = (value: string, tr: string, en: string) => ({ value, label: L(tr, en) })
@@ -220,6 +225,42 @@ export const Pages: CollectionConfig = {
           'Empty = not a sales legal page. Marked pages are visible only while payments are open; one page per type.',
         ),
       },
+    },
+    {
+      // Lawyer approval (P7 QA: removing the banner/placeholders proves no review). Bound to the text: see
+      // src/lib/legal-approval.ts. Staff read; only an admin PANEL session writes (API key/MCP/import cannot).
+      name: 'legalReview',
+      type: 'group',
+      label: L('Hukukçu onayı', 'Legal review'),
+      custom: { contentImport: false },
+      admin: {
+        position: 'sidebar',
+        condition: (data) => data?.pageType === 'legal',
+        description: L(
+          'Hukukçu bu dildeki metni onayladığında doldurun (yalnız yönetici). Metin sonradan değişirse onay geçersiz olur; yeniden onay için tarihi güncelleyin. Satış sayfaları onaysız yayına alınamaz.',
+          'Fill in when a lawyer approved this language version (admins only). Any later text change voids the approval; update the date to approve again. Sales pages cannot go live without it.',
+        ),
+      },
+      fields: [
+        { name: 'approvedBy', type: 'text', localized: true, label: L('Onaylayan', 'Approved by'), access: reviewAccess },
+        { name: 'approvedAt', type: 'date', localized: true, label: L('Onay tarihi', 'Approved at'), access: reviewAccess, admin: { date: { pickerAppearance: 'dayOnly' } } },
+        {
+          name: 'approvedHash',
+          type: 'text',
+          localized: true,
+          admin: { hidden: true, readOnly: true },
+          access: { read: isAdminOrEditorField },
+          hooks: {
+            // Never taken from input: recomputed from the approval fields and the saved title/text.
+            beforeChange: [({ siblingData, previousSiblingDoc, data, originalDoc }) => nextApprovalHash({
+              review: siblingData as LegalReview,
+              previous: previousSiblingDoc as LegalReview,
+              title: data?.title ?? originalDoc?.title,
+              layout: data?.layout ?? originalDoc?.layout,
+            })],
+          },
+        },
+      ],
     },
     publishedAtField,
   ],

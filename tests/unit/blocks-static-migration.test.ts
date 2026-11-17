@@ -53,6 +53,7 @@ beforeAll(async () => {
   // P2-S commerce tables/columns (independent of F4) are part of the current Payload schema.
   await migrations.find((m) => m.name === '20261116_141401_p2_payments_commerce')!.up(args())
   await migrations.find((m) => m.name === '20261116_155928_p7_commerce_legal')!.up(args())
+  await migrations.find((m) => m.name === '20261117_092957_integrations_settings')!.up(args())
 }, 60000)
 afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
 

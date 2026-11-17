@@ -25,15 +25,19 @@ export function isCommerceLegalPage(page: { commerceLegal?: unknown; slug?: unkn
   return !page.commerceLegal && isCommerceLegalSlug(page.slug)
 }
 
-export type LegalFact = { kind: CommerceLegalKind | null; locale: 'tr' | 'en'; published: boolean; draft: boolean }
+/**
+ * `draft`: banner/placeholder still present AFTER company facts are filled. `approved`: lawyer approval recorded for
+ * exactly this text (pages.legalReview, src/lib/legal-approval.ts). Missing `approved` = not approved.
+ */
+export type LegalFact = { kind: CommerceLegalKind | null; locale: 'tr' | 'en'; published: boolean; draft: boolean; approved?: boolean }
 
 /**
- * Strict "three kinds published and not draft" check, per locale (the site is bilingual; a draft-bannered or
- * placeholder text in either language is not publishable). Pure and fail-closed: anything missing is not ready.
+ * Strict "three kinds published, not draft and lawyer-approved" check, per locale (the site is bilingual; a
+ * draft-bannered, placeholder or unapproved text in either language is not publishable). Pure and fail-closed.
  */
 export function evaluateLegal(facts: readonly LegalFact[]): { kinds: Record<CommerceLegalKind, boolean>; ready: boolean } {
   const ok = (kind: CommerceLegalKind, locale: 'tr' | 'en') =>
-    facts.some((f) => f.kind === kind && f.locale === locale && f.published === true && f.draft === false)
+    facts.some((f) => f.kind === kind && f.locale === locale && f.published === true && f.draft === false && f.approved === true)
   const kinds = Object.fromEntries(COMMERCE_LEGAL_KINDS.map((k) => [k, ok(k, 'tr') && ok(k, 'en')])) as Record<CommerceLegalKind, boolean>
   return { kinds, ready: COMMERCE_LEGAL_KINDS.every((k) => kinds[k]) }
 }

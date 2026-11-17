@@ -36,9 +36,16 @@ try {
   const marked = await payload.find({ collection: 'pages', overrideAccess: true, depth: 0, limit: 50, pagination: false, where: { commerceLegal: { exists: true } }, select: { commerceLegal: true } })
   for (const page of marked.docs) await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, data: { commerceLegal: null } as never, select: { slug: true } })
   for (const [kind, slug] of [['distanceSales', 'e2e-mesafeli-satis'], ['preInformation', 'e2e-on-bilgilendirme'], ['refund', 'e2e-iade-cayma']] as const) {
-    const page = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: `E2E ${kind}`, slug, pageType: 'legal', commerceLegal: kind, _status: 'published', layout: [{ blockType: 'richText', content: content(`Reviewed ${kind} text TR.`) }] } as never })
+    const page = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: `E2E ${kind}`, slug, pageType: 'legal', commerceLegal: kind, _status: 'published', legalReview: { approvedBy: 'E2E Counsel', approvedAt: '2026-11-01T00:00:00.000Z' }, layout: [{ blockType: 'richText', content: content(`Reviewed ${kind} text TR.`) }] } as never })
     // Same block ids, other locale (re-creating the array would drop the Turkish content).
-    await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, locale: 'en', data: { title: `E2E ${kind} EN`, slug: `${slug}-en`, _status: 'published', layout: (page.layout as { id: string }[]).map((block) => ({ ...block, content: content(`Reviewed ${kind} text EN.`) })) } as never })
+    await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, locale: 'en', data: { title: `E2E ${kind} EN`, slug: `${slug}-en`, _status: 'published', legalReview: { approvedBy: 'E2E Counsel', approvedAt: '2026-11-01T00:00:00.000Z' }, layout: (page.layout as { id: string }[]).map((block) => ({ ...block, content: content(`Reviewed ${kind} text EN.`) })) } as never })
+  }
+  // Selling needs complete company facts (seller identity) in both locales, and the lawyer approval above.
+  for (const locale of ['tr', 'en'] as const) {
+    await payload.updateGlobal({ slug: 'site-settings', overrideAccess: true, locale, data: {
+      company: { legalName: 'E2E Yazılım A.Ş.', mersisNo: '0123456789012345', taxOffice: 'E2E VD', taxNumber: '1234567890', kepAddress: 'e2e@hs01.kep.tr', etbisNo: '123456' },
+      contact: { address: 'E2E Cad. No 1, İstanbul', phone: '+90 212 000 00 00', email: 'e2e@example.com' },
+    } as never })
   }
   for (const c of customers) {
     await payload.create({ collection: 'customers', overrideAccess: true, disableVerificationEmail: true, data: { email: c.email, password: c.password, name: c.name, _verified: true, preferredLocale: 'tr' } as never })

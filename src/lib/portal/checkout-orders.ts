@@ -1,5 +1,5 @@
 import type { CustomerUser } from '@/access'
-import { createPaymentsDeps } from '@/lib/payments/runtime'
+import { loadPaymentsDeps } from '@/lib/payments/runtime'
 import { syncOrderFromProvider } from '@/lib/payments/sync'
 import { getPayloadClient } from '@/lib/site'
 
@@ -17,7 +17,7 @@ export async function syncStripeReturn(customer: CustomerUser, orderId: number, 
       where: { and: [{ id: { equals: orderId } }, { orderNumber: { equals: orderNumber } }, { customer: { equals: customer.id } }, { status: { equals: 'pending' } }, { provider: { equals: 'stripe' } }, { providerRef: { equals: sessionId } }] },
     })
     if (!docs[0]) return
-    await syncOrderFromProvider(createPaymentsDeps(payload), orderId)
+    await syncOrderFromProvider(await loadPaymentsDeps(payload), orderId)
   } catch {
     // The webhook completes the order.
   }

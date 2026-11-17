@@ -1,5 +1,7 @@
 import type { Payload } from 'payload'
 
+import { fillLegalPlaceholders, missingCompanyFacts, readCompanyFacts } from '@/lib/company-facts'
+import { isLegalApproved } from '@/lib/legal-approval'
 import { hasLegalBody, isLegalDraft } from '@/lib/legal-draft'
 
 import { formatMoney } from './format'
@@ -60,20 +62,25 @@ export function layoutToPlainText(layout: unknown): string {
 
 /**
  * Published, non-draft sales pages in ONE locale (no locale fallback: an English order never freezes Turkish text).
- * Returns null unless all three kinds exist with a visible body and no draft banner/placeholder. Throws on read errors
+ * Returns null unless all three kinds exist with a visible body, no draft banner/placeholder left after the company
+ * facts are filled, and a lawyer approval bound to the text (pages.legalReview). Throws on read errors
  * (callers stay fail-closed).
  */
 export async function loadCommerceLegalSet(payload: Payload, locale: Locale): Promise<CommerceLegalSet | null> {
   const { docs } = await payload.find({
     collection: 'pages', locale, fallbackLocale: false, depth: 0, limit: 20, pagination: false, overrideAccess: true, draft: false,
     where: { and: [{ pageType: { equals: 'legal' } }, { commerceLegal: { exists: true } }, { _status: { equals: 'published' } }] },
-    select: { commerceLegal: true, layout: true, title: true, slug: true, updatedAt: true },
+    select: { commerceLegal: true, layout: true, title: true, slug: true, updatedAt: true, legalReview: true },
   })
+  // Company placeholders are filled from site-settings exactly as on the page; the buyer's copy holds the filled text.
+  const company = docs.length ? await readCompanyFacts(payload, locale) : {}
+  if (missingCompanyFacts(company).length) return null
   const set: Partial<CommerceLegalSet> = {}
-  for (const doc of docs as { commerceLegal?: unknown; layout?: unknown; title?: string; slug?: string; updatedAt?: string }[]) {
+  for (const doc of docs as { commerceLegal?: unknown; layout?: unknown; title?: string; slug?: string; updatedAt?: string; legalReview?: Record<string, unknown> | null }[]) {
     if (!isCommerceLegalKind(doc.commerceLegal)) continue
-    if (!doc.title?.trim() || !doc.slug?.trim() || !doc.updatedAt || !hasLegalBody(doc.layout) || isLegalDraft(doc.layout)) return null
-    const text = layoutToPlainText(doc.layout)
+    const layout = fillLegalPlaceholders(doc.layout, company)
+    if (!doc.title?.trim() || !doc.slug?.trim() || !doc.updatedAt || !hasLegalBody(layout) || isLegalDraft(layout) || !isLegalApproved(doc)) return null
+    const text = layoutToPlainText(layout)
     if (!text) return null
     set[doc.commerceLegal] = { kind: doc.commerceLegal, title: doc.title.trim(), slug: doc.slug.trim(), text, updatedAt: doc.updatedAt }
   }

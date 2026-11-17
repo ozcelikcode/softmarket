@@ -20,6 +20,7 @@ import * as migration_20261108_130717_v2_product_bound_blocks from './20261108_1
 import * as migration_20261116_141401_p2_payments_commerce from './20261116_141401_p2_payments_commerce';
 import * as migration_20261116_155928_p7_commerce_legal from './20261116_155928_p7_commerce_legal';
 import * as migration_20261116_175713_p4_order_notifications from './20261116_175713_p4_order_notifications';
+import * as migration_20261117_092957_integrations_settings from './20261117_092957_integrations_settings';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20261116_175713_p4_order_notifications.up,
     down: migration_20261116_175713_p4_order_notifications.down,
-    name: '20261116_175713_p4_order_notifications'
+    name: '20261116_175713_p4_order_notifications',
+  },
+  {
+    up: migration_20261117_092957_integrations_settings.up,
+    down: migration_20261117_092957_integrations_settings.down,
+    name: '20261117_092957_integrations_settings'
   },
 ];

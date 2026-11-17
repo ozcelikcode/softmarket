@@ -3,7 +3,8 @@ import type { Payload } from 'payload'
 import { formatMoney, isCurrency } from '@/lib/payments/format'
 import { orderPagePath } from '@/lib/payments/runtime'
 import type { BuyerEmailOutcome, NotifyOrder } from './order-confirmation'
-import { emailTemplate, isSmtpConfigured } from './template'
+import { isEmailConfigured } from './adapter'
+import { emailTemplate } from './template'
 
 /*
  * Buyer e-mail for a refunded order (P6). Called ONLY by the durable order notification queue
@@ -15,7 +16,7 @@ import { emailTemplate, isSmtpConfigured } from './template'
 const idOf = (value: number | { id: number } | null | undefined) => (value && typeof value === 'object' ? value.id : value)
 
 export async function sendOrderRefunded(payload: Payload, order: NotifyOrder, ctx: { origin: string }): Promise<BuyerEmailOutcome> {
-  if (!isSmtpConfigured()) return 'no_smtp'
+  if (!(await isEmailConfigured(payload))) return 'no_smtp'
   const customerId = idOf(order.customer) ?? undefined
   const customer = customerId
     ? ((await payload.findByID({ collection: 'customers', id: customerId, depth: 0, overrideAccess: true, disableErrors: true })) as { email?: string } | null)

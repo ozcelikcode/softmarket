@@ -47,6 +47,11 @@ beforeAll(async () => {
   content = await import('../../src/lib/content')
   site = await import('../../src/lib/site')
 
+  await payload.updateGlobal({ slug: 'site-settings', overrideAccess: true, locale: 'tr', data: {
+    company: { legalName: 'Örnek A.Ş.', taxOffice: 'Kadıköy', taxNumber: '1234567890', mersisNo: '0123456789012345', kepAddress: 'ornek@hs01.kep.tr', etbisNo: 'ETBIS-42' },
+    contact: { email: 'info@example.test', phone: '+90 212 000 00 00', address: 'İstanbul' },
+  } as never })
+
   const family = await payload.create({ collection: 'product-families', overrideAccess: true, locale: 'tr', data: { title: 'Aile', slug: 'aile', _status: 'published' } as never })
   const product = await payload.create({ collection: 'products', overrideAccess: true, locale: 'tr', data: { title: 'Ürün', slug: 'urun', family: family.id, _status: 'published' } as never })
   const make = (sku: string, extra: Record<string, unknown>) => payload.create({
@@ -64,8 +69,10 @@ beforeAll(async () => {
     const layout = [{ blockType: 'richText', content: { root: { type: 'root', format: '', indent: 0, version: 1, direction: null, children: [
       { type: 'paragraph', format: '', indent: 0, version: 1, direction: null, children: [{ type: 'text', text: 'Reviewed legal text.', format: 0, mode: 'normal', style: '', detail: 0, version: 1 }] },
     ] } } }]
-    const legal = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: slug, slug, pageType: 'legal', layout, _status: 'published', ...(kinds[slug] ? { commerceLegal: kinds[slug] } : {}) } as never })
-    await payload.update({ collection: 'pages', id: legal.id, overrideAccess: true, locale: 'en', data: { title: slug, slug, layout: legal.layout, _status: 'published' } as never })
+    // Lawyer approval (pages.legalReview) per locale: legalReady requires it (Entegrasyon ayarları).
+    const legalReview = { approvedBy: 'Av. Test', approvedAt: '2026-11-17T00:00:00.000Z' }
+    const legal = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: slug, slug, pageType: 'legal', layout, _status: 'published', legalReview, ...(kinds[slug] ? { commerceLegal: kinds[slug] } : {}) } as never })
+    await payload.update({ collection: 'pages', id: legal.id, overrideAccess: true, locale: 'en', data: { title: slug, slug, layout: legal.layout, _status: 'published', legalReview } as never })
   }
   await payload.updateGlobal({
     slug: 'footer', overrideAccess: true, locale: 'tr',

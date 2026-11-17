@@ -2,6 +2,7 @@ import { after } from 'next/server'
 import type { Payload } from 'payload'
 
 import { serverUrl } from '../server-url'
+import { loadPaymentsConfig } from '../integrations/runtime'
 import { readPaymentsEnv, type PaymentsEnvConfig } from './env'
 import { PaymentError } from './errors'
 import { isWebhookProcessingAllowed, readSiteMode } from './mode'
@@ -72,6 +73,11 @@ export function createPaymentsDeps(payload: Payload, overrides: Partial<Omit<Pay
     log,
     origin: overrides.origin ?? serverUrl(),
   }
+}
+
+/** Same as createPaymentsDeps, with the effective credentials (env first, else the admin panel; decrypted here). */
+export async function loadPaymentsDeps(payload: Payload, overrides: Partial<Omit<PaymentsDeps, 'payload'>> & { fetch?: FetchLike } = {}): Promise<PaymentsDeps> {
+  return createPaymentsDeps(payload, { ...overrides, env: overrides.env ?? (await loadPaymentsConfig(payload)) })
 }
 
 /**

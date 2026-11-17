@@ -66,6 +66,13 @@ describe(`migration ${NAME}`, () => {
     expect(await snapshot()).toEqual(before)
     expect((await run('PRAGMA integrity_check')).rows[0]).toMatchObject({ integrity_check: 'ok' })
     await migration.up(args())
+    // Later schema (Entegrasyon ayarları: pages.legalReview, site_settings.company_etbis_no) for the behaviour tests.
+    const { migrations } = (await import('../../src/migrations')) as unknown as { migrations: Migration[] }
+    await migrations.find((m) => m.name === '20261117_092957_integrations_settings')!.up(args())
+    await payload.updateGlobal({ slug: 'site-settings', overrideAccess: true, locale: 'tr', data: {
+      company: { legalName: 'Örnek A.Ş.', taxOffice: 'Kadıköy', taxNumber: '1234567890', mersisNo: '0123456789012345', kepAddress: 'ornek@hs01.kep.tr', etbisNo: 'ETBIS-42' },
+      contact: { email: 'info@example.test', phone: '+90 212 000 00 00', address: 'İstanbul' },
+    } as never })
   }, 240000)
 })
 
@@ -147,8 +154,9 @@ describe('commerceLegal behaviour', () => {
     const { getSitemapEntries } = await import('../../src/lib/content')
     const draft = await page('mesafeli-satis-ornek', { commerceLegal: 'preInformation', layout: md('TASLAK — x Metin') })
     const facts = await readLegalFacts(payload)
-    expect(facts).toContainEqual({ kind: 'preInformation', locale: 'tr', published: true, draft: true })
-    expect(facts).toContainEqual({ kind: 'refund', locale: 'tr', published: true, draft: false })
+    // `approved` (lawyer approval, Entegrasyon ayarları) is false: these pages carry no pages.legalReview.
+    expect(facts).toContainEqual({ kind: 'preInformation', locale: 'tr', published: true, draft: true, approved: false })
+    expect(facts).toContainEqual({ kind: 'refund', locale: 'tr', published: true, draft: false, approved: false })
     expect(evaluateLegal(facts).ready).toBe(false)
     const entries = await getSitemapEntries()
     const flagged = entries.filter((e) => e.commerce)

@@ -7,7 +7,7 @@ import { localizedHref } from '@/i18n/paths'
 import { getCommerceState } from '@/lib/commerce/state'
 import { checkoutFormInput, parseCheckoutForm, CHECKOUT_TEXT_FIELDS } from '@/lib/payments/checkout-schema'
 import { createCheckoutOrder, loadCheckoutTarget, quoteHref, type CheckoutCustomer } from '@/lib/payments/checkout'
-import { createPaymentsDeps } from '@/lib/payments/runtime'
+import { loadPaymentsDeps } from '@/lib/payments/runtime'
 import { getPayloadClient } from '@/lib/site'
 
 import { checkoutOrigin } from './checkout-support'
@@ -39,7 +39,7 @@ export async function startCheckoutAction(_prev: CheckoutFormState, data: FormDa
   const payload = await getPayloadClient()
   const fresh = (await payload.findByID({ collection: 'customers', id: session.id, depth: 0, overrideAccess: true, showHiddenFields: true }).catch(() => null)) as CheckoutCustomer | null
   if (!fresh) return { status: 'error', values }
-  const deps = createPaymentsDeps(payload)
+  const deps = await loadPaymentsDeps(payload)
   const result = await createCheckoutOrder(
     { payload, providers: deps.providers, now: deps.now, log: deps.log, state: await getCommerceState() },
     { customer: fresh, form: parsed.data, ip: requestIP(h), userAgent: h.get('user-agent') ?? '', origin: checkoutOrigin(h) },

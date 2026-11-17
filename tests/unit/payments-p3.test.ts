@@ -214,7 +214,7 @@ describe('commerce legal slugs', () => {
   })
 })
 
-const ALL_LEGAL = COMMERCE_LEGAL_KINDS.flatMap((kind) => (['tr', 'en'] as const).map((locale) => ({ kind, locale, published: true, draft: false })))
+const ALL_LEGAL = COMMERCE_LEGAL_KINDS.flatMap((kind) => (['tr', 'en'] as const).map((locale) => ({ kind, locale, published: true, draft: false, approved: true })))
 
 describe('readiness checklist', () => {
   const full = {

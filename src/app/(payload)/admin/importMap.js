@@ -33,6 +33,9 @@ import { OrderActions as OrderActions_4af57e42cf02a6d2ff5b0d21516dd615 } from '@
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { CommerceReadiness as CommerceReadiness_21a76f9ace6ef6f634959aae4db7e91c } from '@/admin/fields/commerce-readiness'
+import { IntegrationsStatus as IntegrationsStatus_488eb35d27d1ae14f008ba5cc4874f75 } from '@/admin/fields/integrations-status'
+import { IntegrationSecret as IntegrationSecret_8aaf53474eefd9c1afec22c33ea582c7 } from '@/admin/fields/integration-secret'
+import { IntegrationTestEmail as IntegrationTestEmail_6ee154fe8210207387da352b208edad8 } from '@/admin/fields/integration-test-email'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -72,5 +75,8 @@ export const importMap = {
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@/admin/fields/commerce-readiness#CommerceReadiness": CommerceReadiness_21a76f9ace6ef6f634959aae4db7e91c,
+  "@/admin/fields/integrations-status#IntegrationsStatus": IntegrationsStatus_488eb35d27d1ae14f008ba5cc4874f75,
+  "@/admin/fields/integration-secret#IntegrationSecret": IntegrationSecret_8aaf53474eefd9c1afec22c33ea582c7,
+  "@/admin/fields/integration-test-email#IntegrationTestEmail": IntegrationTestEmail_6ee154fe8210207387da352b208edad8,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

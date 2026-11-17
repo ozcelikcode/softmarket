@@ -10,7 +10,8 @@ import { CURRENCIES, SITE_COMMERCE_MODES } from '@/lib/payments/types'
  * P2-S commerce switch (plan §1.2). Default `quote-only` hides the payment system completely. Staff read these
  * fields (public reads and HTML stay unchanged; server code reads with overrideAccess). Only an admin in a PANEL
  * session writes them: an API key (MCP) cannot switch payments on, enable a provider or change VAT. Field access
- * silently drops such a write. Never accepted by content:import. Provider secrets live only in env.
+ * silently drops such a write. Never accepted by content:import. Provider secrets live in env or, encrypted, in the
+ * admin-only `integrations` global (src/globals/Integrations.ts), never here.
  */
 const panelAdmin: FieldAccess = ({ req: { user } }) =>
   isAdminUser(user) && (user as { _strategy?: string } | null)?._strategy !== 'api-key'
@@ -105,8 +106,8 @@ const commerceFields: Field[] = [
     label: { tr: 'Ödeme sağlayıcıları', en: 'Payment providers' },
     admin: {
       description: {
-        tr: 'Anahtarlar yalnız sunucu ortam değişkenlerindedir; burada saklanmaz. Test/canlı ortamı da sunucu belirler.',
-        en: 'Keys live only in server environment variables, never here. The server also decides test/live.',
+        tr: 'Anahtarlar ve test/canlı seçimi "Entegrasyon ayarları"ndadır (şifreli); sunucu ortam değişkeni tanımlıysa o kullanılır. Burada yalnız sağlayıcı açılır/kapanır.',
+        en: 'Keys and the test/live choice live in "Integration settings" (encrypted); a server environment variable, when set, takes precedence. Here a provider is only switched on/off.',
       },
     },
     fields: [
@@ -282,6 +283,17 @@ export const SiteSettings: GlobalConfig = {
                 { name: 'taxNumber', type: 'text' },
                 { name: 'mersisNo', type: 'text' },
                 { name: 'kepAddress', type: 'email' },
+                {
+                  name: 'etbisNo',
+                  type: 'text',
+                  label: { tr: 'ETBİS kayıt no', en: 'ETBIS registration no' },
+                  admin: {
+                    description: {
+                      tr: 'Elektronik Ticaret Bilgi Sistemi kaydı. Bu bölümdeki unvan, MERSİS, vergi, KEP, ETBİS ile İletişim bölümündeki adres, telefon ve genel e-posta yasal metinlerdeki [ŞİRKET UNVANI] gibi yer tutucuları doldurur; eksik alan varsa yasal metin taslak sayılır ve ödeme açılamaz.',
+                      en: 'E-commerce Information System (ETBIS) registration. Legal name, MERSIS, tax, KEP, ETBIS here plus address, phone and general e-mail under Contact fill the [ŞİRKET UNVANI]-style placeholders in legal texts; with a field missing the legal text counts as a draft and payments cannot open.',
+                    },
+                  },
+                },
               ],
             },
             {

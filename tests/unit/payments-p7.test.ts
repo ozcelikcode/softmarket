@@ -13,7 +13,7 @@ import { buildReadiness } from '../../src/lib/payments/readiness'
 const ENV = { PAYMENTS_ENABLED: 'true', IYZICO_API_KEY: 'k', IYZICO_SECRET_KEY: 's', IYZICO_BASE_URL: 'https://sandbox-api.iyzipay.com', SMTP_HOST: 'smtp.example.com', SMTP_FROM: 'a@b.c' }
 const SITE = { commerce: { mode: 'payments', providers: { iyzico: { enabled: true } }, vat: { try: { rule: 'exempt' } } } }
 const facts = (over: Partial<LegalFact> = {}, skip?: (f: LegalFact) => boolean): LegalFact[] =>
-  COMMERCE_LEGAL_KINDS.flatMap((kind) => (['tr', 'en'] as const).map((locale) => ({ kind, locale, published: true, draft: false, ...over })))
+  COMMERCE_LEGAL_KINDS.flatMap((kind) => (['tr', 'en'] as const).map((locale) => ({ kind, locale, published: true, draft: false, approved: true, ...over })))
     .filter((f) => !skip?.(f))
 
 describe('pages.commerceLegal field', () => {
@@ -58,6 +58,9 @@ describe('evaluateLegal (three kinds, published, not draft, both locales; fail-c
     expect(evaluateLegal(facts({ published: false })).ready).toBe(false)
     expect(evaluateLegal([]).ready).toBe(false)
     expect(evaluateLegal([{ kind: null, locale: 'tr', published: true, draft: false }]).ready).toBe(false)
+    // Entegrasyon ayarları: a clean text without the lawyer approval (or with it missing) is not ready.
+    expect(evaluateLegal(facts({ approved: false })).ready).toBe(false)
+    expect(evaluateLegal(facts({}).map((f) => (f.kind === 'refund' && f.locale === 'en' ? { ...f, approved: undefined } : f))).kinds).toMatchObject({ refund: false, distanceSales: true })
   })
 })
 
@@ -86,7 +89,10 @@ describe('readiness legal check', () => {
     expect(level(draft, 'legal')).toBe('missing')
     expect(draft.ready).toBe(false)
     const oneLocale = buildReadiness({ ...base, legalPages: facts({}, (f) => f.locale === 'en') })
-    expect(oneLocale.items.find((i) => i.id === 'legal')!.detail!.en).toBe('0/3 ready')
-    expect(buildReadiness({ ...base, legalPages: facts({}, (f) => f.kind === 'refund') }).items.find((i) => i.id === 'legal')!.detail!.en).toBe('2/3 ready')
+    expect(oneLocale.items.find((i) => i.id === 'legal')!.detail!.en).toBe('0/3 ready · lawyer-approved versions: 3/6')
+    expect(buildReadiness({ ...base, legalPages: facts({}, (f) => f.kind === 'refund') }).items.find((i) => i.id === 'legal')!.detail!.en).toBe('2/3 ready · lawyer-approved versions: 4/6')
+    const unapproved = buildReadiness({ ...base, legalPages: facts({ approved: false }) })
+    expect(level(unapproved, 'legal')).toBe('missing')
+    expect(unapproved.ready).toBe(false)
   })
 })

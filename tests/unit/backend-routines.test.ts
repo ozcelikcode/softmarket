@@ -104,8 +104,10 @@ describe('license assignment email', () => {
     const req = request()
     vi.stubEnv('SMTP_HOST', '')
     await notifyLicenseAssigned({ doc, operation: 'create', req } as Parameters<typeof notifyLicenseAssigned>[0])
+    // Without env SMTP the panel SMTP is checked after the response; unreadable/absent settings → nothing is sent.
+    await scheduled.shift()?.()
     expect(req.payload.sendEmail).not.toHaveBeenCalled()
-    expect(scheduled).toHaveLength(0)
+    expect(req.payload.logger.error).toHaveBeenCalledWith('License assignment email skipped: SMTP is not configured.')
     vi.stubEnv('SMTP_HOST', 'smtp.example.test')
   })
 })

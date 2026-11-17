@@ -4,6 +4,7 @@ import type { Where } from 'payload'
 import type { Locale } from '@/i18n/routing'
 import { routing } from '@/i18n/routing'
 import { getCommerceState } from '@/lib/commerce/state'
+import { fillLegalPlaceholders, readCompanyFacts } from '@/lib/company-facts'
 import { isLegalDraft } from '@/lib/legal-draft'
 import { resolveProductActions } from '@/lib/payments/actions'
 import { readAs } from '@/lib/preview'
@@ -423,16 +424,17 @@ export const getSitemapEntries = cache(() =>
     // Legal pages still carrying the draft banner / [PLACEHOLDER]s (awaiting legal review) stay out of the sitemap per locale.
     const legalDocs = pages.filter((p) => p.pageType === 'legal')
     const drafts = await Promise.all(routing.locales.map((l) => !legalDocs.length ? ([l, new Set<number>()] as const) :
-      payload.find({
+      // Same rule as the page: company placeholders filled from site-settings before the draft check.
+      readCompanyFacts(payload, l).then((company) => payload.find({
         collection: 'pages', ...base, locale: l, depth: 0,
         where: { and: [{ pageType: { equals: 'legal' } }, { id: { in: legalDocs.map((d) => d.id) } }] },
         select: { layout: true },
       }).then((r) => {
         // A missing or inaccessible document has not been checked and must not enter the sitemap.
         const unchecked = new Set(legalDocs.map((d) => d.id))
-        for (const d of r.docs) if (!isLegalDraft((d as { layout?: unknown }).layout)) unchecked.delete(d.id)
+        for (const d of r.docs) if (!isLegalDraft(fillLegalPlaceholders((d as { layout?: unknown }).layout, company))) unchecked.delete(d.id)
         return [l, unchecked] as const
-      })
+      }))
         .catch(() => [l, new Set<number>(legalDocs.map((d) => d.id))] as const)))
     const draftByLocale = Object.fromEntries(drafts)
     for (const d of legalDocs) {

@@ -3,8 +3,12 @@ import { readSecret, type SecretValue } from './secret'
 import { CURRENCIES, type Currency, type ProviderEnv } from './types'
 
 /**
- * Payment secrets and switches come ONLY from the process environment (systemd EnvironmentFile),
- * never from the DB or the admin panel. Secrets are wrapped in SecretValue and never logged.
+ * Payment credentials come from the process environment (systemd EnvironmentFile) OR, per provider, from the admin
+ * panel (`integrations` global, AES-GCM encrypted; decrypted by src/lib/integrations/runtime.ts into SecretValues).
+ * Precedence: a provider with ANY of its env variables set uses env only (existing installs keep working; the panel
+ * value is ignored). The switch `PAYMENTS_ENABLED` and `PAYMENTS_STRIPE_ENABLED` are env-only. Panel base URLs are
+ * never free text: the environment (sandbox/live) selects one of the allow-listed constants below.
+ * Secrets are wrapped in SecretValue and never logged.
  */
 
 export const IYZICO_LIVE_BASE_URL = 'https://api.iyzipay.com'
@@ -25,6 +29,14 @@ export type StripeConfig = {
   env: ProviderEnv
 }
 
+export type CredentialSource = 'env' | 'panel' | 'none'
+
+/** Decrypted panel credentials (never logged; SecretValue). The environment selects the allow-listed base URL. */
+export type PanelPaymentCredentials = {
+  iyzico?: { env: ProviderEnv; apiKey?: SecretValue; secretKey?: SecretValue }
+  stripe?: { env: ProviderEnv; secretKey?: SecretValue; webhookSecret?: SecretValue }
+}
+
 export type PaymentsEnvConfig = {
   /** Layer 1: PAYMENTS_ENABLED === 'true'. Anything else (missing, "1", "yes") = off. */
   capability: boolean
@@ -33,8 +45,10 @@ export type PaymentsEnvConfig = {
   stripe?: StripeConfig
   /** Currencies routed to Stripe when it is enabled. TRY is never routed to Stripe. */
   stripeCurrencies: Currency[]
-  /** Names of env variables that are missing/invalid. Never contains values. */
+  /** Names of env variables (or `panel:<secret id>`) that are missing/invalid. Never contains values. */
   issues: string[]
+  /** Where each provider's credentials come from. */
+  sources: { iyzico: CredentialSource; stripe: CredentialSource }
 }
 
 type Env = Record<string, string | undefined>
@@ -68,28 +82,67 @@ function normalizeBase(url: string): string {
   return url.trim().replace(/\/+$/, '')
 }
 
+const isSet = (raw: string | undefined) => Boolean(raw?.trim() && !raw.trim().startsWith('CHANGE_'))
+
+/** True when the server environment defines the provider (then the panel value is ignored). */
+export function envDefinesProvider(provider: 'iyzico' | 'stripe', env: Env = process.env): boolean {
+  return provider === 'iyzico'
+    ? isSet(env.IYZICO_API_KEY) || isSet(env.IYZICO_SECRET_KEY) || isSet(env.IYZICO_BASE_URL)
+    : isSet(env.STRIPE_SECRET_KEY) || isSet(env.STRIPE_WEBHOOK_SECRET) || isSet(env.STRIPE_API_BASE)
+}
+
 export function readPaymentsEnv(env: Env = process.env): PaymentsEnvConfig {
+  return readPaymentsConfig({ env })
+}
+
+/** env + optional panel credentials → effective config (pure). */
+export function readPaymentsConfig({ env = process.env, panel }: { env?: Env; panel?: PanelPaymentCredentials | null }): PaymentsEnvConfig {
   const issues: string[] = []
   const capability = env.PAYMENTS_ENABLED === 'true'
+  const sources: PaymentsEnvConfig['sources'] = { iyzico: 'none', stripe: 'none' }
 
   // iyzico — primary provider for TRY, USD and EUR.
   let iyzico: IyzicoConfig | undefined
-  const iyzicoApiKey = readSecret(env.IYZICO_API_KEY)
-  const iyzicoSecretKey = readSecret(env.IYZICO_SECRET_KEY)
-  const rawBase = env.IYZICO_BASE_URL?.trim() ? normalizeBase(env.IYZICO_BASE_URL) : ''
-  let iyzicoEnv: ProviderEnv | undefined
-  if (rawBase === IYZICO_LIVE_BASE_URL) iyzicoEnv = 'live'
-  else if (rawBase === IYZICO_SANDBOX_BASE_URL || (rawBase && isLocalOverride(rawBase, env))) iyzicoEnv = 'sandbox'
-  if (!iyzicoApiKey) issues.push('IYZICO_API_KEY')
-  if (!iyzicoSecretKey) issues.push('IYZICO_SECRET_KEY')
-  if (!iyzicoEnv) issues.push('IYZICO_BASE_URL')
-  if (iyzicoApiKey && iyzicoSecretKey && iyzicoEnv) {
-    iyzico = { apiKey: iyzicoApiKey, secretKey: iyzicoSecretKey, baseUrl: rawBase, env: iyzicoEnv }
+  if (!envDefinesProvider('iyzico', env) && panel?.iyzico) {
+    const p = panel.iyzico
+    const id = `panel:iyzico.${p.env}`
+    if (!p.apiKey) issues.push(`${id}.apiKey`)
+    if (!p.secretKey) issues.push(`${id}.secretKey`)
+    if (p.apiKey && p.secretKey) {
+      iyzico = { apiKey: p.apiKey, secretKey: p.secretKey, baseUrl: p.env === 'live' ? IYZICO_LIVE_BASE_URL : IYZICO_SANDBOX_BASE_URL, env: p.env }
+      sources.iyzico = 'panel'
+    }
+  } else {
+    const iyzicoApiKey = readSecret(env.IYZICO_API_KEY)
+    const iyzicoSecretKey = readSecret(env.IYZICO_SECRET_KEY)
+    const rawBase = env.IYZICO_BASE_URL?.trim() ? normalizeBase(env.IYZICO_BASE_URL) : ''
+    let iyzicoEnv: ProviderEnv | undefined
+    if (rawBase === IYZICO_LIVE_BASE_URL) iyzicoEnv = 'live'
+    else if (rawBase === IYZICO_SANDBOX_BASE_URL || (rawBase && isLocalOverride(rawBase, env))) iyzicoEnv = 'sandbox'
+    if (!iyzicoApiKey) issues.push('IYZICO_API_KEY')
+    if (!iyzicoSecretKey) issues.push('IYZICO_SECRET_KEY')
+    if (!iyzicoEnv) issues.push('IYZICO_BASE_URL')
+    if (iyzicoApiKey && iyzicoSecretKey && iyzicoEnv) {
+      iyzico = { apiKey: iyzicoApiKey, secretKey: iyzicoSecretKey, baseUrl: rawBase, env: iyzicoEnv }
+      sources.iyzico = 'env'
+    }
   }
 
   // Stripe — adapter ready but OFF unless explicitly enabled (non-TR legal entity only).
   let stripe: StripeConfig | undefined
-  if (env.PAYMENTS_STRIPE_ENABLED === 'true') {
+  if (env.PAYMENTS_STRIPE_ENABLED === 'true' && !envDefinesProvider('stripe', env) && panel?.stripe) {
+    const p = panel.stripe
+    const id = `panel:stripe.${p.env}`
+    const keyMatch = p.secretKey ? /^(sk|rk)_(test|live)_/.exec(p.secretKey.reveal()) : null
+    const keyOk = Boolean(keyMatch && (keyMatch[2] === 'live') === (p.env === 'live'))
+    const hookOk = Boolean(p.webhookSecret?.reveal().startsWith('whsec_'))
+    if (!keyOk) issues.push(`${id}.secretKey`)
+    if (!hookOk) issues.push(`${id}.webhookSecret`)
+    if (keyOk && hookOk && p.secretKey && p.webhookSecret) {
+      stripe = { secretKey: p.secretKey, webhookSecret: p.webhookSecret, apiBase: STRIPE_API_BASE_URL, env: p.env }
+      sources.stripe = 'panel'
+    }
+  } else if (env.PAYMENTS_STRIPE_ENABLED === 'true') {
     const secretKey = readSecret(env.STRIPE_SECRET_KEY)
     const webhookSecret = readSecret(env.STRIPE_WEBHOOK_SECRET)
     const rawApiBase = env.STRIPE_API_BASE?.trim() ? normalizeBase(env.STRIPE_API_BASE) : STRIPE_API_BASE_URL
@@ -100,11 +153,12 @@ export function readPaymentsEnv(env: Env = process.env): PaymentsEnvConfig {
     if (!apiBaseOk) issues.push('STRIPE_API_BASE')
     if (secretKey && keyMatch && webhookSecret?.reveal().startsWith('whsec_') && apiBaseOk) {
       stripe = { secretKey, webhookSecret, apiBase: rawApiBase, env: keyMatch[2] === 'live' ? 'live' : 'sandbox' }
+      sources.stripe = 'env'
     }
   }
 
   const stripeCurrencies = parseStripeCurrencies(env.PAYMENTS_STRIPE_CURRENCIES)
-  return { capability, iyzico, stripe, stripeCurrencies, issues }
+  return { capability, iyzico, stripe, stripeCurrencies, issues, sources }
 }
 
 function parseStripeCurrencies(raw: string | undefined): Currency[] {
@@ -123,5 +177,6 @@ export function describePaymentsEnv(cfg: PaymentsEnvConfig) {
     stripe: cfg.stripe ? { configured: true, env: cfg.stripe.env } : { configured: false as const },
     stripeCurrencies: cfg.stripeCurrencies,
     issues: [...cfg.issues],
+    sources: { ...cfg.sources },
   }
 }

@@ -1,6 +1,6 @@
 import { searchFields } from './lib/search-index'
 import { assertIsolatedE2E } from './lib/e2e-isolation'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { softmarketEmailAdapter } from './lib/email/adapter'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { withDbQueryLogging } from './lib/db-query-log'
 import { withSerialTransactions } from './lib/db-serial-transactions'
@@ -48,6 +48,7 @@ import { Users } from './collections/Users'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
 import { SiteSettings } from './globals/SiteSettings'
+import { Integrations } from './globals/Integrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -62,15 +63,13 @@ if (!secret) {
   throw new Error('PAYLOAD_SECRET is required at runtime.')
 }
 
+const SITE_NAME = 'SoftMarket'
+
 const pluginLabels = (slug: string) => {
   const l = COLLECTION_LABELS[slug]
   return { singular: loc(l[0], l[1]), plural: loc(l[2], l[3]) }
 }
 
-const SITE_NAME = 'SoftMarket'
-const smtpHost = process.env.SMTP_HOST?.trim()
-// Omitting email selects Payload's built-in console adapter, without DNS lookup.
-const smtpConfigured = smtpHost && !smtpHost.startsWith('CHANGE_') && process.env.SMTP_FROM
 
 // Transactions of this process are queued (one SQLite writer; see src/lib/db-serial-transactions.ts).
 const databaseAdapter = withSerialTransactions(sqliteAdapter({
@@ -141,27 +140,13 @@ export default buildConfig({
     PaymentEvents,
   ].map(localizeCollection).map((collection) => ['users', 'customers', 'licenses', 'support-tickets', 'support-ticket-messages', 'orders', 'payment-events'].includes(collection.slug)
     ? collection : withPublicRevalidation(collection)),
-  globals: [Header, Footer, SiteSettings].map(localizeGlobal).map(withGlobalRevalidation),
+  // `integrations` (keys, SMTP) affects no public page: no revalidation wrapper, never in MCP (src/lib/mcp.ts).
+  globals: [...[Header, Footer, SiteSettings].map(localizeGlobal).map(withGlobalRevalidation), localizeGlobal(Integrations)],
   editor: lexicalEditor(),
   secret,
-  ...(smtpConfigured
-    ? {
-        email: nodemailerAdapter({
-          defaultFromAddress: process.env.SMTP_FROM!,
-          defaultFromName: SITE_NAME,
-          transportOptions: {
-            host: smtpHost,
-            port: Number(process.env.SMTP_PORT || 587),
-            secure: process.env.SMTP_SECURE === 'true',
-            ...(process.env.SMTP_USER && process.env.SMTP_PASSWORD
-              ? {
-                  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
-                }
-              : {}),
-          },
-        }),
-      }
-    : {}),
+  // SMTP is resolved on every send (env first, else the admin panel `integrations` global, else console-style log
+  // without the body): src/lib/email/adapter.ts. No connection is opened at init.
+  email: softmarketEmailAdapter(),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

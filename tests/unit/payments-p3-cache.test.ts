@@ -9,10 +9,18 @@ vi.mock('@/lib/site', () => ({
 }))
 import { getCommerceState } from '@/lib/commerce/state'
 import { getProductDetail } from '@/lib/content'
+import { legalContentDigest } from '@/lib/legal-approval'
 
 const saved = { ...process.env }
-const LEGAL = ['distanceSales', 'preInformation', 'refund'].map((commerceLegal) => ({ commerceLegal, title: 'Legal', slug: commerceLegal, layout: [{ blockType: 'richText', content: { root: { children: [{ type: 'text', text: 'Reviewed legal text' }] } } }] }))
-const site = { commerce: { mode: 'payments', providers: { iyzico: { enabled: true } }, vat: { try: { rule: 'exempt' } } } }
+const legalLayout = [{ blockType: 'richText', content: { root: { children: [{ type: 'text', text: 'Reviewed legal text' }] } } }]
+// Lawyer approval bound to this exact title/text (Entegrasyon ayarları: legalReady requires it).
+const LEGAL = ['distanceSales', 'preInformation', 'refund'].map((commerceLegal) => ({ commerceLegal, title: 'Legal', slug: commerceLegal, layout: legalLayout,
+  legalReview: { approvedBy: 'Av. Test', approvedAt: '2026-11-17T00:00:00.000Z', approvedHash: legalContentDigest('Legal', legalLayout) } }))
+const site = {
+  commerce: { mode: 'payments', providers: { iyzico: { enabled: true } }, vat: { try: { rule: 'exempt' } } },
+  company: { legalName: 'Örnek A.Ş.', taxOffice: 'Kadıköy', taxNumber: '1234567890', mersisNo: '0123456789012345', kepAddress: 'ornek@hs01.kep.tr', etbisNo: 'ETBIS-42' },
+  contact: { email: 'info@example.test', phone: '+90 212 000 00 00', address: 'İstanbul' },
+}
 beforeEach(() => {
   Object.assign(process.env, { PAYMENTS_ENABLED: 'true', IYZICO_API_KEY: 'k', IYZICO_SECRET_KEY: 's', IYZICO_BASE_URL: 'https://sandbox-api.iyzipay.com' })
   vi.resetAllMocks()

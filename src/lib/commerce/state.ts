@@ -81,11 +81,15 @@ export const getCommerceState = cache(async (): Promise<CommerceState> => {
     // Lazy: `site.ts` imports this module (footer/header link filter), and Payload config loads only when needed.
     const payload = await (await import('@/lib/site')).getPayloadClient()
     // Staff-only fields: server read with overrideAccess, projected to the commerce group, never sent to clients.
-    const siteSettings = await payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: true, select: { commerce: true } })
+    const [siteSettings, paymentsConfig] = await Promise.all([
+      payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: true, select: { commerce: true } }),
+      // Provider credentials: env first, else the admin panel (integrations; decrypted server-side, never rendered).
+      (await import('@/lib/integrations/runtime')).loadPaymentsConfig(payload),
+    ])
     // Legal pages are read only when everything else would open the surface (no extra query otherwise).
-    const base = computeCommerceState({ env: process.env, siteSettings, legalReady: true })
+    const base = computeCommerceState({ env: process.env, siteSettings, legalReady: true, paymentsConfig })
     const legalReady = base.open && evaluateLegal(await readLegalFacts(payload)).ready
-    return computeCommerceState({ env: process.env, siteSettings, legalReady })
+    return computeCommerceState({ env: process.env, siteSettings, legalReady, paymentsConfig })
   } catch {
     return closedCommerceState()
   }

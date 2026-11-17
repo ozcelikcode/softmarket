@@ -55,11 +55,14 @@ const richLayout = (...paragraphs: string[]) => [{ blockType: 'richText', conten
 const withText = (layout: unknown, ...paragraphs: string[]) => (layout as Record<string, unknown>[]).map((block) => ({ ...block, content: richLayout(...paragraphs)[0]!.content }))
 const KINDS = { 'mesafeli-satis-sozlesmesi': 'distanceSales', 'on-bilgilendirme-formu': 'preInformation', 'iade-ve-cayma': 'refund' } as const
 const legalIds: Record<string, number> = {}
+// Lawyer approval bound to the text (pages.legalReview): a new date re-approves after each rewrite.
+let approvals = 0
+const approve = () => ({ legalReview: { approvedBy: 'Av. Test', approvedAt: new Date(Date.UTC(2026, 0, 1) + ++approvals * 60_000).toISOString() } })
 /** Rewrites a sales page in BOTH locales (updating one locale of an array block would drop the other's content). */
 async function setLegal(kind: keyof typeof legalIds, tr: string) {
   const id = legalIds[kind]!
-  await payload.update({ collection: 'pages', id, overrideAccess: true, locale: 'tr', data: { layout: withText(await layoutOf(id), tr), _status: 'published' } as never })
-  await payload.update({ collection: 'pages', id, overrideAccess: true, locale: 'en', data: { layout: withText(await layoutOf(id), `Reviewed ${kind} text EN.`), _status: 'published' } as never })
+  await payload.update({ collection: 'pages', id, overrideAccess: true, locale: 'tr', data: { layout: withText(await layoutOf(id), tr), _status: 'published', ...approve() } as never })
+  await payload.update({ collection: 'pages', id, overrideAccess: true, locale: 'en', data: { layout: withText(await layoutOf(id), `Reviewed ${kind} text EN.`), _status: 'published', ...approve() } as never })
 }
 const layoutOf = async (id: number) => (await payload.findByID({ collection: 'pages', id, locale: 'tr', overrideAccess: true, depth: 0 })).layout
 const PAYMENTS = { mode: 'payments', providers: { iyzico: { enabled: true } }, vat: { try: { rule: 'rate', ratePercent: 20 }, usd: { rule: 'exempt' } } }
@@ -112,11 +115,11 @@ beforeAll(async () => {
   await make('BUY-EXCL', { saleMode: 'buy', pricing: { taxMode: 'exclusive', tryMinor: 100000 } })
   await make('QUOTE-1', {})
   for (const [slug, kind] of Object.entries(KINDS)) {
-    const page = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: slug, slug, pageType: 'legal', layout: richLayout(`Reviewed ${kind} text TR.`, 'Second paragraph.'), _status: 'published', commerceLegal: kind } as never })
-    await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, locale: 'en', data: { title: `${slug}-en`, slug: `${slug}-en`, layout: withText(page.layout, `Reviewed ${kind} text EN.`), _status: 'published' } as never })
+    const page = await payload.create({ collection: 'pages', overrideAccess: true, locale: 'tr', data: { title: slug, slug, pageType: 'legal', layout: richLayout(`Reviewed ${kind} text TR.`, 'Second paragraph.'), _status: 'published', commerceLegal: kind, ...approve() } as never })
+    await payload.update({ collection: 'pages', id: page.id, overrideAccess: true, locale: 'en', data: { title: `${slug}-en`, slug: `${slug}-en`, layout: withText(page.layout, `Reviewed ${kind} text EN.`), _status: 'published', ...approve() } as never })
     legalIds[kind] = page.id as number
   }
-  await payload.updateGlobal({ slug: 'site-settings', overrideAccess: true, locale: 'tr', data: { company: { legalName: 'Örnek Yazılım A.Ş.', taxOffice: 'Kadıköy', taxNumber: '1234567890', mersisNo: '0123456789012345' }, contact: { email: 'info@example.test', phone: '+90 212 000 00 00', address: 'İstanbul' } } as never })
+  await payload.updateGlobal({ slug: 'site-settings', overrideAccess: true, locale: 'tr', data: { company: { legalName: 'Örnek Yazılım A.Ş.', taxOffice: 'Kadıköy', taxNumber: '1234567890', mersisNo: '0123456789012345', kepAddress: 'ornek@hs01.kep.tr', etbisNo: 'ETBIS-42' }, contact: { email: 'info@example.test', phone: '+90 212 000 00 00', address: 'İstanbul' } } as never })
   const customer = (email: string, verified: boolean) => payload.create({ collection: 'customers', overrideAccess: true, disableVerificationEmail: true, data: { email, password: 'p5-test-password-123', name: 'Ali', _verified: verified } as never }).then((c) => ({ id: c.id as number, email, _verified: verified, collection: 'customers' as const }))
   customerA = await customer('a.p5@example.test', true)
   customerB = await customer('b.p5@example.test', true)

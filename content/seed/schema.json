@@ -12547,6 +12547,10 @@
                     "kepAddress": {
                       "type": "string",
                       "minLength": 1
+                    },
+                    "etbisNo": {
+                      "type": "string",
+                      "minLength": 1
                     }
                   },
                   "required": []
@@ -12728,6 +12732,10 @@
                       "minLength": 1
                     },
                     "kepAddress": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "etbisNo": {
                       "type": "string",
                       "minLength": 1
                     }

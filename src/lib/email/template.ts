@@ -1,6 +1,6 @@
 export type EmailLocale = 'tr' | 'en'
 
-/** Same rule as payload.config: empty/`CHANGE_` host or no sender = Payload console adapter (logs whole messages). */
+/** Env-only SMTP check (empty/`CHANGE_` host or no sender = not set). Runtime sends use `isEmailConfigured` (env or admin panel). */
 export const isSmtpConfigured = (env: Record<string, string | undefined> = process.env) => {
   const host = env.SMTP_HOST?.trim()
   return Boolean(host && !host.startsWith('CHANGE_') && env.SMTP_FROM)

@@ -2,6 +2,9 @@ import type { UIFieldServerComponent } from 'payload'
 
 import { isAdminUser } from '@/access'
 import { readLegalFacts } from '@/lib/commerce/legal-facts'
+import { COMPANY_FACT_LABELS, missingCompanyFacts, readCompanyFacts } from '@/lib/company-facts'
+import { resolvePaymentsConfig, resolveSmtpConfig } from '@/lib/integrations/runtime'
+import { readIntegrationsDoc } from '@/lib/integrations/vault'
 import { buildReadiness } from '@/lib/payments/readiness'
 
 /*
@@ -18,12 +21,22 @@ export const CommerceReadiness: UIFieldServerComponent = async ({ payload, i18n,
   const lang = i18n?.language === 'en' ? 'en' : 'tr'
   let model: ReturnType<typeof buildReadiness> | null = null
   try {
-    const [siteSettings, editions, legalPages] = await Promise.all([
+    const [siteSettings, editions, legalPages, integrations, companyTr, companyEn] = await Promise.all([
       payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: true, select: { commerce: true } }),
       payload.find({ collection: 'editions', depth: 0, limit: 500, pagination: false, overrideAccess: true, select: { saleMode: true, pricing: true } }),
       readLegalFacts(payload),
+      readIntegrationsDoc(payload).catch(() => null),
+      readCompanyFacts(payload, 'tr'),
+      readCompanyFacts(payload, 'en'),
     ])
-    model = buildReadiness({ env: process.env, siteSettings, editions: editions.docs, legalPages })
+    // Only statuses leave this component: sources, environments, missing-field labels. Never a key or the vault.
+    const missing = [...new Set([...missingCompanyFacts(companyTr), ...missingCompanyFacts(companyEn)])]
+    model = buildReadiness({
+      env: process.env, siteSettings, editions: editions.docs, legalPages,
+      paymentsConfig: resolvePaymentsConfig(process.env, integrations),
+      smtpSource: resolveSmtpConfig(process.env, integrations)?.source ?? 'none',
+      companyMissing: missing.map((key) => COMPANY_FACT_LABELS[key]),
+    })
   } catch {
     model = null
   }

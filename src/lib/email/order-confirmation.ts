@@ -3,7 +3,8 @@ import type { Payload } from 'payload'
 import { formatMoney, isCurrency } from '@/lib/payments/format'
 import { orderPagePath } from '@/lib/payments/runtime'
 import { buildLicenseEmail } from './license-assigned'
-import { emailTemplate, isSmtpConfigured } from './template'
+import { isEmailConfigured } from './adapter'
+import { emailTemplate } from './template'
 
 /*
  * Buyer e-mails of a fulfilled order (P4). Called ONLY by the order notification queue (src/lib/payments/notify.ts),
@@ -41,7 +42,7 @@ async function recipient(payload: Payload, order: NotifyOrder): Promise<{ to?: s
 }
 
 export async function sendOrderConfirmation(payload: Payload, order: NotifyOrder, ctx: { origin: string }): Promise<BuyerEmailOutcome> {
-  if (!isSmtpConfigured()) return 'no_smtp'
+  if (!(await isEmailConfigured(payload))) return 'no_smtp'
   const { to } = await recipient(payload, order)
   if (!to) return 'no_recipient'
   const en = order.locale === 'en'
@@ -69,7 +70,7 @@ export async function sendOrderConfirmation(payload: Payload, order: NotifyOrder
 
 /** One e-mail with every licence linked to the order's items (only licences owned by the order's customer). */
 export async function sendOrderLicenses(payload: Payload, order: NotifyOrder): Promise<BuyerEmailOutcome> {
-  if (!isSmtpConfigured()) return 'no_smtp'
+  if (!(await isEmailConfigured(payload))) return 'no_smtp'
   const licenseIds = [...new Set((order.items ?? []).map((item) => idOf(item.license)).filter((id): id is number => typeof id === 'number'))]
   if (!licenseIds.length) return 'no_license'
   const { to, customerId } = await recipient(payload, order)

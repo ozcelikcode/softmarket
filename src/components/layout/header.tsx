@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Suspense } from 'react'
 
 import type { Locale } from '@/i18n/routing'
+import { getPreviewUser } from '@/lib/preview'
 import { getHeaderNav, getMegaData, getSiteSettings, siteIdentity, type NavItem, type NavLink } from '@/lib/site'
 
 import { AppLink } from '@/components/ui/app-link'
@@ -14,7 +15,8 @@ import { HeaderShell } from './header-shell'
 export async function Header({ locale }: { locale: Locale }) {
   const [t, cms, mega, settings] = await Promise.all([
     getTranslations({ locale, namespace: 'nav' }),
-    getHeaderNav(locale),
+    // G1: staff draft-mode requests see the unpublished chrome draft; public renders are unchanged.
+    getPreviewUser().then((user) => getHeaderNav(locale, user)),
     getMegaData(locale),
     getSiteSettings(locale),
   ])

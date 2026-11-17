@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { AppLink } from '@/components/ui/app-link'
 import { Container } from '@/components/ui/container'
 import type { Locale } from '@/i18n/routing'
+import { getPreviewUser } from '@/lib/preview'
 import { getFooterData, getMegaData, getSiteSettings, publicContact, siteIdentity, type NavLink } from '@/lib/site'
 import { formatCopyright, safeHref } from '@/lib/utils'
 
@@ -25,7 +26,8 @@ export async function Footer({ locale }: { locale: Locale }) {
     getTranslations({ locale, namespace: 'nav' }),
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'contact' }),
-    getFooterData(locale),
+    // G1: staff draft-mode requests see the unpublished chrome draft; public renders are unchanged.
+    getPreviewUser().then((user) => getFooterData(locale, user)),
     getMegaData(locale),
     getSiteSettings(locale),
   ])

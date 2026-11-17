@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { APIError, type CollectionAfterChangeHook, type CollectionBeforeChangeHook, type CollectionBeforeOperationHook, type TextField } from 'payload'
+import { APIError, type CollectionAfterChangeHook, type CollectionBeforeChangeHook, type CollectionBeforeOperationHook, type GlobalAfterChangeHook, type GlobalBeforeChangeHook, type TextField } from 'payload'
 
 import { isAdminOrEditorField, isAdminOrEditorUser } from '@/access'
 
@@ -95,6 +95,39 @@ export const savedEditorVersion: CollectionAfterChangeHook = async ({ collection
     collection: collection.slug as 'pages' | 'products', id: doc.id, draft: true, depth: 0, req, overrideAccess: true,
   })
   if (isAdminOrEditorUser(req.user) || req.payloadAPI === 'local') doc[EDITOR_VERSION_FIELD] = stored.editorVersion
+  else delete doc[EDITOR_VERSION_FIELD]
+  return doc
+}
+
+/*
+ * G1: the same optimistic precondition for the site chrome globals (header, footer). Payload's `lockDocuments` also
+ * covers globals (`checkDocumentLockStatus` in the global update operation, on by default here) but, as for
+ * collections, only against a DIFFERENT user; this guard covers same-user tabs, API-key agents and autosave.
+ * The token is the same all-locale snapshot hash; the comparison reads the latest draft-or-published state with
+ * `findGlobal({ draft: true })` inside the write's transaction (req). Global version restores do not run
+ * beforeChange hooks, so no restore exception is needed here.
+ */
+type ChromeGlobalSlug = 'header' | 'footer'
+
+export const guardGlobalEditorVersion: GlobalBeforeChangeHook = async ({ data, global, req }) => {
+  if (!data || typeof data !== 'object') return data
+  const expected = submittedVersions.has(data) ? submittedVersions.get(data) : data[EDITOR_VERSION_FIELD]
+  delete (data as Record<string, unknown>)[EDITOR_VERSION_FIELD]
+  if (expected === undefined) return data
+  if (typeof expected === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(expected)) throw new APIError(VERSION_CONFLICT_MESSAGE, VERSION_CONFLICT_STATUS, undefined, true)
+  if (typeof expected !== 'string' || !/^[a-f0-9]{64}$/.test(expected)) throw new APIError('Invalid editorVersion.', 400, undefined, true)
+  const current = (await req.payload.findGlobal({
+    slug: global.slug as ChromeGlobalSlug, draft: true, depth: 0, overrideAccess: true, req,
+  })) as { editorVersion?: string } | null
+  if (!current?.editorVersion || current.editorVersion !== expected) {
+    throw new APIError(VERSION_CONFLICT_MESSAGE, VERSION_CONFLICT_STATUS, undefined, true)
+  }
+  return data
+}
+
+export const savedGlobalEditorVersion: GlobalAfterChangeHook = async ({ doc, global, req }) => {
+  const stored = await req.payload.findGlobal({ slug: global.slug as ChromeGlobalSlug, draft: true, depth: 0, req, overrideAccess: true })
+  if (isAdminOrEditorUser(req.user) || req.payloadAPI === 'local') doc[EDITOR_VERSION_FIELD] = (stored as { editorVersion?: string }).editorVersion
   else delete doc[EDITOR_VERSION_FIELD]
   return doc
 }

@@ -47,6 +47,7 @@ import { SupportTickets } from './collections/SupportTickets'
 import { Users } from './collections/Users'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
+import { VALIDATION_TRANSLATIONS } from './lib/validation-messages'
 import { SiteSettings } from './globals/SiteSettings'
 import { Integrations } from './globals/Integrations'
 
@@ -100,6 +101,8 @@ export default buildConfig({
   i18n: {
     fallbackLanguage: 'tr',
     supportedLanguages: { tr, en },
+    // G1: custom validation messages (`req.t('softmarket:…')`).
+    translations: VALIDATION_TRANSLATIONS,
   },
   localization: {
     locales: [

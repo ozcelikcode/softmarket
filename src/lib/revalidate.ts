@@ -49,7 +49,17 @@ export function withPublicRevalidation(config: CollectionConfig): CollectionConf
 }
 
 export function withGlobalRevalidation(config: GlobalConfig): GlobalConfig {
+  // G1: a drafts-enabled global (header/footer) invalidates only when it publishes (also a published version
+  // restore); draft/autosave saves write only the version table, which public reads never see. Unpublish
+  // (`_status: 'draft'` on the main row) is refused by chrome-drafts.ts. Globals without drafts: every change.
+  const drafts = typeof config.versions === 'object' && Boolean(config.versions.drafts)
   return { ...config, hooks: { ...config.hooks,
-    afterChange: [...(config.hooks?.afterChange ?? []), async ({ doc }) => { await revalidatePublicContent(); return doc }],
+    afterChange: [...(config.hooks?.afterChange ?? []), async ({ doc }) => {
+      // A version restore passes the stored version record; its `version._status` is authoritative (the record's
+      // own top-level `_status` is only a field default).
+      const status = doc?.version?._status ?? doc?._status
+      if (!drafts || status === 'published') await revalidatePublicContent()
+      return doc
+    }],
   } }
 }

@@ -1,6 +1,9 @@
-import type { CollectionConfig, Plugin } from 'payload'
+import type { CollectionConfig, GlobalConfig, Plugin } from 'payload'
 
-import { clearEditorRestoreContext, editorVersionField, guardEditorVersion, savedEditorVersion } from '@/editor/canvas/concurrency'
+import {
+  clearEditorRestoreContext, editorVersionField, guardEditorVersion, guardGlobalEditorVersion, savedEditorVersion, savedGlobalEditorVersion,
+} from '@/editor/canvas/concurrency'
+import { CHROME_DRAFT_GLOBALS } from '@/globals/chrome-drafts'
 import { VISUAL_EDITOR_COLLECTIONS } from '@/editor/canvas/rules'
 
 export const VISUAL_EDITOR_HOST = '@/editor/canvas/admin/host#VisualEditorHost'
@@ -14,8 +17,26 @@ export const VISUAL_EDITOR_HOST = '@/editor/canvas/admin/host#VisualEditorHost'
  * - Optimistic concurrency (concurrency.ts): virtual hidden `editorVersion` field + a first beforeChange hook that
  *   rejects an admin save based on a stale version with 409 (no schema change).
  */
-export const visualEditor = (collections: readonly string[] = VISUAL_EDITOR_COLLECTIONS): Plugin => (config) => ({
+export const visualEditor = (
+  collections: readonly string[] = VISUAL_EDITOR_COLLECTIONS,
+  globals: readonly string[] = CHROME_DRAFT_GLOBALS,
+): Plugin => (config) => ({
   ...config,
+  // G1: header/footer get the same optimistic concurrency (editorVersion/409) as the visual editor collections.
+  // Live Preview and the editor host for globals arrive with G2/G3.
+  globals: config.globals?.map((g: GlobalConfig) =>
+    globals.includes(g.slug)
+      ? {
+          ...g,
+          fields: [editorVersionField, ...g.fields],
+          hooks: {
+            ...g.hooks,
+            beforeChange: [guardGlobalEditorVersion, ...(g.hooks?.beforeChange ?? [])],
+            afterChange: [...(g.hooks?.afterChange ?? []), savedGlobalEditorVersion],
+          },
+        }
+      : g,
+  ),
   collections: config.collections?.map((c: CollectionConfig) =>
     collections.includes(c.slug)
       ? {

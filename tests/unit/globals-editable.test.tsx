@@ -9,6 +9,8 @@ const client = vi.hoisted(() => ({ findGlobal: vi.fn(), find: vi.fn(), findByID:
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('payload', () => ({ getPayload: vi.fn(async () => client), UnauthorizedError: class extends Error {} }))
 vi.mock('next/navigation', () => ({ usePathname: () => '/tr', useSearchParams: () => new URLSearchParams() }))
+// G1: Header/Footer ask for a staff preview user (draft chrome); public renders get none.
+vi.mock('@/lib/preview', () => ({ getPreviewUser: async () => null }))
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }))
 vi.mock('@/components/layout/language-switcher', () => ({ LanguageSwitcher: () => null }))
 

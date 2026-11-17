@@ -1,3 +1,15 @@
+## G1 independent security audit — 2026-11-17
+
+- Fixed public/customer draft/history exposure, status-less publication of pending drafts, projected-write version truncation/cache staleness, and invalid URL grandfathering through autosave. Regression tests cover direct REST reads, Local API access, publication/rollback, explicit REST/MCP publication, concurrency/restore and URL obfuscation.
+- Backup-copy migration columns/FKs/indexes match the snapshot; integrity/FK checks pass. Up/down guards, published backfill, and the documented nullable-title down exception need no changes. Live DB, port 3100, `.next` and `techContext.md` are untouched; no commit.
+- Final validation: backup-copy up/down/up preserves all 701 original-table row hashes; typecheck/lint/diff-check pass; full Vitest 94 files / 1,558 tests pass (384.14 s). G1 is ready to commit; no commit was created.
+
+## G1 header/footer drafts + server contracts — 2026-11-17 (committed; live DB migrated 2026-11-17)
+
+- Header/footer: `versions.drafts.autosave` 2 s, max 50 (`src/globals/chrome-drafts.ts`). Migration `20261117_133332_globals_chrome_drafts`: 22 CREATE TABLE, 80 indexes, 2 ADD `_status`, backfill `published`; `footer_columns_locales` rebuild only while empty (else throws before any change); guarded down (refuses with a pending draft). Copy DB: 700 tables row-equal, integrity/FK ok.
+- `_status: 'draft'` without `draft: true` and draft/as-draft restores → 400 (`req.t('softmarket:…')`, `src/lib/validation-messages.ts`). Importer always publishes these globals. Revalidate only on publish. Global `editorVersion`/409. `linkField().url` server validation (`isAllowedLinkUrl`; 16 live placeholder `mailto:[…]` CTA rows grandfathered while unchanged). Staff draft chrome via `getHeaderNav/getFooterData(locale, previewUser)`.
+- Public `<header>`/`<footer>` byte-equal before/after (prod build on DB copies, /tr, /en, TR/EN product page). Record: `docs/plan-visual-globals.md` "G1 implementation record".
+
 ## Lisans API / güvenlik merkezi / hosting planı — 2026-11-17 (yalnız plan)
 
 - Yazıldı: `docs/plan-licensing-security.md` (tehdit modeli, API sözleşmesi, veri modeli, L0–L11 fazları, ajan dağılımı, 6 açık soru) ve `docs/plan-hosting.md` (alt alan adı olur; Passenger paylaşımlı hosting koşullu/önerilmez). Kod, şema, migration, commit yok. Bulgu: `admin-actions.ts` lisans durumunu ham SQL ile değiştiriyor; durum günlüğü bu yollara da bağlanmalı (L3).
@@ -327,3 +339,8 @@
 - Teknik taslak kontrolü hukukçu onayını doğrulamaz (P3); kılavuz ve plan açıklar. Ayrıntı `docs/plan-payments.md` P7 denetim kaydı.
 - Canlı DB/3100/.next, P4 dosyaları, techContext ve commit korunuyor. Migration değişmedi; geçici SQLite up/down ve NULL/UNIQUE/sürüm testleri var. Kapı sonucu aşağıda.
 - Son kapılar: `pnpm typecheck` ve `pnpm lint` exit 0; `pnpm test --maxWorkers=1`: **84 dosya / 1397 test, tamamı geçti (314,55 sn)**. P4 kaynaklı kırık yok. `git diff --check` temiz. **P7 migration canlıya güvenli: EVET; P7 kapsamı commit edilebilir: EVET** (commit atılmadı).
+
+
+## G1 release — 2026-11-17
+
+- Live DB migrated (`20261117_133332_globals_chrome_drafts`), backup `data/backups/pre-g1-20261117-171838.db` (gitignored). header/footer `_status='published'`, integrity ok, `content:import --dry-run` clean. Unit 1558/1558, e2e 19/19, isolated 30/30; copy-DB smoke: draft save keeps public label, publish updates it, `javascript:` URL rejected (400).

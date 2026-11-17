@@ -21,6 +21,7 @@ import * as migration_20261116_141401_p2_payments_commerce from './20261116_1414
 import * as migration_20261116_155928_p7_commerce_legal from './20261116_155928_p7_commerce_legal';
 import * as migration_20261116_175713_p4_order_notifications from './20261116_175713_p4_order_notifications';
 import * as migration_20261117_092957_integrations_settings from './20261117_092957_integrations_settings';
+import * as migration_20261117_133332_globals_chrome_drafts from './20261117_133332_globals_chrome_drafts';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20261117_092957_integrations_settings.up,
     down: migration_20261117_092957_integrations_settings.down,
-    name: '20261117_092957_integrations_settings'
+    name: '20261117_092957_integrations_settings',
+  },
+  {
+    up: migration_20261117_133332_globals_chrome_drafts.up,
+    down: migration_20261117_133332_globals_chrome_drafts.down,
+    name: '20261117_133332_globals_chrome_drafts'
   },
 ];

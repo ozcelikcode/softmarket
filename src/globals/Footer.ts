@@ -1,14 +1,19 @@
 import type { GlobalConfig } from 'payload'
 
-import { anyone, isAdminOrEditor } from '@/access'
+import { isAdminOrEditor, publishedOrStaff } from '@/access'
 import { linkField } from '@/fields/link'
+
+import { chromeVersions, guardGlobalDraftStatus, validatePublishedChromeLinks } from './chrome-drafts'
 
 /* F7: append-only. Contact and social data live in SiteSettings; the footer only toggles them. */
 export const Footer: GlobalConfig = {
   slug: 'footer',
   label: { tr: 'Alt bilgi', en: 'Footer' },
   admin: { group: 'Site' },
-  access: { read: anyone, update: isAdminOrEditor },
+  access: { read: publishedOrStaff, readVersions: isAdminOrEditor, update: isAdminOrEditor },
+  // G1: drafts + autosave (versions tables only); see chrome-drafts.ts for the `_status` rules.
+  versions: chromeVersions,
+  hooks: { beforeOperation: [guardGlobalDraftStatus], afterChange: [validatePublishedChromeLinks] },
   fields: [
     {
       name: 'columns',

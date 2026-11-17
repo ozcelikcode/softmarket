@@ -1,6 +1,8 @@
 import type { CollectionSlug, GroupField } from 'payload'
 
 import { ROUTE_PARAM_PATTERN, routeHasParam, routeOptions } from '@/i18n/paths'
+import { isAllowedLinkUrl } from '@/lib/safe-href'
+import { validationMessage } from '@/lib/validation-messages'
 
 /** Collections that internal links may point to. */
 export const LINKABLE_COLLECTIONS: CollectionSlug[] = [
@@ -100,6 +102,9 @@ export const linkField = ({
       localized: true,
       label: { tr: 'Adres (URL)', en: 'URL' },
       admin: { condition: (_, sibling) => sibling?.type === 'external' },
+      // G1: server-side address rule (shared with render's safeHref); see isAllowedLinkUrl.
+      validate: (value: unknown, { previousValue, req }: { previousValue?: unknown; req?: { t?: (key: never) => string } }) =>
+        isAllowedLinkUrl(value, previousValue) || validationMessage(req, 'linkUrlInvalid'),
     },
     ...(withLabel
       ? [{ name: 'label', type: 'text' as const, localized: true, required, label: { tr: 'Metin', en: 'Label' } }]

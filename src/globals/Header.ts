@@ -1,7 +1,9 @@
 import type { GlobalConfig } from 'payload'
 
-import { anyone, isAdminOrEditor } from '@/access'
+import { isAdminOrEditor, publishedOrStaff } from '@/access'
 import { linkField } from '@/fields/link'
+
+import { chromeVersions, guardGlobalDraftStatus, validatePublishedChromeLinks } from './chrome-drafts'
 
 /*
  * F7: fields are append-only. Existing names/options/defaults (navItems, megaMenu
@@ -11,7 +13,10 @@ export const Header: GlobalConfig = {
   slug: 'header',
   label: { tr: 'Üst menü', en: 'Header' },
   admin: { group: 'Site' },
-  access: { read: anyone, update: isAdminOrEditor },
+  access: { read: publishedOrStaff, readVersions: isAdminOrEditor, update: isAdminOrEditor },
+  // G1: drafts + autosave (versions tables only); see chrome-drafts.ts for the `_status` rules.
+  versions: chromeVersions,
+  hooks: { beforeOperation: [guardGlobalDraftStatus], afterChange: [validatePublishedChromeLinks] },
   fields: [
     {
       name: 'navItems',

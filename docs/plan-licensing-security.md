@@ -513,3 +513,25 @@ Ek: P6 ödeme koduna dokunma (regresyon), G1 ile migration sırası, KVKK metinl
 4. **Ülke/konum bilgisi kullanılsın mı?** "İmkânsız seyahat" ülke bilgisi ister. **Öneri:** site Cloudflare arkasındaysa yalnız `CF-IPCountry` ülke kodu; değilse v1'de konum yok (KVKK yükü ve MaxMind lisansı gerekmez).
 5. **Barındırma ve alt alan adı:** VPS'te kalınsın mı, alt alan adı ne olsun? **Öneri:** lisans API'si için VPS (ayrıntı `docs/plan-hosting.md`) + `lisans.<alan-adi>` alt alan adı, ilk sürümden itibaren programlara gömülü.
 6. **Admin hesabı ek koruması:** **Öneri:** v1'de `/admin` erişimini Caddy'de ofis IP'leri veya Cloudflare Access ile sınırlamak; TOTP 2FA ayrı küçük faz (yaklaşık 2 gün).
+
+## Kullanıcı kararları (2026-11-17)
+
+- Sıra: **önce visual-globals G1**, sonra lisans L1. L0 (şemasız spike) G1 ile paralel yürür.
+- Otomatik kurallar: **ilk 30 gün yalnız izleme** (olay + e-posta, askıya alma yok); eşikler veriye göre ayarlanınca admin panelinden açılır. İptal her zaman admin onayıyla.
+- Koltuk: **cihaz başına** (müşteri portaldan cihaz kaldırıp koltuk boşaltır).
+- Barınma: **VPS + `lisans.<alan-adı>`** alt alan adı (DNS + Caddy bloğu). Paylaşımlı hosting hedeflenmez.
+- Sorulmayan maddeler öneriyle varsayıldı: v1'de 14 gün internetsiz tolerans (L11 dosyayla aktivasyon sonra), ülke bilgisi yalnız Cloudflare `CF-IPCountry` varsa, `/admin` için IP/Cloudflare Access sınırlaması önerisi + TOTP ayrı küçük faz.
+
+## L0 result and plan revision (2026-11-17)
+
+Details and evidence: `docs/licensing/adr-l0.md` (Terra spike plus the browser/HTTP verification).
+
+- **No `jose` dependency.** Node `crypto` Ed25519 compact JWS reproduces the RFC 8037 A.4/A.5 vectors. Implement without a dependency; carry the RFC vector and negative tests (tamper, wrong alg, wrong `kid`, malformed base64url, oversize, critical headers, claim/time checks) into product tests.
+- **Failed admin login: `users.hooks.afterError`.** Verified over real HTTP and the admin UI form (both hit `POST /api/users/login`; wrong password gives 401 and fires `afterError` with `AuthenticationError`). `beforeLogin`/`afterLogin` do not run on failure. Limits: Local API `payload.login` and GraphQL do not go through this hook (test separately if in scope); filter by route and error name; never log password, email or body; a logging failure must not change the 401; Payload's own `maxLoginAttempts` lockout stays the enforcement, the hook only feeds security-center events.
+- **Admin custom view access model.** Register via `admin.components.views` and `afterNavLinks`; component paths are relative to `importMap.baseDir` (`/l0/view#View` style, not `/src/...`). Real browser results: admin sees nav link and view; editor has no nav link and a direct URL redirects to `/admin` (server-side `req.user` check in the view, final URL asserted, not an HTTP 403); anonymous is sent to `/admin/login`. The nav link is cosmetic: the server check in the view and admin checks on every data endpoint are the boundary. Cover with Playwright for all three sessions.
+- **Partial unique index management.** drizzle/Payload migrations do not know partial indexes: a table rebuild (for example making a nullable column required) generates `DROP TABLE` + rename and silently drops them, never recreating. Policy: create them in hand-written migration SQL with explicit down; review every generated migration for `__new_<table>` on tables with partial indexes and re-create manually; add a CI test that migrates a fresh SQLite and asserts the index exists, rejects a duplicate active row, accepts inactive duplicates. App-level checks inside the transaction stay as defense in depth.
+- **Raw body and Range.** `req.arrayBuffer()` preserves bytes (hex and SHA-256 identical over real HTTP); Range gives 206/Content-Range, `If-Range` mismatch gives 200 full body, unsatisfiable gives 416. Licensing routes live under `src/app/(payload)/api/` (the next-intl middleware matcher excludes `api`). L3 adds suffix/multiple range, HEAD, weak ETag and abort tests.
+- **L3 revision: split writes by criticality.** Measured serial transaction queue (100 concurrent `BEGIN IMMEDIATE` update+insert): p95 about 550 ms (Terra 559.5 ms, repeat 550.4 ms; p50 about 292 ms, p99 about 573 ms), roughly 5.5 ms per serialized write, so bursts near 900 writers would hit the 5 s queue timeout.
+  1. Observational writes (`lastSeenAt`, informational events): in-memory coalescing per activation with a periodic flush (for example every 30-60 s, one transaction per batch), a bounded buffer with a maximum age and size, and a flush on graceful shutdown (SIGTERM/exit). A crash may lose up to one interval of observations; this is accepted and documented.
+  2. Security-critical writes (activation, seat claim/release, state transition, revocation, nonce/replay record): separate path, synchronous, atomic, never buffered, and committed before the response is returned.
+  3. Re-measure on the target VPS with representative load and other writers before fixing flush intervals.

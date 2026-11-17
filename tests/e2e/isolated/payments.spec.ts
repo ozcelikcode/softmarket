@@ -77,6 +77,7 @@ async function loggedInContext(browser: Browser, email: string, opts: { javaScri
 
 let adminCtx: APIRequestContext
 let paidOrder = ''
+let secondOrder = ''
 
 test.beforeAll(async ({ playwright }) => { adminCtx = await adminRequest(playwright) })
 test.afterAll(async () => { await adminCtx?.dispose() })
@@ -171,6 +172,7 @@ test('without JavaScript: validation errors re-render the form; a valid POST ans
   await page.getByRole('button', { name: 'Continue to the shop' }).click()
   await page.waitForURL(/\/tr\/hesap\/siparisler\/SM-\d{6}-[0-9A-Z]{6}$/, { timeout: 30_000 })
   expect(orderNumber(page)).not.toBe(paidOrder)
+  secondOrder = orderNumber(page)
   await expect(page.getByText('Tamamlandı').first()).toBeVisible()
   await context.close()
 })
@@ -198,6 +200,43 @@ test('mobile 390: checkout fits the viewport; CSP form-action allows the provide
   await page.goto('/tr/hesap/siparisler')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await context.close()
+})
+
+test('P6: admin refunds in the panel (İade et) → order refunded, the portal shows the licence as revoked', async ({ browser, request }) => {
+  expect(secondOrder).toMatch(/^SM-/)
+  // The endpoint refuses anything but an admin panel session (anonymous here).
+  const found = await adminCtx.get(`/api/orders?where[orderNumber][equals]=${secondOrder}&depth=0&limit=1`)
+  const id = ((await found.json()) as { docs: { id: number }[] }).docs[0]!.id
+  expect((await request.post(`/api/orders/${id}/refund`, { headers: { Origin: BASE } })).status()).toBe(401)
+
+  const context = await browser.newContext({ baseURL: BASE })
+  const page = await context.newPage()
+  await page.goto('/admin/login')
+  await page.locator('#field-email').fill(ADMIN_EMAIL!)
+  await page.locator('#field-password').fill(ADMIN_PASSWORD!)
+  await page.locator('form button[type="submit"]').click()
+  await page.waitForURL(/\/admin\/?$/, { timeout: 30_000 })
+  await page.goto(`/admin/collections/orders/${id}`)
+  await page.locator('[data-order-action="refund"]').click()
+  // Admin UI language follows the browser (EN here): the full order total is shown either way.
+  await expect(page.getByRole('alertdialog')).toContainText(/1[.,]250[.,]00/)
+  await page.locator('[data-order-action-confirm="refund"]').click()
+  await expect(page.locator('[data-order-actions] [role="status"]')).toHaveText(/İade edildi|Refunded/, { timeout: 30_000 })
+  await context.close()
+
+  const buyer = await loggedInContext(browser, BUYER)
+  await buyer.page.goto(`/tr/hesap/siparisler/${secondOrder}`)
+  await expect(buyer.page.getByText('İade edildi').first()).toBeVisible()
+  await buyer.page.goto('/tr/hesap/lisanslar')
+  await expect(buyer.page.locator('main').getByText('İptal edildi').first()).toBeVisible()
+  // The first order's licence is untouched.
+  await expect(buyer.page.locator('main').getByText('Aktif').first()).toBeVisible()
+  await buyer.context.close()
+})
+
+test('the dynamic legal probe is not a public page or sitemap entry', async ({ request }) => {
+  expect((await request.get('/tr/yasal/__dynamic__')).status()).toBe(404)
+  expect((await (await request.get('/sitemap.xml')).text())).not.toContain('__dynamic__')
 })
 
 test('back to quote mode (S3): checkout fails to quote, history stays readable, prices disappear', async ({ browser, request }) => {

@@ -1,5 +1,6 @@
 import { sql } from '@payloadcms/db-sqlite'
 
+import { reconcileRefund } from './admin-actions'
 import { PaymentError } from './errors'
 import { fulfilPaidOrder } from './fulfill'
 import { deliverOrderNotifications, findUndeliveredOrders } from './notify'
@@ -15,6 +16,9 @@ import { loadOrderRow, syncOrderFromProvider, type OrderRow } from './sync'
  *     do not prove that payment was not made and never cause cancellation.
  *     A pending order that never reached the provider (no providerRef) is cancelled after expiry.
  *   - `paid` orders not under review (an earlier fulfilment crashed) → fulfilPaidOrder.
+ *   - refund phase (P6): admin refunds whose outcome is still unknown/pending (journal `admin-refund` = received) →
+ *     reconcileRefund (provider refundStatus only, NEVER a second refund call): refunded → order refunded + licences
+ *     revoked + buyer e-mail; an unresolved attempt remains locked for manual investigation.
  *   - notify phase: fulfilled / under-review orders whose durable notification markers are still empty (process died
  *     after commit, SMTP error) → deliverOrderNotifications (lease, at most NOTIFY_POLICY.maxAttempts with backoff;
  *     missing SMTP = skipped, not counted). Runs last so deliveries started by this run usually hold the lease.
@@ -26,7 +30,7 @@ import { loadOrderRow, syncOrderFromProvider, type OrderRow } from './sync'
 
 // limit is the pending/paid scan's page size and the notify phase's existing delivery limit.
 export type ReconcileOptions = { dryRun?: boolean; minAgeMs?: number; expireAfterMs?: number; limit?: number }
-export type ReconcileAction = { orderNumber: string; action: 'synced' | 'cancel' | 'fulfil' | 'notify' | 'none' | 'error'; detail: string }
+export type ReconcileAction = { orderNumber: string; action: 'synced' | 'cancel' | 'fulfil' | 'refund' | 'notify' | 'none' | 'error'; detail: string }
 export type ReconcileReport = { skipped?: 'capability_off'; dryRun: boolean; actions: ReconcileAction[]; errors: number }
 
 export const RECONCILE_DEFAULTS = { minAgeMs: 5 * 60 * 1000, expireAfterMs: 60 * 60 * 1000, limit: 200 } as const
@@ -125,6 +129,29 @@ export async function reconcileOrders(deps: PaymentsDeps, options: ReconcileOpti
       push(order, 'error', errorCode(error))
     }
   }
+  const { docs: refundLocks } = await deps.payload.find({
+    collection: 'payment-events', limit, depth: 0, sort: 'receivedAt', overrideAccess: true, pagination: false,
+    where: { and: [{ type: { equals: 'admin.refund' } }, { status: { equals: 'received' } }] },
+    select: { order: true },
+  })
+  for (const lock of refundLocks as { order?: OrderRow['id'] | { id: OrderRow['id'] } | null }[]) {
+    const orderId = lock.order && typeof lock.order === 'object' ? lock.order.id : lock.order
+    if (orderId === undefined || orderId === null) continue
+    const row = await loadOrderRow(deps.payload, orderId)
+    if (!row) continue
+    if (dryRun) {
+      push(row, 'refund', 'refund_unsettled')
+      continue
+    }
+    try {
+      const result = await reconcileRefund(deps, orderId, 'reconcile')
+      if (result.http === 502) push(row, 'error', `refund_${result.detail ?? result.code}`)
+      else push(row, result.code === 'refunded' ? 'refund' : 'none', result.code)
+    } catch (error) {
+      push(row, 'error', `refund_${errorCode(error)}`)
+    }
+  }
+
   const undelivered = await findUndeliveredOrders(deps, limit, !dryRun)
   for (const row of undelivered) {
     const order = { orderNumber: row.orderNumber }

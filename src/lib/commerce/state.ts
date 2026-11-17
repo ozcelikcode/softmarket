@@ -6,6 +6,13 @@ import { closedCommerceState, computeCommerceState, type CommerceState } from '@
 import { evaluateLegal } from '@/lib/payments/legal'
 import { readCapability } from '@/lib/payments/mode'
 
+/**
+ * `PAYMENTS_ENABLED` as seen by `next build`/`next dev` (webpack DefinePlugin in next.config.ts). Undefined outside a
+ * Next bundle (vitest, tsx CLIs): those have no prerendered routes, so the runtime env alone decides there.
+ */
+declare const __SOFTMARKET_BUILD_PAYMENTS__: boolean
+const builtWithoutCapability = () => typeof __SOFTMARKET_BUILD_PAYMENTS__ !== 'undefined' && !__SOFTMARKET_BUILD_PAYMENTS__
+
 /** Next's static-render bailout (thrown by `unstable_noStore()` etc.) carries this digest. */
 const isStaticBailout = (error: unknown) => (error as { digest?: unknown } | null)?.digest === 'DYNAMIC_SERVER_USAGE'
 let warnedPrerendered = false
@@ -26,18 +33,50 @@ let warnedPrerendered = false
  * capability and the process later starts with it, the bailout cannot happen at runtime: the state then fails closed
  * (quote only, site stays up) until the site is rebuilt.
  */
-export const getCommerceState = cache(async (): Promise<CommerceState> => {
-  if (!readCapability(process.env)) return closedCommerceState()
+const warnPrerendered = () => {
+  if (warnedPrerendered) return
+  warnedPrerendered = true
+  console.warn('[payments] PAYMENTS_ENABLED is on but this build was prerendered without it: payments stay hidden (quote only). Rebuild with PAYMENTS_ENABLED=true.')
+}
+
+/**
+ * Render-mode boundary (P6 fix for "Page changed from static to dynamic at runtime"). Returns true when this render
+ * may read the commerce state. With the capability ON (build and runtime) it opts the WHOLE route out of the static
+ * cache: called unconditionally by the frontend locale layout, so every page under it is dynamic from the build on,
+ * whatever data a page later meets (a sales legal page created after the build, a footer link to one). Calling it
+ * only on some data paths left routes prerendered as static, and the first runtime render that reached
+ * `unstable_noStore()` set revalidate=0, which Next 15 answers with that error / HTTP 500 (the catch below cannot
+ * undo it). Capability OFF: no-op, ISR unchanged. Built without it but started with it: the opt-out is NOT attempted
+ * (it would 500 every prerendered route); the state stays closed (quote only) until a rebuild.
+ */
+export function commerceRenderBoundary(): boolean {
+  if (!readCapability(process.env)) return false
+  if (builtWithoutCapability()) {
+    warnPrerendered()
+    return false
+  }
   try {
     unstable_noStore()
   } catch (error) {
     if (process.env.NEXT_PHASE === 'phase-production-build' || !isStaticBailout(error)) throw error
-    if (!warnedPrerendered) {
-      warnedPrerendered = true
-      console.warn('[payments] PAYMENTS_ENABLED is on but this build was prerendered without it: payments stay hidden (quote only). Rebuild with PAYMENTS_ENABLED=true.')
-    }
-    return closedCommerceState()
+    warnPrerendered()
+    return false
   }
+  return true
+}
+
+/**
+ * True while building/serving with the payments capability (the build constant agrees). Used by
+ * `contentStaticParams`: such a build must prerender NO content path, otherwise a route whose param list happened to
+ * be empty at build time (e.g. sales legal pages written after the build) stays an ISR fallback route and its first
+ * runtime render hits the boundary above → "Page changed from static to dynamic at runtime" (HTTP 500).
+ */
+export function commerceDynamicBuild(): boolean {
+  return readCapability(process.env) && !builtWithoutCapability()
+}
+
+export const getCommerceState = cache(async (): Promise<CommerceState> => {
+  if (!commerceRenderBoundary()) return closedCommerceState()
   try {
     // Lazy: `site.ts` imports this module (footer/header link filter), and Payload config loads only when needed.
     const payload = await (await import('@/lib/site')).getPayloadClient()

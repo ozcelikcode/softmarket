@@ -15,6 +15,7 @@ import { AlternatesProvider } from '@/lib/alternates-store'
 import { accentStyle } from '@/lib/brand'
 import { getPreviewUser } from '@/lib/preview'
 import { siteUrl } from '@/lib/seo'
+import { commerceRenderBoundary } from '@/lib/commerce/state'
 import { getSiteSettings, siteIdentity } from '@/lib/site'
 
 import '../globals.css'
@@ -94,6 +95,8 @@ export default async function LocaleLayout({
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
+  // Payments capability ON: every page is rendered per request (consistent mode from the build on; see the boundary).
+  commerceRenderBoundary()
   const [t, settings, previewUser] = await Promise.all([
     getTranslations({ locale, namespace: 'common' }), getSiteSettings(locale), getPreviewUser(),
   ])

@@ -13,6 +13,7 @@ import {
 } from '../signature/iyzico'
 import {
   CURRENCIES,
+  type AbandonResult,
   type CheckoutInput,
   type CheckoutSession,
   type Currency,
@@ -20,7 +21,9 @@ import {
   type HeaderLike,
   type PaymentProvider,
   type ProviderPaymentState,
+  type ProviderRefundState,
   type RefundInput,
+  type RefundStatusInput,
   type RefundResult,
   type WebhookVerification,
 } from '../types'
@@ -41,6 +44,8 @@ export const IYZICO_PATHS = {
   initialize: '/payment/iyzipos/checkoutform/initialize/auth/ecom',
   retrieve: '/payment/iyzipos/checkoutform/auth/ecom/detail',
   refund: '/v2/payment/refund',
+  /** P6: Transaction Detail Reporting (GET). Returns `paymentRefundStatus`; no response signature (TLS + host only). */
+  paymentDetails: '/v2/reporting/payment/details',
 } as const
 
 const PROVIDER = 'iyzico' as const
@@ -88,7 +93,26 @@ export function createIyzicoProvider(deps: IyzicoProviderDeps): PaymentProvider 
       Accept: 'application/json',
     }
     // iyzico returns business failures with HTTP 200/4xx + status:"failure"; parse both.
-    const { json } = await requestJson(deps.fetch, PROVIDER, `${config.baseUrl}${path}`, { method: 'POST', headers, body }, {
+    const { json, status } = await requestJson(deps.fetch, PROVIDER, `${config.baseUrl}${path}`, { method: 'POST', headers, body }, {
+      timeoutMs: deps.timeoutMs,
+      acceptErrorBody: true,
+    })
+    if (status >= 500 || [408, 409, 429].includes(status)) throw new PaymentError('http_error', { provider: PROVIDER, httpStatus: status })
+    return json
+  }
+
+  /**
+   * Signed GET (reporting). The IYZWSv2 payload is randomKey + uriPath + body with an empty body; the query string is
+   * NOT part of uriPath (official SDK behaviour; to be confirmed in the sandbox, docs/plan-payments.md P6 açık).
+   */
+  async function get(path: string, query: Record<string, string>) {
+    const rnd = randomKey()
+    const headers = {
+      Authorization: iyzicoAuthorizationHeader({ apiKey: config.apiKey.reveal(), secretKey: config.secretKey.reveal(), randomKey: rnd, uriPath: path, body: '' }),
+      'x-iyzi-rnd': rnd,
+      Accept: 'application/json',
+    }
+    const { json } = await requestJson(deps.fetch, PROVIDER, `${config.baseUrl}${path}?${new URLSearchParams(query).toString()}`, { method: 'GET', headers }, {
       timeoutMs: deps.timeoutMs,
       acceptErrorBody: true,
     })
@@ -273,7 +297,8 @@ export function createIyzicoProvider(deps: IyzicoProviderDeps): PaymentProvider 
         currency: input.currency,
         ...(input.ip ? { ip: input.ip } : {}),
       })
-      if (json.status !== 'success') return { ok: false, failureCode: safeCode(json.errorCode, 'refund_failed') }
+      if (json.status === 'failure') return { ok: false, failureCode: safeCode(json.errorCode, 'refund_failed') }
+      if (json.status !== 'success') throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'refund_status' })
       // Refund response signature: paymentId, price, currency, conversationId.
       const signed = verifyIyzicoResponseSignature(
         config.secretKey.reveal(),
@@ -286,6 +311,40 @@ export function createIyzicoProvider(deps: IyzicoProviderDeps): PaymentProvider 
         throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'refund_mismatch' })
       }
       return { ok: true, status: 'succeeded', providerRefundId: str(json.paymentTransactionId) }
+    },
+
+    async refundStatus(input: RefundStatusInput): Promise<ProviderRefundState> {
+      if (!input.providerPaymentId || !/^[A-Za-z0-9_-]{1,64}$/.test(input.providerPaymentId)) {
+        throw new PaymentError('invalid_input', { provider: PROVIDER, detail: 'paymentId' })
+      }
+      const json = await get(IYZICO_PATHS.paymentDetails, { paymentId: input.providerPaymentId, locale: 'tr' })
+      if (json.status !== 'success') throw new PaymentError('provider_error', { provider: PROVIDER, detail: `code=${safeCode(json.errorCode, 'unknown')}` })
+      const payments = Array.isArray(json.payments) ? (json.payments as Record<string, unknown>[]) : []
+      // Only the payment that is ours (same id AND same conversation id = order number) counts.
+      const mine = payments.filter((p) => p && typeof p === 'object' && str(p.paymentId) === input.providerPaymentId && str(p.paymentConversationId) === input.orderNumber)
+      if (mine.length !== 1) throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'payment_details' })
+      const payment = mine[0]!
+      if (payment.paymentStatus !== 1) return { provider: PROVIDER, status: 'not_paid' }
+      const cancels = Array.isArray(payment.cancels) ? payment.cancels : []
+      const refundStatus = str(payment.paymentRefundStatus)
+      // A void is proof only when the provider reports success for the full amount and currency.
+      if (refundStatus === 'TOTALLY_REFUNDED' || cancels.some((entry: unknown) => {
+        if (!entry || typeof entry !== 'object') return false
+        const cancel = entry as Record<string, unknown>
+        return cancel.refundStatus === 1 && str(cancel.currencyCode) === input.currency &&
+          decimalToMinor(str(cancel.refundPrice) ?? '', input.currency) === input.amountMinor
+      })) return { provider: PROVIDER, status: 'refunded' }
+      if (refundStatus === 'PARTIALLY_REFUNDED') return { provider: PROVIDER, status: 'partially_refunded' }
+      if (refundStatus === 'NOT_REFUNDED') return { provider: PROVIDER, status: 'not_refunded' }
+      // Unknown value: never guess (a guess could cause a second refund or hide one).
+      throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'refund_status' })
+    },
+
+    async abandonCheckout(token: string): Promise<AbandonResult> {
+      if (!TOKEN_RE.test(token)) throw new PaymentError('invalid_input', { provider: PROVIDER, detail: 'token' })
+      // No void API for an unused Checkout Form token: it expires (tokenExpireTime). A late payment on a cancelled
+      // order is still caught by sync (cancelled → paid + requiresReview, no licence).
+      return { ok: true, mode: 'local_only' }
     },
   }
 }

@@ -4054,9 +4054,12 @@ export interface Order {
     leaseUntil?: string | null;
   };
   /**
-   * Amount mismatch or late payment: no license is assigned automatically.
+   * Amount mismatch, late payment, unknown refund outcome or payment dispute: no license is assigned automatically.
    */
   requiresReview?: boolean | null;
+  /**
+   * Enter the number and date after issuing the invoice; the customer sees them in the portal.
+   */
   invoice?: {
     number?: string | null;
     issuedAt?: string | null;

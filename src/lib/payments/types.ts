@@ -128,6 +128,34 @@ export type RefundResult =
   | { ok: true; providerRefundId?: string; status: 'succeeded' | 'pending' }
   | { ok: false; failureCode: string }
 
+/** P6: server-side read of the refund state BEFORE (and instead of repeating) a refund. */
+export type RefundStatusInput = {
+  orderNumber: string
+  providerRef: string
+  providerPaymentId: string
+  currency: Currency
+  /** Order total (v1 refunds are full refunds only). */
+  amountMinor: number
+}
+
+/**
+ * - `refunded`: the full amount is refunded/cancelled at the provider.
+ * - `partially_refunded`: something but not all was refunded (outside our v1 flow, e.g. provider dashboard).
+ * - `not_refunded`: captured payment, nothing refunded.
+ * - `not_paid`: the provider has no captured payment for this order (never refund).
+ */
+export type ProviderRefundState = {
+  provider: ProviderId
+  status: 'refunded' | 'partially_refunded' | 'not_refunded' | 'not_paid'
+  refundedMinor?: number
+}
+
+/**
+ * P6 admin "cancel" of an unpaid order. Stripe expires the Checkout Session; iyzico has no API to void an unused
+ * Checkout Form token (it expires on its own), so the adapter answers `local_only` and the order is closed locally.
+ */
+export type AbandonResult = { ok: true; mode: 'expired' | 'local_only' } | { ok: false; failureCode: string }
+
 export interface PaymentProvider {
   readonly id: ProviderId
   readonly env: ProviderEnv
@@ -137,4 +165,8 @@ export interface PaymentProvider {
   /** Verifies the raw body before any trust is placed in it. Never throws on bad input. */
   verifyWebhook(rawBody: string, headers: HeaderLike, now?: Date): WebhookVerification
   refund(input: RefundInput): Promise<RefundResult>
+  /** Read-only refund state (no side effects); errors are thrown as PaymentError, never guessed. */
+  refundStatus(input: RefundStatusInput): Promise<ProviderRefundState>
+  /** Stops an unpaid hosted checkout where the provider supports it. */
+  abandonCheckout(providerRef: string): Promise<AbandonResult>
 }

@@ -10,7 +10,7 @@ const PORT = 3500
 const SECRET = process.env.IYZICO_SECRET_KEY ?? ''
 if (!SECRET) throw new Error('IYZICO_SECRET_KEY is required')
 
-type Session = { token: string; conversationId: string; price: string; currency: string; callbackUrl: string; status: 'INIT' | 'SUCCESS' | 'FAILURE' }
+type Session = { token: string; conversationId: string; price: string; currency: string; callbackUrl: string; status: 'INIT' | 'SUCCESS' | 'FAILURE'; paymentId: string; refunded: boolean }
 const sessions = new Map<string, Session>()
 let seq = 0
 
@@ -25,20 +25,33 @@ createServer(async (req, res) => {
   if (req.method === 'POST' && url.pathname === '/payment/iyzipos/checkoutform/initialize/auth/ecom') {
     const body = JSON.parse(await readBody(req)) as Record<string, string>
     const token = `e2etok${String(++seq).padStart(6, '0')}Zx${Math.random().toString(36).slice(2, 10)}`
-    sessions.set(token, { token, conversationId: body.conversationId!, price: body.price!, currency: body.currency!, callbackUrl: body.callbackUrl!, status: 'INIT' })
+    sessions.set(token, { token, conversationId: body.conversationId!, price: body.price!, currency: body.currency!, callbackUrl: body.callbackUrl!, status: 'INIT', paymentId: `9${String(seq).padStart(7, '0')}`, refunded: false })
     return json(res, { status: 'success', conversationId: body.conversationId, token, paymentPageUrl: `http://127.0.0.1:${PORT}/pay?token=${token}`, tokenExpireTime: 1800, signature: iyzicoResponseSignature(SECRET, [body.conversationId!, token]) })
   }
   if (req.method === 'POST' && url.pathname === '/payment/iyzipos/checkoutform/auth/ecom/detail') {
     const { token } = JSON.parse(await readBody(req)) as { token: string }
     const s = sessions.get(token)
     if (!s) return json(res, { status: 'failure', errorCode: '5004' })
-    const paymentId = `9${String(seq).padStart(7, '0')}`
+    const paymentId = s.paymentId
     const price = iyzicoSignaturePrice(s.price)
     const paymentStatus = s.status === 'INIT' ? 'INIT_THREEDS' : s.status
     return json(res, {
       status: 'success', paymentStatus, paymentId, currency: s.currency, basketId: s.conversationId, conversationId: s.conversationId, paidPrice: s.price, price: s.price, token, fraudStatus: 1, installment: 1,
       signature: iyzicoResponseSignature(SECRET, [paymentStatus, paymentId, s.currency, s.conversationId, s.conversationId, price, price, token]),
     })
+  }
+  // P6: refund v2 (by paymentId, full amount) and Transaction Detail Reporting (refund status).
+  if (req.method === 'POST' && url.pathname === '/v2/payment/refund') {
+    const body = JSON.parse(await readBody(req)) as Record<string, string>
+    const s = [...sessions.values()].find((x) => x.paymentId === body.paymentId && x.status === 'SUCCESS')
+    if (!s || s.refunded || body.price !== s.price) return json(res, { status: 'failure', errorCode: '10215' })
+    s.refunded = true
+    return json(res, { status: 'success', paymentId: s.paymentId, price: s.price, currency: s.currency, conversationId: body.conversationId, signature: iyzicoResponseSignature(SECRET, [s.paymentId, iyzicoSignaturePrice(s.price), s.currency, body.conversationId!]) })
+  }
+  if (req.method === 'GET' && url.pathname === '/v2/reporting/payment/details') {
+    const s = [...sessions.values()].find((x) => x.paymentId === url.searchParams.get('paymentId'))
+    if (!s) return json(res, { status: 'failure', errorCode: '5115' })
+    return json(res, { status: 'success', payments: [{ paymentId: s.paymentId, paymentConversationId: s.conversationId, paymentStatus: s.status === 'SUCCESS' ? 1 : 2, paymentRefundStatus: s.refunded ? 'TOTALLY_REFUNDED' : 'NOT_REFUNDED', cancels: [] }] })
   }
   if (req.method === 'GET' && url.pathname === '/pay') {
     const s = sessions.get(url.searchParams.get('token') ?? '')

@@ -1,3 +1,15 @@
+## P6 güvenlik denetimi — 2026-11-17 (commit yok)
+
+- Belirsiz iade kilidi süreyle açılmaz; gecikmiş sağlayıcı sonucu için tekrar iade yasak. Stripe/iyzico sunucu ve belirsiz yanıtları açık ret sayılmaz; iyzico iptal kaydı başarı/tutar/para birimiyle doğrulanır.
+- Stripe iade/itiraz bildirimi sipariş kimliği henüz bağlanmadığında, iade bildirimi sağlayıcıda henüz doğrulanmadığında yeniden teslim için 500 döner. Regresyonlar `payments-p6*.test.ts`.
+- Son kodla typecheck/lint temiz, tam test 89 dosya/1492 test geçti.
+- İade e-postası en az bir kez teslimdir; SMTP ve işaret yazımı arasındaki kesintide tekrar olası. Kesin tek teslim sağlanmadı. İzole E2E betiği süreç grubu sonlandırdığı için bu denetimde çalıştırılmadı; sonda 404/sitemap testi eklendi.
+
+## P6 yönetici işlemleri — 2026-11-17 (QA bekliyor, commit yok, şemasız)
+
+- Sipariş yan paneli "Sipariş işlemleri": İade et / İptal et / Bildirimi yeniden gönder → `POST /api/orders/:id/{refund,cancel,resend-notifications}` (yalnız admin panel oturumu + aynı origin; anonim 401, editor/customer/API key/MCP 403). İade: önce `refundStatus()`, sipariş başına tek kilit (`payment-events` `admin-refund`), tek refund, tek transaction'da `refunded` + lisans `revoked`; belirsizde kör tekrar yok (`requiresReview`, reconcile yalnız okur). İade e-postası `notify.ts` tür `refund` (işaret `refund-notice` satırı). Stripe dispute → `suspended`; iyzico'da itiraz bildirimi yok. Operasyon: `docs/payments/operations.md`.
+- `/yasal` static→dynamic 500 kök nedeni: capability'li derlemede yolu olmayan (boş `generateStaticParams`) rotalar ISR fallback kalıyordu, ilk runtime render `noStore` ile 500. Düzeltme: layout `commerceRenderBoundary()` + `contentStaticParams` sonda yolu (`__dynamic__`); E2E derlemede `dynamicRoutes` 0. Test 89/1488 (+1), e2e 29/29. Ayrıntı `docs/plan-payments.md` P6 kaydı.
+
 ## P5 checkout UI + portal siparişleri — 2026-11-16 (QA bekliyor, commit yok, şemasız)
 
 - P5 QA: normal üretim derlemesinde loopback ödeme sağlayıcısı ortam değişkeniyle açılamaz; ayrı `SOFTMARKET_E2E_BUILD=1` derlemesi ve izole DB gerekir. E2E derlemesi dağıtılmamalıdır. Fatura verilerini içeren sözleşme kopyası editörden gizlendi; alıcı VKN görüntülemede maskelendi. Ortamı belirsiz CLI süreçleri de loopback sağlayıcıyı reddeder. Son QA: typecheck/lint temiz, 87 dosya/1462 test geçti; izole build başarılı, tarayıcılı E2E PID kısıtı nedeniyle çalıştırılmadı.

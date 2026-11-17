@@ -2,16 +2,21 @@ import { sql } from '@payloadcms/db-sqlite'
 import type { Where } from 'payload'
 
 import { sendOrderConfirmation, sendOrderLicenses, type NotifyOrder } from '@/lib/email/order-confirmation'
+import { sendOrderRefunded } from '@/lib/email/order-refund'
 import { alertRecipient, sendOrderReviewAlert } from '@/lib/email/order-review'
 import { isSmtpConfigured } from '@/lib/email/template'
 import type { PaymentsDeps } from './runtime'
+import { journalKey } from './store/journal'
 import { withPaymentTransaction } from './store/transaction'
+import type { ProviderId } from './types'
 
 /*
  * Durable order notifications (P4). Three messages per order, each sent at most once per successful delivery:
  *   confirmation  (buyer, order fulfilled)   → orders.notifications.confirmationSentAt
  *   license       (buyer, licence key(s))    → orders.notifications.licenseSentAt
  *   reviewAlert   (staff, requiresReview)    → orders.notifications.reviewAlertSentAt
+ *   refund        (buyer, order refunded, P6) → `<provider>:refund-notice:<no>` row in payment-events
+ *                                               (received = to send, processed = sent; schema-free, journal.ts)
  *
  * Triggers: right after the committing transaction (webhook/callback via `deps.defer` = next/server after();
  * reconcile CLI: started at once and awaited) and the reconcile job's notify phase, which retries every order whose
@@ -27,7 +32,7 @@ import { withPaymentTransaction } from './store/transaction'
  */
 
 type Id = number | string
-export type NotifyKind = 'confirmation' | 'license' | 'reviewAlert'
+export type NotifyKind = 'confirmation' | 'license' | 'reviewAlert' | 'refund'
 export type NotifyResult =
   | { kind: 'busy' }
   | { kind: 'done'; sent: NotifyKind[]; skipped: NotifyKind[]; failed: string | null; pending: NotifyKind[] }
@@ -43,6 +48,7 @@ export const NOTIFY_POLICY = {
 
 type NotifyDoc = NotifyOrder & {
   status: string
+  provider?: ProviderId | null
   requiresReview?: boolean | null
   failureReason?: string | null
   notifications?: {
@@ -53,19 +59,34 @@ type NotifyDoc = NotifyOrder & {
   } | null
 }
 
-const MARKER: Record<NotifyKind, string> = {
+const MARKER: Record<Exclude<NotifyKind, 'refund'>, string> = {
   confirmation: 'notifications_confirmation_sent_at',
   license: 'notifications_license_sent_at',
   reviewAlert: 'notifications_review_alert_sent_at',
 }
 
-export function pendingKinds(doc: Pick<NotifyDoc, 'status' | 'requiresReview' | 'notifications'>): NotifyKind[] {
+/** `refundNotice`: the order's refund-notice journal row exists and is not `processed` yet. */
+export function pendingKinds(doc: Pick<NotifyDoc, 'status' | 'requiresReview' | 'notifications'>, refundNotice = false): NotifyKind[] {
   const n = doc.notifications ?? {}
   const kinds: NotifyKind[] = []
   if (doc.status === 'fulfilled' && !n.confirmationSentAt) kinds.push('confirmation')
   if (doc.status === 'fulfilled' && !n.licenseSentAt) kinds.push('license')
   if (doc.requiresReview === true && !n.reviewAlertSentAt) kinds.push('reviewAlert')
+  if (doc.status === 'refunded' && refundNotice) kinds.push('refund')
   return kinds
+}
+
+const refundNoticeKey = (doc: Pick<NotifyDoc, 'provider' | 'orderNumber'>) =>
+  doc.provider === 'iyzico' || doc.provider === 'stripe' ? journalKey(doc.provider, 'refund-notice', doc.orderNumber) : null
+
+async function refundNoticePending(deps: PaymentsDeps, doc: Pick<NotifyDoc, 'status' | 'provider' | 'orderNumber'>): Promise<boolean> {
+  const key = doc.status === 'refunded' ? refundNoticeKey(doc) : null
+  if (!key) return false
+  const { docs } = await deps.payload.find({
+    collection: 'payment-events', where: { and: [{ eventKey: { equals: key } }, { status: { not_equals: 'processed' } }] },
+    limit: 1, depth: 0, overrideAccess: true, select: { status: true },
+  })
+  return docs.length > 0
 }
 
 const shortReason = (value: unknown) => (typeof value === 'string' && /^[A-Za-z0-9_.-]{1,64}$/.test(value) ? value : 'review')
@@ -91,12 +112,14 @@ export async function deliverOrderNotifications(deps: PaymentsDeps, orderId: Id)
   let doc: NotifyDoc | null = null
   try {
     doc = (await deps.payload.findByID({ collection: 'orders', id: orderId, depth: 0, overrideAccess: true, disableErrors: true })) as NotifyDoc | null
-    const kinds = doc ? pendingKinds(doc) : []
+    const kinds = doc ? pendingKinds(doc, await refundNoticePending(deps, doc)) : []
     for (const kind of kinds) {
       const order = doc!
       let outcome: string
       try {
-        outcome = kind === 'reviewAlert'
+        outcome = kind === 'refund'
+          ? await sendOrderRefunded(deps.payload, order, { origin: deps.origin })
+          : kind === 'reviewAlert'
           ? await sendOrderReviewAlert(deps.payload, { orderId: order.id, orderNumber: order.orderNumber, reason: shortReason(order.failureReason) }, { origin: deps.origin })
           : kind === 'confirmation'
             ? await sendOrderConfirmation(deps.payload, order, { origin: deps.origin })
@@ -105,8 +128,14 @@ export async function deliverOrderNotifications(deps: PaymentsDeps, orderId: Id)
         outcome = 'smtp_error'
       }
       if (outcome === 'sent') {
-        await write(deps, sql`UPDATE orders SET ${sql.raw(MARKER[kind])} = ${deps.now().toISOString()}
-          WHERE id = ${order.id} AND ${sql.raw(MARKER[kind])} IS NULL`)
+        const at = deps.now().toISOString()
+        if (kind === 'refund') {
+          await write(deps, sql`UPDATE payment_events SET status = 'processed', processed_at = ${at}, failure_code = NULL, updated_at = ${at}
+            WHERE event_key = ${refundNoticeKey(order)} AND status <> 'processed'`)
+        } else {
+          await write(deps, sql`UPDATE orders SET ${sql.raw(MARKER[kind])} = ${at}
+            WHERE id = ${order.id} AND ${sql.raw(MARKER[kind])} IS NULL`)
+        }
         sent.push(kind)
         deps.log.info(`order notification sent order=${order.orderNumber} kind=${kind}`)
       } else if (outcome === 'no_smtp' || outcome === 'not_configured') {
@@ -138,7 +167,7 @@ export async function deliverOrderNotifications(deps: PaymentsDeps, orderId: Id)
       deps.log.error(`order notification lease not released order=${doc?.orderNumber ?? '?'}`)
     }
   }
-  const pending = doc ? pendingKinds(doc).filter((k) => !sent.includes(k)) : []
+  const pending = doc ? pendingKinds(doc, doc.status === 'refunded' && !sent.includes('refund') && (await refundNoticePending(deps, doc).catch(() => false))).filter((k) => !sent.includes(k)) : []
   return { kind: 'done', sent, skipped, failed, pending }
 }
 
@@ -154,16 +183,28 @@ export async function findUndeliveredOrders(deps: PaymentsDeps, limit: number, s
   const now = deps.now()
   const nowIso = now.toISOString()
   if (sendableOnly && !isSmtpConfigured()) return []
+  const since = new Date(now.getTime() - NOTIFY_POLICY.maxAgeMs).toISOString()
+  // Refund notices: refunded orders whose refund (not order) is recent and whose notice row is still unsent.
+  const { docs: notices } = await deps.payload.find({
+    collection: 'payment-events', limit: 1000, depth: 0, overrideAccess: true, pagination: false,
+    where: { and: [{ type: { equals: 'notify.refund' } }, { status: { not_equals: 'processed' } }, { receivedAt: { greater_than_equal: since } }] },
+    select: { order: true },
+  })
+  const noticeOrders = new Set<string>()
+  for (const notice of notices as { order?: Id | { id: Id } | null }[]) {
+    const ref = notice.order && typeof notice.order === 'object' ? notice.order.id : notice.order
+    if (ref !== undefined && ref !== null) noticeOrders.add(String(ref))
+  }
   const kinds: Where[] = [
-    { and: [{ status: { equals: 'fulfilled' } }, { or: [{ 'notifications.confirmationSentAt': { exists: false } }, { 'notifications.licenseSentAt': { exists: false } }] }] },
-    ...(!sendableOnly || alertRecipient() ? [{ and: [{ requiresReview: { equals: true } }, { 'notifications.reviewAlertSentAt': { exists: false } }] }] : []),
+    { and: [{ status: { equals: 'fulfilled' } }, { createdAt: { greater_than_equal: since } }, { or: [{ 'notifications.confirmationSentAt': { exists: false } }, { 'notifications.licenseSentAt': { exists: false } }] }] },
+    ...(!sendableOnly || alertRecipient() ? [{ and: [{ requiresReview: { equals: true } }, { createdAt: { greater_than_equal: since } }, { 'notifications.reviewAlertSentAt': { exists: false } }] }] : []),
+    ...(noticeOrders.size ? [{ and: [{ status: { equals: 'refunded' } }, { id: { in: [...noticeOrders] } }] }] : []),
   ]
   const { docs } = await deps.payload.find({
     collection: 'orders', limit, depth: 0, sort: 'createdAt', overrideAccess: true, pagination: false,
-    select: { orderNumber: true, status: true, requiresReview: true, notifications: true },
+    select: { orderNumber: true, status: true, requiresReview: true, notifications: true, provider: true },
     where: {
       and: [
-        { createdAt: { greater_than_equal: new Date(now.getTime() - NOTIFY_POLICY.maxAgeMs).toISOString() } },
         { or: [{ 'notifications.attempts': { exists: false } }, { 'notifications.attempts': { less_than: NOTIFY_POLICY.maxAttempts } }] },
         { or: [{ 'notifications.nextAttemptAt': { exists: false } }, { 'notifications.nextAttemptAt': { less_than_equal: nowIso } }] },
         ...(sendableOnly ? [{ or: [{ 'notifications.leaseUntil': { exists: false } }, { 'notifications.leaseUntil': { less_than_equal: nowIso } }] }] : []),
@@ -172,6 +213,6 @@ export async function findUndeliveredOrders(deps: PaymentsDeps, limit: number, s
     },
   })
   return (docs as unknown as (NotifyDoc & { id: Id })[])
-    .map((doc) => ({ id: doc.id, orderNumber: doc.orderNumber, kinds: pendingKinds(doc) }))
+    .map((doc) => ({ id: doc.id, orderNumber: doc.orderNumber, kinds: pendingKinds(doc, noticeOrders.has(String(doc.id))) }))
     .filter((row) => row.kinds.length > 0)
 }

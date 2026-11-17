@@ -1,5 +1,6 @@
 import type { Where } from 'payload'
 
+import { applyDispute, flagDisputeClosed, reconcileRefund } from './admin-actions'
 import { readLimitedBody } from './body'
 import { bodySha256, ORDER_NUMBER_RE, paymentEventKey } from './idempotency'
 import { MAX_WEBHOOK_BYTES } from './providers/http'
@@ -23,6 +24,20 @@ import type { ProviderId, VerifiedWebhookEvent } from './types'
  *   success                                         → `processed`, 200
  * Stripe verifies the raw body; iyzico parses its signed fields before checking their provider-defined signature.
  */
+
+/**
+ * P6: notifications that are not about the checkout session. Stripe only: iyzico documents no chargeback/dispute
+ * or refund notification for Checkout Form payments (disputes arrive through the merchant panel / bank; staff then
+ * suspend or revoke the licence in the admin). Unknown types fall through to the session sync (a no-op for them).
+ */
+export type ProviderEventKind = 'dispute_opened' | 'dispute_closed' | 'refunded' | 'payment'
+export function classifyProviderEvent(event: Pick<VerifiedWebhookEvent, 'provider' | 'type'>): ProviderEventKind {
+  if (event.provider !== 'stripe') return 'payment'
+  if (event.type === 'charge.dispute.created') return 'dispute_opened'
+  if (event.type === 'charge.dispute.closed') return 'dispute_closed'
+  if (event.type === 'charge.refunded') return 'refunded'
+  return 'payment'
+}
 
 const empty = (status: number) => new Response(null, { status, headers: { 'Cache-Control': 'no-store' } })
 
@@ -90,6 +105,11 @@ export async function processVerifiedEvent(deps: PaymentsDeps, event: VerifiedWe
       return 200
     }
     if (!inWindow || !order) {
+      // A charge event may precede the checkout sync that stores providerPaymentId. Keep it retryable.
+      if (inWindow && !order && event.providerPaymentId && classifyProviderEvent(event) !== 'payment') {
+        await events.mark(key, 'error', { failureCode: 'order_not_yet_linked' })
+        return 500
+      }
       const reason = !inWindow ? 'drain_closed' : 'unknown_order'
       await events.mark(key, 'ignored', { orderId: order?.id ?? null, failureCode: reason })
       deps.log.warn(`webhook ignored provider=${event.provider} event=${event.eventId} reason=${reason}${order ? ` order=${order.orderNumber}` : ''}`)
@@ -101,6 +121,21 @@ export async function processVerifiedEvent(deps: PaymentsDeps, event: VerifiedWe
   }
 
   try {
+    const kind = classifyProviderEvent(event)
+    if (kind !== 'payment') {
+      if (kind === 'dispute_opened') await applyDispute(deps, order.id)
+      else if (kind === 'dispute_closed') await flagDisputeClosed(deps, order.id)
+      else {
+        // Provider truth: refundStatus() decides; a refund made in the provider dashboard is finalised too.
+        const result = await reconcileRefund(deps, order.id, 'provider')
+        if (!['refunded', 'already_refunded', 'partially_refunded'].includes(result.code)) {
+          throw new Error('payments:refund_not_yet_confirmed')
+        }
+      }
+      await events.mark(key, 'processed', { orderId: order.id })
+      deps.log.info(`webhook processed provider=${event.provider} event=${event.eventId} order=${order.orderNumber} kind=${kind}`)
+      return 200
+    }
     const outcome = await syncOrderFromProvider(deps, order.id)
     await events.mark(key, 'processed', { orderId: order.id })
     deps.log.info(`webhook processed provider=${event.provider} event=${event.eventId} order=${order.orderNumber} status=${outcome.status ?? 'unknown'}`)

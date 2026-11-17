@@ -4,6 +4,7 @@ import { isValidMinor } from '../money'
 import { verifyStripeSignature } from '../signature/stripe'
 import {
   CURRENCIES,
+  type AbandonResult,
   type CheckoutInput,
   type CheckoutSession,
   type Currency,
@@ -11,7 +12,9 @@ import {
   type HeaderLike,
   type PaymentProvider,
   type ProviderPaymentState,
+  type ProviderRefundState,
   type RefundInput,
+  type RefundStatusInput,
   type RefundResult,
   type WebhookVerification,
 } from '../types'
@@ -194,12 +197,43 @@ export function createStripeProvider(deps: StripeProviderDeps): PaymentProvider 
       try {
         json = await call('POST', '/v1/refunds', body, input.idempotencyKey)
       } catch (error) {
-        if (error instanceof PaymentError && error.code === 'http_error') return { ok: false, failureCode: 'refund_rejected' }
+        if (error instanceof PaymentError && error.code === 'http_error' && error.httpStatus !== undefined &&
+            error.httpStatus >= 400 && error.httpStatus < 500 && ![408, 409, 429].includes(error.httpStatus)) {
+          return { ok: false, failureCode: 'refund_rejected' }
+        }
         throw error
       }
       const status = str(json.status)
       if (status === 'succeeded' || status === 'pending') return { ok: true, status, providerRefundId: str(json.id) }
-      return { ok: false, failureCode: safeCode(json.failure_reason, 'refund_failed') }
+      if (status === 'failed' || status === 'canceled') return { ok: false, failureCode: safeCode(json.failure_reason, 'refund_failed') }
+      throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'refund_status' })
+    },
+
+    async refundStatus(input: RefundStatusInput): Promise<ProviderRefundState> {
+      if (!/^pi_[A-Za-z0-9]+$/.test(input.providerPaymentId)) throw new PaymentError('invalid_input', { provider: PROVIDER, detail: 'payment_intent' })
+      const json = await call('GET', `/v1/payment_intents/${input.providerPaymentId}?expand[]=latest_charge`)
+      if (str(json.id) !== input.providerPaymentId) throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'id' })
+      const metadata = json.metadata && typeof json.metadata === 'object' ? (json.metadata as Record<string, unknown>) : {}
+      if (str(metadata.order_number) !== input.orderNumber) throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'order_reference' })
+      if (json.status !== 'succeeded') return { provider: PROVIDER, status: 'not_paid' }
+      const charge = json.latest_charge && typeof json.latest_charge === 'object' ? (json.latest_charge as Record<string, unknown>) : null
+      if (!charge || !isValidMinor(charge.amount) || !isValidMinor(charge.amount_refunded)) throw new PaymentError('bad_response', { provider: PROVIDER, detail: 'latest_charge' })
+      const refunded = charge.amount_refunded
+      if (refunded === 0) return { provider: PROVIDER, status: 'not_refunded', refundedMinor: 0 }
+      if (charge.refunded === true || refunded >= charge.amount) return { provider: PROVIDER, status: 'refunded', refundedMinor: refunded }
+      return { provider: PROVIDER, status: 'partially_refunded', refundedMinor: refunded }
+    },
+
+    async abandonCheckout(sessionId: string): Promise<AbandonResult> {
+      if (!SESSION_ID_RE.test(sessionId)) throw new PaymentError('invalid_input', { provider: PROVIDER, detail: 'sessionId' })
+      try {
+        const json = await call('POST', `/v1/checkout/sessions/${sessionId}/expire`, '')
+        return str(json.status) === 'expired' ? { ok: true, mode: 'expired' } : { ok: false, failureCode: 'not_expired' }
+      } catch (error) {
+        // 4xx: the session is no longer open (completed/expired); the caller re-reads the real state.
+        if (error instanceof PaymentError && error.code === 'http_error') return { ok: false, failureCode: 'not_open' }
+        throw error
+      }
     },
   }
 }

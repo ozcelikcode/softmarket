@@ -7,7 +7,7 @@ import type { ProviderId } from './types'
  * the persistence contract is described by the interfaces at the bottom of this file.
  */
 
-const sha256Hex = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex')
+export const sha256Hex = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex')
 
 /** One-time checkout form nonce (≥128 bit, base64url). Generated server-side when rendering the form. */
 export function createCheckoutNonce(): string {

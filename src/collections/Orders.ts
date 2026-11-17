@@ -1,4 +1,4 @@
-import { ValidationError, type CollectionBeforeValidateHook, type CollectionConfig, type Field, type FieldAccess } from 'payload'
+import { ValidationError, type CollectionBeforeValidateHook, type CollectionConfig, type Field, type FieldAccess, type PayloadRequest } from 'payload'
 
 import { isAdmin, isAdminField, isAdminOrEditorField, isAdminUser, isCustomerUser, isOwnerCustomer, nobody } from '@/access'
 import { BUYER_TYPES, isValidTckn, isValidVkn } from '@/lib/payments/identity'
@@ -17,6 +17,7 @@ import { LICENSE_TYPES } from './Editions'
  */
 
 const nobodyField: FieldAccess = () => false
+const ORDER_ACTIONS = ['refund', 'cancel', 'resend-notifications'] as const
 const adminOrCustomer: FieldAccess = ({ req: { user } }) => isAdminUser(user) || isCustomerUser(user)
 type Sibling = Partial<Record<string, unknown>>
 const msg = (tr: string, en: string) => `${tr} / ${en}`
@@ -145,9 +146,18 @@ export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'orderNumber',
-    defaultColumns: ['orderNumber', 'customer', 'status', 'totalMinor', 'currency', 'createdAt'],
+    // P6 list: status / provider / currency / review / date are columns and filters (Payload's list filter works on
+    // every field); search by order number or provider reference. Buyer data is never a column.
+    defaultColumns: ['orderNumber', 'customer', 'status', 'totalMinor', 'currency', 'provider', 'requiresReview', 'createdAt'],
+    listSearchableFields: ['orderNumber', 'providerRef', 'providerPaymentId'],
     group: 'Sales',
   },
+  // P6 admin-only operations (src/lib/payments/admin-endpoints.ts): admin panel session + same origin; never MCP.
+  endpoints: ORDER_ACTIONS.map((action) => ({
+    path: `/:id/${action}`,
+    method: 'post' as const,
+    handler: async (req: PayloadRequest) => (await import('@/lib/payments/admin-endpoints')).handleAdminOrderAction(req, action),
+  })),
   defaultSort: '-createdAt',
   access: {
     read: isOwnerCustomer('customer'),
@@ -241,17 +251,23 @@ export const Orders: CollectionConfig = {
       },
     ]),
     {
+      // P6 "İade et" / "İptal et" / "Bildirimi yeniden gönder" (`ui`: no column). Admin panel session only.
+      name: 'adminActions', type: 'ui', label: { tr: 'Sipariş işlemleri', en: 'Order actions' },
+      admin: { position: 'sidebar', components: { Field: '@/admin/fields/order-actions#OrderActions' } },
+    },
+    {
       name: 'requiresReview', type: 'checkbox', defaultValue: false,
       label: { tr: 'İnceleme gerekiyor', en: 'Needs review' },
       access: { read: isAdminOrEditorField, create: nobodyField, update: isAdminField },
       admin: {
         position: 'sidebar',
-        description: { tr: 'Tutar uyuşmazlığı veya geç ödeme: lisans otomatik atanmaz.', en: 'Amount mismatch or late payment: no license is assigned automatically.' },
+        description: { tr: 'Tutar uyuşmazlığı, geç ödeme, belirsiz iade veya ödeme itirazı: lisans otomatik atanmaz.', en: 'Amount mismatch, late payment, unknown refund outcome or payment dispute: no license is assigned automatically.' },
       },
     },
     {
       name: 'invoice', type: 'group', label: { tr: 'Fatura', en: 'Invoice' },
       access: { read: adminOrCustomer, create: nobodyField, update: isAdminField },
+      admin: { description: { tr: 'Faturayı kestikten sonra numarasını ve tarihini girin; müşteri portalda görür.', en: 'Enter the number and date after issuing the invoice; the customer sees them in the portal.' } },
       fields: [
         { name: 'number', type: 'text', label: { tr: 'Fatura no', en: 'Invoice number' } },
         dateField('issuedAt', 'Fatura tarihi', 'Issued at'),

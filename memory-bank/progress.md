@@ -1,3 +1,7 @@
+## Lisans API / güvenlik merkezi / hosting planı — 2026-11-17 (yalnız plan)
+
+- Yazıldı: `docs/plan-licensing-security.md` (tehdit modeli, API sözleşmesi, veri modeli, L0–L11 fazları, ajan dağılımı, 6 açık soru) ve `docs/plan-hosting.md` (alt alan adı olur; Passenger paylaşımlı hosting koşullu/önerilmez). Kod, şema, migration, commit yok. Bulgu: `admin-actions.ts` lisans durumunu ham SQL ile değiştiriyor; durum günlüğü bu yollara da bağlanmalı (L3).
+
 ## Entegrasyon güvenlik denetimi — 2026-11-17
 
 - Sır güncellemesinde eşzamanlı kayıp, kısa sır gösterimi, okunamayan SMTP'de sahte başarı, eksik şirket bilgisiyle satış açılması, hukuk özetinde satır sınırı ve migration down'da port/TLS kaybı düzeltildi. Typecheck/lint temiz, tam test 91 dosya/1531 test geçti; canlıya migration yapılmadı.

@@ -1,3 +1,14 @@
+## Lisans API + güvenlik merkezi + hosting planı — 2026-11-17 (yalnız plan, kod/şema yok, commit yok)
+
+- `docs/plan-licensing-security.md`: program ↔ site lisans API'si `/api/v1/licensing/*` (aynı süreç, öneri `lisans.<alan>` alt alan adı), cihaz Ed25519 anahtarıyla imzalı istek + sunucu imzalı kira JWS (çevrimdışı tolerans 14 gün) + yanıt imzası/nonce, koltuk = aktif cihaz, kademeli kural motoru (gözlem → bildirim → otomatik askı; iptal yalnız admin), `/admin/guvenlik` güvenlik merkezi, KVKK minimizasyonu. Yeni koleksiyonlar: `license-activations`, `security-events`, `security-blocks`, `license-status-log`, `security-audit`; global `licensing-settings`.
+- Fazlar L0 spike → L1 tek şema fazı (`licensing_core`) → L2 kripto → L3 API → L4 ∥ L5 → L6 merkez → L7 ∥ L8 ∥ L9 → L10 QA (+ opsiyonel L11). 24–30 gün. L1, G1 ile aynı anda `migrate:create` yapmaz. 6 açık soru, onay bekleniyor.
+- `docs/plan-hosting.md`: alt alan adı olur; paylaşımlı (Passenger) hosting koşullu, lisans/ödeme için önerilmez (tek süreç, build, Litestream yok); öneri VPS'te kalmak.
+
+## Site çerçevesi görsel düzenleme planı — 2026-11-17 (yalnız plan, kod/şema yok, commit yok)
+
+- `docs/plan-visual-globals.md`: header/footer/menü/marka için V5 canvas'ının genişletilmesi. Öneri: yazım tek yoldan, global başına Live Preview editörü (header, footer; site-settings yalnız admin, taslaksız + onay). Sayfa editöründe yalnız "Site geneli → Düzenle" kısayolu var.
+- Fazlar G0 spike → G1 tek şema fazı (header/footer `versions.drafts` + migration, publish-only revalidate, global `editorVersion` 409, link URL doğrulaması) → G2 render işaretleri → G3 protokol v3 çekirdeği → G4 paneller/mega/mobil ∥ G5 kısayol → G6 site-settings → G7 QA. Toplam 12–16 gün. Kullanıcıya 5 açık soru soruldu, onay bekleniyor.
+
 ## Entegrasyon güvenlik denetimi — 2026-11-17
 
 - Sır yazımları transaction içinde; kısa sırların son dört karakteri gizli. Okunamayan SMTP şifresi gönderimi başarısız kılar. Eksik şirket bilgisi satış hukuk kapısını kapatır; hukuk özeti görünür satır/paragraf sonlarını kapsar. Migration down port/TLS ayarını korur. Typecheck/lint temiz, tam test 91 dosya/1531 test; canlı DB ve 3100 korunuyor.

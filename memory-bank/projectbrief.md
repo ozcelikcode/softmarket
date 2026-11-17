@@ -21,8 +21,14 @@ Ruh: Vizrt / Blackmagic (ürün aileleri, çözümler, destek merkezi, indirmele
 
 ## Kapsam dışı (v1)
 - e-Fatura / e-Arşiv entegrasyonu (sonra Paraşüt vb.).
-- Yazılım içi aktivasyon API'si (lisans modeli buna hazır tasarlanır, uygulanmaz).
+- Yazılım içi aktivasyon API'si: v1'de kapsam dışıydı; 2026-11-17 kullanıcı isteğiyle plana alındı (aşağıdaki "Planlanan hedefler").
 - Abonelik yenileme otomasyonu.
+
+## Planlanan hedefler (2026-11-17, kullanıcı onayı bekliyor)
+- **Lisans API'si:** satılan programlar `/api/v1/licensing/*` ile aktivasyon, doğrulama (çevrimdışı tolerans), deaktivasyon, koltuk/cihaz bağlama, güncelleme kontrolü ve lisanslı indirme yapar. Plan: `docs/plan-licensing-security.md`.
+- **Lisans iptali:** admin elle askıya alır, iptal eder, yeniden etkinleştirir; otomatik: iade, itiraz, kural ihlali (geri alınabilir, denetim izli).
+- **Güvenlik merkezi:** admin panelinde ihlal, IP ve şüpheli hareketlerin toplandığı tek sayfa; KVKK uyumlu minimizasyon ve saklama.
+- **Barındırma:** lisans API'si alt alan adında (öneri `lisans.<alan>`); VPS'siz paylaşımlı hosting yalnız koşullu. Değerlendirme: `docs/plan-hosting.md`.
 
 ## Site kapsamı (özet)
 - Ana sayfa; ürün kataloğu (`/tr/urunler`, aile, ürün detay sekmeleri); çözümler; referanslar; haberler; kariyer; iş ortakları; iletişim; şirket.

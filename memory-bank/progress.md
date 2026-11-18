@@ -1,3 +1,10 @@
+## Licensing L5 rules engine, sweep and notification queue
+
+- Implemented the sweep, six pure rules, monitor-only mode, circuit breaker, episodes/suppression, restore core, retention cleanup and the durable licensing e-mail queue. No migration; one new stored enum value `system.daily_digest` (types regenerated).
+- Audit fixes: same-hour breaker re-trip re-opening, retention preservation of open high/critical events / active suppressions / block links / recently lifted blocks / newer log & activation rows / leap-day math, expired-license rule exclusion & revoked-license expiry exclusion, invalid `minSeverityImmediate` fallback, `CHANGE_` contact filtering, whitespace customer email skip, `impossibleTravel` tie-breaking, same-ms rule `dedupe_key` uniqueness, malformed `detail` handling in `restore`, retention upper clamping, and guarded/batched alert marker writes.
+- Tests: `licensing-rules` (16), `licensing-sweep-db` (17), `licensing-notify-db` (12), `licensing-retention-db` (6). 10k activations sweep in about 1.4 s locally.
+- Open: L6b admin endpoints (restore/triage/block) wrap the L5 cores; impossible travel only sees aggregated country data; Stripe dispute-closed automation undecided.
+
 ## Licensing L4 updates and downloads
 
 - Implemented `POST /updates`, `POST /downloads/link` and `GET|HEAD /dl/<token>` under `/api/v1/licensing`. The existing SQLite schema and temporary upload fixtures cover the new routes.

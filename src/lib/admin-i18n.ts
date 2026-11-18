@@ -575,6 +575,7 @@ const EVENT_TYPE_LABELS: Record<string, readonly [string, string]> = {
   'system.rule_circuit_open': ['Kural devre kesicisi açıldı', 'Rule circuit breaker opened'],
   'system.signing_key_rotated': ['İmza anahtarı döndürüldü', 'Signing key rotated'],
   'system.events_dropped': ['Olaylar düşürüldü', 'Events dropped'],
+  'system.daily_digest': ['Günlük özet', 'Daily digest'],
 }
 const prefixed = (name: string, labels: Record<string, readonly [string, string]>) =>
   Object.fromEntries(Object.entries(labels).map(([value, label]) => [`${name}=${value}`, label]))

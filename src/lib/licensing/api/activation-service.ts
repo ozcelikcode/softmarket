@@ -186,7 +186,7 @@ export async function executeClientOperation(context: ClientContext, operation: 
     if (!target) return { ...failure('invalid_license', now), unknownLicense: true }
     const retryAfter = context.limit(`license:${target.id}`, settings.limits.activationsPerLicensePerDay, DAY_MS)
     if (retryAfter) {
-      context.observations.emit({ type: 'activation.burst', license: target.id, action: 'throttled', now, ip: context.ip })
+      context.observations.emit({ type: 'activation.burst', license: target.id, action: 'throttled', now, ip: context.ip, country: context.country })
       return failure('rate_limited', now, { retryAfter })
     }
   }
@@ -194,7 +194,7 @@ export async function executeClientOperation(context: ClientContext, operation: 
     const now = context.now()
     const at = now.toISOString()
     const endpoint = operation.endpoint
-    const emit: Emit = (event) => tx.afterCommit(() => context.observations.emit({ ...event, now, ip: context.ip }))
+    const emit: Emit = (event) => tx.afterCommit(() => context.observations.emit({ ...event, now, ip: context.ip, country: context.country }))
     if (Math.abs(unixSeconds(now) - headers.timestamp) > settings.clockSkewSeconds) {
       emit({ type: 'api.clock_skew' })
       return failure('clock_skew', now)
@@ -270,7 +270,7 @@ export async function executeClientOperation(context: ClientContext, operation: 
             }, issuedAt)
             if (!body) return failure('unavailable', issuedAt, { retryAfter: 1 })
             context.observations.emit({
-              type: 'download.link_issued', now: issuedAt, ip: context.ip,
+              type: 'download.link_issued', now: issuedAt, ip: context.ip, country: context.country,
               activation: device!.id, license: license.id, customer: license.customer,
             })
             return { status: 200, body }

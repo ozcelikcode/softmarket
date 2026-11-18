@@ -9,6 +9,7 @@ import {
   LICENSING_RULE_KEYS,
   MAX_LEASE_DAYS,
   RETENTION_FLOORS,
+  RULE_DEFAULTS,
   RULE_MODES,
   SECURITY_SEVERITIES,
   type LicensingRuleKey,
@@ -41,15 +42,6 @@ const int = (name: string, defaultValue: number, min: number, max: number): Fiel
       ? true
       : `${min}-${max} arası tam sayı. / Whole number between ${min} and ${max}.`,
 })
-
-const RULE_DEFAULTS: Record<LicensingRuleKey, { threshold: number; windowHours: number }> = {
-  ipSpread: { threshold: 10, windowHours: 24 },
-  geoSpread: { threshold: 3, windowHours: 24 },
-  impossibleTravel: { threshold: 1, windowHours: 2 },
-  activationBurst: { threshold: 5, windowHours: 1 },
-  activationChurn: { threshold: 6, windowHours: 720 },
-  cloneSuspected: { threshold: 3, windowHours: 24 },
-}
 
 const ruleGroup = (key: LicensingRuleKey): Field => ({
   name: key,

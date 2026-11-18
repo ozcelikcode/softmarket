@@ -24,6 +24,8 @@ export type Observation = {
   customer?: number
   activation?: number
   ip?: { prefix: string; hash: string | null } | null
+  /** ISO country code from the configured country source (L5 geo rules); null when the source is off. */
+  country?: string | null
   action?: 'throttled' | 'blocked'
 }
 type Aggregate = Observation & { key: string; first: string; last: string; count: number; rank: number }
@@ -48,10 +50,11 @@ async function persist(tx: PaymentTx, event: Aggregate) {
   const ranks = sql`CASE severity WHEN 'critical' THEN 4 WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 ELSE 0 END`
   await tx.run(sql`INSERT INTO security_events
       (type, severity, source, first_seen_at, last_seen_at, count, dedupe_key, license_id, customer_id, activation_id,
-       ip_prefix, ip_hash, action_taken)
+       ip_prefix, ip_hash, country, action_taken)
     VALUES (${event.type}, ${severityOrder[event.rank]}, ${event.type.startsWith('system.') ? 'system' : 'api'},
       ${event.first}, ${event.last}, ${event.count}, ${event.key}, ${event.license ?? null}, ${event.customer ?? null},
-      ${event.activation ?? null}, ${event.ip?.prefix ?? null}, ${event.ip?.hash ?? null}, ${event.action ?? 'none'})
+      ${event.activation ?? null}, ${event.ip?.prefix ?? null}, ${event.ip?.hash ?? null},
+      ${event.country && /^[A-Z]{2}$/.test(event.country) ? event.country : null}, ${event.action ?? 'none'})
     ON CONFLICT (dedupe_key) DO UPDATE SET count = count + excluded.count,
       first_seen_at = MIN(first_seen_at, excluded.first_seen_at), last_seen_at = MAX(last_seen_at, excluded.last_seen_at),
       severity = CASE WHEN ${event.rank} > (${ranks}) THEN excluded.severity ELSE severity END,

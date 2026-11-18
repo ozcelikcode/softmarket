@@ -1,0 +1,21 @@
+# Example (plan L5): licensing rules engine sweep. Evaluates the asynchronous rules, records events, suspends ONLY in
+# `suspend` mode after licensing-settings rules.observeUntil (never revokes), delivers the licensing e-mail queue and
+# runs the nightly retention cleanup. Idempotent; install with licensing-sweep.timer (every 5 minutes).
+[Unit]
+Description=SoftMarket licensing sweep
+After=network-online.target softmarket.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=softmarket
+Group=softmarket
+WorkingDirectory=/opt/softmarket/current
+EnvironmentFile=/etc/softmarket.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env pnpm licensing:sweep
+TimeoutStartSec=240
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/softmarket/shared/data

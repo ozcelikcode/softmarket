@@ -4297,7 +4297,8 @@ export interface SecurityEvent {
     | 'webhook.bad_signature'
     | 'system.rule_circuit_open'
     | 'system.signing_key_rotated'
-    | 'system.events_dropped';
+    | 'system.events_dropped'
+    | 'system.daily_digest';
   severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
   source: 'api' | 'portal' | 'admin' | 'webhook' | 'system' | 'rule';
   firstSeenAt: string;

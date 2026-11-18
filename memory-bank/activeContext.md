@@ -1,3 +1,12 @@
+## Licensing L5 rules engine, sweep and notification queue
+
+- Pure rules in `src/lib/licensing/rules/` (ipSpread, geoSpread, impossibleTravel, activationBurst, activationChurn, cloneSuspected) and a pure decision step. `pnpm licensing:sweep [--dry-run] [--retention]` with `deploy/licensing-sweep.{service,timer}` every 5 minutes.
+- Rules never revoke. Automatic suspension only in `suspend` mode after a valid elapsed `rules.observeUntil`, for active unsuppressed non-expired licenses, with the circuit breaker closed (`maxAutoSuspendsPerHour`, N+1th trips a critical event, open 24 h or until triaged; same-hour re-trip re-opens triaged breaker and re-arms alert). The L1 hook re-checks and logs the transition (source `rule`). Each hit is one BEGIN IMMEDIATE transaction; concurrent sweeps are idempotent.
+- `restoreRuleSuspension` is the core for the L6b endpoint (409 unless the last transition is that rule suspension); suppression is derived from the restore row or false-positive event.
+- Durable e-mail queue on `security-events.notify_*` + `detail` markers: batched PII-free admin alerts, daily digest, customer suspended/re-enabled e-mails in TR/EN. Retention cleanup nightly (04:00 Europe/Istanbul) in 1,000-row batches, preserving open high/critical events, active suppressions, block-linked events, recently lifted blocks, newer logs/activations, and leap-day boundaries. No schema change or migration.
+- Record: "L5 implementation record" in `docs/plan-licensing-security.md`.
+- L5 security/quality audit fixed same-hour circuit breaker re-trip bypass, retention deletion of open high/critical events / active suppressions / block-linked events / recently lifted blocks / newer status-log & activation rows / leap-day clamping, expired-license auto-suspension and revoked-license expiry events, invalid `minSeverityImmediate` fallback, `CHANGE_` contact-email filtering, blank customer e-mail skipping, `impossibleTravel` equal-timestamp tie-breaking, same-ms rule `dedupe_key` collision, `restore` malformed `detail` handling, unbounded retention settings, and batched/guarded alert marker writes.
+
 ## Licensing L4 updates and downloads
 
 - Signed update discovery and link issuance share L3 authentication, durable nonce batching and rate limits. Unsigned file GET and HEAD recheck entitlement against current SQLite records and serve only eligible original uploads.

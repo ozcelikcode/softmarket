@@ -217,6 +217,7 @@ export const SECURITY_CENTER_LABELS = {
     'system.rule_circuit_open': loc('Kural devre kesicisi açıldı', 'Rule circuit breaker opened'),
     'system.signing_key_rotated': loc('İmza anahtarı döndürüldü', 'Signing key rotated'),
     'system.events_dropped': loc('Olaylar düşürüldü', 'Events dropped'),
+    'system.daily_digest': loc('Günlük özet', 'Daily digest'),
   },
   blockKinds: {
     ip_prefix: loc('IP öneki', 'IP prefix'),

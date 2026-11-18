@@ -18,6 +18,16 @@ export const LICENSING_RULE_KEYS = [
 ] as const
 export type LicensingRuleKey = (typeof LICENSING_RULE_KEYS)[number]
 
+/** Default threshold and window per rule (licensing-settings defaults; also the sweep's fallback for unsaved settings). */
+export const RULE_DEFAULTS: Record<LicensingRuleKey, { threshold: number; windowHours: number }> = {
+  ipSpread: { threshold: 10, windowHours: 24 },
+  geoSpread: { threshold: 3, windowHours: 24 },
+  impossibleTravel: { threshold: 1, windowHours: 2 },
+  activationBurst: { threshold: 5, windowHours: 1 },
+  activationChurn: { threshold: 6, windowHours: 720 },
+  cloneSuspected: { threshold: 3, windowHours: 24 },
+}
+
 /** Rule modes. There is deliberately no `revoke` mode. */
 export const RULE_MODES = ['off', 'observe', 'notify', 'suspend'] as const
 export type RuleMode = (typeof RULE_MODES)[number]
@@ -78,6 +88,8 @@ export const SECURITY_EVENT_TYPES = [
   'system.rule_circuit_open',
   'system.signing_key_rotated',
   'system.events_dropped',
+  // L5: one row per local day marks the daily digest e-mail in the durable notification queue (no row data, counts only).
+  'system.daily_digest',
 ] as const
 export type SecurityEventType = (typeof SECURITY_EVENT_TYPES)[number]
 

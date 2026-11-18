@@ -5,7 +5,6 @@ import { resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 
 import { createLicensingPost, flushLicensingObservations } from '@/lib/licensing/api/route'
-import type { Endpoint } from '@/lib/licensing/api/guard'
 import { provisionSigningKey } from '@/lib/licensing/signing'
 import type { License } from '@/payload-types'
 import {
@@ -72,7 +71,7 @@ async function main() {
       deactivate: createLicensingPost('deactivate', { loadPayload: async () => payload }),
     }
     if (useHttp) await launch(kid)
-    const run = (endpoint: Endpoint, body: object, device: TestDevice, ip: string, activation?: string) => {
+    const run = (endpoint: keyof typeof handlers, body: object, device: TestDevice, ip: string, activation?: string) => {
       const { request } = signedRequest(endpoint, body, device, { activation, ip, origin })
       return useHttp ? fetch(request) : handlers[endpoint](request)
     }

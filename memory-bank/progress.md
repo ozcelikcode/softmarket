@@ -1,3 +1,9 @@
+## Licensing L4 updates and downloads
+
+- Implemented `POST /updates`, `POST /downloads/link` and `GET|HEAD /dl/<token>` under `/api/v1/licensing`. The existing SQLite schema and temporary upload fixtures cover the new routes.
+- L4 regression coverage includes signed admission, current entitlements, five-use concurrency, tampering and expiry, unsafe file paths, HTTP ranges, cancelled streams and privacy. See the L4 implementation record in `docs/plan-licensing-security.md`.
+- Typecheck and lint passed. Full Vitest passed 1,747 tests in 106 files, including 36 L4 tests. Production HTTP verification remains open because this environment denies socket binds.
+
 ## Licensing L6a security center (read-only)
 
 - Admin custom view `/admin/guvenlik` with tabs Overview, Events, Blocks, Status transitions; counters (open high events, active blocks, suspended licenses, recent activations), filters in the URL, 50/25 rows per page, links to the Payload documents. Nav link with an open-high badge for admins only. Files in `src/admin/security/`, labels in `src/lib/security-center-labels.ts`, styles `.sc-*` in `src/app/(payload)/custom.scss`.

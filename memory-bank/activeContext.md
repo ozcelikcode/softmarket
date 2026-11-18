@@ -1,3 +1,9 @@
+## Licensing L4 updates and downloads
+
+- Signed update discovery and link issuance share L3 authentication, durable nonce batching and rate limits. Unsigned file GET and HEAD recheck entitlement against current SQLite records and serve only eligible original uploads.
+- Download tokens last five minutes and allow five GETs per token in the issuing process. Descriptor-based path checks reject symlinks and hard links. Streaming supports one byte range and aggregates download events by activation and trusted IP prefix.
+- Client behavior is documented in `docs/licensing/client-api.md`. The L4 plan record tracks verification, including the open HTTP check on Linux.
+
 ## Licensing L6a security center (read-only)
 
 - Admin custom view `/admin/guvenlik` with tabs Overview, Events, Blocks, Status transitions; counters (open high events, active blocks, suspended licenses, recent activations), filters in the URL, 50/25 rows per page, links to the Payload documents. Nav link with an open-high badge for admins only. Files in `src/admin/security/`, labels in `src/lib/security-center-labels.ts`, styles `.sc-*` in `src/app/(payload)/custom.scss`.

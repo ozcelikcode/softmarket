@@ -3,25 +3,27 @@ import { randomBytes } from 'node:crypto'
 import type { Payload } from 'payload'
 
 import { normalizeLicenseKey } from '@/lib/licenses/generate'
-import { isLicenseValid } from '@/lib/licenses/validity'
 import { withPaymentTransaction, type PaymentTx } from '@/lib/payments/store/transaction'
 import type { LicensingSetting } from '@/payload-types'
 import type { createBlocksCache } from '../blocks-cache'
-import { hashDeviceFingerprint } from '../crypto/hmac'
+import { hashDeviceFingerprint, licensingHmacKey } from '../crypto/hmac'
 import { buildLeaseClaims, signLease } from '../crypto/jws'
 import { deviceKeyThumbprint, type Ed25519Signer } from '../crypto/keys'
 import type { createObservationWriter, Observation } from '../events/writer'
 import { generatePublicId } from '../public-id'
 import type { createLicensingLimiter } from '../rate-limit'
+import { findDownload, updates } from './download-catalog'
+import { openDownloadFile } from './download-file'
+import { downloadGrants } from './download-tokens'
+import { apiAvailable, eligibilityFields, entitlementError, licenseError, licenseTables, type LicenseEligibility } from './entitlement'
 import type { ClientBody, Endpoint, SignedHeaders } from './guard'
 import { claimNonce, confirmedNonces, equalText, isDeactivationRetry, nonceReceipt, requestDigest, type NonceReceipt } from './nonce'
-import { failure, unixSeconds, type ErrorCode, type Result } from './respond'
-import { enqueueValidation } from './validation-queue'
+import { failure, unixSeconds, type Result } from './respond'
+import { enqueueClientRead, type ClientWorkResult } from './validation-queue'
 
-type License = {
-  id: number; publicId: string; key: string; status: string; customer: number; product: number
-  productCode: string; enabled: number; verified: number; sku: string; seats: number | null; maxDevices: number | null
-  startsAt: string | null; expiresAt: string | null
+type License = LicenseEligibility & {
+  id: number; publicId: string; key: string | null; customer: number; product: number
+  productCode: string; sku: string; seats: number | null; maxDevices: number | null
 }
 type Device = {
   id: number; publicId: string; license: number; customer: number | null; product: number | null; status: string
@@ -40,11 +42,8 @@ export type ClientContext = {
 const deviceFields = sql`id, public_id AS publicId, license_id AS license, customer_id AS customer, product_id AS product,
   status, fingerprint_hash AS fingerprintHash, device_public_key AS key, device_key_thumbprint AS thumbprint,
   counter, prev_counter AS prevCounter, last_seen_at AS lastSeenAt, end_reason AS endReason`
-const licenseFields = sql`l.id, l.public_id AS publicId, l.key, l.status, l.customer_id AS customer, l.product_id AS product,
-  p.licensing_code AS productCode, p.licensing_enabled AS enabled, c._verified AS verified, e.sku,
-  l.seats, l.max_devices AS maxDevices, l.starts_at AS startsAt, l.expires_at AS expiresAt`
-const licenseTables = sql`licenses l JOIN products p ON p.id = l.product_id
-  JOIN customers c ON c.id = l.customer_id JOIN editions e ON e.id = l.edition_id AND e.product_id = p.id`
+const licenseFields = sql`${eligibilityFields}, l.id, l.public_id AS publicId, l.customer_id AS customer, l.product_id AS product,
+  p.licensing_code AS productCode, e.sku, l.seats, l.max_devices AS maxDevices`
 
 const newCounter = () => randomBytes(16).toString('base64url')
 const deactivated = { status: 200, body: { deactivated: true } }
@@ -54,16 +53,6 @@ const DAY_MS = 24 * HOUR_MS
 export async function readDeviceKey(payload: Payload, activation: string): Promise<string | null> {
   return (await payload.db.drizzle.all<{ key: string }>(sql`SELECT device_public_key AS key FROM license_activations
     WHERE public_id = ${activation.slice(4)}`))[0]?.key ?? null
-}
-
-function licenseError(license: License, now: Date): ErrorCode | null {
-  if (license.status === 'suspended') return 'license_suspended'
-  if (license.status === 'revoked') return 'license_revoked'
-  if (license.status === 'expired') return 'license_expired'
-  if (isLicenseValid(license, now)
-    && (!license.expiresAt || Math.floor(Date.parse(license.expiresAt) / 1000) > unixSeconds(now))) return null
-  if (!license.startsAt || !(Date.parse(license.startsAt) <= now.getTime())) return 'license_not_started'
-  return license.status === 'active' ? 'license_expired' : 'internal'
 }
 
 function leaseFor(context: ClientContext, license: License, sub: string, fingerprint: string, thumbprint: string, ctr: string, now: Date) {
@@ -156,9 +145,8 @@ async function validate(
 ): Promise<Result> {
   const fingerprint = hashDeviceFingerprint(body.fingerprint)
   if (!fingerprint || !equalText(fingerprint, device.fingerprintHash)) return failure('invalid_signature', now)
-  const denied = licenseError(license, now)
+  const denied = entitlementError(license, device.status, now)
   if (denied) return failure(denied, now)
-  if (device.status !== 'active') return failure('activation_revoked', now)
   const subject = { license: license.id, customer: license.customer, activation: device.id }
   const rule = context.settings.rules.cloneSuspected
   const currentCounter = equalText(body.ctr, device.counter)
@@ -202,7 +190,7 @@ export async function executeClientOperation(context: ClientContext, operation: 
       return failure('rate_limited', now, { retryAfter })
     }
   }
-  const work = async (tx: PaymentTx, recordReceipt: (receipt: NonceReceipt) => void): Promise<Result> => {
+  const work = async (tx: PaymentTx, recordReceipt: (receipt: NonceReceipt) => void): Promise<ClientWorkResult> => {
     const now = context.now()
     const at = now.toISOString()
     const endpoint = operation.endpoint
@@ -215,15 +203,13 @@ export async function executeClientOperation(context: ClientContext, operation: 
       emit({ type: 'api.blocked_request' })
       return failure('blocked', now)
     }
-    const [available] = await tx.all(sql`SELECT 1 FROM licensing_settings s JOIN licensing_settings_signing_keys k ON k._parent_id = s.id
-      WHERE s.api_enabled = 1 AND k.kid = ${context.signer.kid} AND k.retired_at IS NULL AND k.revoked_at IS NULL`)
-    if (!available) return failure('unavailable', now)
+    if (!await apiAvailable(tx, context.signer.kid)) return failure('unavailable', now)
 
     const device = operation.endpoint === 'activate' ? null : (await tx.all<Device>(sql`
       SELECT ${deviceFields} FROM license_activations WHERE public_id = ${headers.activation.slice(4)}
     `))[0]
     if (endpoint !== 'activate' && (!device || !equalText(context.key, device.key))) return failure('invalid_signature', now)
-    const [license] = await tx.all<License>(sql`SELECT ${licenseFields} FROM ${licenseTables}
+    const [license] = await tx.all<License>(sql`SELECT ${licenseFields}, ${activationWhere ? sql`l.key` : sql`NULL`} AS key FROM ${licenseTables}
       WHERE ${activationWhere ?? sql`l.id = ${device!.license}`}`)
     if (!license || (normalized !== undefined && !equalText(normalized, license.key))) {
       return { ...failure('invalid_license', now), unknownLicense: true }
@@ -263,6 +249,34 @@ export async function executeClientOperation(context: ClientContext, operation: 
       case 'validate':
         if (license.enabled !== 1 || license.verified !== 1) return failure('invalid_license', now)
         return validate(tx, context, license, device!, operation.body, now, emit)
+      case 'updates':
+      case 'downloads/link': {
+        const denied = entitlementError(license, device!.status, now)
+        if (denied) return failure(denied, now)
+        if (operation.endpoint === 'updates') return { status: 200, body: await updates(tx, license.product, operation.body, now) }
+        const download = await findDownload(tx, operation.body.downloadId, license.product, now)
+        if (!download) return failure('download_unavailable', now)
+        // Filesystem checks stay outside the SQLite writer lock and follow the confirmed nonce commit.
+        return {
+          finish: async () => {
+            const key = licensingHmacKey('download')
+            if (!key) return failure('unavailable', context.now())
+            const file = await openDownloadFile(download.filename)
+            if (!file) return failure('download_unavailable', context.now())
+            await file.handle.close()
+            const issuedAt = context.now()
+            const body = downloadGrants(payload).issue(key, {
+              file: download, etag: file.etag, activation: headers.activation, license: license.publicId, product: license.product,
+            }, issuedAt)
+            if (!body) return failure('unavailable', issuedAt, { retryAfter: 1 })
+            context.observations.emit({
+              type: 'download.link_issued', now: issuedAt, ip: context.ip,
+              activation: device!.id, license: license.id, customer: license.customer,
+            })
+            return { status: 200, body }
+          },
+        }
+      }
       case 'deactivate': {
         if (!canDeactivate) return failure(license.status === 'revoked' ? 'license_revoked' : 'activation_revoked', now)
         if (device!.status === 'active') {
@@ -276,9 +290,14 @@ export async function executeClientOperation(context: ClientContext, operation: 
       }
     }
   }
-  if (operation.endpoint === 'validate') return enqueueValidation(payload, work)
+  if (operation.endpoint !== 'activate' && operation.endpoint !== 'deactivate') {
+    const result = await enqueueClientRead(payload, work)
+    return 'finish' in result ? result.finish() : result
+  }
   const receipts: NonceReceipt[] = []
-  return withPaymentTransaction(payload, (tx) => work(tx, (receipt) => { receipts.push(receipt) }), {
+  const result = await withPaymentTransaction(payload, (tx) => work(tx, (receipt) => { receipts.push(receipt) }), {
     confirm: () => confirmedNonces(payload, receipts),
   })
+  if ('finish' in result) throw new Error('unexpected_client_work')
+  return result
 }

@@ -206,6 +206,8 @@ export const SECURITY_CENTER_LABELS = {
     'api.clock_skew': loc('Saat sapması', 'Clock skew'),
     'api.rate_limited': loc('İstek sınırı aşıldı', 'Rate limited'),
     'api.blocked_request': loc('Engellenen istek', 'Blocked request'),
+    'download.link_issued': loc('İndirme bağlantısı oluşturuldu', 'Download link issued'),
+    'download.started': loc('İndirme başladı', 'Download started'),
     'auth.admin_login_failed': loc('Başarısız yönetici girişi', 'Failed admin login'),
     'auth.admin_locked': loc('Yönetici hesabı kilitlendi', 'Admin account locked'),
     'auth.admin_new_network': loc('Yöneticinin yeni ağdan girişi', 'Admin login from a new network'),

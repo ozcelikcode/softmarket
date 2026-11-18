@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   // Next 15 normalizes 127.0.0.1 to localhost before EN rewrites, which can
   // become an external proxy/redirect loop in next start. Preserve the URL.
   skipMiddlewareUrlNormalize: true,
+  // Download URLs are bearer credentials: keep them out of dev request logs. Next matches req.url,
+  // which can be absolute-form or carry repeated slashes, so the pattern is unanchored.
+  logging: { incomingRequests: { ignore: [/\/api\/v1\/licensing\/dl\//i] } },
   // Multiple root layouts need a standalone document for unmatched URLs (Next 15.4).
   experimental: { globalNotFound: true, optimizePackageImports: ['lucide-react', 'radix-ui'] },
   // Only repo-owned immutable assets may enter the shared optimizer. Payload

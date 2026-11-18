@@ -6,6 +6,7 @@ export const errorStatuses = {
   license_suspended: 403, license_revoked: 403, license_expired: 403, license_not_started: 403,
   activation_revoked: 403, blocked: 403, seat_limit: 409, rebind_limit: 409,
   rate_limited: 429, unavailable: 503, internal: 500,
+  invalid_token: 401, download_unavailable: 403, range_not_satisfiable: 416,
 } as const
 
 export type ErrorCode = keyof typeof errorStatuses

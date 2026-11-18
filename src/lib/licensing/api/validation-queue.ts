@@ -6,10 +6,11 @@ import { withPaymentTransaction, type PaymentTx } from '@/lib/payments/store/tra
 import { confirmedNonces, type NonceReceipt } from './nonce'
 import { failure, type Result } from './respond'
 
+export type ClientWorkResult = Result | { finish: () => Promise<Result> }
 type Job = {
-  work: (tx: PaymentTx, confirm: (nonce: NonceReceipt) => void) => Promise<Result>
+  work: (tx: PaymentTx, confirm: (nonce: NonceReceipt) => void) => Promise<ClientWorkResult>
   runInRequest: ReturnType<typeof AsyncLocalStorage.snapshot>
-  resolve: (result: Result) => void
+  resolve: (result: ClientWorkResult) => void
   reject: (error: unknown) => void
 }
 type Queue = { queued: Job[]; draining: boolean }
@@ -18,7 +19,7 @@ const queues = shared.smLicensingValidations ??= new WeakMap<Payload, Queue>()
 const COMMIT_SIZE = 16
 
 /** Start immediately. Take only work that is already waiting when the serializer grants the write lock. */
-export function enqueueValidation(payload: Payload, work: Job['work']): Promise<Result> {
+export function enqueueClientRead(payload: Payload, work: Job['work']): Promise<ClientWorkResult> {
   let queue = queues.get(payload)
   if (!queue) {
     queue = { queued: [], draining: false }
@@ -41,7 +42,7 @@ async function drain(payload: Payload, queue: Queue) {
       try {
         const results = await withPaymentTransaction(payload, async (tx) => {
           batch = queue.queued.splice(0, COMMIT_SIZE)
-          const results: PromiseSettledResult<Result>[] = []
+          const results: PromiseSettledResult<ClientWorkResult>[] = []
           for (const job of batch) {
             // Isolate request-specific failures while retaining one durable group commit.
             const effects: Parameters<PaymentTx['afterCommit']>[0][] = []

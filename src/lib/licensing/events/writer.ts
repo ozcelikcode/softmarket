@@ -9,6 +9,7 @@ const severities = {
   'activation.seat_limit': 'low', 'activation.burst': 'medium', 'activation.clone_suspected': 'low',
   'api.invalid_license': 'low', 'api.bad_signature': 'medium', 'api.replay': 'high',
   'api.clock_skew': 'info', 'api.rate_limited': 'low', 'api.blocked_request': 'info',
+  'download.link_issued': 'info', 'download.started': 'info',
   'system.events_dropped': 'high',
 } as const
 
@@ -37,7 +38,8 @@ function aggregate(event: Observation): Aggregate {
   const at = event.now.toISOString()
   const subject = event.activation ? `activation/${event.activation}`
     : event.license ? `license/${event.license}` : event.ip?.prefix ?? 'unknown'
-  const scope = event.severity === 'critical' ? 'global' : subject
+  const scope = event.severity === 'critical' ? 'global'
+    : event.type.startsWith('download.') ? `${subject}/${event.ip?.prefix ?? 'unknown'}` : subject
   const key = `${event.type}|${scope}|${at.slice(0, 13)}`
   return { ...event, key, first: at, last: at, count: 1, rank: severityOrder.indexOf(event.severity ?? severities[event.type]) }
 }

@@ -4,14 +4,19 @@ import { DEVICE_PLATFORMS, LICENSING_CODE_RE } from '../constants'
 import { canonicalRequest } from '../crypto/canonical'
 import { decodeBase64Url } from '../crypto/keys'
 import { isPublicId } from '../public-id'
+import { parseSemver } from './semver'
 
 export const LICENSING_API_PATH = '/api/v1/licensing'
 const MAX_BODY_BYTES = 8192
 const utf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true })
 const encoded = (bytes: number) => z.string().check(z.refine((value) => decodeBase64Url(value, bytes) !== null))
-const version = z.string().check(z.maxLength(32), z.regex(
-  /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/,
-))
+const version = z.string().check(z.maxLength(32), z.refine((value) => parseSemver(value) !== null))
+
+const releaseChannels = ['stable', 'beta', 'lts'] as const
+const downloadOperatingSystems = ['windows', 'macos', 'linux', 'web', 'android', 'ios', 'other'] as const
+const downloadArchitectures = ['x64', 'arm64', 'x86', 'universal'] as const
+const isDownloadId = (value: number): boolean =>
+  Number.isSafeInteger(value) && value > 0
 
 const schemas = {
   activate: z.strictObject({
@@ -26,6 +31,13 @@ const schemas = {
   }),
   validate: z.strictObject({ ctr: encoded(16), fingerprint: encoded(32), appVersion: version }),
   deactivate: z.strictObject({ reason: z.optional(z.enum(['user', 'uninstall', 'transfer'])) }),
+  updates: z.strictObject({
+    channel: z.enum(releaseChannels),
+    currentVersion: version,
+    os: z.enum(downloadOperatingSystems),
+    arch: z.optional(z.enum(downloadArchitectures)),
+  }),
+  'downloads/link': z.strictObject({ downloadId: z.number().check(z.refine(isDownloadId)) }),
 }
 
 export type Endpoint = keyof typeof schemas

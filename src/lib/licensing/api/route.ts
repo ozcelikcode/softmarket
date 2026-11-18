@@ -33,7 +33,7 @@ const shared = globalThis as typeof globalThis & {
 }
 const configs = shared.smLicensingConfigs ??= new WeakMap<Payload, ReturnType<typeof configuration>>()
 
-function readConfiguration(payload: Payload) {
+export function readConfiguration(payload: Payload) {
   const pending = configs.get(payload)
   if (pending) return pending
   // Coalesce concurrent reads while making configuration changes visible to new requests.
@@ -42,7 +42,7 @@ function readConfiguration(payload: Payload) {
   return running
 }
 
-type RouteDependencies = { loadPayload: () => Promise<Payload>; now?: () => Date }
+export type RouteDependencies = { loadPayload: () => Promise<Payload>; now?: () => Date }
 
 export function createLicensingPost(endpoint: Endpoint, { loadPayload, now: clock = () => new Date() }: RouteDependencies) {
   return async (request: Request): Promise<Response> => {
@@ -63,19 +63,21 @@ export function createLicensingPost(endpoint: Endpoint, { loadPayload, now: cloc
         void request.body?.cancel().catch(() => undefined)
         return deny('unavailable')
       }
+      const network = clientNetwork(request.headers, now)
+      const { ip, prefix } = network
+      const traffic = await trafficRejection(runtime, settings.limits, network, now)
+      if (traffic) {
+        void request.body?.cancel().catch(() => undefined)
+        return respond(traffic, now, nonce, signer)
+      }
       const raw = await readBoundedBody(request)
       if (!raw) return deny('bad_request')
       const headers = signedHeaders(request, endpoint, raw)
       if (!headers) return deny('bad_request')
-
-      const network = clientNetwork(request.headers, now)
-      const { ip, prefix } = network
       if (Math.abs(unixSeconds(now) - headers.timestamp) > settings.clockSkewSeconds) {
         observations.emit({ type: 'api.clock_skew', now, ip })
         return deny('clock_skew')
       }
-      const traffic = await trafficRejection(runtime, settings.limits, network, now)
-      if (traffic) return respond(traffic, now, nonce, signer)
 
       const body = parseClientBody(endpoint, raw)
       if (!body) return deny('bad_request')
@@ -90,7 +92,7 @@ export function createLicensingPost(endpoint: Endpoint, { loadPayload, now: cloc
         observations.emit({ type: 'api.bad_signature', now, ip, severity: high ? 'high' : 'medium' })
         return deny('invalid_signature')
       }
-      if (endpoint === 'validate') {
+      if (endpoint !== 'activate' && endpoint !== 'deactivate') {
         const retry = limit(`activation:${headers.activation}`, settings.limits.requestsPerActivationPerHour, HOUR)
         if (retry) {
           observations.emit({ type: 'api.rate_limited', now, ip, action: 'throttled' })
@@ -125,7 +127,7 @@ export async function flushLicensingObservations(payload: Payload) {
   await runtimeFor(payload).observations.flush()
 }
 
-async function loadPayload() {
+export async function loadPayload() {
   const [{ getPayload }, { default: config }] = await Promise.all([import('payload'), import('@payload-config')])
   const payload = await getPayload({ config })
   if (!shared.smLicensingShutdown) {

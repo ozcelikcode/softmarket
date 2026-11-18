@@ -8,6 +8,7 @@ import { commitTransaction, createLocalReq, initTransaction, killTransaction, Un
 import { localizedHref } from '@/i18n/paths'
 import { verifyTurnstile } from '@/lib/forms/security'
 import { hasHoneypot } from '@/lib/forms/schema'
+import { observeLoginFailure, observeLoginSuccess } from '@/lib/licensing/events/anomalies'
 import { getMyLicenseKey, getMyLicenses, usableProducts } from '@/lib/portal/data'
 import { getPayloadClient } from '@/lib/site'
 import type { Customer } from '@/payload-types'
@@ -46,23 +47,31 @@ export async function loginAction(_prev: State, data: FormData): Promise<State> 
   if (!parsed.success) return { status: 'invalid', errors: issueFields(parsed.error) }
   const { email, password, locale, next } = parsed.data
   if (!allowAuthAttempt(h, email, 'login')) return { status: 'rate' }
-  let result
+  let attempt
   try {
-    result = await authResponse(async () => {
+    attempt = await authResponse(async () => {
       const payload = await getPayloadClient()
       const account = await payload.db.findOne<Customer>({ collection: 'customers', where: { email: { equals: email.trim().toLowerCase() } } })
       if (!account || (account.lockUntil && new Date(account.lockUntil).getTime() > Date.now())) {
         await dummyPasswordCheck(password)
       }
-      return payload.login({ collection: 'customers', data: { email, password }, depth: 0 })
+      try {
+        const result = await payload.login({ collection: 'customers', data: { email, password }, depth: 0 })
+        return { payload, result }
+      } catch (error) {
+        observeLoginFailure(payload, 'customers', h, email, error)
+        throw error
+      }
     })
   } catch (error) {
     // UnverifiedEmail is only thrown after the password matched, so it reveals nothing to a guesser.
     if (error instanceof UnverifiedEmail) return { status: 'unverified' }
     return { status: 'credentials' }
   }
+  const { payload, result } = attempt
   if (!result.token || result.user?.collection !== 'customers') return { status: 'credentials' }
   await setSession(result.token, result.exp)
+  observeLoginSuccess(payload, 'customers', h, result.user.id)
   return go(sanitizeNext(next), locale)
 }
 

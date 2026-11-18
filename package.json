@@ -35,6 +35,7 @@
     "ensure-forms": "tsx scripts/ensure-forms.ts",
     "licensing:keygen": "tsx scripts/licensing-keygen.ts",
     "licensing:sweep": "tsx scripts/licensing-sweep.ts",
+    "licensing:sim": "node --import tsx scripts/licensing-sim.ts",
     "search:reindex": "tsx scripts/reindex-search.ts",
     "content:import": "tsx scripts/content-import.ts",
     "media:regenerate": "tsx scripts/media-regenerate.ts",

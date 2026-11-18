@@ -1,0 +1,55 @@
+{
+  "profile": "SoftMarket licensing v1",
+  "signingKey": {
+    "kid": "If4x36FUomFia_hUBG_SJxt77UtqvkWqWId-9H-XIbk",
+    "publicKey": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+  },
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/licensing/validate",
+    "timestamp": 1794960000,
+    "nonce": "AAECAwQFBgcICQoLDA0ODw",
+    "activation": "act_111111111111111111111111",
+    "devicePublicKey": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+    "bodyUtf8": "{\"x\":\"é\"}\n",
+    "canonical": "SM1-REQ\nPOST\n/api/v1/licensing/validate\n1794960000\nAAECAwQFBgcICQoLDA0ODw\nact_111111111111111111111111\n6acb398a579fc7334e02f1d702e5798d768397fe8658c8b528d17e23eca75b39",
+    "signature": "OBO8FgPWnmzDzwtuh5P6sW7WWwBDsU8ALid9sLybw7u2BYcUXu4d2-JpEwH0jAp1S47prhX-YVVqQIf-knBZDQ"
+  },
+  "response": {
+    "status": 200,
+    "nonce": "AAECAwQFBgcICQoLDA0ODw",
+    "bodyUtf8": "{\"x\":\"é\"}\n",
+    "canonical": "SM1-RES\n200\nAAECAwQFBgcICQoLDA0ODw\n6acb398a579fc7334e02f1d702e5798d768397fe8658c8b528d17e23eca75b39",
+    "signature": "-MbcAFsWUuoem6-29oQuSsuTqNjDf8D2tlm73IPn8r-aKtMku5ZmPzep0vJ0lFgOtK9D1RKM83dci1-PbWyvCg"
+  },
+  "lease": {
+    "now": 1794960000,
+    "expected": {
+      "iss": "https://licensing.example.com",
+      "aud": "studio-pro",
+      "sub": "act_111111111111111111111111",
+      "lid": "lic_222222222222222222222222",
+      "fp": "Dw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8",
+      "dkt": "If4x36FUomFia_hUBG_SJxt77UtqvkWqWId-9H-XIbk"
+    },
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IklmNHgzNkZVb21GaWFfaFVCR19TSnh0NzdVdHF2a1dxV0lkLTlILVhJYmsiLCJ0eXAiOiJzbS1sZWFzZStqd3QifQ.eyJpc3MiOiJodHRwczovL2xpY2Vuc2luZy5leGFtcGxlLmNvbSIsImF1ZCI6InN0dWRpby1wcm8iLCJzdWIiOiJhY3RfMTExMTExMTExMTExMTExMTExMTExMTExIiwibGlkIjoibGljXzIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsInNrdSI6IlBSTyIsInNlYXRzIjoxLCJmcCI6IkR3OFBEdzhQRHc4UER3OFBEdzhQRHc4UER3OFBEdzhQRHc4UER3OFBEdzgiLCJka3QiOiJJZjR4MzZGVW9tRmlhX2hVQkdfU0p4dDc3VXRxdmtXcVdJZC05SC1YSWJrIiwiaWF0IjoxNzk0OTYwMDAwLCJuYmYiOjE3OTQ5NjAwMDAsImV4cCI6MTc5NjE2OTYwMCwicmZhIjoxNzk1MDQ2NDAwLCJsZXhwIjpudWxsLCJjdHIiOiJBQUVDQXdRRkJnY0lDUW9MREEwT0R3Iiwic3QiOiJhY3RpdmUiLCJ2IjoxfQ.CKJ4WkVhEHeo_Psu_6NiWSRGy4DUQT9KNG8U-cKZdlmAPmi2RH6agrkKayiH2eup73951Wj4iofUPN5H9fImDQ",
+    "claims": {
+      "iss": "https://licensing.example.com",
+      "aud": "studio-pro",
+      "sub": "act_111111111111111111111111",
+      "lid": "lic_222222222222222222222222",
+      "sku": "PRO",
+      "seats": 1,
+      "fp": "Dw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8",
+      "dkt": "If4x36FUomFia_hUBG_SJxt77UtqvkWqWId-9H-XIbk",
+      "iat": 1794960000,
+      "nbf": 1794960000,
+      "exp": 1796169600,
+      "rfa": 1795046400,
+      "lexp": null,
+      "ctr": "AAECAwQFBgcICQoLDA0ODw",
+      "st": "active",
+      "v": 1
+    }
+  }
+}

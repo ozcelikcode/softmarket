@@ -112,7 +112,8 @@ export type VerifiedWebhookEvent = {
 
 export type WebhookVerification =
   | { ok: true; event: VerifiedWebhookEvent }
-  | { ok: false; reason: 'missing_signature' | 'malformed' | 'invalid_signature' | 'timestamp_out_of_tolerance' | 'too_large' }
+  | { ok: false; reason: 'missing_signature' | 'invalid_signature' | 'timestamp_out_of_tolerance' | 'too_large' }
+  | { ok: false; reason: 'malformed'; signatureRejected?: true }
 
 export type RefundInput = {
   orderNumber: string

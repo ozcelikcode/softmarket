@@ -11,6 +11,8 @@ import {
   importEd25519PublicKey, SIGNING_KEY_OVERLAP_MS, verifyEd25519,
 } from '@/lib/licensing/crypto/keys'
 
+import published from '../../docs/licensing/test-vectors.json'
+
 const vectors = [
   {
     seed: '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60',
@@ -123,6 +125,23 @@ describe('request and response signing strings', () => {
     const key = importEd25519PublicKey(metadata.publicKey)!
     expect(verifyEd25519(key, response, signature)).toBe(true)
     expect(verifyEd25519(key, canonicalResponse({ status: 200, body }), signature)).toBe(false)
+  })
+
+  it('keeps the published client vectors identical to the L2 fixtures', () => {
+    const requestBytes = canonicalRequest(request)
+    const responseBytes = canonicalResponse({ status: 200, nonce, body })
+    const wire = (bytes: Buffer) => ({
+      bodyUtf8: body.toString('utf8'),
+      canonical: bytes.toString('utf8'),
+      signature: signer.sign(bytes).toString('base64url'),
+    })
+    expect(published.signingKey).toEqual(metadata)
+    expect(published.request).toEqual({
+      method: request.method, path: request.path, timestamp: request.timestamp, nonce: request.nonce,
+      activation: request.activation, devicePublicKey: metadata.publicKey, ...wire(requestBytes),
+    })
+    expect(published.response).toEqual({ status: 200, nonce, ...wire(responseBytes) })
+    expect(published.lease).toEqual({ now, expected: identity, token, claims })
   })
 
   it('rejects delimiters, query strings and malformed header values', () => {

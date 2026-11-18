@@ -1,3 +1,8 @@
+## L8 identity/webhook anomalies and L9 client kit (2026-11-18, not committed)
+- L8: `events/anomalies.ts` observers in Users hooks, portal login action and payment webhooks; per-hour coalescing, cap of 20 prefix rows per type/hour; new-network admin alert via L5 queue. Tests: `licensing-anomalies-db.test.ts` (6 L8 cases). Full suite 1,848 tests / 114 files passed.
+- L9: client guide, test vectors tied to L2 fixtures, TS verifier (tested), C# verifier (not compiled, no dotnet), `pnpm licensing:sim` run end to end on an isolated DB copy by QA.
+- Next: L10 QA.
+
 ## G1 rollback (2026-11-18)
 
 - Reverted the header and footer draft workflow, global version checks, draft preview reads, and G1 link field validation. Render-time `safeHref` filtering still applies.

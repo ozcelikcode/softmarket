@@ -63,17 +63,17 @@ Keep the returned URL private. It is a bearer credential for one download and ex
 
 ## Leases and offline use
 
-Verify the Ed25519 compact JWS with a pinned, unrevoked key. Require protected header `alg: EdDSA`, `typ: sm-lease+jwt` and a known `kid`. Require `v: 1`, `st: active`, the expected issuer (`iss`), product code (`aud`), activation ID (`sub`), license ID (`lid`), local fingerprint (`fp`) and base64url SHA-256 digest of the raw device public key (`dkt`). On initial activation, learn the opaque `lic_…` ID from the verified lease in the authenticated response and persist it with the activation. Check `nbf <= now < exp` using Unix seconds. `sku` identifies the edition and `seats` gives the device limit. `lexp` is the license expiry in ISO 8601 or `null` for perpetual licenses.
+Verify the Ed25519 compact JWS with a pinned, unrevoked key. Require protected header `alg: EdDSA`, `typ: sm-lease+jwt` and a known `kid`. Require `v: 1`, `st: active`, the expected issuer (`iss`), product code (`aud`), activation ID (`sub`), license ID (`lid`), local fingerprint (`fp`) and base64url SHA-256 digest of the raw device public key (`dkt`). On initial activation, learn the opaque `lic_…` ID from the verified lease in the authenticated response and persist it with the activation. Check `nbf <= now < exp` using Unix seconds. `sku` identifies the edition and `seats` gives the device limit. `lexp` is the license expiry in ISO 8601 or `null` when no expiry is stored.
 
-Refresh in the background after `rfa` (`refreshAfter`), normally 24 hours after issuance. Serialize refreshes for each activation and replace the cached lease and its `ctr` together. The lease remains usable offline up to `exp`, normally 14 days from issuance, capped by the license expiry. There is no grace period beyond `exp`. After a network failure, an unverifiable response or a temporary service error, retain the last verified lease and retry with backoff. An authenticated `403 license_*` or `403 activation_revoked` invalidates the cached lease. A device that stays offline cannot learn about a suspension or refund before its cached lease expires.
+Refresh in the background after `rfa` (`refreshAfter`), normally 24 hours after issuance. Serialize refreshes for each activation and replace the cached lease and its `ctr` together. The lease remains usable offline up to `exp`, normally 14 days from issuance, capped by the license expiry. `rfa` can be later than `exp` when expiry clips the lease or the refresh interval exceeds its lifetime. There is no grace period beyond `exp`. After a network failure, an unverifiable response or a temporary service error, retain the last verified lease and retry with backoff. An authenticated `403 license_*` or `403 activation_revoked` invalidates the cached lease. A device that stays offline cannot learn about a suspension or refund before its cached lease expires.
 
 ## Error codes
 
-Errors return `{"error":{"code":"…"},"serverTime":<unix seconds>}`. Rate and service limits can add `error.retryAfter` and a `Retry-After` header in seconds. For signed responses, use the authenticated body value. `seat_limit` adds top-level `used` and `max`.
+The application’s file and key routes also use unsigned errors, including traffic rejections. HEAD errors have no body. Errors with a body return `{"error":{"code":"…"},"serverTime":<unix seconds>}`. Rate and service limits can add `error.retryAfter` and a `Retry-After` header in seconds. For signed responses, use the authenticated body value. `seat_limit` adds top-level `used` and `max`.
 
 | HTTP | Codes | Client handling |
 |---|---|---|
-| 400 | `bad_request`, `clock_skew` | Check serialization and input. For authenticated skew, offset the request timestamp using `serverTime` and retry with a fresh nonce. |
+| 400 | `bad_request`, `clock_skew` | Check serialization and input. The server checks the timestamp before the request signature, so treat `clock_skew` as a hint: after verifying the response signature, offset the request timestamp using `serverTime` and retry with a fresh nonce. |
 | 401 | `invalid_signature`, `invalid_license`, `invalid_token` | For signed requests, check the device binding, fresh nonce, key and product code. For file URLs, request a fresh link. |
 | 403 | `license_suspended`, `license_revoked`, `license_expired`, `license_not_started`, `activation_revoked`, `blocked`, `download_unavailable` | Only use verified POST responses to decide license status. Missing, foreign, or unavailable downloads share `download_unavailable`. |
 | 409 | `seat_limit`, `rebind_limit` | Show the device limit or rebind quota. An authorized user may need to free a seat. |
@@ -84,6 +84,6 @@ Errors return `{"error":{"code":"…"},"serverTime":<unix seconds>}`. Rate and s
 
 ## Device changes and seat limits
 
-If the device fingerprint changes, the client must deactivate the old activation (or generate a new device key) before activating again. Otherwise activate returns `invalid_license`.
+If the device fingerprint changes, the client must deactivate the old activation (or generate a new device key) before activating again. If the same key is still bound to an active device, activation can return `seat_limit` when seats are full or `invalid_license` when it reaches the device-key check. A new device key still requires an available seat.
 
 Lowering `maxDevices` on a license does not end devices that are already active. The new limit applies only to new activations.

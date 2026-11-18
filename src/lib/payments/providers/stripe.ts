@@ -156,7 +156,9 @@ export function createStripeProvider(deps: StripeProviderDeps): PaymentProvider 
         secret: config.webhookSecret.reveal(),
         now: at ?? now(),
       })
-      if (!result.ok) return { ok: false, reason: result.reason }
+      if (!result.ok) return result.reason === 'malformed'
+        ? { ok: false, reason: 'malformed', signatureRejected: true }
+        : { ok: false, reason: result.reason }
       let event: Record<string, unknown>
       try {
         const parsed: unknown = JSON.parse(rawBody)

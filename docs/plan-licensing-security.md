@@ -661,3 +661,34 @@ Scope: portal licenses and devices plus the customer e-mail. No schema change, n
 - **Tests.** `tests/unit/portal-devices-db.test.ts` (8: release writes one UPDATE + one portal event + one audit row + no status row and leaves the license status untouched; foreign customer, foreign device, malformed ids and tokens write nothing; already-ended device; quota per license, 30-day window, 0 = off; idempotent token; display-only listing; e-mail through the queue in EN with escaped label and no full key, sent once; template escaping and label cap) and `tests/unit/portal-device-action.test.ts` (8: 303 targets, cross-origin/originless refused, anonymous to login, foreign license redirect, limit/replay mapping, rate limit, TR/EN key parity, no sensitive columns in the page or module). Full suite: 112 files, 1819 tests.
 - **Browser check** (isolated `.backup` copy, `NEXT_DIST_DIR=.next-l7`, port 3580, two throwaway customers in the copy only, SMTP unset): owner sees the license, two devices and 2 / 3 seats, confirms and releases one (303, notice, list shrinks, event/audit/UPDATE rows present, no status row); the other customer gets 404 on the owner's license and the owner gets 404 on the other's; no sensitive strings in the HTML. Build removed afterwards.
 - **Deviations / open.** (1) No status-log row and the audit actor kind is `system`: a customer kind or a customer-visible status would need a schema/enum change. (2) The "new device activated" e-mail is NOT added: the plan marks it optional and it needs a setting (schema change) plus a hook in the L3 hot path. (3) Device label renaming is not implemented (plan §8 mentions it; the task scope did not ask for it). (4) Key reveal on the license list is unchanged.
+
+## L8 implementation record (identity and webhook anomalies)
+
+Files: `src/lib/licensing/events/anomalies.ts` (bounded post-response writer and event persistence), `src/collections/Users.ts` (afterLogin/afterError hooks, guarded with try/catch), `src/lib/portal/actions.ts` (portal login failures and successes), `src/lib/payments/events.ts`, `src/lib/payments/providers/stripe.ts`, `src/lib/payments/types.ts` (signature rejections), and `tests/unit/licensing-anomalies-db.test.ts` (temporary migrated SQLite DB).
+
+Behavior:
+- Failed credential checks coalesce per known account and UTC hour. Unknown accounts share one row per trusted prefix and hour. Requests without a trusted address share one unknown-prefix bucket. Lockouts are identified by the observed Payload lock expiry; requests rejected during the lock do not raise the lockout event count. Payload keeps credential validation, retry limits and lock enforcement.
+- Successful panel and portal logins record informational events. Existing `auth.admin_login_failed` and `auth.portal_login_failed` values carry `detail.outcome` (`success` or `failure`). A successful admin login from a new network uses `auth.admin_new_network`. No select values or UI changed.
+- Network is new when the admin has no successful login with the same prefix or UTC-month hash in the previous seven days. Prefix matching survives monthly hash rotation. Notification state is set in the same write as the event; the existing L5 queue sends the admin e-mail.
+- Coalescing cap (QA): at most 20 distinct prefix-coalesced rows per event type per hour. Excess folds into one overflow row with a null prefix.
+- iyzico and Stripe signature rejections coalesce per provider, trusted prefix and UTC hour. A valid signature with a malformed payload does not count. Webhook responses (400, 404, 413) are byte-identical to the previous behavior: empty body and existing cache-control header.
+- Only Caddy-trusted addresses contribute network data (/24 or /48 plus monthly hash when the licensing IP key is set). Dedupe keys hold no address material. Event details use fixed strings. Observer exceptions are swallowed without logging payloads or SQL errors.
+- Observations run after the response: at most one active telemetry transaction and 64 pending per process. Jobs expire after 5 s of queue time. Overload or a process restart can drop observations; committed alerts stay durable through the L5 queue.
+
+Scope: panel coverage is the normal users REST login; portal coverage is the login action. API-key auth, GraphQL, other Local API calls, validation failures and portal rate-limit responses are not instrumented. No dependencies, schema changes or migrations.
+
+Verification: typecheck and lint passed; full suite passed (1,848 tests, 114 files); L8 file, portal action and provider files passed (41 tests across three files, including the six L8 cases).
+
+## L9 implementation record (client integration guide and reference verifiers)
+
+Files:
+- `docs/licensing/client-integration.md`: enrollment, renewal, updates, downloads, deactivation, curl examples, signing bytes, lease verification, errors, offline use, key handling.
+- `docs/licensing/client-api.md`: device-key conflict vs seat-limit order, unsigned file/key errors, refresh times that can exceed lease expiry; clock_skew wording corrected (QA).
+- `docs/licensing/test-vectors.json`: fixed signing inputs, signatures, raw UTF-8 bodies, a compact lease and its claims. `tests/unit/licensing-crypto.test.ts` checks them against the same fixed keys and fixtures as the L2 tests.
+- `docs/licensing/examples/ts/` (pinned Node verifier, request canonicalization; checked by `tests/unit/licensing-client-reference.test.ts` against the vectors, including negative binding, time, nonce, body, revocation and status cases).
+- `docs/licensing/examples/csharp/` (.NET 8+ verifier with Linux OpenSSL 3 backend, standalone vector runner). Not compiled: no `dotnet` on the QA machine. C# rejection checks were added in QA.
+- `scripts/licensing-sim.ts` and `pnpm licensing:sim` (`--help` available): disposable client that signs activate, validate, updates, download-link and deactivate, verifies replies and both leases, streams a file GET into a SHA-256 digest, and attempts deactivation after a confirmed enrollment even if a later step fails.
+
+Verification: typecheck passed; 27 L2/client-reference tests passed; simulator help ran. QA ran `pnpm licensing:sim` end to end against an isolated server on a DB copy: activate, validate, updates, downloads/link, download and deactivate all succeeded. The C# example is pending compilation. No server, schema, migration or dependency changes. The 1,833-pass full run had timeouts in three unrelated suites (block-motion migration, media pipeline, SQLite integrity); they passed on a single worker.
+
+Open: compile and run the C# example on a host with dotnet.

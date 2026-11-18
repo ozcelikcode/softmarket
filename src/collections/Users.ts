@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig, PayloadRequest } from 'payload'
 
 import {
   USER_ROLES,
@@ -8,6 +8,10 @@ import {
   isAdminOrEditor,
   isAdminOrSelfUser,
 } from '@/access'
+import { observeLoginFailure, observeLoginSuccess } from '@/lib/licensing/events/anomalies'
+
+const isPanelLogin = (req: PayloadRequest) => req.payloadAPI === 'REST' && req.method === 'POST'
+  && req.pathname.replace(/\/$/, '') === `${req.payload.config.routes.api}/users/login`
 
 /** First user ever created becomes admin (bootstrap via /admin/create-first-user). */
 const bootstrapFirstAdmin: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
@@ -49,6 +53,18 @@ export const Users: CollectionConfig = {
   hooks: {
     beforeChange: [bootstrapFirstAdmin],
     beforeValidate: [adminAPIKeysOnly],
+    afterError: [({ req, error }) => {
+      // Observation must never replace the login error or alter its response.
+      try {
+        if (isPanelLogin(req)) observeLoginFailure(req.payload, 'users', req.headers, req.data?.email, error)
+      } catch { /* ignored */ }
+    }],
+    afterLogin: [({ req, user }) => {
+      try {
+        if (isPanelLogin(req)) observeLoginSuccess(req.payload, 'users', req.headers, user.id, user.roles?.includes('admin'))
+      } catch { /* ignored */ }
+      return user
+    }],
   },
   fields: [
     // Merge into Payload's built-in fields, retaining its encryption/index hooks.

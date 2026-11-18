@@ -1,5 +1,7 @@
 import type { Where } from 'payload'
 
+import { observeWebhookSignatureRejection } from '@/lib/licensing/events/anomalies'
+
 import { applyDispute, flagDisputeClosed, reconcileRefund } from './admin-actions'
 import { readLimitedBody } from './body'
 import { bodySha256, ORDER_NUMBER_RE, paymentEventKey } from './idempotency'
@@ -77,9 +79,14 @@ export async function handleProviderWebhook(deps: PaymentsDeps, providerId: Prov
     if (!inWindow) return empty(404)
     return empty(body.reason === 'too_large' ? 413 : 400)
   }
-  const verified = provider.verifyWebhook(body.text, request.headers, deps.now())
+  const now = deps.now()
+  const verified = provider.verifyWebhook(body.text, request.headers, now)
   if (!verified.ok) {
     deps.log.warn(`webhook rejected provider=${providerId} reason=${verified.reason}`)
+    if (verified.reason === 'missing_signature' || verified.reason === 'invalid_signature'
+      || verified.reason === 'timestamp_out_of_tolerance' || (verified.reason === 'malformed' && verified.signatureRejected)) {
+      observeWebhookSignatureRejection(deps.payload, providerId, request.headers, now)
+    }
     if (!inWindow) return empty(404)
     return empty(verified.reason === 'too_large' ? 413 : 400)
   }

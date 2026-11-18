@@ -1,3 +1,8 @@
+## L8 and L9 done (2026-11-18, uncommitted until the L8/L9 commit)
+- L8 identity/webhook anomalies: coalesced login failure/lockout and success events, new-network admin alert, webhook rejections recorded after the response (responses byte-identical). Details: "L8 implementation record" in `docs/plan-licensing-security.md`.
+- L9 client integration kit: `docs/licensing/client-integration.md`, `test-vectors.json` bound to L2 fixtures, TS and C# verifiers (C# not compiled yet), `pnpm licensing:sim`. Details: "L9 implementation record".
+- Next: L10 QA (plan §L10). C# compile and `pnpm licensing:sim` against a dotnet-capable host remain open.
+
 ## Header and footer editing rollback (2026-11-18)
 
 - The owner cancelled the visual globals project. Header and footer use the standard Payload global form and save directly to the live row, with revalidation on every save. G2–G7 are cancelled.

@@ -52,10 +52,12 @@ describe('MCP allowlist and API authentication', () => {
     const status = Licenses.fields.find((f) => 'name' in f && f.name === 'status') as { access: Record<'create' | 'update', (a: unknown) => unknown> }
     const licensing = Products.fields.find((f) => 'name' in f && f.name === 'licensing') as { access: Record<'create' | 'update', (a: unknown) => unknown> }
     const admin = { collection: 'users', roles: ['admin'] }
+    // Plan 4.1 lock: nobody (not even a panel admin session) updates the status through a user-facing path.
+    expect(await status.access.update({ req: { user: { ...admin, _strategy: 'local-jwt' }, headers: new Headers() } })).toBe(false)
     for (const access of [status.access, licensing.access]) {
       for (const op of ['create', 'update'] as const) {
         expect(await access[op]({ req: { user: { ...admin, _strategy: 'api-key' } } })).toBe(false)
-        expect(await access[op]({ req: { user: { ...admin, _strategy: 'local-jwt' }, headers: new Headers() } })).toBe(true)
+        if (!(access === status.access && op === 'update')) expect(await access[op]({ req: { user: { ...admin, _strategy: 'local-jwt' }, headers: new Headers() } })).toBe(true)
         expect(await access[op]({ req: { user: { ...admin, _strategy: 'local-jwt' }, headers: new Headers({ authorization: 'Bearer test-jwt' }) } })).toBe(false)
         expect(await access[op]({ req: { user: { collection: 'users', roles: ['editor'], _strategy: 'local-jwt' } } })).toBe(false)
       }

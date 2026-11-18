@@ -29,6 +29,7 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { VisualEditorHost as VisualEditorHost_42f7259f0a2496d9935c54a374e2ab74 } from '@/editor/canvas/admin/host'
 import { PriceMinorField as PriceMinorField_86e989140fed31fdd425f0ac71578624 } from '@/admin/fields/price-minor-field'
+import { LicenseActions as LicenseActions_8909f7f60bb25797128df90183726855 } from '@/admin/fields/license-actions'
 import { OrderActions as OrderActions_4af57e42cf02a6d2ff5b0d21516dd615 } from '@/admin/fields/order-actions'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
@@ -36,6 +37,7 @@ import { CommerceReadiness as CommerceReadiness_21a76f9ace6ef6f634959aae4db7e91c
 import { IntegrationsStatus as IntegrationsStatus_488eb35d27d1ae14f008ba5cc4874f75 } from '@/admin/fields/integrations-status'
 import { IntegrationSecret as IntegrationSecret_8aaf53474eefd9c1afec22c33ea582c7 } from '@/admin/fields/integration-secret'
 import { IntegrationTestEmail as IntegrationTestEmail_6ee154fe8210207387da352b208edad8 } from '@/admin/fields/integration-test-email'
+import { SigningKeyRotate as SigningKeyRotate_0f72a3f7016e86c225cddc29357a38dc } from '@/admin/fields/signing-key-rotate'
 import { SecurityNavLink as SecurityNavLink_c1f02d03921cb6fc84ae08138f716c57 } from '@/admin/security/SecurityNavLink'
 import { SecurityCenterView as SecurityCenterView_1452566fa5e635bff5b7da116bf6f538 } from '@/admin/security/SecurityCenterView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -73,6 +75,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@/editor/canvas/admin/host#VisualEditorHost": VisualEditorHost_42f7259f0a2496d9935c54a374e2ab74,
   "@/admin/fields/price-minor-field#PriceMinorField": PriceMinorField_86e989140fed31fdd425f0ac71578624,
+  "@/admin/fields/license-actions#LicenseActions": LicenseActions_8909f7f60bb25797128df90183726855,
   "@/admin/fields/order-actions#OrderActions": OrderActions_4af57e42cf02a6d2ff5b0d21516dd615,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
@@ -80,6 +83,7 @@ export const importMap = {
   "@/admin/fields/integrations-status#IntegrationsStatus": IntegrationsStatus_488eb35d27d1ae14f008ba5cc4874f75,
   "@/admin/fields/integration-secret#IntegrationSecret": IntegrationSecret_8aaf53474eefd9c1afec22c33ea582c7,
   "@/admin/fields/integration-test-email#IntegrationTestEmail": IntegrationTestEmail_6ee154fe8210207387da352b208edad8,
+  "@/admin/fields/signing-key-rotate#SigningKeyRotate": SigningKeyRotate_0f72a3f7016e86c225cddc29357a38dc,
   "@/admin/security/SecurityNavLink#SecurityNavLink": SecurityNavLink_c1f02d03921cb6fc84ae08138f716c57,
   "@/admin/security/SecurityCenterView#SecurityCenterView": SecurityCenterView_1452566fa5e635bff5b7da116bf6f538,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1

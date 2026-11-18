@@ -29,21 +29,22 @@ export function createBlocksCache(payload: Payload) {
   let revision = 0
 
   async function load() {
-    if (performance.now() < expiration) return
-    if (!pending) {
-      const version = revision
-      pending = payload.db.drizzle.all<Block>(sql`
-        SELECT kind, value, expires_at FROM security_blocks
-        WHERE active = 1 AND scope IN ('api', 'all')
-        AND (expires_at IS NULL OR expires_at > ${new Date().toISOString()})
-      `).then((rows) => {
-        // A new automatic block may have been committed while the old snapshot was being read.
-        if (version !== revision) return
-        blocks = rows
-        expiration = performance.now() + 30_000
-      }).finally(() => { pending = undefined })
+    for (let attempt = 0; attempt < 5 && performance.now() >= expiration; attempt++) {
+      if (!pending) {
+        const version = revision
+        pending = payload.db.drizzle.all<Block>(sql`
+          SELECT kind, value, expires_at FROM security_blocks
+          WHERE active = 1 AND scope IN ('api', 'all')
+          AND (expires_at IS NULL OR expires_at > ${new Date().toISOString()})
+        `).then((rows) => {
+          // A new automatic or admin block change may have committed while the old snapshot was being read.
+          if (version !== revision) return
+          blocks = rows
+          expiration = performance.now() + 30_000
+        }).finally(() => { pending = undefined })
+      }
+      await pending
     }
-    await pending
   }
 
   function matches(now: Date, network?: Network, device?: Device): boolean {
@@ -88,5 +89,11 @@ export function createBlocksCache(payload: Payload) {
     expiration = 0
   }
 
-  return { load, matches, blockPrefix }
+  /** Admin block add/lift (L6b): drop the snapshot so the next request reloads; a load in flight is discarded. */
+  function invalidate(): void {
+    revision++
+    expiration = 0
+  }
+
+  return { load, matches, blockPrefix, invalidate }
 }

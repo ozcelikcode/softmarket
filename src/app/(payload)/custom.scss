@@ -144,6 +144,37 @@
   &-pager-total { margin: calc(var(--base) * 0.6) 0 0; color: var(--sc-muted); font-size: 0.8125rem; }
   &-footnote { margin: calc(var(--base) * 2) 0 0; color: var(--sc-muted); font-size: 0.8125rem; }
   &-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  // L6b action widgets (tables, license side panel, signing key). Same tokens; the danger button keeps a text label.
+  &-action-group { display: flex; flex-wrap: wrap; gap: calc(var(--base) * 0.35); align-items: flex-start; }
+  &-action { min-width: 0; .btn { margin: 0; } }
+  &-action__msg { margin: calc(var(--base) * 0.3) 0 0; font-size: 0.8125rem; max-width: 40ch; &--error { color: var(--theme-error-750); } }
+  &-btn--danger { background: var(--theme-error-500) !important; border-color: var(--theme-error-500) !important; color: #fff !important; }
+  &-btn--danger:hover:not(:disabled) { background: var(--theme-error-600) !important; }
+  &-dialog {
+    display: grid; gap: calc(var(--base) * 0.5); min-width: min(22rem, 100%); max-width: 32rem; padding: calc(var(--base) * 0.75);
+    border: 1px solid var(--theme-elevation-250); border-radius: var(--style-radius-m); background: var(--theme-elevation-0, var(--theme-bg));
+    &__title { font-size: 0.875rem; }
+    &__question { margin: 0; font-size: 0.8125rem; color: var(--sc-muted); }
+    &__check { display: inline-flex; align-items: center; gap: calc(var(--base) * 0.35); font-size: 0.8125rem; }
+    &__buttons { display: flex; flex-wrap: wrap; gap: calc(var(--base) * 0.4); }
+    textarea {
+      width: 100%; padding: calc(var(--base) * 0.3) calc(var(--base) * 0.5); border: 1px solid var(--theme-elevation-250);
+      border-radius: var(--style-radius-s); background: var(--theme-input-bg, var(--theme-bg)); color: var(--theme-text); font: inherit; resize: vertical;
+    }
+    textarea:focus-visible { outline: 2px solid var(--theme-text); outline-offset: 2px; }
+  }
+  &-add-block { display: grid; gap: calc(var(--base) * 0.5); p { margin: 0; max-width: 70ch; } }
+}
+
+// The side panel reuses `.sc` tokens without the page padding.
+.sc.sc-panel {
+  padding: calc(var(--base) * 0.75); margin-bottom: var(--base); border: 1px solid var(--theme-elevation-150); border-radius: var(--style-radius-s);
+  .sc-panel__title { margin: 0 0 calc(var(--base) * 0.5); font-size: 1rem; }
+  .sc-panel__sub { margin: calc(var(--base) * 0.9) 0 calc(var(--base) * 0.35); font-size: 0.875rem; }
+  .sc-panel__facts { display: grid; grid-template-columns: max-content 1fr; gap: 2px calc(var(--base) * 0.6); margin: 0 0 calc(var(--base) * 0.6); font-size: 0.8125rem; dt { color: var(--sc-muted); } dd { margin: 0; } }
+  .sc-panel__list { margin: 0; padding: 0; list-style: none; display: grid; gap: calc(var(--base) * 0.5); font-size: 0.8125rem; li { display: grid; gap: calc(var(--base) * 0.3); } }
+  .sc-dialog { min-width: 0; max-width: none; }
 }
 
 .sc-nav-link { display: flex; align-items: center; gap: calc(var(--base) * 0.5); }

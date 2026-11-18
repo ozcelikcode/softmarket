@@ -9,17 +9,19 @@ import {
   SECURITY_TRIAGE_STATES,
 } from '@/lib/licensing/constants'
 
+import { BlockLift, EventActions } from './actions-ui'
 import { formatInstant } from './format'
 import type { ActivationRow, BlockRow, EventRow, LicenseRef, Paginated, Ref, SuspendedLicenseRow, TransitionRow } from './loaders'
 import { BLOCK_STATES, RANGES, securityHref, type SecurityQuery, type Tab } from './query'
 
 /*
- * L6a presentational pieces of the security center. Pure server components (no client JS, no hooks): filters are a
- * plain GET form, paging and tabs are links, details use <details>. Text from the database is only ever rendered as
+ * L6a presentational pieces of the security center. Server components (no hooks): filters are a plain GET form, paging
+ * and tabs are links, details use <details>. L6b adds an "Actions" column only when `env.canAct` (admin panel session,
+ * decided by the view); the action widgets are client components that POST to the guarded admin endpoints. Text from the database is only ever rendered as
  * React text nodes (escaped); links are built from numeric ids and fixed collection slugs.
  */
 export type Lang = 'tr' | 'en'
-export type ViewEnv = { lang: Lang; base: string; adminRoute: string }
+export type ViewEnv = { lang: Lang; base: string; adminRoute: string; canAct?: boolean }
 
 export const tr = (lang: Lang, label: SecurityLabel): string => label[lang]
 const pick = (lang: Lang, map: Record<string, SecurityLabel>, key: string | null | undefined): string => (key ? (map[key]?.[lang] ?? key) : '')
@@ -82,7 +84,7 @@ export function EventsTable({ rows, env, caption }: { rows: EventRow[]; env: Vie
   if (!rows.length) return <Empty>{tr(lang, L.empty.events)}</Empty>
   return (
     <Table caption={tr(lang, caption)}>
-      <Head lang={lang} cols={[L.columns.severity, L.columns.type, L.columns.count, L.columns.status, L.columns.lastSeen, L.columns.license, L.columns.ip, L.columns.action, L.columns.links]} />
+      <Head lang={lang} cols={[L.columns.severity, L.columns.type, L.columns.count, L.columns.status, L.columns.lastSeen, L.columns.license, L.columns.ip, L.columns.action, L.columns.links, ...(env.canAct ? [L.actions.column] : [])]} />
       <tbody>
         {rows.map((row) => (
           <tr key={row.id}>
@@ -131,6 +133,19 @@ export function EventsTable({ rows, env, caption }: { rows: EventRow[]; env: Vie
                 ]}
               />
             </td>
+            {env.canAct ? (
+              <td>
+                <EventActions
+                  lang={lang}
+                  id={row.id}
+                  triage={row.triage}
+                  canRestore={row.source === 'rule' && row.actionTaken === 'suspended' && row.license?.status === 'suspended'}
+                  hasIpPrefix={Boolean(row.ipPrefix)}
+                  hasActivation={row.activation !== null}
+                  hasLicense={row.license !== null}
+                />
+              </td>
+            ) : null}
           </tr>
         ))}
       </tbody>
@@ -143,7 +158,7 @@ export function BlocksTable({ rows, env }: { rows: BlockRow[]; env: ViewEnv }) {
   if (!rows.length) return <Empty>{tr(lang, L.empty.blocks)}</Empty>
   return (
     <Table caption={tr(lang, L.tableCaption.blocks)}>
-      <Head lang={lang} cols={[L.columns.status, L.columns.kind, L.columns.value, L.columns.scope, L.columns.source, L.columns.reason, L.columns.created, L.columns.expires, L.columns.links]} />
+      <Head lang={lang} cols={[L.columns.status, L.columns.kind, L.columns.value, L.columns.scope, L.columns.source, L.columns.reason, L.columns.created, L.columns.expires, L.columns.links, ...(env.canAct ? [L.actions.column] : [])]} />
       <tbody>
         {rows.map((row) => (
           <tr key={row.id}>
@@ -166,6 +181,7 @@ export function BlocksTable({ rows, env }: { rows: BlockRow[]; env: ViewEnv }) {
             <td>
               <RecordLinks env={env} items={[{ label: L.links.openDocument, ref: { id: row.id, href: row.href } }, { label: L.columns.event, ref: row.event }]} />
             </td>
+            {env.canAct ? <td>{row.state === 'active' ? <BlockLift lang={lang} id={row.id} /> : <span className="sc-muted">—</span>}</td> : null}
           </tr>
         ))}
       </tbody>

@@ -4001,7 +4001,7 @@ export interface License {
    */
   maxDevices?: number | null;
   /**
-   * Every change is written to the license status log. An API key (MCP) cannot change the status.
+   * Read-only. Change the status with "License actions" in the side panel.
    */
   status: 'active' | 'suspended' | 'revoked' | 'expired';
   statusReason?:

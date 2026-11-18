@@ -25,19 +25,69 @@ describe('license status transitions', () => {
     expect(RULE_STATUS_REASONS).toEqual(LICENSING_RULE_KEYS.map((k) => `rule_${k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)}`))
   })
 
-  it('panel admin change (REST) writes one log row and stamps the license', async () => {
+  it('server code declaring the admin source writes one log row and stamps the license', async () => {
     const { id } = await createLicense(ctx)
     expect(await logs(id)).toEqual([])
     expect((await licenseRow(id)).source).toBeNull()
-    const res = await ctx.rest('PATCH', `licenses/${id}`, 'admin', { status: 'suspended' })
-    expect(res.status).toBe(200)
+    await ctx.payload.update({
+      collection: 'licenses', id, overrideAccess: true, data: { status: 'suspended' } as never,
+      context: { [LICENSE_TRANSITION_CONTEXT]: { source: 'admin', actorUser: ctx.ids.admin } },
+    })
     const [row, ...rest] = await logs(id)
     expect(rest).toEqual([])
     expect(row).toMatchObject({ from: 'active', to: 'suspended', reason: 'manual', source: 'admin', actor: ctx.ids.admin, revertible: 0 })
     expect(await licenseRow(id)).toMatchObject({ status: 'suspended', reason: 'manual', source: 'admin', changed: row!.at })
     // A change of other fields writes nothing.
-    expect((await ctx.rest('PATCH', `licenses/${id}`, 'admin', { notes: 'x', status: 'suspended' })).status).toBe(200)
+    await ctx.payload.update({ collection: 'licenses', id, overrideAccess: true, data: { notes: 'x', status: 'suspended' } as never })
     expect(await logs(id)).toHaveLength(1)
+  })
+
+  it('plan 4.1 lock: no user-facing update path changes the status (panel form/REST, bulk, Local API with access)', async () => {
+    const { id } = await createLicense(ctx)
+    const other = await createLicense(ctx)
+    // Panel admin session over REST: the value is stripped, other fields still save.
+    const res = await ctx.rest('PATCH', `licenses/${id}`, 'admin', { status: 'suspended', notes: 'panel-note' })
+    expect(res.status).toBe(200)
+    expect(await licenseRow(id)).toMatchObject({ status: 'active', source: null, changed: null })
+    expect((await ctx.run(`SELECT notes FROM licenses WHERE id = ${id}`)).rows[0]).toMatchObject({ notes: 'panel-note' })
+    // Bulk with a projection.
+    expect((await ctx.rest('PATCH', `licenses?where[id][in]=${id},${other.id}&select[notes]=true`, 'admin', { status: 'revoked' })).status).toBe(200)
+    // Local API with access control as a panel admin (what a custom admin component or script acting as the user does).
+    const admin = await ctx.payload.findByID({ collection: 'users', id: ctx.ids.admin, overrideAccess: true })
+    await ctx.payload.update({
+      collection: 'licenses', id, overrideAccess: false, data: { status: 'revoked' } as never,
+      user: { ...admin, collection: 'users', _strategy: 'local-jwt' } as never,
+    })
+    for (const license of [id, other.id]) {
+      expect(await licenseRow(license)).toMatchObject({ status: 'active', source: null, changed: null })
+      expect(await logs(license)).toEqual([])
+    }
+    // Creating a license still sets the initial status (panel admin) and logs nothing (no transition).
+    const created = await ctx.rest('POST', 'licenses', 'admin', { customer: ctx.ids.otherCustomer, edition: ctx.ids.edition, status: 'suspended' })
+    expect(created.status).toBe(201)
+    const suspendedId = Number((created.json.doc as { id: number }).id)
+    expect(await licenseRow(suspendedId)).toMatchObject({ status: 'suspended' })
+    // GraphQL updateLicense strips status for every caller while keeping non-status updates working.
+    for (const who of ['admin', 'apiKey'] as const) {
+      const gql = await ctx.graphql(`mutation { updateLicense(id: ${id}, data: { status: revoked, notes: "gql-${who}" }) { id status notes } }`, who)
+      expect(gql.status).toBe(200)
+      expect(JSON.parse(gql.text)).toMatchObject({ data: { updateLicense: { status: 'active', notes: `gql-${who}` } } })
+    }
+    expect(await licenseRow(id)).toMatchObject({ status: 'active', source: null, changed: null })
+    expect(await logs(id)).toEqual([])
+    // Duplicating a suspended license via API key resets status to the safe default and leaves the source untouched.
+    const dupKey = await ctx.rest('POST', `licenses/${suspendedId}/duplicate`, 'apiKey', {})
+    expect(dupKey.status).toBe(200)
+    const dupId = Number((dupKey.json.doc as { id: number }).id)
+    expect(await licenseRow(dupId)).toMatchObject({ status: 'active', source: null, changed: null })
+    expect(await licenseRow(suspendedId)).toMatchObject({ status: 'suspended' })
+    expect(await logs(dupId)).toEqual([])
+    // The field is read-only in the panel and points to the action panel in both languages.
+    const { Licenses } = await import('../../src/collections/Licenses')
+    const field = Licenses.fields.find((f) => 'name' in f && f.name === 'status') as { admin?: { readOnly?: boolean; description?: Record<string, string> } }
+    expect(field.admin?.readOnly).toBe(true)
+    expect(field.admin?.description?.tr).toContain('Lisans işlemleri')
+    expect(field.admin?.description?.en).toContain('License actions')
   })
 
   it('every status pair is logged', async () => {
@@ -114,8 +164,10 @@ describe('license status transitions', () => {
     const { id } = await createLicense(ctx)
     await ctx.payload.update({ collection: 'licenses', id, select: { notes: true }, data: { notes: 'projected' } })
     expect(await logs(id)).toEqual([])
-    const res = await ctx.rest('PATCH', `licenses/${id}?select[notes]=true`, 'admin', { status: 'suspended' })
-    expect(res.status).toBe(200)
+    await ctx.payload.update({
+      collection: 'licenses', id, select: { notes: true }, data: { status: 'suspended' } as never,
+      context: { [LICENSE_TRANSITION_CONTEXT]: { source: 'admin', actorUser: ctx.ids.admin } },
+    })
     const row = await licenseRow(id)
     expect(await logs(id)).toMatchObject([{ from: 'active', to: 'suspended', reason: 'manual', at: row.changed }])
   })
@@ -135,8 +187,7 @@ describe('license status transitions', () => {
       expect(await licenseRow(id)).toMatchObject({ status: 'active', source: null, changed: null })
       expect(await logs(id)).toEqual([])
     }
-    const res = await ctx.rest('PATCH', `licenses?where[id][in]=${first.id},${second.id}&select[notes]=true`, 'admin', { status: 'suspended' })
-    expect(res.status).toBe(200)
+    await ctx.payload.update({ collection: 'licenses', where, select: { notes: true }, data: { status: 'suspended' } as never })
     for (const id of [first.id, second.id]) expect(await logs(id)).toMatchObject([{ from: 'active', to: 'suspended' }])
   })
 
@@ -178,6 +229,23 @@ describe('license status transitions', () => {
     expect(await licenseRow(id)).toMatchObject({ status: 'active', source: null })
     expect((await ctx.run(`SELECT notes FROM licenses WHERE id = ${id}`)).rows[0]).toMatchObject({ notes: 'mcp-authorized-field' })
     expect(await logs(id)).toEqual([])
+    // MCP createLicenses cannot set a dangerous initial status either: defaults to active.
+    const mcpCreated = await mcp('tools/call', {
+      name: 'createLicenses',
+      arguments: {
+        key: 'CLIENT-INPUT-IGNOR-ED000-00000',
+        customer: ctx.ids.otherCustomer,
+        edition: ctx.ids.edition,
+        startsAt: '2026-01-01T00:00:00.000Z',
+        status: 'revoked',
+      },
+    })
+    expect(mcpCreated.error).toBeUndefined()
+    expect(mcpCreated.result?.isError).not.toBe(true)
+    const createdText = String((mcpCreated.result as { content?: { text?: string }[] })?.content?.[0]?.text ?? '')
+    const createdMatch = createdText.match(/"id"\s*:\s*(\d+)/)
+    expect(createdMatch).not.toBeNull()
+    expect(await licenseRow(Number(createdMatch![1]))).toMatchObject({ status: 'active', source: null, changed: null })
   })
 
   it('recordLicenseTransition validates its input', async () => {

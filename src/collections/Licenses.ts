@@ -7,6 +7,7 @@ import { hasPanelAdminSession, isAdmin, isAdminField, isAdminOrOwnerCustomer, is
 import { generateLicenseKey, isValidLicenseKeyFormat, normalizeLicenseKey } from '@/lib/licenses/generate'
 import { LICENSE_STATUSES, addMonths } from '@/lib/licenses/validity'
 import { LICENSE_STATUS_REASONS, LICENSE_STATUS_SOURCES } from '@/lib/licensing/constants'
+import { adminAction } from '@/lib/licensing/admin/routes'
 import { generatePublicId } from '@/lib/licensing/public-id'
 import { logLicenseTransition, stampLicenseTransition } from '@/lib/licensing/transitions'
 
@@ -114,6 +115,13 @@ export const Licenses: CollectionConfig = {
     afterOperation: [rejectFailedLicenseBulkWrite],
     beforeDelete: [keepLicensingHistory],
   },
+  // L6b: suspend / revoke / restore / reactivate with reason, audit and optimistic concurrency (never MCP).
+  endpoints: [
+    adminAction('/:id/suspend', 'license.suspend'),
+    adminAction('/:id/revoke', 'license.revoke'),
+    adminAction('/:id/restore', 'license.restore'),
+    adminAction('/:id/reactivate', 'license.reactivate'),
+  ],
   fields: [
     {
       name: 'key',
@@ -162,6 +170,13 @@ export const Licenses: CollectionConfig = {
       ],
     },
     {
+      // L6b "Lisans işlemleri": status, devices, history and the admin actions (`ui`: no column). Panel admin only.
+      name: 'licenseActions',
+      type: 'ui',
+      label: { tr: 'Lisans işlemleri', en: 'License actions' },
+      admin: { position: 'sidebar', components: { Field: '@/admin/fields/license-actions#LicenseActions' } },
+    },
+    {
       name: 'publicId',
       type: 'text',
       unique: true,
@@ -185,10 +200,20 @@ export const Licenses: CollectionConfig = {
       defaultValue: 'active',
       index: true,
       options: LICENSE_STATUSES.map((s) => ({ label: s, value: s })),
-      // L1 (plan T6): a users API key (MCP/REST) can never set or change the status; panel admins and server code
-      // (overrideAccess) can. Every change is stamped and logged (src/lib/licensing/transitions.ts).
-      access: { create: isPanelAdminField, update: isPanelAdminField },
-      admin: { position: 'sidebar' },
+      // L1 (plan T6): a users API key (MCP/REST) can never set the status on create. L6b follow-up (plan §4.1): nobody
+      // changes it through a user-facing update (panel form, REST, Local API with overrideAccess false); it changes only
+      // via the L6b action endpoints, payment fulfilment/refund/dispute and the L5 rule engine, all server code with
+      // overrideAccess (field access is skipped there). Submitted values are stripped. Every change is stamped and
+      // logged (src/lib/licensing/transitions.ts).
+      access: { create: isPanelAdminField, update: nobodyField },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: {
+          tr: 'Salt okunur. Durumu yan paneldeki "Lisans işlemleri" ile değiştirin.',
+          en: 'Read-only. Change the status with "License actions" in the side panel.',
+        },
+      },
     },
     {
       name: 'statusReason',

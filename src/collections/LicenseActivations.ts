@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { ACTIVATION_END_REASONS, ACTIVATION_STATUSES, DEVICE_PLATFORMS } from '@/lib/licensing/constants'
+import { adminAction } from '@/lib/licensing/admin/routes'
 import { SECURITY_ACCESS, hiddenUnlessAdmin, options, readOnlyFields } from '@/lib/licensing/collection-helpers'
 
 /*
@@ -28,6 +29,8 @@ export const LicenseActivations: CollectionConfig = {
   // Not exposed through GraphQL at all (no use case; smaller surface). REST stays for the admin panel.
   graphQL: false,
   lockDocuments: false,
+  // L6b: an admin releases (seat freed) or revokes one device.
+  endpoints: [adminAction('/:id/deactivate', 'activation.deactivate')],
   fields: readOnlyFields([
     { name: 'publicId', type: 'text', required: true, unique: true },
     { name: 'license', type: 'relationship', relationTo: 'licenses', required: true, index: true },

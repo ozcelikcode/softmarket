@@ -30,6 +30,11 @@ export function runtimeFor(payload: Payload): Runtime {
   return runtime
 }
 
+/** L6b: an admin block change takes effect on the next API request of this process (no runtime is created here). */
+export function invalidateLicensingBlocks(payload: Payload): void {
+  runtimes.get(payload)?.blocks.invalidate()
+}
+
 export function clientNetwork(headers: Headers, now: Date) {
   const address = requestIP(headers)
   const ip = ipPrivacy(address, process.env, now)

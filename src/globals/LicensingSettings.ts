@@ -1,6 +1,8 @@
 import { Forbidden, type Field, type GlobalConfig } from 'payload'
 
 import { isPanelAdmin, nobody, nobodyField } from '@/access'
+import { adminAction } from '@/lib/licensing/admin/routes'
+import { auditLicensingSettings } from '@/lib/licensing/admin/settings-audit'
 import { hiddenUnlessAdmin, options } from '@/lib/licensing/collection-helpers'
 import { validSigningKeyRows } from '@/lib/licensing/crypto/keys'
 import { previewOrigin } from '@/lib/preview-url'
@@ -25,7 +27,8 @@ import {
  *     The license transition hook requires `suspend` mode and a past `rules.observeUntil` for rule suspensions.
  *   - Seats are counted per active device (`licenses.maxDevices`, empty = `seats`).
  * Signing keys are listed read-only (public key + kid); the private key never lives here (vault, L2).
- * Audit of settings changes (`settings.update`) is wired with the admin endpoints in L6.
+ * L6b: a panel admin's save writes one `settings.update` audit row (src/lib/licensing/admin/settings-audit.ts); the
+ * signing key is generated/rotated only through POST /api/globals/licensing-settings/rotate-signing-key.
  */
 
 const noImport = { contentImport: false }
@@ -72,7 +75,9 @@ export const LicensingSettings: GlobalConfig = {
       if (req.payloadAPI !== 'REST' || (site !== null && site !== 'same-origin') || !host
         || host !== expected.host || origin !== expected.origin) throw new Forbidden(req.t)
     }],
+    afterChange: [auditLicensingSettings],
   },
+  endpoints: [adminAction('/rotate-signing-key', 'signing-key.rotate')],
   graphQL: false,
   lockDocuments: false,
   fields: [
@@ -183,6 +188,13 @@ export const LicensingSettings: GlobalConfig = {
         {
           label: 'Signing keys',
           fields: [
+            {
+              // L6b "generate / rotate" (typed confirmation, admin panel session; private key never shown).
+              name: 'signingKeyActions',
+              type: 'ui',
+              label: { tr: 'İmza anahtarı işlemleri', en: 'Signing key actions' },
+              admin: { components: { Field: '@/admin/fields/signing-key-rotate#SigningKeyRotate' } },
+            },
             {
               // Public metadata written by the signing key lifecycle service.
               name: 'signingKeys',

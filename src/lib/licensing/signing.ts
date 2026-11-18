@@ -5,7 +5,7 @@ import type { Payload, PayloadRequest } from 'payload'
 import {
   LICENSING_SIGNING_SECRET_ID, openSecret, parseVault, persistVault, readIntegrationsDoc, type VaultEntry,
 } from '@/lib/integrations/vault'
-import { withPaymentTransaction } from '@/lib/payments/store/transaction'
+import { withPaymentTransaction, type PaymentTx } from '@/lib/payments/store/transaction'
 import { encryptSecret, readSecretsKey } from '@/lib/secrets/crypto'
 import type { LicensingSetting } from '@/payload-types'
 import {
@@ -58,17 +58,35 @@ export async function loadLicensingSigner(
   }
 }
 
+type ProvisionOptions = { rotate?: boolean; registerEnv?: boolean; env?: LicensingEnv; now?: Date }
+
 /** Bootstrap or rotate the key. The env registration path records public metadata for an externally managed key. */
-export async function provisionSigningKey(payload: Payload, {
+export async function provisionSigningKey(payload: Payload, options: ProvisionOptions = {}): Promise<PublicKey> {
+  return withPaymentTransaction(payload, (tx) => provisionSigningKeyTx(payload, tx, options), {
+    // The metadata row and vault update commit together. A subsequent rotation still preserves this row.
+    confirm: ({ kid, publicKey }) => isSigningKeyRegistered(payload, { kid, publicKey }),
+  })
+}
+
+/** Post-commit check used by callers that run provisionSigningKeyTx in their own transaction. */
+export async function isSigningKeyRegistered(payload: Payload, { kid, publicKey }: PublicKey): Promise<boolean> {
+  return (await readKeyRows(payload)).some((row) => row.kid === kid && row.publicKey === publicKey)
+}
+
+/**
+ * Same as provisionSigningKey inside a caller's BEGIN IMMEDIATE transaction (L6b admin rotation endpoint, which adds
+ * its audit row and event to the same commit). Only public metadata is returned; the private key never leaves here.
+ */
+export async function provisionSigningKeyTx(payload: Payload, { req }: Pick<PaymentTx, 'req'>, {
   rotate = false, registerEnv = false, env = process.env, now = new Date(),
-}: { rotate?: boolean; registerEnv?: boolean; env?: LicensingEnv; now?: Date } = {}): Promise<PublicKey> {
+}: ProvisionOptions = {}): Promise<PublicKey> {
   const fromEnv = configuredEnvironmentKey(env)
   if (!registerEnv && fromEnv) throw new LicensingKeyError('environment_key_configured')
   const master = registerEnv ? null : readSecretsKey(env)
   if (!registerEnv && !master) throw new LicensingKeyError('vault_key_required')
   const createdAt = now.toISOString()
 
-  return withPaymentTransaction(payload, async ({ req }) => {
+  {
     const rows = await readKeyRows(payload, req)
     if (!rotate && rows.some(isActive)) throw new LicensingKeyError('active_key_exists')
     const privateKey = registerEnv
@@ -112,11 +130,7 @@ export async function provisionSigningKey(payload: Payload, {
       ] },
     })
     return { kid: metadata.kid, publicKey: metadata.publicKey }
-  }, {
-    // The metadata row and vault update commit together. A subsequent rotation still preserves this row.
-    confirm: async ({ kid, publicKey }) =>
-      (await readKeyRows(payload)).some((row) => row.kid === kid && row.publicKey === publicKey),
-  })
+  }
 }
 
 /** Idempotent administrative revocation. The public kid remains available for clients' deny lists. */

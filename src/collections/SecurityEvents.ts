@@ -8,6 +8,7 @@ import {
   SECURITY_SEVERITIES,
   SECURITY_TRIAGE_STATES,
 } from '@/lib/licensing/constants'
+import { adminAction } from '@/lib/licensing/admin/routes'
 import { SECURITY_ACCESS, hiddenUnlessAdmin, options, readOnlyFields } from '@/lib/licensing/collection-helpers'
 
 /*
@@ -30,6 +31,13 @@ export const SecurityEvents: CollectionConfig = {
   // Not exposed through GraphQL at all (no use case; smaller surface). REST stays for the admin panel.
   graphQL: false,
   lockDocuments: false,
+  // L6b triage and "block from this event" (admin panel session only).
+  endpoints: [
+    adminAction('/:id/acknowledge', 'event.acknowledge'),
+    adminAction('/:id/resolve', 'event.resolve'),
+    adminAction('/:id/false-positive', 'event.false-positive'),
+    adminAction('/:id/block', 'event.block'),
+  ],
   fields: readOnlyFields([
     { name: 'type', type: 'select', required: true, index: true, options: options(SECURITY_EVENT_TYPES) },
     { name: 'severity', type: 'select', required: true, index: true, options: options(SECURITY_SEVERITIES) },

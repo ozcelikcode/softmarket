@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { SECURITY_BLOCK_KINDS, SECURITY_BLOCK_SCOPES, SECURITY_BLOCK_SOURCES } from '@/lib/licensing/constants'
+import { adminAction } from '@/lib/licensing/admin/routes'
 import { SECURITY_ACCESS, hiddenUnlessAdmin, options, readOnlyFields } from '@/lib/licensing/collection-helpers'
 
 /*
@@ -22,6 +23,8 @@ export const SecurityBlocks: CollectionConfig = {
   // Not exposed through GraphQL at all (no use case; smaller surface). REST stays for the admin panel.
   graphQL: false,
   lockDocuments: false,
+  // L6b: add (`/add`, not the collection root: Payload's own create stays closed) and lift.
+  endpoints: [adminAction('/add', 'block.add'), adminAction('/:id/lift', 'block.lift')],
   fields: readOnlyFields([
     { name: 'kind', type: 'select', required: true, index: true, options: options(SECURITY_BLOCK_KINDS) },
     { name: 'value', type: 'text', required: true, index: true, maxLength: 128 },

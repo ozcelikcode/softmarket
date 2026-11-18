@@ -1,8 +1,16 @@
+## Licensing L6b admin actions
+
+- Implemented the §5.4 admin endpoints (suspend, revoke, restore, reactivate, device release/revoke, triage, block add/lift incl. from events, signing key rotation) with the P6 guard, idempotent receipts, optimistic concurrency and one log + one audit row per action; settings-change audit; license side panel, security center action widgets and the rotate button. No schema change or migration.
+- Audit fixes: actor- and payload-bound idempotency (`409 idempotency_conflict`), CIDR network masking, `blocks-cache` in-flight invalidation retry loop, strict `:id`/header/`Origin` checks, `revokeConfirmation` length guard, and `settings-audit` first-entry truncation.
+- Tests: `licensing-admin-endpoints-db` (17), `licensing-admin-ui` (4); admin-labels and payments-p4 boundary kept green. Full suite: 112 files / 1,821 tests.
+- Open: enforce reason for direct panel status edits (plan §4.1) if wanted; `denied` audit rows; bulk actions out of scope.
+
 ## Licensing L5 rules engine, sweep and notification queue
 
 - Implemented the sweep, six pure rules, monitor-only mode, circuit breaker, episodes/suppression, restore core, retention cleanup and the durable licensing e-mail queue. No migration; one new stored enum value `system.daily_digest` (types regenerated).
 - Audit fixes: same-hour breaker re-trip re-opening, retention preservation of open high/critical events / active suppressions / block links / recently lifted blocks / newer log & activation rows / leap-day math, expired-license rule exclusion & revoked-license expiry exclusion, invalid `minSeverityImmediate` fallback, `CHANGE_` contact filtering, whitespace customer email skip, `impossibleTravel` tie-breaking, same-ms rule `dedupe_key` uniqueness, malformed `detail` handling in `restore`, retention upper clamping, and guarded/batched alert marker writes.
 - Tests: `licensing-rules` (16), `licensing-sweep-db` (17), `licensing-notify-db` (12), `licensing-retention-db` (6). 10k activations sweep in about 1.4 s locally.
+- L6b follow-ups: `licenses.status` is locked for all user-facing updates (field access `nobodyField`, read-only with TR+EN hint; only action endpoints, payment code and the rule engine change it, one log row each; L1 tests moved to server-side transitions), and refused admin actions of identified callers write coalesced `security-audit` `denied` rows (`src/lib/licensing/admin/denied-audit.ts`: reason code, `count=n http=s` note, IP prefix only, one row per key per 10 min; anonymous 401s unaudited; no schema change, no security event).
 - Open: L6b admin endpoints (restore/triage/block) wrap the L5 cores; impossible travel only sees aggregated country data; Stripe dispute-closed automation undecided.
 
 ## Licensing L4 updates and downloads

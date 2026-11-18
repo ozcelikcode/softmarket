@@ -7,7 +7,8 @@ import React from 'react'
 import { SECURITY_CENTER_LABELS as L } from '@/lib/security-center-labels'
 
 import { collectionHref } from './format'
-import { SECURITY_CENTER_PATH, decideSecurityCenterAccess } from './guard'
+import { AddBlock } from './actions-ui'
+import { SECURITY_CENTER_PATH, decideSecurityCenterAccess, isAdminSessionUser } from './guard'
 import {
   loadBlocks,
   loadEvents,
@@ -34,10 +35,11 @@ import { parseSecurityQuery, securityHref, type RawSearchParams, type SecurityQu
 import { SECURITY_SEVERITIES } from '@/lib/licensing/constants'
 
 /*
- * L6a security center (plan §7): read-only admin custom view at /admin/guvenlik.
+ * L6a security center (plan §7): admin custom view at /admin/guvenlik. L6b adds action widgets (client components
+ * posting to the guarded §5.4 endpoints); this view itself still only reads.
  * Boundary: `decideSecurityCenterAccess` runs HERE, on the server, before anything is loaded (editor -> /admin,
  * anonymous -> login). All data comes from the Local API with the requesting admin user and `overrideAccess: false`.
- * No client JavaScript of our own. A custom view registered under a new key is rendered by Payload WITHOUT a template,
+ * The only client JavaScript is the L6b action widgets (src/admin/security/actions-ui.tsx). A custom view registered under a new key is rendered by Payload WITHOUT a template,
  * so the view wraps itself in `DefaultTemplate` (nav, header) exactly as Payload's root view does for built-in views.
  */
 
@@ -161,7 +163,8 @@ export async function SecurityCenterView({ initPageResult, params, searchParams,
   if (!decision.ok) redirect(decision.redirectTo)
 
   const lang: Lang = req.i18n?.language === 'en' ? 'en' : 'tr'
-  const env: ViewEnv = { lang, adminRoute, base: `${adminRoute}${SECURITY_CENTER_PATH}` }
+  // Defence in depth: the guard above already redirected everyone else; actions also require the same session.
+  const env: ViewEnv = { lang, adminRoute, base: `${adminRoute}${SECURITY_CENTER_PATH}`, canAct: isAdminSessionUser(req.user, req.headers) }
   const q = parseSecurityQuery(searchParams as RawSearchParams)
   const ctx: ReadContext = { payload, user: req.user!, headers: req.headers, lang, adminRoute, now: new Date() }
 
@@ -181,6 +184,7 @@ export async function SecurityCenterView({ initPageResult, params, searchParams,
       const result = await loadBlocks(ctx, q)
       body = (
         <>
+          {env.canAct ? <AddBlock lang={lang} /> : null}
           <Filters tab="blocks" q={q} env={env} products={[]} />
           <BlocksTable rows={result.rows} env={env} />
           <Pager result={result} q={q} env={env} tab="blocks" />

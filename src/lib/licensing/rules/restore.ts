@@ -1,7 +1,7 @@
 import { sql } from '@payloadcms/db-sqlite'
 import type { Payload } from 'payload'
 
-import { withPaymentTransaction } from '@/lib/payments/store/transaction'
+import { withPaymentTransaction, type PaymentTx } from '@/lib/payments/store/transaction'
 import { LICENSE_TRANSITION_CONTEXT, type LicenseStatus, type LicenseTransitionContext } from '../transitions'
 
 /*
@@ -29,12 +29,26 @@ export class RestoreError extends Error {
   }
 }
 
-export type RestoreInput = { license: number; actorUser: number; reason: string; note?: string; now?: Date }
+export type RestoreInput = {
+  license: number
+  actorUser: number
+  reason: string
+  note?: string
+  now?: Date
+  /** L6b: idempotency receipt of the admin request (unique `security-audit.nonce`) and the admin's IP prefix. */
+  nonce?: string
+  ipPrefix?: string | null
+}
 
 export async function restoreRuleSuspension(payload: Payload, input: RestoreInput): Promise<{ logId: number; event: number | null }> {
+  return withPaymentTransaction(payload, (tx) => restoreRuleSuspensionTx(payload, tx, input))
+}
+
+/** Same as restoreRuleSuspension inside a caller's BEGIN IMMEDIATE transaction (the L6b admin endpoints). */
+export async function restoreRuleSuspensionTx(payload: Payload, tx: PaymentTx, input: RestoreInput): Promise<{ logId: number; event: number | null }> {
   const now = input.now ?? new Date()
   const at = now.toISOString()
-  return withPaymentTransaction(payload, async (tx) => {
+  {
     const [license] = await tx.all<{ status: string }>(sql`SELECT status FROM licenses WHERE id = ${input.license}`)
     if (!license) throw new RestoreError('not_found')
     const [last] = await tx.all<{ id: number; from: string; to: string; source: string; reason: string | null; rule_key: string | null; event_id: number | null }>(sql`
@@ -64,8 +78,9 @@ export async function restoreRuleSuspension(payload: Payload, input: RestoreInpu
         action: 'license.restore', actorUser: input.actorUser, actorKind: 'admin',
         target: { relationTo: 'licenses', value: input.license },
         reason: input.reason.slice(0, 500), note: input.note?.slice(0, 500), at, result: 'ok',
+        ...(input.nonce ? { nonce: input.nonce } : {}), ...(input.ipPrefix ? { ipPrefix: input.ipPrefix } : {}),
       } as never,
     })
     return { logId: Number(last.id), event: last.event_id === null ? null : Number(last.event_id) }
-  })
+  }
 }

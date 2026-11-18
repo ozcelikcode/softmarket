@@ -73,21 +73,6 @@ describe('CMS cache invalidation', () => {
     await invoke({ id: 1, _status: 'draft' }, { _status: 'published' })
     expect(cache.revalidatePath).toHaveBeenCalledTimes(2)
   })
-  it('G1: a drafts-enabled global invalidates only on publish (incl. a published version restore record)', async () => {
-    vi.stubEnv('NEXT_RUNTIME', 'nodejs')
-    cache.revalidatePath.mockClear()
-    const hook = withGlobalRevalidation({ slug: 'header', fields: [], versions: { drafts: { autosave: { interval: 2000 } } } }).hooks!.afterChange![0]!
-    await hook({ doc: { _status: 'draft' } } as never)
-    expect(cache.revalidatePath).not.toHaveBeenCalled()
-    await hook({ doc: { _status: 'published' } } as never)
-    expect(cache.revalidatePath).toHaveBeenCalledTimes(2)
-    cache.revalidatePath.mockClear()
-    await hook({ doc: { _status: 'draft', version: { _status: 'published' } } } as never)
-    expect(cache.revalidatePath).toHaveBeenCalledTimes(2)
-    cache.revalidatePath.mockClear()
-    await withGlobalRevalidation({ slug: 'site-settings', fields: [] }).hooks!.afterChange![0]!({ doc: {} } as never)
-    expect(cache.revalidatePath).toHaveBeenCalledTimes(2)
-  })
   it('preserves existing hooks and does not fail when Next cache context is absent', async () => {
     const existing = vi.fn()
     const collection = withPublicRevalidation({ slug: 'products', fields: [], hooks: { afterChange: [existing] } })

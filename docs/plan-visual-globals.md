@@ -1,5 +1,7 @@
 # Plan: site çerçevesini görsel düzenleme (header, footer, menüler, marka)
 
+> **CANCELLED — owner decision, 2026-11-18.** Wix-style header and footer editing requires custom code that Payload does not provide. G1 runtime changes have been reverted, and G2–G7 were dropped. The plan and implementation record below are historical.
+
 > Durum: **taslak plan (2026-11-17)**. Kod, şema veya migration değişmedi. Uygulama G0 doğrulamasıyla başlar ve her faz sonunda kullanıcı onayı beklenir.
 > Kaynaklar: `AGENTS.md`, `memory-bank/*`, `docs/plan-visual-editor.md` (Kalıcı kurallar, V3b, V5 kaydı, V5 denetim notu, P1 kapanış kaydı), `docs/editor-pilot/decision.md`, `docs/editor-guide.md` §2.10. Mevcut kod `main` 1a8969e üzerinden okundu. Payload 3.93.0 kaynakları `node_modules` içinde doğrulandı.
 

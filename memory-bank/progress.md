@@ -1,3 +1,10 @@
+## G1 rollback (2026-11-18)
+
+- Reverted the header and footer draft workflow, global version checks, draft preview reads, and G1 link field validation. Render-time `safeHref` filtering still applies.
+- The forward migration removes 22 version tables, their indexes, and two status columns. It refuses pending unpublished drafts. Its down migration restores the G1 schema with empty history. The physical `footer_columns_locales.title` column stays nullable, and Payload still requires the title on save.
+- The live backup copy passed integrity and foreign-key checks. All 710 non-G1 table hashes matched before and after migration and the import dry run, with the newly appended migration ledger entry accounted for separately. The dry run reported 0 creates and 98 updates. The refreshed snapshot generated no follow-up schema changes.
+- Type generation, typecheck and lint passed. The full Vitest run passed 1,802 tests in 110 files, including three migration cases covering draft refusal, row preservation and rollback.
+
 ## Licensing L6b admin actions
 
 - Implemented the §5.4 admin endpoints (suspend, revoke, restore, reactivate, device release/revoke, triage, block add/lift incl. from events, signing key rotation) with the P6 guard, idempotent receipts, optimistic concurrency and one log + one audit row per action; settings-change audit; license side panel, security center action widgets and the rotate button. No schema change or migration.
@@ -48,18 +55,6 @@
 - Tests: `licensing-migration`, `licensing-access`, `licensing-transitions-db` (new); `mcp`, `admin-labels`, `globals-drafts-migration` (updated). The final focused Vitest run passed 58 tests in 5 files. Full Vitest passed 1,599 tests in 97 files. Typecheck and lint passed.
 - Audit verified copy migration up/down/up, all 723 original table hashes, integrity, foreign keys, the schema snapshot and seed rollback. Regression tests exercise panel and bearer access, hidden-field predicates, transactional status history, rule gating and draft code reservation.
 - Open: settings-change audit and reason-required status edits (L6), payment raw-SQL transition logging (L3), `licenses.activations` join (L3).
-
-## G1 independent security audit — 2026-11-17
-
-- Fixed public/customer draft/history exposure, status-less publication of pending drafts, projected-write version truncation/cache staleness, and invalid URL grandfathering through autosave. Regression tests cover direct REST reads, Local API access, publication/rollback, explicit REST/MCP publication, concurrency/restore and URL obfuscation.
-- Backup-copy migration columns/FKs/indexes match the snapshot; integrity/FK checks pass. Up/down guards, published backfill, and the documented nullable-title down exception need no changes. Live DB, port 3100, `.next` and `techContext.md` are untouched; no commit.
-- Final validation: backup-copy up/down/up preserves all 701 original-table row hashes; typecheck/lint/diff-check pass; full Vitest 94 files / 1,558 tests pass (384.14 s). G1 is ready to commit; no commit was created.
-
-## G1 header/footer drafts + server contracts — 2026-11-17 (committed; live DB migrated 2026-11-17)
-
-- Header/footer: `versions.drafts.autosave` 2 s, max 50 (`src/globals/chrome-drafts.ts`). Migration `20261117_133332_globals_chrome_drafts`: 22 CREATE TABLE, 80 indexes, 2 ADD `_status`, backfill `published`; `footer_columns_locales` rebuild only while empty (else throws before any change); guarded down (refuses with a pending draft). Copy DB: 700 tables row-equal, integrity/FK ok.
-- `_status: 'draft'` without `draft: true` and draft/as-draft restores → 400 (`req.t('softmarket:…')`, `src/lib/validation-messages.ts`). Importer always publishes these globals. Revalidate only on publish. Global `editorVersion`/409. `linkField().url` server validation (`isAllowedLinkUrl`; 16 live placeholder `mailto:[…]` CTA rows grandfathered while unchanged). Staff draft chrome via `getHeaderNav/getFooterData(locale, previewUser)`.
-- Public `<header>`/`<footer>` byte-equal before/after (prod build on DB copies, /tr, /en, TR/EN product page). Record: `docs/plan-visual-globals.md` "G1 implementation record".
 
 ## Lisans API / güvenlik merkezi / hosting planı — 2026-11-17 (yalnız plan)
 
@@ -391,7 +386,9 @@
 - Canlı DB/3100/.next, P4 dosyaları, techContext ve commit korunuyor. Migration değişmedi; geçici SQLite up/down ve NULL/UNIQUE/sürüm testleri var. Kapı sonucu aşağıda.
 - Son kapılar: `pnpm typecheck` ve `pnpm lint` exit 0; `pnpm test --maxWorkers=1`: **84 dosya / 1397 test, tamamı geçti (314,55 sn)**. P4 kaynaklı kırık yok. `git diff --check` temiz. **P7 migration canlıya güvenli: EVET; P7 kapsamı commit edilebilir: EVET** (commit atılmadı).
 
+## G1 revert live migration (2026-11-18)
 
-## G1 release — 2026-11-17
-
-- Live DB migrated (`20261117_133332_globals_chrome_drafts`), backup `data/backups/pre-g1-20261117-171838.db` (gitignored). header/footer `_status='published'`, integrity ok, `content:import --dry-run` clean. Unit 1558/1558, e2e 19/19, isolated 30/30; copy-DB smoke: draft save keeps public label, publish updates it, `javascript:` URL rejected (400).
+- Migration `20261118_142532_revert_globals_chrome_drafts` was applied to the live DB on 2026-11-18 at about 17:47 local time. The guard passed (no pending header/footer draft); the 22 `_header_v*`/`_footer_v*` tables, 2 status indexes and `_status` columns are gone.
+- The planned pre-migration backup was skipped by a scripting error (a failed `rm` glob aborted the `&&` chain, so the migrate ran on the live DB directly). `integrity_check` and `foreign_key_check` passed afterwards. The reviewer's earlier copy-DB verification (on a `.backup` copy) passed.
+- Restore point is the post-migration backup `data/backups/post-g1-revert-20261118-174806.db` (integrity ok). Older backups: `pre-l1-20261117-235428.db`, `pre-g1-20261117-171838.db`.
+- Checks: typecheck, lint, 1803 unit tests, 19 e2e pass; /tr, /en, /admin 200; Header/Footer versions endpoints 404.

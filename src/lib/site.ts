@@ -7,7 +7,6 @@ import { getCommerceState } from '@/lib/commerce/state'
 import { isCommerceLegalPage, legalHrefTarget } from '@/lib/payments/legal'
 import { pagePath } from '@/lib/system-pages'
 import { serverUrl } from '@/lib/server-url'
-import type { StaffUser } from '@/access/roles'
 import type { Locale } from '@/i18n/routing'
 import { publicText, safeHref } from '@/lib/utils'
 
@@ -250,19 +249,10 @@ function announcementID(text: string, href = '') {
   return hash.toString(36)
 }
 
-/**
- * G1 chrome reads (`readAs` pattern, src/lib/preview.ts): the latest header/footer draft only for a re-validated staff
- * user of a draft-mode request (the caller passes `getPreviewUser()`); everyone else reads the published row.
- * Link visibility is still decided by the public resolvers. Kept here (not `readAs`) to avoid a site <-> preview cycle.
- */
-const chromeReadAs = (locale: Locale, previewUser: StaffUser | null | undefined) => previewUser
-  ? { locale, overrideAccess: false as const, user: previewUser, draft: true as const }
-  : { locale, overrideAccess: false as const, user: null, draft: false as const }
-
-export const getHeaderNav = cache(async (locale: Locale, previewUser: StaffUser | null = null) => {
+export const getHeaderNav = cache(async (locale: Locale) => {
   const data = await safe(
     async () => (await getPayloadClient()).findGlobal({
-      slug: 'header', depth: 0, ...chromeReadAs(locale, previewUser),
+      slug: 'header', locale, depth: 0, overrideAccess: false, user: null, draft: false,
       select: {
         navItems: { ...navRowSelect, megaMenu: true, children: navRowSelect,
           columns: { title: true, links: navRowSelect },
@@ -332,10 +322,10 @@ export const getHeaderNav = cache(async (locale: Locale, previewUser: StaffUser 
   return { items, cta, secondaryCta, announcement, utility }
 })
 
-export const getFooterData = cache(async (locale: Locale, previewUser: StaffUser | null = null) => {
+export const getFooterData = cache(async (locale: Locale) => {
   const data = await safe(
     async () => (await getPayloadClient()).findGlobal({
-      slug: 'footer', depth: 0, ...chromeReadAs(locale, previewUser),
+      slug: 'footer', locale, depth: 0, overrideAccess: false, user: null, draft: false,
       select: { columns: { title: true, links: { link: navLinkSelect } }, legalLinks: { link: navLinkSelect },
         copyright: true, brandBlurb: true, showContact: true, showSocial: true },
     }),

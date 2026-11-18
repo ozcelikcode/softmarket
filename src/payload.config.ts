@@ -52,7 +52,6 @@ import { SupportTickets } from './collections/SupportTickets'
 import { Users } from './collections/Users'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
-import { VALIDATION_TRANSLATIONS } from './lib/validation-messages'
 import { SiteSettings } from './globals/SiteSettings'
 import { Integrations } from './globals/Integrations'
 import { LicensingSettings } from './globals/LicensingSettings'
@@ -82,6 +81,11 @@ const pluginLabels = (slug: string) => {
 const databaseAdapter = withSerialTransactions(sqliteAdapter({
   push: false,
   client: { url: process.env.DATABASE_URI || 'file:./data/softmarket.db' },
+  afterSchemaInit: [({ schema }) => {
+    // The forward revert preserves the nullable DB column, while Payload still requires a footer column title.
+    Object.assign(schema.tables.footer_columns_locales!.title, { notNull: false })
+    return schema
+  }],
   wal: true,
   busyTimeout: 5000,
   transactionOptions: { behavior: 'immediate' },
@@ -120,8 +124,6 @@ export default buildConfig({
   i18n: {
     fallbackLanguage: 'tr',
     supportedLanguages: { tr, en },
-    // G1: custom validation messages (`req.t('softmarket:…')`).
-    translations: VALIDATION_TRANSLATIONS,
   },
   localization: {
     locales: [

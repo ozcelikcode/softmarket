@@ -7390,7 +7390,6 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: number;
-  editorVersion?: string | null;
   /**
    * Drag to reorder.
    */
@@ -8180,7 +8179,6 @@ export interface Header {
     showLanguage?: boolean | null;
     showAccount?: boolean | null;
   };
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -8190,7 +8188,6 @@ export interface Header {
  */
 export interface Footer {
   id: number;
-  editorVersion?: string | null;
   /**
    * Link columns in the footer.
    */
@@ -8407,7 +8404,6 @@ export interface Footer {
   brandBlurb?: string | null;
   showContact?: boolean | null;
   showSocial?: boolean | null;
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -8779,7 +8775,6 @@ export interface LicensingSetting {
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
-  editorVersion?: T;
   navItems?:
     | T
     | {
@@ -8922,7 +8917,6 @@ export interface HeaderSelect<T extends boolean = true> {
         showLanguage?: T;
         showAccount?: T;
       };
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -8932,7 +8926,6 @@ export interface HeaderSelect<T extends boolean = true> {
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
-  editorVersion?: T;
   columns?:
     | T
     | {
@@ -8977,7 +8970,6 @@ export interface FooterSelect<T extends boolean = true> {
   brandBlurb?: T;
   showContact?: T;
   showSocial?: T;
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

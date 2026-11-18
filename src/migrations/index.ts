@@ -23,6 +23,7 @@ import * as migration_20261116_175713_p4_order_notifications from './20261116_17
 import * as migration_20261117_092957_integrations_settings from './20261117_092957_integrations_settings';
 import * as migration_20261117_133332_globals_chrome_drafts from './20261117_133332_globals_chrome_drafts';
 import * as migration_20261117_200700_licensing_core from './20261117_200700_licensing_core';
+import * as migration_20261118_142532_revert_globals_chrome_drafts from './20261118_142532_revert_globals_chrome_drafts';
 
 export const migrations = [
   {
@@ -148,6 +149,11 @@ export const migrations = [
   {
     up: migration_20261117_200700_licensing_core.up,
     down: migration_20261117_200700_licensing_core.down,
-    name: '20261117_200700_licensing_core'
+    name: '20261117_200700_licensing_core',
+  },
+  {
+    up: migration_20261118_142532_revert_globals_chrome_drafts.up,
+    down: migration_20261118_142532_revert_globals_chrome_drafts.down,
+    name: '20261118_142532_revert_globals_chrome_drafts'
   },
 ];

@@ -1,5 +1,7 @@
 # Plan: English-first infrastructure and default locale `en`
 
+> **CANCELLED — owner decision, 2026-11-18.** The infrastructure and locale conversion was cancelled. Turkish (`tr`) stays the default locale. Only new code is written in English. The plan below is historical.
+
 Status: **plan only** (2026-11-17). No code, schema or migration has been changed. Approval required per phase.
 
 User decisions (2026-11-17):

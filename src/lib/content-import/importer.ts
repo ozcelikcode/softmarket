@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { basename, resolve, relative, isAbsolute } from 'node:path'
 import { readFile, readdir, realpath, stat } from 'node:fs/promises'
 import type { CollectionSlug, Field, GlobalSlug, Payload, PayloadRequest, Where } from 'payload'
-import { collections, fieldsBySlug, flatFields, globals } from './model'
+import { collections, fieldsBySlug, flatFields } from './model'
 import { sanitizeLexical } from './markdown'
 import { isProductBound } from '@/lib/blocks/product-composition'
 import { validateSeed, type Data, type RecordInput, type Seed } from './schema'
@@ -277,12 +277,7 @@ export async function importContent(options: {
         if (!dryRun) {
           const previous = await payload.findGlobal({ slug: slug as GlobalSlug, locale, fallbackLocale: false, depth: 0, overrideAccess: true, req })
           const updated = rowIDs(data, previous, fieldsBySlug[slug])
-          // G1: drafts-enabled globals (header/footer) are always written as published; a draft-status write without
-          // `draft: true` is refused by the global (chrome-drafts.ts). A main row that is not published is re-written.
-          const drafts = Boolean(globals.find(g => g.slug === slug)?.versions)
-          if (!matchesInput(updated, previous) || (drafts && (previous as { _status?: string })._status !== 'published')) {
-            await payload.updateGlobal({ slug: slug as GlobalSlug, locale, data: (drafts ? { ...updated, _status: 'published' } : updated) as never, overrideAccess: true, req })
-          }
+          if (!matchesInput(updated, previous)) await payload.updateGlobal({ slug: slug as GlobalSlug, locale, data: updated as never, overrideAccess: true, req })
         }
       }
       log(`update global:${slug}`)

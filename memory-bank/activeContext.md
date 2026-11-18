@@ -1,3 +1,9 @@
+## Header and footer editing rollback (2026-11-18)
+
+- The owner cancelled the visual globals project. Header and footer use the standard Payload global form and save directly to the live row, with revalidation on every save. G2–G7 are cancelled.
+- The owner also cancelled the English-first conversion. Turkish stays the default locale. New code is written in English.
+- The release uses `20261118_142532_revert_globals_chrome_drafts` after the existing G1 and licensing migrations. Resolve any pending drafts in G1 before the release and back up published version history before migrating.
+
 ## Licensing L6b admin actions (security center)
 
 - §5.4 endpoints (POST, admin panel session + same origin + JSON, 2 KiB): `/api/licenses/:id/{suspend,revoke,restore,reactivate}`, `/api/license-activations/:id/deactivate`, `/api/security-events/:id/{acknowledge,resolve,false-positive,block}`, `/api/security-blocks/add`, `/api/security-blocks/:id/lift`, `/api/globals/licensing-settings/rotate-signing-key`. Core `src/lib/licensing/admin/actions.ts`, HTTP `endpoints.ts`.
@@ -53,34 +59,11 @@
 - Audit fixes cover panel authentication, lock isolation, projected and bulk license transitions, draft code validation and uniqueness. Raw-SQL refund/dispute history and summary updates remain L3 work.
 - Gates: Typecheck, lint and `git diff --check` pass. Focused Vitest passed 58 tests in 5 files. Full Vitest passed 1,599 tests in 97 files. Partial-chain migration tests (page-builder, p7, blocks-static, block-motion, blocks-appearance, integrations) now also apply `licensing_core`.
 
-## G1 independent security audit — 2026-11-17 (no commit, live DB unchanged)
-
-- Fixed anonymous/customer draft reads and customer version-history access with published-only public access and explicit staff-only history access.
-- Status-less updates cannot publish pending drafts. Projected writes return 400 before mutation to prevent Payload 3.93 from truncating version content/status and skipping revalidation; project a subsequent read instead.
-- Publication checks localized link URLs against the pre-write public row by stable row ID, so autosave cannot grandfather newly invalid values. Invalid publication rolls back before revalidation; incomplete drafts remain allowed.
-- Required backup-copy SQL inspection: G1 columns/FKs/indexes match the JSON snapshot; up/down/up preserves original-column row hashes for all 701 pre-existing tables, integrity `ok`, no FK violations. Migration guards/backfill and the intentional nullable-title down exception are unchanged.
-- Final gates: `pnpm typecheck`, `pnpm lint`, `git diff --check` pass; `pnpm test --maxWorkers=1`: 94 files / 1,558 tests pass (384.14 s). No open G1 findings.
-
-## G1 header/footer drafts + server contracts — 2026-11-17 (QA pending, no commit, not applied to the live DB)
-
-- Header/footer: `versions.drafts.autosave` 2 s, max 50 (`src/globals/chrome-drafts.ts`). Migration `20261117_133332_globals_chrome_drafts`: 22 CREATE TABLE, 80 indexes, 2 ADD `_status`, backfill `published`; `footer_columns_locales` rebuild only while empty (else throws before any change); guarded down (refuses with a pending draft). Copy DB: 700 tables row-equal, integrity/FK ok.
-- `_status: 'draft'` without `draft: true` and draft/as-draft restores → 400 (`req.t('softmarket:…')`, `src/lib/validation-messages.ts`). Importer always publishes these globals. Revalidate only on publish. Global `editorVersion`/409. `linkField().url` server validation (`isAllowedLinkUrl`; 16 live placeholder `mailto:[…]` CTA rows grandfathered while unchanged). Staff draft chrome via `getHeaderNav/getFooterData(locale, previewUser)`.
-- Public `<header>`/`<footer>` byte-equal before/after (prod build on DB copies, /tr, /en, TR/EN product page). Record: `docs/plan-visual-globals.md` "G1 implementation record".
-
-## English-first + default locale `en` plan — 2026-11-17 (plan only, no code/schema, no commit)
-
-- `docs/plan-english-first.md`: infrastructure becomes English, Turkish only a site translation; default locale `en`, English route folders with unchanged public URLs, English CMS route keys (data-only migration), import identity = EN slug. Phases E0–E7 (14–18 d), start only after G1 commit; L1 after E2; E3 migration after L1 migration. 5 open questions, awaiting approval.
-
 ## Lisans API + güvenlik merkezi + hosting planı — 2026-11-17 (yalnız plan, kod/şema yok, commit yok)
 
 - `docs/plan-licensing-security.md`: program ↔ site lisans API'si `/api/v1/licensing/*` (aynı süreç, öneri `lisans.<alan>` alt alan adı), cihaz Ed25519 anahtarıyla imzalı istek + sunucu imzalı kira JWS (çevrimdışı tolerans 14 gün) + yanıt imzası/nonce, koltuk = aktif cihaz, kademeli kural motoru (gözlem → bildirim → otomatik askı; iptal yalnız admin), `/admin/guvenlik` güvenlik merkezi, KVKK minimizasyonu. Yeni koleksiyonlar: `license-activations`, `security-events`, `security-blocks`, `license-status-log`, `security-audit`; global `licensing-settings`.
-- Fazlar L0 spike → L1 tek şema fazı (`licensing_core`) → L2 kripto → L3 API → L4 ∥ L5 → L6 merkez → L7 ∥ L8 ∥ L9 → L10 QA (+ opsiyonel L11). 24–30 gün. L1, G1 ile aynı anda `migrate:create` yapmaz. 6 açık soru, onay bekleniyor.
+- Fazlar L0 spike → L1 tek şema fazı (`licensing_core`) → L2 kripto → L3 API → L4 ∥ L5 → L6 merkez → L7 ∥ L8 ∥ L9 → L10 QA (+ opsiyonel L11). 24–30 gün. 6 açık soru, onay bekleniyor.
 - `docs/plan-hosting.md`: alt alan adı olur; paylaşımlı (Passenger) hosting koşullu, lisans/ödeme için önerilmez (tek süreç, build, Litestream yok); öneri VPS'te kalmak.
-
-## Site çerçevesi görsel düzenleme planı — 2026-11-17 (yalnız plan, kod/şema yok, commit yok)
-
-- `docs/plan-visual-globals.md`: header/footer/menü/marka için V5 canvas'ının genişletilmesi. Öneri: yazım tek yoldan, global başına Live Preview editörü (header, footer; site-settings yalnız admin, taslaksız + onay). Sayfa editöründe yalnız "Site geneli → Düzenle" kısayolu var.
-- Fazlar G0 spike → G1 tek şema fazı (header/footer `versions.drafts` + migration, publish-only revalidate, global `editorVersion` 409, link URL doğrulaması) → G2 render işaretleri → G3 protokol v3 çekirdeği → G4 paneller/mega/mobil ∥ G5 kısayol → G6 site-settings → G7 QA. Toplam 12–16 gün. Kullanıcıya 5 açık soru soruldu, onay bekleniyor.
 
 ## Entegrasyon güvenlik denetimi — 2026-11-17
 

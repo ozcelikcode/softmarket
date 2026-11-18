@@ -392,3 +392,7 @@
 - The planned pre-migration backup was skipped by a scripting error (a failed `rm` glob aborted the `&&` chain, so the migrate ran on the live DB directly). `integrity_check` and `foreign_key_check` passed afterwards. The reviewer's earlier copy-DB verification (on a `.backup` copy) passed.
 - Restore point is the post-migration backup `data/backups/post-g1-revert-20261118-174806.db` (integrity ok). Older backups: `pre-l1-20261117-235428.db`, `pre-g1-20261117-171838.db`.
 - Checks: typecheck, lint, 1803 unit tests, 19 e2e pass; /tr, /en, /admin 200; Header/Footer versions endpoints 404.
+
+## L7a portal devices (2026-11-18, no commit)
+- Added portal device list/release (`src/lib/licensing/portal-devices.ts`, `src/lib/portal/device-actions.ts`, detail page), TR/EN strings, `customerDeviceReleased` queue message. Tests: `portal-devices-db.test.ts` (8), `portal-device-action.test.ts` (8). Gates: typecheck and lint clean, full suite 112 files / 1819 tests passed. Browser check on a DB copy (port 3580): owner released a device, foreign license 404 both ways.
+- The L7 audit added regressions for concurrent attempts, quota changes, atomic rollback, ownership transfers, license states, and SMTP loss. Bilingual legal drafts reflect the implemented lease limits, rule modes, and retention exceptions.

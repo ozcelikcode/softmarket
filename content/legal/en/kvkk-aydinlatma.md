@@ -39,6 +39,26 @@ Through our website and customer portal we may process:
 
 Card number, expiry date and security code (CVV) are entered on the payment institution's secure page; the Company does not see, process or store them.
 
+## 2A. License and device verification data
+
+> **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
+
+When you use a software license (activation, periodic verification, device binding and device release), the following data is processed:
+
+- **Device label:** an optional name supplied by the software when a device is activated.
+- **Platform and version data:** operating system, architecture and software version.
+- **Device fingerprint digest:** a digest derived from device identifiers and stored as a keyed HMAC. Raw hardware identifiers, MAC addresses and user names are not collected or stored.
+- **Device public key and digest:** a device-specific public key and its thumbprint (digest).
+- **Truncated IP data:** device and security event records use the network prefix (/24 for IPv4, /48 for IPv6) and, when available, a keyed digest of the address scoped to a UTC calendar month.
+- **Country code (optional):** only if the Company has enabled country detection, a country code derived from the IP address.
+- **Timestamps:** activation, last seen, verification and end times.
+
+These data are processed for: (a) enforcing the license scope (seat count, validity period, device count); (b) preventing license piracy, key sharing and fraud; (c) keeping the service secure and reviewing unusual use.
+
+Legal bases (GDPR-style equivalents): performance of a contract (Art. 6(1)(b) GDPR), where license verification is needed to deliver the licensed software; and the Company's legitimate interests (Art. 6(1)(f) GDPR) in preventing piracy, fraud and security risks, without overriding your fundamental rights and freedoms. [LEGAL REVIEW: legitimate-interest balancing assessment]
+
+For automated rules and suspension decisions, see section 8A.
+
 ## 3. Purposes of processing
 
 - Receiving and handling demo, quote and contact requests and getting in touch with you.
@@ -83,6 +103,18 @@ Your personal data may be transferred, limited to the purposes above, to:
 
 Data whose retention period has expired is deleted, destroyed or anonymised.
 
+## 6A. Retention of license and security records
+
+> **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
+
+- By default, cleanup clears IP and country fields in security events after 30 days and removes eligible event rows after 180 days, both measured from the last occurrence. It keeps events with pending notifications, unresolved high or critical events, events within a false-positive suppression period, and events linked to a block.
+- By default, IP and country fields in device records are kept for 90 days from the last-seen date (or activation date if unavailable) for active devices, and from the end date for inactive devices. An ended device record becomes eligible for cleanup two years after both the license and device have ended.
+- Block records are deleted 90 days after they expire or are lifted.
+- By default, license status history is retained for at least 10 years from both the license end and the status change. It has no IP address field. A perpetual license that is still in force has no end date for this cleanup.
+- Audit records, including portal device releases, are kept for 2 years by default.
+- You can submit a deletion request using the contact information in section 8. [LEGAL REVIEW: deletion and anonymisation procedure and any record-keeping obligations]
+- These periods may be shortened or extended by the Company, but code-defined minimum periods are kept. [LEGAL REVIEW]
+
 ## 7. Data security
 
 We protect your data with technical and organisational measures, including access restrictions, encrypted connections (HTTPS), server-side validation, rate limiting, role-based authorisation and regular backups.
@@ -102,6 +134,18 @@ Under Article 11 KVKK you have the right to:
 - Claim compensation for damage caused by unlawful processing.
 
 Send your request in writing to [KVKK İLETİŞİM E-POSTASI] or to [ADRES]. Requests are answered within thirty days at the latest, in line with the KVKK and the Communiqué on Procedures and Principles for Applications to the Data Controller.
+
+## 8A. Automated checks, suspension and objection
+
+> **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
+
+- Automated rules may detect unusual license use (for example many activations in a short time, verifications from many different networks, or the same device appearing from different countries in a short time).
+- The default rule mode records events and queues administrator notifications without changing your license. In observe mode the rules record events only.
+- A rule can suspend a license only in suspension mode and after the configured monitoring period ends. These rules never revoke a license. An administrator can revoke a license with a stated reason, and a confirmed refund can also revoke it.
+- Administrators can review automatic suspensions and lift a suspension caused by a false alarm.
+- A suspension may take full effect on offline devices when their current lease expires. The default lease length is 14 days and the maximum is 30 days.
+- If your license is suspended, you may be informed. You can object by writing to [KVKK İLETİŞİM E-POSTASI]; objections are reviewed by an administrator.
+- [LEGAL REVIEW: notice obligations and objection process for automated decisions]
 
 ## 9. Effective date
 

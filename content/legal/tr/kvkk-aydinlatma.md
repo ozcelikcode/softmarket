@@ -39,6 +39,26 @@ Sitemiz ve müşteri portalımız üzerinden aşağıdaki veriler işlenebilir:
 
 Kart numarası, son kullanma tarihi ve güvenlik kodu (CVV) ödeme kuruluşunun güvenli sayfasında girilir; Şirket bu bilgileri görmez, işlemez ve saklamaz.
 
+## 2A. Lisans ve cihaz doğrulama verileri
+
+> **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
+
+Yazılım lisansınız kullanıldığında (etkinleştirme, periyodik doğrulama, cihaz bağlama ve cihaz kapatma sırasında) aşağıdaki veriler işlenir:
+
+- **Cihaz etiketi:** cihaz etkinleştirilirken yazılımın ilettiği isteğe bağlı ad.
+- **Platform ve sürüm bilgisi:** işletim sistemi, mimari ve yazılım sürümü.
+- **Cihaz parmak izi özeti:** cihaz tanımlayıcılarından türetilen ve anahtarlı HMAC ile saklanan özet. Ham donanım kimliği, MAC adresi ve kullanıcı adı toplanmaz ve saklanmaz.
+- **Cihaz açık anahtarı ve özeti:** cihaza özgü açık anahtar ile bu anahtarın özeti (thumbprint).
+- **Kısaltılmış IP bilgisi:** cihaz ve güvenlik olayı kayıtlarında ağ öneki (IPv4 için /24, IPv6 için /48) ve mevcutsa adresin UTC takvim ayına özgü anahtarlı özeti saklanır.
+- **Ülke kodu (isteğe bağlı):** yalnızca Şirket ülke tespitini etkinleştirmişse, IP adresinden elde edilen ülke kodu.
+- **Zaman damgaları:** etkinleştirme, son görülme, doğrulama ve sonlandırma zamanları.
+
+Bu veriler şu amaçlarla işlenir: (a) lisans kapsamının (koltuk sayısı, geçerlilik süresi, cihaz sayısı) uygulanması; (b) lisans korsanlığı, anahtar paylaşımı ve dolandırıcılığın önlenmesi; (c) hizmet güvenliğinin sağlanması ve olağan dışı kullanımın incelenmesi.
+
+Hukuki sebepler: lisans doğrulamasının sözleşmenin ifası kapsamında yapılması (KVKK m. 5/2); korsanlık, dolandırıcılık ve güvenlik risklerinin önlenmesi için Şirket'in meşru menfaati (KVKK m. 5/2), temel hak ve özgürlüklere zarar verilmemesi kaydıyla. [HUKUK İNCELEMESİ: meşru menfaat dengeleme değerlendirmesi]
+
+Bu verilerin otomatik kurallarla incelenmesi ve askı kararları için bkz. bölüm 8A.
+
 ## 3. Kişisel verilerin işlenme amaçları
 
 - Demo, teklif ve iletişim taleplerinizin alınması, değerlendirilmesi ve sizinle iletişime geçilmesi.
@@ -83,6 +103,18 @@ Kişisel verileriniz, yukarıdaki amaçlarla sınırlı olmak üzere şu tarafla
 
 Saklama süresi sona eren veriler silinir, yok edilir veya anonim hale getirilir.
 
+## 6A. Lisans ve güvenlik kayıtlarının saklanması
+
+> **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
+
+- Varsayılan olarak temizlik, güvenlik olaylarında son görülmeden 30 gün sonra IP ve ülke alanlarını, 180 gün sonra ise silinmeye uygun olay kayıtlarını kaldırır. Bekleyen bildirimi olan, kapatılmamış yüksek veya kritik önemdeki, yanlış alarm bastırma süresi devam eden ve bir engele bağlı olaylar korunur.
+- Varsayılan olarak cihaz kayıtlarında IP ve ülke alanları, etkin cihazlar için son görülmeden (yoksa etkinleştirmeden), etkinliği sona eren cihazlar için sonlanmadan itibaren 90 gün tutulur. Sonlanan bir cihaz kaydı, hem cihazın hem lisansın sona ermesinden iki yıl sonra temizlenebilir.
+- Engel kayıtları, süresinin dolmasından veya kaldırılmasından itibaren 90 gün sonra silinir.
+- Varsayılan olarak lisans durum geçmişi hem lisansın sona ermesinden hem durum değişikliğinden itibaren en az 10 yıl tutulur. Bu kayıtlarda IP adresi alanı yoktur. Yürürlükteki süresiz lisanslar için bu temizlikte kullanılacak bir bitiş tarihi yoktur.
+- Portalda cihaz kaldırma işlemleri dahil denetim kayıtları varsayılan olarak 2 yıl tutulur.
+- Silme talebinizi 8. bölümdeki iletişim bilgilerini kullanarak iletebilirsiniz. [HUKUK İNCELEMESİ: silme ve anonimleştirme süreci ve saklama yükümlülükleri]
+- Bu süreler Şirket tarafından kısaltılabilir veya uzatılabilir; ancak kodda tanımlanan alt sınırlar korunur. [HUKUK İNCELEMESİ]
+
 ## 7. Veri güvenliği
 
 Verileriniz; erişim yetkisi kısıtlaması, şifrelenmiş bağlantılar (HTTPS), sunucu tarafı doğrulama, hız sınırlama, rol tabanlı yetkilendirme ve düzenli yedekleme gibi teknik ve idari tedbirlerle korunmaktadır.
@@ -102,6 +134,18 @@ KVKK m. 11 uyarınca şu haklara sahipsiniz:
 - Kanuna aykırı işlenmesi sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme.
 
 Taleplerinizi [KVKK İLETİŞİM E-POSTASI] adresine veya [ADRES] adresine yazılı olarak iletebilirsiniz. Talepler, KVKK ve Veri Sorumlusuna Başvuru Usul ve Esaslarına Dair Tebliğ kapsamında en geç otuz gün içinde yanıtlanır.
+
+## 8A. Otomatik kontroller, askı ve itiraz
+
+> **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
+
+- Lisans kullanımında olağan dışı durumları (ör. kısa sürede çok sayıda etkinleştirme, çok sayıda farklı ağdan doğrulama, aynı cihazın kısa sürede farklı ülkelerden görünmesi) tespit eden otomatik kurallar işletilebilir.
+- Kurallar varsayılan bildirim modunda olayları kaydeder ve yönetici bildirimlerini kuyruğa alır. Lisansınız bu nedenle değişmez. Gözlem modunda yalnızca olay kaydedilir.
+- Kurallar yalnızca askıya alma modunda ve belirlenen izleme dönemi sona erdiğinde lisansı askıya alabilir. Bu kurallar lisansı iptal etmez. Yönetici gerekçesini belirterek lisansı iptal edebilir. Doğrulanmış bir iade de lisansı iptal edebilir.
+- Yöneticiler otomatik askıları inceleyebilir ve yanlış alarm nedeniyle uygulanan askıyı kaldırabilir.
+- Askı, çevrimdışı cihazlarda mevcut kira belgesinin süresi dolduğunda tam etkisini gösterebilir. Varsayılan kira süresi 14 gün, üst sınır 30 gündür.
+- Askıya alınmanız halinde bilgilendirilebilirsiniz. Kararı [KVKK İLETİŞİM E-POSTASI] adresine yazarak itiraz edebilirsiniz; bu başvurular yönetici tarafından incelenir.
+- [HUKUK İNCELEMESİ: otomatik kararlara ilişkin bilgilendirme yükümlülüğü ve itiraz süreci]
 
 ## 9. Yürürlük
 

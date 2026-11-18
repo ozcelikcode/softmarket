@@ -27,6 +27,12 @@ This policy explains how personal data is processed when you visit the website a
 
 - Product, edition, seats, dates and status of licenses assigned to your account; access records for licensed downloads.
 
+**License and device verification (when a software license is used)**
+
+> **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
+
+- Device label, platform and version data, a keyed digest of the device fingerprint, the device public key, the IP network prefix (IPv4 /24, IPv6 /48) and, when available, a UTC-month-scoped keyed digest of the address, an optional country code, and timestamps. Details are in section 2A of the Data Protection Notice.
+
 **Orders, invoices and payments (only while online sales are enabled)**
 
 - Billing details you enter in an order: name or company name, address, e-mail, phone, Turkish ID number (individual) or tax ID number and tax office (corporate).
@@ -66,6 +72,8 @@ Information is kept for as long as needed for the purpose and as required by leg
 Order, invoice and payment records are kept for at least three years for distance-contract documents, and for the period set by tax and commercial legislation for invoices and accounting documents; orders are not deleted before that. [SAKLAMA SÜRESİ — HUKUK İNCELEMESİ]
 
 Database backups are kept for [SAKLAMA SÜRESİ — DOĞRULA] and then deleted automatically.
+
+License and device verification records are retained for the periods stated in section 6A of the Data Protection Notice. Information about license verification and automated suspension rules is in section 8A. > **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
 
 ## 5. Security
 

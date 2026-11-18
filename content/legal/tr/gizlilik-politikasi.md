@@ -27,6 +27,12 @@ Bu politika, [ŞİRKET UNVANI] ("Şirket") tarafından işletilen web sitesi ve 
 
 - Hesabınıza tanımlanan lisansların ürün, sürüm, koltuk, tarih ve durum bilgileri; lisanslı indirme erişim kayıtları.
 
+**Lisans ve cihaz doğrulama (yazılım lisansı kullanıldığında)**
+
+> **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
+
+- Cihaz etiketi, platform ve sürüm bilgisi, cihaz parmak izinin anahtarlı özeti, cihaz açık anahtarı, IP ağ öneki (IPv4 /24, IPv6 /48) ve mevcutsa adresin UTC takvim ayına özgü anahtarlı özeti, isteğe bağlı ülke kodu ve zaman damgaları. Ayrıntılar KVKK Aydınlatma Metni bölüm 2A'dadır.
+
 **Sipariş, fatura ve ödeme (yalnızca çevrimiçi satış etkin olduğunda)**
 
 - Siparişte girdiğiniz fatura bilgileri: ad soyad veya unvan, adres, e-posta, telefon, T.C. kimlik numarası (bireysel) veya vergi kimlik numarası ve vergi dairesi (kurumsal).
@@ -66,6 +72,8 @@ Bilgiler, işlenme amacının gerektirdiği süre boyunca ve yasal saklama yük�
 Sipariş, fatura ve ödeme kayıtları; mesafeli sözleşme belgeleri için en az üç yıl, fatura ve muhasebe belgeleri için vergi ve ticaret mevzuatındaki süre boyunca saklanır; siparişler bu süre dolmadan silinmez. [SAKLAMA SÜRESİ — HUKUK İNCELEMESİ]
 
 Sunucu veritabanı düzenli olarak yedeklenir; yedekler [SAKLAMA SÜRESİ — DOĞRULA] süreyle tutulur ve bu süre sonunda otomatik olarak silinir.
+
+Lisans ve cihaz doğrulama kayıtlarının saklama süreleri KVKK Aydınlatma Metni bölüm 6A'da belirtilmiştir. Lisans doğrulaması ve otomatik askı kuralları hakkında bilgi bölüm 8A'dadır. > **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
 
 ## 5. Güvenlik
 

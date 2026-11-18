@@ -13,7 +13,10 @@ import { getMyLicenses } from '@/lib/portal/data'
 import { requireCustomer } from '@/lib/portal/require'
 import { buildMetadata } from '@/lib/seo'
 
-type Props = { params: Promise<{ locale: string }> }
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ cihaz?: string | string[] }>
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await initLocale(params)
@@ -23,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const cell = 'flex items-start justify-between gap-4 px-4 py-1.5 before:shrink-0 before:text-small before:text-muted before:content-[attr(data-label)] md:table-cell md:px-4 md:py-3.5 md:before:hidden'
 
-export default async function LicensesPage({ params }: Props) {
+export default async function LicensesPage({ params, searchParams }: Props) {
   const locale = await initLocale(params)
   const customer = await requireCustomer(locale)
   const [t, ls, licenses] = await Promise.all([
@@ -32,9 +35,14 @@ export default async function LicensesPage({ params }: Props) {
     getMyLicenses(customer, locale),
   ])
   const keyLabels = { reveal: t('reveal'), hide: t('hideKey'), copy: t('copy'), copied: t('copied'), error: t('keyError') }
+  const { cihaz } = await searchParams
+  const notice = cihaz === 'rate' || cihaz === 'error'
+    ? await getTranslations({ locale, namespace: 'portal.devices.notice' }).then((translate) => translate(cihaz))
+    : null
   return (
     <>
       <PortalHeading title={t('title')} lead={t('lead')} />
+      {notice ? <p role="status" className="mb-6 rounded-md border border-danger px-4 py-3 text-small text-danger">{notice}</p> : null}
       {licenses.length ? (
         <div className="md:overflow-hidden md:rounded-lg md:border md:border-border md:bg-surface">
           <table className="block w-full text-left md:table">
@@ -52,7 +60,14 @@ export default async function LicensesPage({ params }: Props) {
               {licenses.map((l) => (
                 <tr key={l.id} className="block rounded-lg border border-border bg-surface py-2 md:table-row md:rounded-none md:border-0 md:py-0">
                   <td data-label={t('product')} className={`${cell} font-medium`}>
-                    {l.product}
+                    <span>
+                      {l.product}
+                      {l.publicId ? (
+                        <AppLink href={`/hesap/lisanslar/${l.publicId}`} locale={locale} className="mt-1 block text-small font-normal text-accent underline-offset-4 hover:underline">
+                          {t('manageDevices')}
+                        </AppLink>
+                      ) : null}
+                    </span>
                   </td>
                   <td data-label={t('version')} className={cell}>
                     <span>

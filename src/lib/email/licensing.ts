@@ -1,5 +1,7 @@
 import type { Payload } from 'payload'
 
+import { displayDeviceLabel } from '@/lib/licensing/device-metadata'
+import { SMTP_UNAVAILABLE, type SmtpOnlyEmail } from './adapter'
 import { alertRecipient } from './order-review'
 import { emailTemplate, type EmailLocale } from './template'
 
@@ -151,4 +153,50 @@ export function buildCustomerNotice(notice: CustomerNotice, origin: string) {
 export async function sendCustomerLicenseNotice(payload: Payload, notice: CustomerNotice, ctx: { origin: string }): Promise<'sent'> {
   await payload.sendEmail(buildCustomerNotice(notice, ctx.origin))
   return 'sent'
+}
+
+export type DeviceReleasedNotice = {
+  to: string
+  locale: EmailLocale
+  product: string
+  maskedKey: string
+  /** Untrusted (set by the licensed program); escaped by the template and bounded here. */
+  deviceLabel: string | null
+}
+
+const RELEASED = {
+  tr: {
+    subject: 'Lisansınızdan bir cihaz kaldırıldı',
+    body: 'Hesabınızdan lisansınızın bir cihazı kaldırıldı ve koltuğu boşaldı. Bu işlemi siz yapmadıysanız hemen parolanızı değiştirin ve destek talebi oluşturun.',
+    action: 'Lisanslarım',
+    labels: ['Ürün', 'Lisans', 'Cihaz'],
+  },
+  en: {
+    subject: 'A device was removed from your license',
+    body: 'A device was released from your license from your account and its seat is free again. If you did not do this, change your password right away and open a support ticket.',
+    action: 'My licenses',
+    labels: ['Product', 'License', 'Device'],
+  },
+} as const
+
+export function buildDeviceReleasedNotice(notice: DeviceReleasedNotice, origin: string) {
+  const copy = RELEASED[notice.locale]
+  const deviceLabel = displayDeviceLabel(notice.deviceLabel)
+  const rows: [string, string][] = [
+    [copy.labels[0], notice.product],
+    [copy.labels[1], notice.maskedKey],
+    ...(deviceLabel ? [[copy.labels[2], deviceLabel] as [string, string]] : []),
+  ]
+  const url = `${origin}${licensesPath(notice.locale)}`
+  return {
+    to: notice.to,
+    subject: copy.subject,
+    text: `${copy.subject}\n\n${copy.body}\n\n${rows.map(([a, b]) => `${a}: ${b}`).join('\n')}\n\n${url}`,
+    html: emailTemplate({ locale: notice.locale, title: copy.subject, body: copy.body, rows, action: { label: copy.action, url } }),
+  }
+}
+
+export async function sendDeviceReleasedNotice(payload: Payload, notice: DeviceReleasedNotice, ctx: { origin: string }): Promise<'sent' | 'not_configured'> {
+  const message: SmtpOnlyEmail = { ...buildDeviceReleasedNotice(notice, ctx.origin), requireSmtp: true }
+  return (await payload.sendEmail(message)) === SMTP_UNAVAILABLE ? 'not_configured' : 'sent'
 }

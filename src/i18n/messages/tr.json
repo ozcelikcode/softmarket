@@ -453,7 +453,8 @@
       "emptyText": "Yeni lisans için satış ekibimizle görüşün.",
       "contact": "Teklif İste",
       "expiringNote": "Bitişe {count} gün kaldı",
-      "caption": "Lisans listesi"
+      "caption": "Lisans listesi",
+      "manageDevices": "Cihazları yönet"
     },
     "licenseState": {
       "active": "Aktif",
@@ -662,6 +663,52 @@
       "failed": "Başarısız",
       "refunded": "İade edildi",
       "cancelled": "İptal edildi"
+    },
+    "devices": {
+      "title": "Lisans cihazları",
+      "lead": "Bu lisansı kullanan cihazlar. Bir cihazı kaldırırsanız koltuğu boşalır ve başka bir cihazda etkinleştirebilirsiniz.",
+      "back": "Lisanslarım",
+      "status": "Durum",
+      "ends": "Bitiş",
+      "perpetual": "Süresiz",
+      "seatsUsed": "Kullanılan koltuk",
+      "seatsOf": "{used} / {max}",
+      "key": "Lisans anahtarı",
+      "stateNote": {
+        "suspended": "Bu lisans askıya alındı. Yeni cihaz etkinleştirilemez ve mevcut cihazlar lisansı doğrulayamaz. Çevrimdışı cihaz, mevcut kira süresi dolana kadar çalışabilir.",
+        "revoked": "Bu lisans iptal edildi. Cihazlar etkinleştirilemez veya lisansı doğrulayamaz. Çevrimdışı cihaz, mevcut kira süresi dolana kadar çalışabilir.",
+        "expired": "Bu lisansın süresi doldu. Kullanmaya devam etmek için lisansı yenilemek üzere bizimle iletişime geçin."
+      },
+      "support": "Destek talebi oluştur",
+      "devices": "Etkin cihazlar",
+      "quota": "Bu lisans için son 30 günde {limit} cihaz kaldırma hakkından {left} tanesi kaldı.",
+      "quotaOff": "Cihaz kaldırma şu anda kapalı. Yardım için destek talebi oluşturun.",
+      "unnamed": "Cihaz {n}",
+      "activated": "Etkinleştirme",
+      "lastSeen": "Son görülme",
+      "country": "Ülke",
+      "none": "Bu lisansta etkin cihaz yok.",
+      "release": "Cihazı kaldır",
+      "platform": {
+        "windows": "Windows",
+        "macos": "macOS",
+        "linux": "Linux",
+        "other": "Diğer"
+      },
+      "confirmTitle": "“{name}” cihazı kaldırılsın mı?",
+      "confirmText": "Cihaz bu lisanstan çıkarılır ve koltuğu boşalır. Uygulama, bir sonraki lisans doğrulamasında veya çevrimdışı kira süresi bitince bu cihazda lisanslı çalışmayı durdurur. Bu işlem kota hakkınızdan düşer.",
+      "confirm": "Evet, cihazı kaldır",
+      "cancel": "Vazgeç",
+      "leaseNote": "Kaldırılan cihaz, uygulamanın bir sonraki lisans yenilemesinde veya çevrimdışı kira süresi bittiğinde lisanssız kalır.",
+      "notice": {
+        "released": "Cihaz kaldırıldı.",
+        "limit": "Son 30 gün için cihaz kaldırma hakkınız doldu.",
+        "disabled": "Cihaz kaldırma şu anda kapalı.",
+        "not_active": "Bu cihaz zaten etkin değil.",
+        "revoked": "İptal edilmiş bir lisanstan cihaz kaldırılamaz.",
+        "rate": "Çok fazla deneme. Lütfen biraz sonra tekrar deneyin.",
+        "error": "İşlem yapılamadı. Sayfayı yenileyip tekrar deneyin."
+      }
     }
   },
   "feedback": {

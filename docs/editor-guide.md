@@ -747,3 +747,78 @@ Yönetim > **Entegrasyon ayarları**: ödeme sağlayıcısı anahtarları ve e-p
 3. Görseller korumasız, alt metinli ve çevirileri tamam olmalı. Renk ve görsel kuralları reddedilirse mesaja bakın.
 
 > Not: Bir ürünü editörde bağlı bloklarla (kompozisyon modu) düzenlediyseniz ve seed eski düzende ise, `pnpm content:import` en son taslak/autosave düzenini iki dilde korur; diğer alanları günceller ve "layout korundu" uyarısı basar. Import yine yayınlar: yalnız taslakta olan düzen de yayına geçer. Seed de bağlı bloklarla kompozisyon içeriyorsa seed düzeni yazılır ve zorunlu "Sürümler ve Teklif İste" kuralı uygulanır. Seed düzenini kullanmak için seed'i geçerli bir kompozisyona dönüştürün. `--dry-run` aynı işlemi deneyip geri alır.
+
+## Licensing and security center
+
+This section is for administrators only. Editors cannot open licenses, devices or the security center.
+
+### Where things are
+
+- **Licenses:** the `licenses` collection in the admin panel. Open a license to see its status, reason, source, last change and devices.
+- **License actions:** the "License actions" side panel on the license document. The status field is read-only in the form. The panel actions, payments and the rules engine can change status.
+- **Devices:** the `license-activations` collection and the device list in the License actions panel (label, platform, IP prefix, last seen).
+- **Security center:** `/admin/guvenlik` (nav link "Security center"). It has tabs for overview, events, blocks, status changes and signing keys. The audit trail and settings open their own admin screens.
+- **Licensing settings:** the `licensing-settings` global in the admin panel (admin only).
+
+### Actions on a license
+
+- **Suspend:** active → suspended. Requires a reason. The customer gets an e-mail if customer suspension e-mails are on. Reversible with Restore.
+- **Revoke:** active or suspended → revoked. Requires a reason and typing the last six characters of the license public ID. All active devices are released with reason "license revoked". Revoked is final; it cannot be undone.
+- **Restore:** undoes the latest suspension only if it was a rule suspension or a manual suspension. Other cases are refused.
+- **Reactivate:** lifts remaining suspensions that Restore does not cover (for example a payment dispute that was won). For rule or manual suspensions, use Restore.
+- **Release device:** frees the seat; the device status becomes deactivated. The license status does not change.
+- **Revoke device:** ends the device as an admin action. To stop a device from activating again, add a block (fingerprint block).
+
+Every action asks for a reason and writes one status-history row (for license changes) and one audit row. A repeated request with the same request ID does nothing new.
+
+### Security events and triage
+
+- **Acknowledge:** marks an open event as seen.
+- **Resolve:** closes the event.
+- **False positive:** marks the event as a false alarm. For a rule suspension, "False positive + restore" also restores the license.
+- Any triage of an open "rule circuit open" event closes the circuit breaker early.
+
+### Blocks
+
+- Add a block for an IP prefix (/24 for IPv4, /48 for IPv6), a CIDR range, a device, a fingerprint or a license.
+- Durations: 1 hour, 24 hours, 7 days or no end date (admins only).
+- If the block would cover your own trusted address, you must confirm it separately.
+- Lift deactivates a block and keeps its record until retention cleanup. The local process refreshes immediately. Other running processes refresh when their block cache expires.
+
+### Signing key rotation
+
+- The "Signing keys" tab shows the active key ID and a rotate button.
+- Rotation requires typing `DÖNDÜR` or `ROTATE`.
+- Old keys still verify for 90 days. Revoking a key ends its verification immediately.
+- Keys set by environment variables cannot be rotated from the panel.
+
+### Monitor-only mode and automatic rules
+
+- Rules run in one of four modes: off, observe, notify, suspend. New rules start in **notify**.
+- Only **suspend** mode can suspend automatically. Automatic actions never revoke a license.
+- Automatic suspension is blocked until the date in **rules → observeUntil** has passed. Until then, a would-be suspension is recorded and notified instead.
+- Set observeUntil to a date in the past only after reviewing the events from the monitoring period.
+
+### Circuit breaker
+
+- **Max automatic suspensions per hour** (default 5). The next suspension beyond that limit is not executed. A critical "rule circuit open" event is recorded and an admin alert is sent.
+- While the breaker is open, suspend-mode hits are only notified. It closes after the event is triaged or after 24 hours.
+- Setting the limit to 0 turns automatic suspension off without tripping the breaker.
+
+### Licensing settings (edited in the admin panel)
+
+- **General:** API on or off, public host, lease length in days (default 14, maximum 30), refresh and clock-skew values.
+- **Limits:** request and rate-limit thresholds for the API.
+- **Rules:** mode and thresholds per rule, the observe-until date and the circuit-breaker limit.
+- **Self-service:** the portal device release quota and the licensing API rebind quota.
+- **Notifications:** alert e-mail recipients, immediate severity threshold, daily digest, customer suspension e-mails.
+- **Retention:** how long each kind of record is kept. Minimum values are fixed in code and cannot be lowered below them.
+
+Changes to these settings are recorded in the audit trail as old and new values. E-mail addresses are not written in the record.
+
+### Sweep timer
+
+- `pnpm licensing:sweep` runs the rule engine, the notification queue and, when requested, retention.
+- It runs every 5 minutes through the `licensing-sweep` systemd timer on the server.
+- Options: `--dry-run` reports decisions without writing or sending; `--retention` runs cleanup only.
+- Retention runs during the 04:00 hour (Europe/Istanbul).

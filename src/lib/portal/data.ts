@@ -3,6 +3,7 @@ import type { Where } from 'payload'
 import type { CustomerUser } from '@/access'
 import type { Locale } from '@/i18n/routing'
 import { mediaOf, relOf } from '@/lib/content'
+import { isPublicId } from '@/lib/licensing/public-id'
 import { isUsableState, licenseState, maskLicenseKey } from '@/lib/licenses/state'
 import { getPayloadClient } from '@/lib/site'
 import type { Edition, Product, Release, SupportTicket } from '@/payload-types'
@@ -23,6 +24,8 @@ const idOf = (value: unknown): number | null =>
 
 export type PortalLicense = {
   id: number
+  /** Opaque public id used in portal URLs (never the numeric id). */
+  publicId: string
   maskedKey: string
   productId: number | null
   product: string
@@ -35,18 +38,18 @@ export type PortalLicense = {
   daysLeft: number | null
 }
 
-export async function getMyLicenses(customer: CustomerUser, locale: Locale, now = new Date()): Promise<PortalLicense[]> {
+async function readMyLicenses(customer: CustomerUser, locale: Locale, now: Date, publicId?: string): Promise<PortalLicense[]> {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'licenses',
     ...as(customer, locale),
-    where: { customer: { equals: customer.id } },
+    where: { customer: { equals: customer.id }, ...(publicId ? { publicId: { equals: publicId } } : {}) },
     sort: '-createdAt',
     // This list also decides support entitlement; an arbitrary display cap must not deny old licenses.
-    limit: 0,
+    limit: publicId ? 1 : 0,
     pagination: false,
     depth: 1,
-    select: { key: true, edition: true, product: true, startsAt: true, expiresAt: true, seats: true, status: true },
+    select: { key: true, publicId: true, edition: true, product: true, startsAt: true, expiresAt: true, seats: true, status: true },
     populate: { editions: { title: true, sku: true }, products: { title: true } },
   })
   return docs.map((l) => {
@@ -55,6 +58,7 @@ export async function getMyLicenses(customer: CustomerUser, locale: Locale, now 
     const { state, daysLeft } = licenseState(l, now)
     return {
       id: l.id,
+      publicId: l.publicId ?? '',
       maskedKey: maskLicenseKey(l.key),
       productId: idOf(l.product),
       product: product?.title ?? '',
@@ -67,6 +71,15 @@ export async function getMyLicenses(customer: CustomerUser, locale: Locale, now 
       daysLeft,
     }
   })
+}
+
+export const getMyLicenses = (customer: CustomerUser, locale: Locale, now = new Date()) => readMyLicenses(customer, locale, now)
+
+/** One of the customer's own licenses by public id; foreign/unknown ids give null (the page answers 404). */
+export async function getMyLicenseByPublicId(customer: CustomerUser, locale: Locale, publicId: string, now = new Date()): Promise<PortalLicense | null> {
+  if (!isPublicId(publicId)) return null
+  const [license] = await readMyLicenses(customer, locale, now, publicId)
+  return license ?? null
 }
 
 /** Products the customer may use right now (active/expiring licenses). */

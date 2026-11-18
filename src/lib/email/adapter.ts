@@ -16,6 +16,8 @@ import { parseVault, readIntegrationsDoc } from '@/lib/integrations/vault'
  */
 
 type Send = (message: SendEmailOptions) => Promise<unknown>
+export const SMTP_UNAVAILABLE = Symbol('smtp unavailable')
+export type SmtpOnlyEmail = SendEmailOptions & { requireSmtp: true }
 export type SenderFactory = (config: SmtpConfig, payload: Payload) => Promise<{ send: Send; close?: () => void }>
 export type AdapterOptions = {
   env?: Record<string, string | undefined>
@@ -76,9 +78,10 @@ export function softmarketEmailAdapter(options: AdapterOptions = {}): EmailAdapt
     name: 'softmarket-runtime-smtp',
     defaultFromAddress: PLACEHOLDER_FROM,
     defaultFromName: DEFAULT_FROM_NAME,
-    sendEmail: async (message) => {
+    sendEmail: async ({ requireSmtp, ...message }: SendEmailOptions & Partial<Pick<SmtpOnlyEmail, 'requireSmtp'>>) => {
       const config = options.loadConfig ? await options.loadConfig(payload) : await loadEmailConfig(payload, options.env ?? process.env)
       if (!config) {
+        if (requireSmtp) return SMTP_UNAVAILABLE
         payload.logger.info({ msg: `Email attempted without being configured. To: '${recipients(message.to)}', Subject: '${String(message.subject ?? '')}'` })
         return
       }

@@ -9,6 +9,7 @@ import type { createBlocksCache } from '../blocks-cache'
 import { hashDeviceFingerprint, licensingHmacKey } from '../crypto/hmac'
 import { buildLeaseClaims, signLease } from '../crypto/jws'
 import { deviceKeyThumbprint, type Ed25519Signer } from '../crypto/keys'
+import { safeMetadata } from '../device-metadata'
 import type { createObservationWriter, Observation } from '../events/writer'
 import { generatePublicId } from '../public-id'
 import type { createLicensingLimiter } from '../rate-limit'
@@ -74,14 +75,6 @@ function deviceLimit(license: License) {
 }
 
 type Emit = (event: Omit<Observation, 'now' | 'ip'>) => void
-
-// Omit labels or other optional metadata that resemble pasted credentials or network addresses.
-function safeMetadata(value: string | undefined): string | null {
-  if (!value || /[@:]/.test(value) || /[A-Za-z0-9_-]{43}/.test(value)
-    || /(?:[a-z\d]{5}[-_\s\u2010-\u2015]+){4}[a-z\d]{5}/i.test(value)
-    || /(?:\d{1,3}\.){3}\d{1,3}/.test(value)) return null
-  return value
-}
 
 async function activate(
   tx: PaymentTx, context: ClientContext, license: License, body: ClientBody<'activate'>,

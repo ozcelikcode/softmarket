@@ -453,7 +453,8 @@
       "emptyText": "Contact our sales team to request a new license.",
       "contact": "Request a quote",
       "expiringNote": "{count, plural, one {# day left} other {# days left}}",
-      "caption": "License list"
+      "caption": "License list",
+      "manageDevices": "Manage devices"
     },
     "licenseState": {
       "active": "Active",
@@ -662,6 +663,52 @@
       "failed": "Failed",
       "refunded": "Refunded",
       "cancelled": "Cancelled"
+    },
+    "devices": {
+      "title": "License devices",
+      "lead": "Devices using this license. Releasing a device frees its seat so you can activate another one.",
+      "back": "My licenses",
+      "status": "Status",
+      "ends": "Ends",
+      "perpetual": "Perpetual",
+      "seatsUsed": "Seats in use",
+      "seatsOf": "{used} of {max}",
+      "key": "License key",
+      "stateNote": {
+        "suspended": "This license is suspended. New devices cannot be activated and existing devices cannot refresh their license. An offline device may keep working until its current lease expires.",
+        "revoked": "This license was revoked. Devices cannot activate or refresh their license. An offline device may keep working until its current lease expires.",
+        "expired": "This license has expired. Contact us to renew it if you want to keep using the product."
+      },
+      "support": "Open a support ticket",
+      "devices": "Active devices",
+      "quota": "{left} of {limit} device releases remaining for this license in each rolling 30-day period.",
+      "quotaOff": "Device release is switched off right now. Open a support ticket for help.",
+      "unnamed": "Device {n}",
+      "activated": "Activated",
+      "lastSeen": "Last seen",
+      "country": "Country",
+      "none": "This license has no active devices.",
+      "release": "Release device",
+      "platform": {
+        "windows": "Windows",
+        "macos": "macOS",
+        "linux": "Linux",
+        "other": "Other"
+      },
+      "confirmTitle": "Release “{name}”?",
+      "confirmText": "The device is removed from this license and its seat is freed. The app stops running as licensed on this device at its next license refresh or when its offline lease ends. This counts against your release allowance.",
+      "confirm": "Yes, release device",
+      "cancel": "Cancel",
+      "leaseNote": "A released device becomes unlicensed at the app's next license refresh or when its offline lease ends.",
+      "notice": {
+        "released": "Device released.",
+        "limit": "You have used your device releases for the last 30 days.",
+        "disabled": "Device release is switched off right now.",
+        "not_active": "This device is no longer active.",
+        "revoked": "Devices cannot be released from a revoked license.",
+        "rate": "Too many attempts. Please try again shortly.",
+        "error": "The action could not be completed. Reload the page and try again."
+      }
     }
   },
   "feedback": {

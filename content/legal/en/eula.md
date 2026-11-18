@@ -16,6 +16,14 @@ If a separate written agreement, quote or order document has been issued for the
 - Subscription licenses end at the end date stated in the record. Renewal is agreed separately with the Licensor.
 - Perpetual licenses apply to the edition stated, unless the agreement says otherwise.
 
+## 1A. License verification and offline use
+
+> **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
+
+- The Software connects to the Licensor's server to activate your license and verify that it is valid. The verification result is stored in the Software as a signed lease document.
+- The lease allows offline use after the last successful verification. The default is 14 days, with a system-wide maximum of 30 days. The lease ends sooner if the license expires first. When the lease expires, online verification is needed to continue licensed use.
+- Data processed for device binding and verification is described in section 2A of the Data Protection Notice.
+
 ## 2. License key
 
 - The license key is your personal and confidential identifier. It must not be shared with unauthorised persons.
@@ -38,6 +46,16 @@ Except where the law permits, you may not:
 - Subscription licenses do not renew automatically. Renewal at the end of the term is made through a new order or quote.
 - The scope and exception of the right of withdrawal for a License delivered instantly in electronic form are explained in the Refund and Withdrawal Policy.
 
+## 3B. Automated checks, suspension and review
+
+> **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
+
+- The Licensor may operate rules that detect unusual license use.
+- By default the rules record and report unusual use without changing your license.
+- A rule may **suspend** your license only if the Licensor selects suspension mode and the configured monitoring period has ended. These rules never revoke a license. An administrator can revoke a license with a stated reason, and a confirmed refund can also revoke it.
+- A suspension may take full effect on offline devices when their current lease expires. The default lease length is 14 days and the maximum is 30 days.
+- You may object to a suspension at [KVKK İLETİŞİM E-POSTASI]. If it was a false alarm, the suspension is lifted.
+
 ## 4. Updates and support
 
 Updates and support covered by your license are provided under the license conditions and the service level offered by the Licensor. Update files are available from the licensed download area.
@@ -55,6 +73,8 @@ The Software may include open-source or third-party components, which are govern
 The Software and all related rights belong to the Licensor or its licensors. This agreement does not transfer any intellectual property rights.
 
 ## 8. Data and privacy
+
+Personal data processed for license verification and retention periods are described in sections 2A and 6A of the Data Protection Notice. > **Requires lawyer review.** This section is a draft based on the licensing system as implemented (L1–L6b).
 
 Where use of the Software involves processing personal data, that processing is governed by separate arrangements between the parties, and the Licensor's privacy obligations apply. [HUKUK İNCELEMESİ: whether a data processing agreement (DPA) is needed]
 

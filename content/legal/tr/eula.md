@@ -16,6 +16,14 @@ Yazılım için ayrıca yazılı bir sözleşme, teklif veya sipariş belgesi d�
 - Abonelik lisanslarında lisans, kayıtta belirtilen süre sonunda sona erer; süre sonunda yenileme Lisans Veren ile ayrıca kararlaştırılır.
 - Süresiz lisanslar, sözleşmede aksi belirtilmedikçe ilgili sürüm için geçerlidir.
 
+## 1A. Lisans doğrulama ve çevrimdışı kullanım
+
+> **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
+
+- Yazılım, lisansınızın etkinleştirilmesi ve geçerliliğinin doğrulanması için Lisans Veren'in sunucusuna bağlanır. Doğrulama sonucu, imzalı bir kira belgesi (lease) olarak yazılımda saklanır.
+- Kira belgesi, son başarılı doğrulamadan sonra çevrimdışı kullanıma izin verir. Varsayılan süre 14 gündür ve sistem genelinde en fazla 30 güne ayarlanabilir. Lisansın süresi daha önce dolarsa kira belgesi de sona erer. Kira belgesinin süresi dolduğunda lisanslı kullanıma devam etmek için çevrimiçi doğrulama gerekir.
+- Cihaz bağlama ve doğrulama için işlenen veriler KVKK Aydınlatma Metni bölüm 2A'da açıklanmıştır.
+
 ## 2. Lisans anahtarı
 
 - Lisans anahtarı, lisansınızın kişisel ve gizli kimliğidir. Yetkisiz kişilerle paylaşılamaz.
@@ -38,6 +46,16 @@ Yasaların izin verdiği durumlar dışında şunları yapamazsınız:
 - Abonelik lisansları süre sonunda kendiliğinden yenilenmez. Süre sonunda yenileme yeni sipariş veya teklif ile yapılır.
 - Elektronik ortamda anında teslim edilen Lisans için cayma hakkının kapsamı ve istisnası İade ve Cayma Politikası'nda açıklanmıştır.
 
+## 3B. Otomatik kontroller, askı ve inceleme
+
+> **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
+
+- Lisans Veren, olağan dışı lisans kullanımını tespit eden kurallar işletebilir.
+- Kurallar varsayılan olarak olağan dışı kullanımı kaydeder ve bildirir. Lisansınız bu nedenle değişmez.
+- Kural ancak Lisans Veren askıya alma modunu seçtiğinde ve belirlenen izleme dönemi sona erdiğinde lisansı **askıya alabilir**. Bu kurallar lisansı iptal etmez. Yönetici gerekçe belirterek lisansı iptal edebilir. Doğrulanmış bir iade de lisansı iptal edebilir.
+- Askı, çevrimdışı cihazlarda mevcut kira belgesinin süresi dolduğunda tam etkisini gösterebilir. Varsayılan kira süresi 14 gün, üst sınır 30 gündür.
+- Askı kararına [KVKK İLETİŞİM E-POSTASI] adresinden itiraz edebilirsiniz. Yanlış alarm ise askı kaldırılır.
+
 ## 4. Güncellemeler ve destek
 
 Lisansınız kapsamındaki güncellemeler ve destek hizmetleri, lisans koşullarına ve Lisans Veren'in sunduğu hizmet düzeyine göre sağlanır. Güncelleme dosyaları, lisanslı indirme alanından erişilebilir.
@@ -55,6 +73,8 @@ Yazılım, açık kaynak veya üçüncü taraf bileşenler içerebilir. Bu bile�
 Yazılım ve ilgili tüm haklar Lisans Veren'e veya lisans verenlerine aittir. Bu sözleşme, fikri mülkiyet hakkı devretmez.
 
 ## 8. Veri ve gizlilik
+
+Lisans doğrulaması sırasında işlenen kişisel veriler ve saklama süreleri KVKK Aydınlatma Metni bölüm 2A ve 6A'da açıklanmıştır. > **Hukukçu onayı gerekir.** Bu bölüm lisans sistemi (L1–L6b) uygulamasına göre taslaktır.
 
 Yazılımın kullanımı sırasında kişisel veri işlenmesi gerekiyorsa, bu işlemler ilgili taraflar arasında ayrıca düzenlenir. Lisans Veren'in müşteri verileri için kişisel verilerin işlenmesine ilişkin ayrıca sözleşme veya aydınlatma yükümlülükleri geçerlidir. [HUKUK İNCELEMESİ: veri işleyen sözleşmesi (DPA) ihtiyacı]
 

@@ -5,6 +5,7 @@ import { isEmailConfigured } from '@/lib/email/adapter'
 import {
   adminAlertRecipients,
   sendCustomerLicenseNotice,
+  sendDeviceReleasedNotice,
   sendLicensingAdminAlert,
   sendLicensingDigest,
   type AlertRow,
@@ -44,7 +45,7 @@ export const NOTIFY_POLICY = {
   batch: 50,
 } as const
 
-export type NotifyKind = 'admin' | 'digest' | 'customerSuspended' | 'customerRestored'
+export type NotifyKind = 'admin' | 'digest' | 'customerSuspended' | 'customerRestored' | 'customerDeviceReleased'
 
 export type QueueRow = {
   id: number
@@ -53,6 +54,7 @@ export type QueueRow = {
   count: number
   license_id: number | null
   customer_id: number | null
+  activation_id: number | null
   action_taken: string | null
   rule_key: string | null
   detail: string | null
@@ -94,6 +96,9 @@ export function pendingMessages(
   if (row.action_taken === 'suspended' && settings.customerSuspensionEmail && row.customer_id !== null
     && !d.restoredAt && !d.notifyCustomerSuspendedAt) kinds.push('customerSuspended')
   if (d.restoredAt && isTime(d.notifyCustomerSuspendedAt) && !d.notifyCustomerRestoredAt) kinds.push('customerRestored')
+  // Portal release confirmations are independent of the customer suspension e-mail setting.
+  if (row.type === 'activation.ended' && d.notifyDeviceReleased === true && row.customer_id !== null
+    && !d.notifyCustomerDeviceReleasedAt) kinds.push('customerDeviceReleased')
   return kinds
 }
 
@@ -148,6 +153,7 @@ const MARKER: Record<Exclude<NotifyKind, 'admin'>, string> = {
   digest: '$.notifyDigestDone',
   customerSuspended: '$.notifyCustomerSuspendedAt',
   customerRestored: '$.notifyCustomerRestoredAt',
+  customerDeviceReleased: '$.notifyCustomerDeviceReleasedAt',
 }
 
 async function mark(payload: Payload, id: number, path: string, value: string) {
@@ -157,11 +163,17 @@ async function mark(payload: Payload, id: number, path: string, value: string) {
 
 type CustomerTarget = { to: string; locale: 'tr' | 'en'; product: string; maskedKey: string }
 
-async function customerTarget(payload: Payload, license: number | null): Promise<CustomerTarget | null> {
+async function customerTarget(payload: Payload, license: number | null,
+  release?: Pick<QueueRow, 'customer_id' | 'activation_id'>,
+): Promise<(CustomerTarget & { deviceLabel: string | null }) | null> {
   if (license === null) return null
-  const [row] = await payload.db.drizzle.all<{ key: string | null; product_id: number | null; email: string | null; locale: string | null }>(sql`
-    SELECT l.key, l.product_id, c.email, c.preferred_locale AS locale
-    FROM licenses l LEFT JOIN customers c ON c.id = l.customer_id WHERE l.id = ${license}`)
+  const device = release ? sql`a.device_label` : sql`NULL`
+  const ownership = release ? sql`JOIN license_activations a ON a.id = ${release.activation_id} AND a.license_id = l.id
+    AND a.customer_id = c.id AND a.end_reason = 'customer_portal' AND c.id = ${release.customer_id}` : sql``
+  const [row] = await payload.db.drizzle.all<{
+    key: string | null; product_id: number | null; email: string | null; locale: string | null; device_label: string | null
+  }>(sql`SELECT l.key, l.product_id, c.email, c.preferred_locale AS locale, ${device} AS device_label
+    FROM licenses l JOIN customers c ON c.id = l.customer_id ${ownership} WHERE l.id = ${license}`)
   const to = row?.email?.trim()
   if (!to) return null
   const locale = row.locale === 'en' ? 'en' : 'tr'
@@ -170,7 +182,7 @@ async function customerTarget(payload: Payload, license: number | null): Promise
     const doc = await payload.findByID({ collection: 'products', id: row.product_id, locale, depth: 0, overrideAccess: true, disableErrors: true, select: { title: true } })
     product = (doc as { title?: string } | null)?.title ?? '-'
   }
-  return { to, locale, product, maskedKey: maskLicenseKey(row.key) || '-' }
+  return { to, locale, product, maskedKey: maskLicenseKey(row.key) || '-', deviceLabel: row.device_label }
 }
 
 export async function deliverLicensingNotifications(
@@ -179,7 +191,7 @@ export async function deliverLicensingNotifications(
   options: { now: () => Date; origin: string; log: Log; limit?: number; env?: Record<string, string | undefined> },
 ): Promise<NotifyReport> {
   const { log } = options
-  const report: NotifyReport = { smtp: false, expired: 0, claimed: 0, sent: { admin: 0, digest: 0, customerSuspended: 0, customerRestored: 0 }, failed: 0, deferred: 0 }
+  const report: NotifyReport = { smtp: false, expired: 0, claimed: 0, sent: { admin: 0, digest: 0, customerSuspended: 0, customerRestored: 0, customerDeviceReleased: 0 }, failed: 0, deferred: 0 }
   const start = options.now()
   const maxAge = new Date(start.getTime() - NOTIFY_POLICY.maxAgeMs).toISOString()
   report.expired = await withPaymentTransaction(payload, (tx) => tx.run(sql`UPDATE security_events
@@ -194,7 +206,7 @@ export async function deliverLicensingNotifications(
       WHERE notify_state = 'pending' AND (notify_next_at IS NULL OR notify_next_at <= ${nowIso})
         AND COALESCE(notify_attempts, 0) < ${NOTIFY_POLICY.maxAttempts}
       ORDER BY id LIMIT ${options.limit ?? NOTIFY_POLICY.batch})
-    RETURNING id, type, severity, count, license_id, customer_id, action_taken, rule_key, detail, notify_attempts`))
+    RETURNING id, type, severity, count, license_id, customer_id, activation_id, action_taken, rule_key, detail, notify_attempts`))
   report.claimed = rows.length
   if (!rows.length) return report
 
@@ -257,8 +269,9 @@ export async function deliverLicensingNotifications(
         if (kind === 'digest') {
           outcome = await sendLicensingDigest(payload, recipients, await digestSummary(payload, options.now()), { origin: options.origin })
         } else {
-          const target = await customerTarget(payload, row.license_id)
+          const target = await customerTarget(payload, row.license_id, kind === 'customerDeviceReleased' ? row : undefined)
           if (!target) outcome = 'no_recipient'
+          else if (kind === 'customerDeviceReleased') outcome = await sendDeviceReleasedNotice(payload, target, { origin: options.origin })
           else outcome = await sendCustomerLicenseNotice(payload, { kind: kind === 'customerSuspended' ? 'suspended' : 'restored', ...target }, { origin: options.origin })
         }
       } catch {

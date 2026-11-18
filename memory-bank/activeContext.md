@@ -1,3 +1,10 @@
+## Licensing L6a security center (read-only)
+
+- Admin custom view `/admin/guvenlik` with tabs Overview, Events, Blocks, Status transitions; counters (open high events, active blocks, suspended licenses, recent activations), filters in the URL, 50/25 rows per page, links to the Payload documents. Nav link with an open-high badge for admins only. Files in `src/admin/security/`, labels in `src/lib/security-center-labels.ts`, styles `.sc-*` in `src/app/(payload)/custom.scss`.
+- Access: server-side admin cookie-session check inside the view (editor redirected to `/admin`, anonymous to login) and again in every loader; reads use the Local API with the admin user and `overrideAccess: false`, always with `select`. No keys, customer e-mail, device material or full hashes are shown; `detail` is redacted. No schema, migration, dependency or client JS.
+- A custom view under a new key needs its own `DefaultTemplate` wrapper (Payload adds none). Actions (suspend, revoke, block, triage, key rotation) and the rules engine stay for L6b/L5.
+- Gates: typecheck, lint, full Vitest 104 files / 1,711 tests (before the final template wrapper; the affected files re-run green). Browser check on an isolated copy (port 3550): anonymous, editor and admin sessions, light and dark, filter submit, mobile width. Record: "L6a implementation record" in `docs/plan-licensing-security.md`.
+
 ## Licensing L3 client API
 
 - Signed device activation, refresh and deactivation are implemented under `/api/v1/licensing`. The L2 public key diagnostic shares the prefix and global rate limits. Clients pin the issuer and signing keys, use fresh nonces and hold a verified lease for up to 14 days by default.

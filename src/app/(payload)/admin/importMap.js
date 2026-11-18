@@ -36,6 +36,8 @@ import { CommerceReadiness as CommerceReadiness_21a76f9ace6ef6f634959aae4db7e91c
 import { IntegrationsStatus as IntegrationsStatus_488eb35d27d1ae14f008ba5cc4874f75 } from '@/admin/fields/integrations-status'
 import { IntegrationSecret as IntegrationSecret_8aaf53474eefd9c1afec22c33ea582c7 } from '@/admin/fields/integration-secret'
 import { IntegrationTestEmail as IntegrationTestEmail_6ee154fe8210207387da352b208edad8 } from '@/admin/fields/integration-test-email'
+import { SecurityNavLink as SecurityNavLink_c1f02d03921cb6fc84ae08138f716c57 } from '@/admin/security/SecurityNavLink'
+import { SecurityCenterView as SecurityCenterView_1452566fa5e635bff5b7da116bf6f538 } from '@/admin/security/SecurityCenterView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -78,5 +80,7 @@ export const importMap = {
   "@/admin/fields/integrations-status#IntegrationsStatus": IntegrationsStatus_488eb35d27d1ae14f008ba5cc4874f75,
   "@/admin/fields/integration-secret#IntegrationSecret": IntegrationSecret_8aaf53474eefd9c1afec22c33ea582c7,
   "@/admin/fields/integration-test-email#IntegrationTestEmail": IntegrationTestEmail_6ee154fe8210207387da352b208edad8,
+  "@/admin/security/SecurityNavLink#SecurityNavLink": SecurityNavLink_c1f02d03921cb6fc84ae08138f716c57,
+  "@/admin/security/SecurityCenterView#SecurityCenterView": SecurityCenterView_1452566fa5e635bff5b7da116bf6f538,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

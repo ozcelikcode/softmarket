@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { ADMIN_GROUPS, COLLECTION_LABELS, GLOBAL_LABELS, localizeCollection, localizeGlobal, VISUAL_EDITOR_LABELS } from '../../src/lib/admin-i18n'
+import { ADMIN_GROUPS, COLLECTION_LABELS, GLOBAL_LABELS, localizeCollection, localizeGlobal, SECURITY_CENTER_LABELS, VISUAL_EDITOR_LABELS } from '../../src/lib/admin-i18n'
 import { anyone, isAdmin, isAdminOrEditor, nobody } from '../../src/access'
 import { publicSearchRead } from '../../src/access/search'
 import { mcpCollections } from '../../src/lib/mcp'
@@ -34,7 +34,7 @@ const pick = (mods: Record<string, Record<string, unknown>>): Cfg[] =>
 const SAME_OK = new Set([
   'Windows', 'macOS', 'Linux', 'Web / SaaS', 'Android', 'iOS', 'Beta', 'Normal', 'Blog', 'x64', 'arm64', 'x86', 'LinkedIn', 'X',
   'YouTube', 'Instagram', 'Facebook', 'GitHub', 'Türkçe', 'English', 'Site', 'SKU', 'Logo', 'Tablet', 'Platform', 'Minimum',
-  'Form', 'Favicon', 'Hero', 'Blok', 'Slug', 'SEO', 'FAQ', 'Banner', 'Video', 'Tablo',
+  'Form', 'Favicon', 'Hero', 'Blok', 'Slug', 'SEO', 'FAQ', 'Banner', 'Video', 'Tablo', 'Portal', 'Webhook', 'CIDR', 'API', 'MCP',
 ])
 
 const EN_WORDS = new Set((
@@ -197,6 +197,16 @@ describe('F10 admin labels (TR + EN)', () => {
       if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, `${where}.${k}`)
     }
     walk(VISUAL_EDITOR_LABELS, 'visual-editor')
+    expect(issues.slice(before)).toEqual([])
+  })
+
+  it('L6a security center labels have TR and EN values without English residue', () => {
+    const before = issues.length
+    const walk = (v: unknown, where: string): void => {
+      if (isLoc(v)) return void checkLoc(where, v, 'labels')
+      if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, `${where}.${k}`)
+    }
+    walk(SECURITY_CENTER_LABELS, 'security-center')
     expect(issues.slice(before)).toEqual([])
   })
 

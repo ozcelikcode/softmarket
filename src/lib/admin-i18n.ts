@@ -908,3 +908,6 @@ export const MOTION_LABELS = {
 
 /** V5 "Görsel düzenle" labels (leaf module so the canvas bridge chunk stays small). */
 export { VISUAL_EDITOR_LABELS } from './visual-editor-labels'
+
+/** L6a read-only security center labels (view at /admin/guvenlik; leaf module, TR/EN audited by admin-labels.test.ts). */
+export { SECURITY_CENTER_LABELS } from './security-center-labels'

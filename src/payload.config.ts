@@ -96,6 +96,19 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    // L6a: read-only security center at /admin/guvenlik. The view enforces the admin-panel-session rule on the server
+    // (editors are redirected); the nav link is cosmetic (admins only). See src/admin/security/guard.ts.
+    components: {
+      afterNavLinks: ['@/admin/security/SecurityNavLink#SecurityNavLink'],
+      views: {
+        securityCenter: {
+          Component: '@/admin/security/SecurityCenterView#SecurityCenterView',
+          path: '/guvenlik',
+          exact: true,
+          meta: { title: 'Güvenlik merkezi / Security center' },
+        },
+      },
+    },
     // F8: staff-only draft preview (iframe -> /api/preview -> locale path). See src/lib/preview-url.ts.
     livePreview: {
       collections: [...LIVE_PREVIEW_COLLECTIONS],

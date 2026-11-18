@@ -1,3 +1,11 @@
+## Licensing L2 crypto and key lifecycle
+
+- Audit fixes bind offline leases to the enrolled license and activation, restrict issuance by retired keys, reject weak public keys and ambiguous metadata, and protect vault rotation against a wrong master. The request verifier can pass the raw decimal timestamp to the canonical builder.
+
+- Node Ed25519 lease JWS and raw-body signing strings live in `src/lib/licensing/crypto/`. HKDF/HMAC domains cover fingerprints, monthly IP hashes and downloads. IPv4 /24 and IPv6 /48 prefixes are the only address fragments retained.
+- `pnpm licensing:keygen` writes the encrypted key and public metadata atomically. `--rotate` keeps the old public key eligible for 90 days. `--register-env` registers the public half of the configured environment override. `GET /api/v1/licensing/keys` reads public metadata only and returns 503 when disabled or uninitialized.
+- Panel admins can save non-secret licensing settings in a same-origin session. Signing metadata remains read-only in the panel. See the L2 implementation record in `docs/plan-licensing-security.md`.
+
 ## Licensing L1 schema (`licensing_core`) — 2026-11-17 (independent audit, no commit, live DB not migrated)
 
 - New collections `license-activations`, `license-status-log`, `security-events`, `security-blocks`, `security-audit` (admin panel session read only, nobody writes through any API, no GraphQL, not in MCP) and global `licensing-settings` (panel admin read, server-only write). Rule suspensions require `mode=suspend` and a valid elapsed `observeUntil`. Enum source `src/lib/licensing/constants.ts`.

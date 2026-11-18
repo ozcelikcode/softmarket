@@ -1,5 +1,7 @@
+import { generateKeyPairSync } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
+import { ed25519PublicMetadata } from '@/lib/licensing/crypto/keys'
 import { createLicense, setupLicensingDb, type Ctx, type Principal } from './helpers/licensing-db'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
@@ -8,7 +10,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }
  * L1 access matrix on a real temporary SQLite (all migrations, real Payload auth through REST/GraphQL handlers):
  *   - the five security collections: read = admin PANEL session only; create/update/delete = nobody (also admin);
  *     anonymous, customer, editor and the admin users API key (MCP/REST) get 401/403. No GraphQL surface.
- *   - licensing-settings global: panel admin read, server-only write.
+ *   - licensing-settings global: panel admin read and same-origin settings writes, server-only signing metadata.
  *   - licenses: new status metadata is admin-only; publicId server-generated/immutable; the API key cannot set status.
  *   - products.licensing: staff read, panel-admin write, code format/unique/immutable.
  */
@@ -115,18 +117,19 @@ describe('security collections (REST)', () => {
 })
 
 describe('licensing-settings global', () => {
-  it('only a panel admin reads and only server code writes', async () => {
+  it('allows only a same-origin panel admin to edit settings', async () => {
     for (const who of DENIED) {
       denied((await ctx.rest('GET', 'globals/licensing-settings', who)).status)
       denied((await ctx.rest('POST', 'globals/licensing-settings', who, { apiEnabled: true })).status)
     }
-    denied((await ctx.rest('POST', 'globals/licensing-settings', 'admin', { apiEnabled: true })).status)
     const { createLocalReq } = await import('payload')
     const { user } = await ctx.payload.auth({ headers: new Headers(ctx.headers.admin) })
     expect(user).not.toBeNull()
     const req = await createLocalReq({ user: user ?? undefined }, ctx.payload)
     await expect(ctx.payload.findGlobal({ slug: 'licensing-settings', overrideAccess: false, req })).resolves.toBeDefined()
     await expect(ctx.payload.updateGlobal({ slug: 'licensing-settings', overrideAccess: false, req, data: { apiEnabled: true } })).rejects.toThrow()
+    req.headers = new Headers({ ...ctx.headers.admin, host: '127.0.0.1:3100' })
+    await expect(ctx.payload.updateGlobal({ slug: 'licensing-settings', overrideAccess: false, req, data: { apiEnabled: true } })).rejects.toMatchObject({ status: 403 })
     for (const who of ALL) {
       expect((await ctx.rest('GET', 'globals/licensing-settings/versions', who)).status).toBeGreaterThanOrEqual(400)
     }
@@ -135,9 +138,42 @@ describe('licensing-settings global', () => {
     // Safe defaults: API off, every rule notify-only, no automatic suspension window.
     expect(read.json).toMatchObject({ apiEnabled: false, leaseDays: 14, rules: { maxAutoSuspendsPerHour: 5, ipSpread: { mode: 'notify' }, cloneSuspected: { mode: 'notify' } } })
     expect((read.json.rules as Record<string, unknown>).observeUntil ?? null).toBeNull()
-    await ctx.payload.updateGlobal({ slug: 'licensing-settings', overrideAccess: true, data: { leaseDays: 20, limits: { globalPerSecond: 150 } } })
+    const path = 'globals/licensing-settings'
+    const saved = await ctx.rest('POST', path, 'admin', {
+      apiEnabled: true, leaseDays: 20, limits: { globalPerSecond: 150 },
+      rules: { observeUntil: '2026-12-18T00:00:00.000Z', ipSpread: { threshold: 12 } },
+    })
+    expect(saved.status).toBe(200)
+    expect((await ctx.rest('GET', path, 'admin')).json).toMatchObject({
+      apiEnabled: true, leaseDays: 20, limits: { globalPerSecond: 150 },
+      rules: { observeUntil: '2026-12-18T00:00:00.000Z', ipSpread: { mode: 'notify', threshold: 12 } },
+    })
+    const session = ctx.headers.admin
+    const { origin: _origin, ...withoutOrigin } = session
+    try {
+      for (const headers of [
+        { ...session, origin: 'https://other.example' },
+        { ...session, origin: 'https://127.0.0.1:3100' },
+        { ...session, origin: 'http://127.0.0.1:3100/path' },
+        { ...session, origin: 'https://other.example', host: 'other.example', 'x-forwarded-proto': 'https' },
+        { ...session, 'sec-fetch-site': 'same-site' },
+        { ...session, authorization: '' },
+        { ...session, authorization: ctx.headers.adminBearer.authorization! },
+        withoutOrigin,
+      ]) {
+        ctx.headers.admin = headers
+        denied((await ctx.rest('POST', path, 'admin', { apiEnabled: false })).status)
+      }
+      ctx.headers.admin = withoutOrigin
+      const discovery = await ctx.rest('GET', 'access', 'admin')
+      expect(discovery.json).toMatchObject({
+        globals: { 'licensing-settings': { update: true } },
+      })
+    } finally {
+      ctx.headers.admin = session
+    }
     expect((await ctx.payload.findGlobal({ slug: 'licensing-settings', overrideAccess: true })).leaseDays).toBe(20)
-    expect((await ctx.run('SELECT api_enabled FROM licensing_settings')).rows[0]).toMatchObject({ api_enabled: 0 })
+    expect((await ctx.run('SELECT api_enabled FROM licensing_settings')).rows[0]).toMatchObject({ api_enabled: 1 })
   })
 
   it('enforces settings bounds and exposes only server-supplied public signing metadata', async () => {
@@ -147,11 +183,19 @@ describe('licensing-settings global', () => {
     }
     const createdAt = '2026-01-01T00:00:00.000Z'
     const privateKey = 'test-private-key-material'
-    const signingKeys = [{ kid: 'key-1', publicKey: 'public-key', createdAt, privateKey }]
-    denied((await ctx.rest('POST', 'globals/licensing-settings', 'admin', { signingKeys, privateKey })).status)
+    const metadata = ed25519PublicMetadata(generateKeyPairSync('ed25519').privateKey)
+    const signingKeys = [{ ...metadata, createdAt, privateKey }]
+    await expect(ctx.payload.updateGlobal({
+      slug: 'licensing-settings', data: { signingKeys: [{ ...metadata, publicKey: privateKey, createdAt }] },
+    })).rejects.toMatchObject({ status: 400 })
     await ctx.payload.updateGlobal({ slug: 'licensing-settings', overrideAccess: true, data: { signingKeys, privateKey } as never })
+    for (const attempt of [[], null, [{ ...signingKeys[0], kid: 'client-change', revokedAt: createdAt }]]) {
+      const result = await ctx.rest('POST', 'globals/licensing-settings', 'admin', { signingKeys: attempt, privateKey })
+      expect(result.status).toBe(200)
+      expect(JSON.stringify(result.json)).not.toContain(privateKey)
+    }
     const { json } = await ctx.rest('GET', 'globals/licensing-settings?select[signingKeys]=true&select[privateKey]=true', 'admin')
-    expect(json).toMatchObject({ signingKeys: [{ kid: 'key-1', publicKey: 'public-key', createdAt }] })
+    expect(json).toMatchObject({ signingKeys: [{ ...metadata, createdAt }] })
     expect(JSON.stringify(json)).not.toContain(privateKey)
   })
 })

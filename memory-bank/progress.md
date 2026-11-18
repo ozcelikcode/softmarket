@@ -1,3 +1,11 @@
+## Licensing L2 crypto and lease core
+
+- Implemented strict Ed25519 JWS, canonical request and response signing, purpose-specific HMAC and IP privacy helpers. Added the install CLI, transactional key rotation and revocation, and public key discovery.
+- Enabled same-origin panel admin edits of non-secret licensing settings. Added RFC vectors and negative tests, temporary SQLite key lifecycle and disclosure tests, and the settings access matrix.
+- Type generation, typecheck and lint passed. Full Vitest passed 1,628 tests in 99 files.
+- L2 security audit added regression coverage for lease identity and retirement, Ed25519 key encodings, canonical input, proxy trust, vault master changes, read-only key discovery and settings origin checks. Final typecheck and lint passed. Full Vitest passed 1,632 tests in 99 files on isolated databases.
+- L2 uses the existing schema. Client activation routes are L3 work. Admin key actions and settings audit are L6 work.
+
 ## Licensing L1 schema (`licensing_core`) — 2026-11-17 (independent audit; committed and live-migrated)
 
 - Done: 5 security collections + `licensing-settings` global, license/product fields, transition log hooks, delete guard, migration with partial unique indexes and guarded down, TR/EN admin labels. Record: `docs/plan-licensing-security.md` "L1 implementation record".

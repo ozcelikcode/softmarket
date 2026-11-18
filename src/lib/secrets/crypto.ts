@@ -57,6 +57,17 @@ export function readSecretsKey(env: Record<string, string | undefined> = process
   return { key: hkdf(material, 'aes-256-gcm/v1'), kid: hkdf(material, 'kid/v1').toString('hex').slice(0, 12) }
 }
 
+/** Derive a licensing key from the master material using a purpose distinct from vault encryption. */
+export function deriveLicensingKey(info: `licensing/${string}`, env: Record<string, string | undefined> = process.env): Buffer | null {
+  const material = decodeKeyMaterial(env[SECRETS_KEY_ENV] ?? '')
+  if (!material) return null
+  try {
+    return hkdf(material, info)
+  } finally {
+    material.fill(0)
+  }
+}
+
 export const secretAad = (id: string) => Buffer.from(`softmarket:integrations:${id}`, 'utf8')
 
 export function encryptSecret(plaintext: string, id: string, key: SecretsKey | null): string {

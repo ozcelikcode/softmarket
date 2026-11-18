@@ -5,15 +5,17 @@ import { decryptSecret, encryptSecret, readSecretsKey, recordKid, SecretsError, 
 import { isSecretId, SECRET_IDS, type SecretId, type SecretStatus } from './ids'
 
 /*
- * Server-only access to `integrations.secrets` (JSON column, field access read/create/update = nobody). Only this
- * module reads it (overrideAccess) and only `writeSecret` writes it. Records hold the AES-GCM ciphertext plus
- * display metadata (last 4 characters for API keys, never for the SMTP password; update time; key id).
+ * Server-only access to `integrations.secrets` (JSON column, field access read/create/update = nobody).
+ * Records hold AES-GCM ciphertext and display metadata. SMTP and licensing keys have no last-four display.
  */
 
 export const INTEGRATIONS_SLUG = 'integrations'
+// This id is deliberately outside the integration form, status listing and HTTP write allowlist.
+export const LICENSING_SIGNING_SECRET_ID = 'licensing-signing-ed25519'
+type VaultId = SecretId | typeof LICENSING_SIGNING_SECRET_ID
 
 export type VaultEntry = { enc: string; kid: string; last4: string | null; updatedAt: string }
-export type Vault = Partial<Record<SecretId, VaultEntry>>
+export type Vault = Partial<Record<VaultId, VaultEntry>>
 
 const isEntry = (value: unknown): value is VaultEntry =>
   !!value && typeof value === 'object' && typeof (value as VaultEntry).enc === 'string' && typeof (value as VaultEntry).updatedAt === 'string'
@@ -30,7 +32,9 @@ export function parseVault(raw: unknown): Vault {
   }
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   const out: Vault = {}
-  for (const [id, entry] of Object.entries(value as Record<string, unknown>)) if (isSecretId(id) && isEntry(entry)) out[id] = entry
+  for (const [id, entry] of Object.entries(value)) {
+    if ((isSecretId(id) || id === LICENSING_SIGNING_SECRET_ID) && isEntry(entry)) out[id] = entry
+  }
   return out
 }
 
@@ -39,7 +43,7 @@ export function parseVault(raw: unknown): Vault {
  * pointing the panel at another server (even with a hijacked admin session) makes the stored password undecryptable,
  * so it can never be sent to a server it was not entered for. It must be re-entered after such a change.
  */
-export function secretBinding(id: SecretId, doc: unknown): string {
+export function secretBinding(id: VaultId, doc: unknown): string {
   if (id !== 'smtp.password') return id
   const smtp = doc && typeof doc === 'object' ? (doc as { smtp?: { host?: unknown; user?: unknown } }).smtp : undefined
   const host = typeof smtp?.host === 'string' ? smtp.host.trim().toLowerCase() : ''
@@ -76,7 +80,7 @@ export function allSecretStatus(doc: unknown): Record<SecretId, SecretStatus> {
 }
 
 /** Decrypts one secret of `doc`; undefined when absent. Wrong key / tampered / rebound → undefined + `onError(code)`. */
-export function openSecret(doc: unknown, id: SecretId, key: SecretsKey | null, onError?: (id: SecretId, code: string) => void): SecretValue | undefined {
+export function openSecret<Id extends VaultId>(doc: unknown, id: Id, key: SecretsKey | null, onError?: (id: Id, code: string) => void): SecretValue | undefined {
   const entry = parseVault((doc as { secrets?: unknown } | null)?.secrets)[id]
   if (!entry) return undefined
   try {
@@ -85,6 +89,11 @@ export function openSecret(doc: unknown, id: SecretId, key: SecretsKey | null, o
     onError?.(id, error instanceof SecretsError ? error.code : 'malformed')
     return undefined
   }
+}
+
+/** Replace the encrypted records using the caller's transaction. */
+export async function persistVault(req: PayloadRequest, vault: Vault): Promise<void> {
+  await req.payload.updateGlobal({ slug: INTEGRATIONS_SLUG, overrideAccess: true, depth: 0, req, data: { secrets: vault }, context: { integrationsSecretWrite: true } })
 }
 
 export type WriteSecretResult = { code: 'ok'; status: SecretStatus } | { code: 'no_key' | 'smtp_host_required' }
@@ -112,7 +121,7 @@ export async function writeSecret(payload: Payload, id: SecretId, value: string 
       const plain = value.trim()
       vault[id] = { enc: encryptSecret(plain, secretBinding(id, doc), key), kid: key!.kid, last4: id === 'smtp.password' || plain.length < 12 ? null : plain.slice(-4), updatedAt: now.toISOString() }
     }
-    await payload.updateGlobal({ slug: INTEGRATIONS_SLUG as never, overrideAccess: true, depth: 0, req, data: { secrets: vault } as never, context: { integrationsSecretWrite: true } })
+    await persistVault(req, vault)
     await payload.db.commitTransaction(transactionID)
     return { code: 'ok', status: secretStatus({ ...doc, secrets: vault }, id, key) }
   } catch (error) {

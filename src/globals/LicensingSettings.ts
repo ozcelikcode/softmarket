@@ -1,7 +1,9 @@
-import type { Field, GlobalConfig } from 'payload'
+import { Forbidden, type Field, type GlobalConfig } from 'payload'
 
 import { isPanelAdmin, nobody, nobodyField } from '@/access'
 import { hiddenUnlessAdmin, options } from '@/lib/licensing/collection-helpers'
+import { validSigningKeyRows } from '@/lib/licensing/crypto/keys'
+import { previewOrigin } from '@/lib/preview-url'
 import {
   COUNTRY_SOURCES,
   LICENSING_RULE_KEYS,
@@ -13,7 +15,7 @@ import {
 } from '@/lib/licensing/constants'
 
 /*
- * L1 licensing-settings (plan §4.8): panel admin reads, server code writes.
+ * Licensing settings (plan §4.8): panel admins read and edit non-secret settings.
  * No versions, document locks, GraphQL, MCP, public revalidation or content import.
  *
  * Safe defaults for the user decisions (2026-11-17):
@@ -63,7 +65,22 @@ const ruleGroup = (key: LicensingRuleKey): Field => ({
 export const LicensingSettings: GlobalConfig = {
   slug: 'licensing-settings',
   admin: { group: 'Security', hidden: hiddenUnlessAdmin },
-  access: { read: isPanelAdmin, update: nobody, readVersions: nobody },
+  access: { read: isPanelAdmin, update: isPanelAdmin, readVersions: nobody },
+  hooks: {
+    // Apply CSRF checks to writes. Payload also calls access.update during read-only permission discovery.
+    beforeOperation: [({ operation, overrideAccess, req }) => {
+      if (operation !== 'update' || overrideAccess) return
+      const site = req.headers.get('sec-fetch-site')
+      const host = req.headers.get('host')
+      const origin = req.headers.get('origin')
+      // Behind Caddy, Next can use an internal URL. Use the configured panel origin in
+      // that case. A Host or forwarded header alone cannot establish the public origin.
+      const panelOrigin = new URL(previewOrigin({ host: host ?? '', headers: req.headers }))
+      const expected = panelOrigin.host === host ? panelOrigin : new URL(req.origin)
+      if (req.payloadAPI !== 'REST' || (site !== null && site !== 'same-origin') || !host
+        || host !== expected.host || origin !== expected.origin) throw new Forbidden(req.t)
+    }],
+  },
   graphQL: false,
   lockDocuments: false,
   fields: [
@@ -175,10 +192,12 @@ export const LicensingSettings: GlobalConfig = {
           label: 'Signing keys',
           fields: [
             {
-              // Public keys only; written by the L2 key generation/rotation endpoint (overrideAccess), never by a form.
+              // Public metadata written by the signing key lifecycle service.
               name: 'signingKeys',
               type: 'array',
               custom: noImport,
+              validate: (rows) => rows == null || (Array.isArray(rows) && validSigningKeyRows(rows))
+                || 'Invalid signing key metadata.',
               access: { create: nobodyField, update: nobodyField },
               admin: { readOnly: true },
               fields: [

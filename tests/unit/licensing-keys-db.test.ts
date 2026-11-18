@@ -51,12 +51,12 @@ describe('licensing signing key lifecycle', () => {
     try {
       await ctx.run('DELETE FROM licensing_settings')
       const empty = version()
-      expect((await GET()).status).toBe(503)
+      expect((await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))).status).toBe(503)
       expect(version()).toBe(empty)
       await generated()
       await enableApi(true)
       const ready = version()
-      expect((await GET()).status).toBe(200)
+      expect((await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))).status).toBe(200)
       expect(version()).toBe(ready)
     } finally {
       reader.close()
@@ -69,31 +69,31 @@ describe('licensing signing key lifecycle', () => {
     const keys = (await settings()).signingKeys!
     const table = 'licensing_settings_signing_keys'
     await ctx.run(`UPDATE ${table} SET kid = 'corrupt'`)
-    const unavailable = await GET()
+    const unavailable = await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))
     expect(unavailable.status).toBe(503)
     expect(await unavailable.json()).toEqual({ error: { code: 'unavailable' }, serverTime: expect.any(Number) })
     expect(await loadLicensingSigner(ctx.payload, env)).toBeNull()
     await ctx.payload.updateGlobal({ slug: 'licensing-settings', data: { signingKeys: keys } })
     await generated({ rotate: true })
     await ctx.run(`UPDATE ${table} SET retired_at = NULL WHERE kid = '${original.kid}'`)
-    expect((await GET()).status).toBe(503)
+    expect((await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))).status).toBe(503)
     expect(await loadLicensingSigner(ctx.payload, env)).toBeNull()
   })
 
   it('publishes only public keys and uses 503 with no-store while disabled or uninitialized', async () => {
-    const disabled = await GET()
+    const disabled = await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))
     expect(disabled.status).toBe(503)
     expect(disabled.headers.get('cache-control')).toBe('no-store')
     expect(disabled.headers.get('x-robots-tag')).toBe('noindex')
     expect(await disabled.json()).toEqual({ error: { code: 'unavailable' }, serverTime: expect.any(Number) })
 
     await enableApi(true)
-    const missing = await GET()
+    const missing = await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))
     expect(missing.status).toBe(503)
     expect(await missing.json()).toEqual({ error: { code: 'unavailable' }, serverTime: expect.any(Number) })
     const key = await generated()
     const reads = vi.spyOn(ctx.payload, 'findGlobal')
-    const live = await GET()
+    const live = await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))
     expect(live.status).toBe(200)
     expect(live.headers.get('cache-control')).toBe('public, max-age=3600')
     expect(live.headers.get('date')).not.toBeNull()
@@ -102,7 +102,7 @@ describe('licensing signing key lifecycle', () => {
     expect(await live.json()).toEqual({ keys: [jwk(key)], revokedKids: [] })
     expect(reads.mock.calls.map(([argument]) => argument.slug)).toEqual(['licensing-settings'])
     await enableApi(false)
-    expect((await GET()).status).toBe(503)
+    expect((await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))).status).toBe(503)
   })
 
   it('requires a vault key and serializes concurrent bootstrap attempts', async () => {
@@ -224,7 +224,7 @@ describe('licensing signing key lifecycle', () => {
     const privateForms = [privateDer, der.toString('base64'), seed.toString('hex'), seed.toString('base64'),
       seed.toString('base64url'), master, '-----BEGIN PRIVATE KEY-----']
     await enableApi(true)
-    const response = await GET()
+    const response = await GET(new Request('https://licensing.example.test/api/v1/licensing/keys'))
     const samples = [await response.text(), JSON.stringify([...response.headers]), JSON.stringify(await settings())]
     for (const who of principals) {
       samples.push(JSON.stringify(await ctx.rest('GET', 'globals/licensing-settings', who)))

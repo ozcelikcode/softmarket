@@ -19,7 +19,7 @@ import {
  *   - `stampLicenseTransition` (beforeChange) sets statusChangedAt/statusSource/statusReason when the status changes;
  *   - `logLicenseTransition` (afterChange, still inside the operation transaction) appends the log row.
  * Server code that changes a status declares why through `req.context[LICENSE_TRANSITION_CONTEXT]`. The raw-SQL paths
- * in src/lib/payments/admin-actions.ts (refund/dispute) are connected in L3 (plan §5.3).
+ * in src/lib/payments/admin-actions.ts (refund/dispute) call recordLicenseTransition in their order transaction (plan §5.3).
  */
 
 export type LicenseStatus = (typeof LICENSE_STATUSES)[number]

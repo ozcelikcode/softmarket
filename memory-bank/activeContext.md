@@ -1,3 +1,10 @@
+## Licensing L3 client API
+
+- Signed device activation, refresh and deactivation are implemented under `/api/v1/licensing`. The L2 public key diagnostic shares the prefix and global rate limits. Clients pin the issuer and signing keys, use fresh nonces and hold a verified lease for up to 14 days by default.
+- The existing SQLite writer queue protects device seats and durable nonce claims. Waiting validations share a commit with per-request savepoints. Last-seen and event aggregation have a separate bounded flush path.
+- Refund and dispute append payment-sourced status history atomically. Refund revokes active devices and dispute prevents lease refresh. The panel-admin license detail lookup uses a virtual field because Payload 3.93 cannot build GraphQL for a native join to a GraphQL-disabled collection.
+- Details and remaining deployment verification are in the L3 record in `docs/plan-licensing-security.md` and `docs/licensing/load-report.md`.
+
 ## Licensing L2 crypto and key lifecycle
 
 - Audit fixes bind offline leases to the enrolled license and activation, restrict issuance by retired keys, reject weak public keys and ambiguous metadata, and protect vault rotation against a wrong master. The request verifier can pass the raw decimal timestamp to the canonical builder.

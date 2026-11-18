@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -168,8 +169,18 @@ type OrderView = { status: string; requiresReview: boolean; failureReason?: stri
 const orderOf = async (id: number) => payload.findByID({ collection: 'orders', id, depth: 0, overrideAccess: true }) as unknown as Promise<OrderView>
 const licenseOf = async (order: { id: number }) => {
   const licenseId = (await orderOf(order.id)).items[0]!.license!
-  return payload.findByID({ collection: 'licenses', id: licenseId, depth: 0, overrideAccess: true }) as unknown as Promise<{ status: string; notes?: string }>
+  return payload.findByID({ collection: 'licenses', id: licenseId, depth: 0, overrideAccess: true })
 }
+const licenseHistory = async (license: number) => (await payload.find({
+  collection: 'license-status-log', where: { license: { equals: license } }, depth: 0,
+})).docs
+const activateDevice = (license: number) => payload.create({
+  collection: 'license-activations', data: {
+    license, customer: customerId, product: 1, publicId: randomBytes(12).toString('hex'), status: 'active',
+    devicePublicKey: randomBytes(32).toString('base64url'), deviceKeyThumbprint: randomBytes(32).toString('base64url'),
+    fingerprintHash: randomBytes(32).toString('hex'), activatedAt: new Date().toISOString(),
+  },
+})
 const journal = async (key: string) => (await payload.find({ collection: 'payment-events', where: { eventKey: { equals: key } }, overrideAccess: true, depth: 0 })).docs[0] as unknown as { status: string; failureCode?: string } | undefined
 const refundMails = () => sent.filter((m) => /iade edildi|refunded/i.test(m.subject))
 
@@ -278,6 +289,7 @@ describe('refund', () => {
     const { refundOrder } = await import('../../src/lib/payments/admin-actions')
     const order = await paidOrder()
     expect((await licenseOf(order)).status).toBe('active')
+    const device = await activateDevice((await licenseOf(order)).id)
     const calls = fake.refundCalls
     const mails = refundMails().length
     const result = await refundOrder(deps, order.id, { id: 1 })
@@ -290,6 +302,10 @@ describe('refund', () => {
     expect(stored.notes).toContain(order.orderNumber)
     const license = await licenseOf(order)
     expect(license.status).toBe('revoked')
+    expect(license).toMatchObject({ statusSource: 'payment', statusReason: 'payment_refund', statusChangedAt: stored.refundedAt })
+    expect(await payload.findByID({ collection: 'license-activations', id: device.id })).toMatchObject({
+      status: 'revoked', endReason: 'license_revoked', endedAt: stored.refundedAt,
+    })
     expect(license.notes).toContain('refund')
     expect((await journal(`iyzico:admin-refund:${order.orderNumber}`))?.status).toBe('processed')
     expect((await journal(`iyzico:refund-notice:${order.orderNumber}`))?.status).toBe('processed')
@@ -303,7 +319,32 @@ describe('refund', () => {
     await reconcileOrders(deps)
     await settle()
     expect(fake.refundCalls).toBe(calls + 1)
+    expect(await licenseHistory(license.id)).toMatchObject([{
+      license: license.id, order: order.id, source: 'payment', reason: 'payment_refund',
+      from: 'active', to: 'revoked', actorUser: 1, at: stored.refundedAt,
+    }])
     expect(refundMails().length).toBe(mails + 1)
+  })
+
+  it('rolls back order and device changes when license history cannot be written', async () => {
+    const { refundOrder } = await import('../../src/lib/payments/admin-actions')
+    const order = await paidOrder()
+    const license = await licenseOf(order)
+    const device = await activateDevice(license.id)
+    await run(`CREATE TRIGGER reject_payment_history BEFORE INSERT ON license_status_log
+      WHEN NEW.license_id = ${license.id} BEGIN SELECT RAISE(ABORT, 'test history failure'); END`)
+    const before = fake.refundCalls
+    try {
+      await expect(refundOrder(deps, order.id, { id: 1 })).rejects.toThrow('Could not write license status history')
+      expect((await orderOf(order.id)).status).toBe('fulfilled')
+      expect((await licenseOf(order)).status).toBe('active')
+      expect(await payload.findByID({ collection: 'license-activations', id: device.id })).toMatchObject({ status: 'active' })
+      expect(await licenseHistory(license.id)).toHaveLength(0)
+      expect(fake.refundCalls).toBe(before + 1)
+      expect((await journal(`iyzico:admin-refund:${order.orderNumber}`))?.status).toBe('received')
+    } finally { await run('DROP TRIGGER reject_payment_history') }
+    expect(await refundOrder(deps, order.id, { id: 1 })).toMatchObject({ code: 'refunded' })
+    expect(fake.refundCalls).toBe(before + 1)
   })
 
   it('already refunded at the provider (refund status read first) → provider refund is NOT called; order finalised', async () => {
@@ -447,14 +488,54 @@ describe('provider events (Stripe)', () => {
   it('charge.dispute.created → licences suspended + review; charge.dispute.closed → review stays, licence unchanged', async () => {
     const { processVerifiedEvent } = await import('../../src/lib/payments/events')
     const order = await paidOrder({ provider: 'stripe' })
-    expect((await licenseOf(order)).status).toBe('active')
-    expect(await processVerifiedEvent(deps, { provider: 'stripe', eventId: `evt_P6dispute${order.id}`, type: 'charge.dispute.created', providerPaymentId: order.paymentId }, 'a'.repeat(64), true)).toBe(200)
-    await settle()
-    expect((await licenseOf(order)).status).toBe('suspended')
-    expect(await orderOf(order.id)).toMatchObject({ status: 'fulfilled', requiresReview: true, failureReason: 'dispute_open' })
-    expect(await processVerifiedEvent(deps, { provider: 'stripe', eventId: `evt_P6closed${order.id}`, type: 'charge.dispute.closed', providerPaymentId: order.paymentId }, 'b'.repeat(64), true)).toBe(200)
-    expect((await licenseOf(order)).status).toBe('suspended')
-    expect((await orderOf(order.id)).failureReason).toBe('dispute_closed')
+    const { createLicensingPost, flushLicensingObservations } = await import('@/lib/licensing/api/route')
+    const { provisionSigningKey } = await import('@/lib/licensing/signing')
+    const { activateBody, enableLicensingFixture, leasePayload, makeDevice, randomToken, signedRequest, validateBody } =
+      await import('./helpers/licensing-client')
+    const master = process.env.SOFTMARKET_SECRETS_KEY
+    const signer = process.env.SOFTMARKET_LICENSE_SIGNING_KEY
+    try {
+      process.env.SOFTMARKET_SECRETS_KEY = randomToken(32)
+      process.env.SOFTMARKET_LICENSE_SIGNING_KEY = ''
+      const verifyDevice = makeDevice()
+      const orderLicense = await licenseOf(order)
+      await enableLicensingFixture(payload, 1)
+      await provisionSigningKey(payload)
+      const activation = await createLicensingPost('activate', { loadPayload: async () => payload })(
+        signedRequest('activate', activateBody(orderLicense.key, verifyDevice), verifyDevice).request,
+      )
+      expect(activation.status).toBe(200)
+      const { activationId, lease } = await activation.json() as { activationId: string; lease: string }
+      expect((await licenseOf(order)).status).toBe('active')
+      expect(await processVerifiedEvent(deps, { provider: 'stripe', eventId: `evt_P6dispute${order.id}`, type: 'charge.dispute.created', providerPaymentId: order.paymentId }, 'a'.repeat(64), true)).toBe(200)
+      await settle()
+      expect((await licenseOf(order)).status).toBe('suspended')
+      expect(await orderOf(order.id)).toMatchObject({ status: 'fulfilled', requiresReview: true, failureReason: 'dispute_open' })
+      expect(await processVerifiedEvent(deps, { provider: 'stripe', eventId: `evt_P6closed${order.id}`, type: 'charge.dispute.closed', providerPaymentId: order.paymentId }, 'b'.repeat(64), true)).toBe(200)
+      expect((await licenseOf(order)).status).toBe('suspended')
+      expect((await orderOf(order.id)).failureReason).toBe('dispute_closed')
+      const license = await licenseOf(order)
+      expect(license).toMatchObject({ statusSource: 'payment', statusReason: 'payment_dispute' })
+      expect(await licenseHistory(license.id)).toMatchObject([{
+        license: license.id, order: order.id, source: 'payment', reason: 'payment_dispute',
+        from: 'active', to: 'suspended', at: license.statusChangedAt,
+      }])
+      const device = (await payload.find({ collection: 'license-activations',
+        where: { publicId: { equals: activationId.slice(4) } }, depth: 0,
+      })).docs[0]
+      expect(device).toMatchObject({ status: 'active' })
+      const response = await createLicensingPost('validate', { loadPayload: async () => payload })(signedRequest(
+        'validate', validateBody(leasePayload(lease).ctr, verifyDevice), verifyDevice, { activation: activationId },
+      ).request)
+      expect(response.status).toBe(403)
+      expect(await response.json()).toMatchObject({ error: { code: 'license_suspended' } })
+    } finally {
+      if (master === undefined) delete process.env.SOFTMARKET_SECRETS_KEY
+      else process.env.SOFTMARKET_SECRETS_KEY = master
+      if (signer === undefined) delete process.env.SOFTMARKET_LICENSE_SIGNING_KEY
+      else process.env.SOFTMARKET_LICENSE_SIGNING_KEY = signer
+      await flushLicensingObservations(payload)
+    }
   })
 
   it('charge.refunded (refund made in the dashboard) → provider truth read → order refunded, licence revoked', async () => {

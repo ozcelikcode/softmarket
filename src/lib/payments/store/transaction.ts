@@ -19,10 +19,14 @@ type SQL = ReturnType<typeof sql>
  *   independent read outside the transaction) proves the result is durable.
  */
 
-type Session = { db: { run(query: SQL): Promise<{ rowsAffected: number }> } }
+type Session = { db: {
+  run(query: SQL): Promise<{ rowsAffected: number }>
+  all<T>(query: SQL): Promise<T[]>
+} }
 
 export type PaymentTx = {
   req: PayloadRequest
+  all<T>(query: SQL): Promise<T[]>
   /** Raw statement on the transaction's connection; returns the affected row count. */
   run(query: SQL): Promise<number>
   /** Registers a side effect (e-mail, log, revalidation) that runs only after a confirmed commit. */
@@ -47,15 +51,17 @@ export async function withPaymentTransaction<T>(
   req.transactionID = id
   const sessions = (payload.db as unknown as { sessions: Record<string, Session | undefined> }).sessions
   const effects: (() => void | Promise<void>)[] = []
+  const connection = () => {
+    const session = sessions[String(id)]
+    if (!session || req.transactionID !== id) throw new PaymentTransactionError('transaction_aborted')
+    return session.db
+  }
   let result: T
   try {
     result = await work({
       req,
-      run: async (query) => {
-        const session = sessions[String(id)]
-        if (!session || req.transactionID !== id) throw new PaymentTransactionError('transaction_aborted')
-        return (await session.db.run(query)).rowsAffected
-      },
+      all: (query) => connection().all(query),
+      run: async (query) => (await connection().run(query)).rowsAffected,
       afterCommit: (effect) => void effects.push(effect),
     })
     if (req.transactionID !== id || !sessions[String(id)]) throw new PaymentTransactionError('transaction_aborted')

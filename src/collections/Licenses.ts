@@ -3,7 +3,7 @@ import { APIError, ValidationError } from 'payload'
 
 import { notifyLicenseAssigned } from '@/lib/email/license-assigned'
 
-import { isAdmin, isAdminField, isAdminOrOwnerCustomer, isPanelAdminField, nobodyField } from '@/access'
+import { hasPanelAdminSession, isAdmin, isAdminField, isAdminOrOwnerCustomer, isPanelAdminField, nobodyField } from '@/access'
 import { generateLicenseKey, isValidLicenseKeyFormat, normalizeLicenseKey } from '@/lib/licenses/generate'
 import { LICENSE_STATUSES, addMonths } from '@/lib/licenses/validity'
 import { LICENSE_STATUS_REASONS, LICENSE_STATUS_SOURCES } from '@/lib/licensing/constants'
@@ -209,6 +209,31 @@ export const Licenses: CollectionConfig = {
       type: 'date',
       access: { read: isAdminField, create: nobodyField, update: nobodyField },
       admin: { readOnly: true, position: 'sidebar', date: { pickerAppearance: 'dayAndTime' } },
+    },
+    {
+      // Payload 3.93's GraphQL schema builder fails on a native join to a GraphQL-disabled collection.
+      name: 'activations',
+      type: 'json',
+      virtual: true,
+      admin: { readOnly: true },
+      access: {
+        create: nobodyField,
+        update: nobodyField,
+        read: ({ req }) => req.payloadAPI !== 'GraphQL' && hasPanelAdminSession(req),
+      },
+      hooks: {
+        afterRead: [async ({ req, originalDoc, findMany, currentDepth }) => {
+          if (req.payloadAPI === 'GraphQL' || !hasPanelAdminSession(req)
+            || findMany || currentDepth !== 1 || typeof originalDoc?.id !== 'number') return undefined
+          const { docs, totalDocs, hasNextPage } = await req.payload.find({
+            collection: 'license-activations',
+            where: { license: { equals: originalDoc.id } },
+            req, overrideAccess: false, depth: 0, sort: '-activatedAt', limit: 10,
+            select: { publicId: true, status: true, deviceLabel: true, platform: true, lastSeenAt: true },
+          })
+          return { docs, totalDocs, hasNextPage }
+        }],
+      },
     },
     {
       name: 'notes',

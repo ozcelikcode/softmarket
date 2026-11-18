@@ -1,3 +1,10 @@
+## Licensing L3 client API
+
+- Implemented and tested signed activation, lease refresh and deactivation against temporary SQLite fixtures. L3 reuses the L1 schema and adds no migration.
+- Added durable replay and skew checks, per-device seat enforcement, rebind limits, trusted-prefix abuse controls and privacy-preserving observations. Verified exactly three seats among 20 and 50 concurrent activation attempts.
+- Typecheck, lint, and the full suite passed (102 files, 1,672 tests). The isolated production build compiled all four licensing routes.
+- Added payment transition and rollback regressions and the client contract at `docs/licensing/client-api.md`. Local load p95 was 70.2 ms for 1,000 successful validations. The production HTTP run on port 3600 needs a host that permits loopback binds.
+
 ## Licensing L2 crypto and lease core
 
 - Implemented strict Ed25519 JWS, canonical request and response signing, purpose-specific HMAC and IP privacy helpers. Added the install CLI, transactional key rotation and revocation, and public key discovery.

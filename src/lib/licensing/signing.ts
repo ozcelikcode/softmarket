@@ -39,9 +39,11 @@ async function readKeyRows(payload: Payload, req?: PayloadRequest): Promise<KeyR
   return settings.signingKeys ?? []
 }
 
-export async function loadLicensingSigner(payload: Payload, env: LicensingEnv = process.env): Promise<Ed25519Signer | null> {
+export async function loadLicensingSigner(
+  payload: Payload, env: LicensingEnv = process.env, keyRows?: readonly KeyRow[],
+): Promise<Ed25519Signer | null> {
   try {
-    const rows = await readKeyRows(payload)
+    const rows = keyRows ?? await readKeyRows(payload)
     if (!validSigningKeyRows(rows)) return null
     const active = rows.filter(isActive)
     if (active.length !== 1) return null

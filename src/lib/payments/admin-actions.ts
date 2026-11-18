@@ -1,5 +1,7 @@
 import { sql } from '@payloadcms/db-sqlite'
 
+import { recordLicenseTransition, type LicenseStatus } from '@/lib/licensing/transitions'
+
 import { operationIdempotencyKey } from './idempotency'
 import { deliverOrderNotifications, scheduleOrderNotifications } from './notify'
 import { errorCode, type PaymentsDeps } from './runtime'
@@ -52,6 +54,36 @@ const short = (code: string) => (/^[A-Za-z0-9_.-]{1,64}$/.test(code) ? code : 'i
 
 const noteLine = (now: string, text: string) => `[${now.slice(0, 16).replace('T', ' ')}Z] ${text}`
 
+/** Change each linked license once and keep its summary, history and device state atomic with the order. */
+async function transitionOrderLicenses(
+  tx: PaymentTx, orderId: Id, to: 'revoked' | 'suspended', now: string, line: string, actor?: Actor,
+): Promise<number> {
+  const reason = to === 'revoked' ? 'payment_refund' : 'payment_dispute'
+  const licenses = await tx.all<{ id: number; status: LicenseStatus }>(sql`
+    SELECT id, status FROM licenses
+    WHERE id IN (SELECT license_id FROM orders_items WHERE _parent_id = ${orderId} AND license_id IS NOT NULL)
+      AND ${to === 'revoked' ? sql`status <> 'revoked'` : sql`status = 'active'`}
+  `)
+  for (const { id, status: from } of licenses) {
+    const changed = await tx.run(sql`UPDATE licenses SET status = ${to}, updated_at = ${now},
+        status_reason = ${reason}, status_source = 'payment', status_changed_at = ${now},
+        notes = TRIM(COALESCE(notes, '') || char(10) || ${line})
+      WHERE id = ${id} AND status = ${from}`)
+    if (changed !== 1) throw new Error('payments:license_transition_conflict')
+    await recordLicenseTransition(tx.req, {
+      license: id, from, to, source: 'payment', reason, at: now, order: Number(orderId),
+      actorUser: actor ? Number(actor.id) : undefined,
+    })
+  }
+  if (to === 'revoked') {
+    await tx.run(sql`UPDATE license_activations SET status = 'revoked', end_reason = 'license_revoked',
+        ended_at = ${now}, updated_at = ${now}
+      WHERE status = 'active' AND license_id IN
+        (SELECT license_id FROM orders_items WHERE _parent_id = ${orderId} AND license_id IS NOT NULL)`)
+  }
+  return licenses.length
+}
+
 async function appendOrderNote(tx: PaymentTx, orderId: Id, line: string) {
   await tx.run(sql`UPDATE orders SET notes = TRIM(COALESCE(notes, '') || char(10) || ${line}) WHERE id = ${orderId}`)
 }
@@ -103,10 +135,7 @@ export async function finalizeRefund(deps: PaymentsDeps, orderId: Id, source: 'a
       WHERE id = ${order.id} AND status IN ('paid', 'fulfilled')`)
     if (affected !== 1) throw new Error('payments:refund_conflict')
     const line = noteLine(now, `İade / refund ${order.orderNumber} (${source}${actor ? ` admin #${actor.id}` : ''})`)
-    await tx.run(sql`UPDATE licenses SET status = 'revoked', updated_at = ${now},
-        notes = TRIM(COALESCE(notes, '') || char(10) || ${line})
-      WHERE id IN (SELECT license_id FROM orders_items WHERE _parent_id = ${order.id} AND license_id IS NOT NULL)
-        AND status <> 'revoked'`)
+    await transitionOrderLicenses(tx, order.id, 'revoked', now, line, actor)
     await appendOrderNote(tx, order.id, line)
     await setJournal(tx, journalKey(order.provider, 'admin-refund', order.orderNumber), 'processed', now, null)
     await claimJournal(tx, { provider: order.provider, kind: 'refund-notice', orderNumber: order.orderNumber, orderId: order.id, now }, false)
@@ -297,10 +326,7 @@ export async function applyDispute(deps: PaymentsDeps, orderId: Id): Promise<num
     if (!order) return 0
     const now = deps.now().toISOString()
     const line = noteLine(now, `İtiraz açıldı / dispute opened ${order.orderNumber}`)
-    const suspended = await tx.run(sql`UPDATE licenses SET status = 'suspended', updated_at = ${now},
-        notes = TRIM(COALESCE(notes, '') || char(10) || ${line})
-      WHERE id IN (SELECT license_id FROM orders_items WHERE _parent_id = ${order.id} AND license_id IS NOT NULL)
-        AND status = 'active'`)
+    const suspended = await transitionOrderLicenses(tx, order.id, 'suspended', now, line)
     await appendOrderNote(tx, order.id, line)
     if (await flagReview(tx, order, 'dispute_open', now)) tx.afterCommit(() => scheduleOrderNotifications(deps, order.id))
     deps.log.warn(`order dispute opened order=${order.orderNumber} suspended=${suspended}`)

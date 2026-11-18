@@ -422,6 +422,7 @@ const LICENSING_SETTINGS_FIELDS: Record<string, Entry> = {
 const SPECIFIC: Record<string, Entry> = {
   ...Object.fromEntries(SECURITY_COLLECTIONS.flatMap((slug) => Object.entries(SECURITY_FIELDS).map(([name, entry]) => [`${slug}:${name}`, entry]))),
   ...Object.fromEntries(Object.entries(LICENSING_SETTINGS_FIELDS).map(([name, entry]) => [`licensing-settings:${name}`, entry])),
+  'licenses:activations': ['Aktivasyonlar', 'Activations'],
   'license-activations:status': ['Durum', 'Status'],
   'license-status-log:reason': ['Neden', 'Reason'],
   'licenses:publicId': SECURITY_FIELDS.publicId,
@@ -623,6 +624,9 @@ const LICENSING_OPTIONS: Record<string, readonly [string, string]> = {
   'action=license.revoke': ['Lisans iptal edildi', 'License revoked'],
   'action=license.reactivate': ['Lisans yeniden etkinleştirildi', 'License reactivated'],
   'action=license.restore': ['Otomatik askı geri alındı', 'Automatic suspension restored'],
+  'action=api.activate': ['API aktivasyonu', 'API activation'],
+  'action=api.validate': ['API lisans doğrulaması', 'API license validation'],
+  'action=api.deactivate': ['API deaktivasyonu', 'API deactivation'],
   'action=activation.deactivate': ['Cihaz kaldırıldı', 'Device deactivated'],
   'action=block.add': ['Engel eklendi', 'Block added'],
   'action=block.lift': ['Engel kaldırıldı', 'Block lifted'],

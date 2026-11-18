@@ -4021,6 +4021,15 @@ export interface License {
     | null;
   statusSource?: ('admin' | 'mcp' | 'payment' | 'rule' | 'system' | 'import') | null;
   statusChangedAt?: string | null;
+  activations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * Visible to administrators only.
    */
@@ -4374,6 +4383,9 @@ export interface SecurityAudit {
     | 'license.reactivate'
     | 'license.restore'
     | 'activation.deactivate'
+    | 'api.activate'
+    | 'api.validate'
+    | 'api.deactivate'
     | 'block.add'
     | 'block.lift'
     | 'event.triage'
@@ -6764,6 +6776,7 @@ export interface LicensesSelect<T extends boolean = true> {
   statusReason?: T;
   statusSource?: T;
   statusChangedAt?: T;
+  activations?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;

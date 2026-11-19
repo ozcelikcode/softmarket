@@ -81,7 +81,7 @@ export async function loadPaymentsDeps(payload: Payload, overrides: Partial<Omit
 }
 
 /**
- * S3 drain window for notifications and the callback: capability on AND (site mode `payments` OR within 72 h of
+ * S3 drain window for checkout notifications and browser returns: capability on AND (site mode `payments` OR within 72 h of
  * `commerce.quoteSince`). Read from the DB on every notification (no cache: the switch must take effect at once).
  */
 export async function readWebhookWindow(deps: Pick<PaymentsDeps, 'payload' | 'env' | 'now'>): Promise<boolean> {

@@ -8545,7 +8545,7 @@ export interface SiteSetting {
       };
     };
     /**
-     * Written automatically when payments are switched off; provider notifications are processed for 72 hours after it.
+     * Set when payments mode closes. Payment notifications drain for 72 hours. Refund and dispute notifications for existing orders continue afterward.
      */
     quoteSince?: string | null;
   };

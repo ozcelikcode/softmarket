@@ -1,3 +1,12 @@
+## Payments P8 security audit (2026-11-19, done)
+
+- P8 audit complete; fixes QA'd and runtime-verified (isolated e2e 30/30, MCP Bearer, REST/GraphQL API-key denials, admin cookie session, content:import and payments:reconcile dry runs).
+- Sandbox acceptance waits for user keys. Full suite 1891 tests passed.
+
+- Closed API-key access to order documents, payment events and integrations. Blocked API-key account mutations, restricted order provider fields, and unified panel-session checks for payment settings and legal approval.
+- Kept verified Stripe refunds and disputes active after the checkout drain. Added bounded browser return limits and skipped provider calls for ineligible order states.
+- Typecheck and the full Vitest suite (1891 tests) passed. Real-provider sandbox acceptance and multi-process SQLite performance are pending.
+
 ## L10 deployment and audit (2026-11-19, uncommitted)
 
 - Added `lisans.{$DOMAIN}`, reviewed all systemd units, and documented provisioning, recovery, incident response, and VPS acceptance. `pnpm licensing:preflight` checks the real L4 file helper and reads signing metadata through read-only SQLite.

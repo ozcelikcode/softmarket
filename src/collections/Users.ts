@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig, PayloadRequest } from 'payload'
+import type { Access, CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig, PayloadRequest } from 'payload'
 import { APIError } from 'payload'
 
 import {
@@ -8,6 +8,7 @@ import {
   isAdminField,
   isAdminOrEditor,
   isAdminOrSelfUser,
+  isUsersApiKey,
 } from '@/access'
 import { observeLoginFailure, observeLoginSuccess } from '@/lib/licensing/events/anomalies'
 import { sameOrigin } from '@/lib/portal/guard'
@@ -15,6 +16,9 @@ import { payloadSessionConfig } from '@/lib/server-url'
 
 const isPanelLogin = (req: PayloadRequest) => req.payloadAPI === 'REST' && req.method === 'POST'
   && req.pathname.replace(/\/$/, '') === `${req.payload.config.routes.api}/users/login`
+
+// An API key must not be able to grant itself a panel login by changing staff credentials.
+const manageUsers: Access = (args) => !isUsersApiKey(args.req) && isAdmin(args)
 
 /** First user ever created becomes admin (bootstrap via /admin/create-first-user). */
 const bootstrapFirstAdmin: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
@@ -49,10 +53,10 @@ export const Users: CollectionConfig = {
   access: {
     admin: canAccessAdminPanel,
     read: isAdminOrEditor,
-    create: isAdmin,
-    update: isAdminOrSelfUser,
-    delete: isAdmin,
-    unlock: isAdmin,
+    create: manageUsers,
+    update: (args) => !isUsersApiKey(args.req) && isAdminOrSelfUser(args),
+    delete: manageUsers,
+    unlock: manageUsers,
   },
   hooks: {
     beforeOperation: [({ args, operation, req }) => {

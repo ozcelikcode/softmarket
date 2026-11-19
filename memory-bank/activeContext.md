@@ -1,3 +1,12 @@
+## Payments P8 security audit (2026-11-19, done)
+
+- Audit and fixes complete; Sonnet QA added iyzico callback limiter ordering (closed surface stays 404). Full suite 1891 tests, isolated e2e 30/30.
+- Sandbox acceptance waits for user-supplied iyzico/Stripe keys (`docs/plan-payments.md` P8 record).
+
+- Payload REST and GraphQL require panel cookie sessions for staff access to orders, the payment journal, and integrations. Owners still see their orders. Staff API keys cannot mutate staff or customer accounts, and order provider metadata is limited to staff sessions.
+- Verified Stripe refunds and disputes for a linked order continue after the quote-mode checkout drain while capability and the adapter are enabled. Browser return sync uses two admissions per token and 60 per trusted address per minute, with separate bounded maps for each provider and fresh order-state checks before retrieval.
+- Real-provider sandbox acceptance and multi-process SQLite performance are pending. See the P8 implementation note in `docs/plan-payments.md`.
+
 ## L10 deployment and audit (2026-11-19)
 
 - Added the licensing Caddy host, explicit loopback app listener, read-only VPS preflight, and `docs/licensing/operations.md`.

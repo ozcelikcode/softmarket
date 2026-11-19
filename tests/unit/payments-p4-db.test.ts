@@ -46,6 +46,8 @@ const provider = {
 }
 const fakeFetch: FetchLike = async (url, init) => {
   provider.calls++
+  const session = /\/v1\/checkout\/sessions\/(cs_[A-Za-z0-9_]+)$/.exec(url)?.[1]
+  if (session) return { ok: true, status: 200, text: async () => JSON.stringify({ id: session, status: 'open', payment_status: 'unpaid' }) }
   if (provider.mode === 'network') throw new TypeError('fetch failed')
   if (provider.mode === 'timeout') {
     await new Promise((resolve, reject) => init.signal?.addEventListener('abort', () => reject(new Error('aborted'))))
@@ -118,9 +120,11 @@ function iyzicoWebhook(order: { orderNumber: string; token: string }, extra: Par
   const raw = JSON.stringify({ ...body, ...extra.tamper, ...(extra.pad ? { pad: 'x'.repeat(extra.pad) } : {}) })
   return new Request('https://shop.example/api/payments/iyzico/webhook', { method: 'POST', body: raw, headers: { 'content-type': 'application/json', 'x-iyz-signature-v3': signature } })
 }
-const callback = (body: string) => new Request('https://shop.example/api/payments/iyzico/callback', {
-  method: 'POST', body, headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://sandbox-api.iyzipay.com' },
+const callback = (body: string, headers: Record<string, string> = {}) => new Request('https://shop.example/api/payments/iyzico/callback', {
+  method: 'POST', body, headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://sandbox-api.iyzipay.com', ...headers },
 })
+const proxySecret = 'fixture-payment-return-proxy-secret'
+const proxyHeaders = (ip: string) => ({ 'x-softmarket-client-ip': ip, 'x-softmarket-proxy-secret': proxySecret })
 async function webhook(req: Request, d = deps) {
   const { handleProviderWebhook } = await import('../../src/lib/payments/events')
   const res = await handleProviderWebhook(d, req.url.includes('/stripe/') ? 'stripe' : 'iyzico', req)
@@ -398,6 +402,104 @@ describe('iyzico callback', () => {
     const res2 = await handleIyzicoCallback(deps, callback(`token=${unpaid.token}`))
     expect(res2.status).toBe(303)
     expect((await orderOf(unpaid.id)).status).toBe('pending')
+  })
+
+  it.each(['fulfilled', 'refunded', 'failed', 'cancelled'])('redirects a %s order without contacting iyzico', async (status) => {
+    const { handleIyzicoCallback } = await import('../../src/lib/payments/events')
+    const order = await createOrder({ status })
+    const calls = provider.calls
+    const res = await handleIyzicoCallback(deps, callback(`token=${order.token}`))
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('/tr/hesap/siparisler?donus=1')
+    expect(provider.calls).toBe(calls)
+    expect((await orderOf(order.id)).status).toBe(status)
+  })
+
+  it('caps a pending token across trusted addresses and caps the address across tokens', async () => {
+    const { handleIyzicoCallback } = await import('../../src/lib/payments/events')
+    const { allowIyzicoReturn } = await import('../../src/lib/payments/return-limit')
+    const order = await createOrder()
+    const nextOrder = await createOrder()
+    const baseline = provider.calls
+    vi.stubEnv('FORM_PROXY_SECRET', proxySecret)
+    try {
+      for (const address of ['203.0.113.1', '203.0.113.2', '203.0.113.3']) {
+        const res = await handleIyzicoCallback(deps, callback(`token=${order.token}`, proxyHeaders(address)))
+        expect(res.status).toBe(303)
+        expect(res.headers.get('location')).toBe('/tr/hesap/siparisler?donus=1')
+        expect(res.headers.get('cache-control')).toBe('no-store')
+      }
+      expect(provider.calls).toBe(baseline + 2)
+
+      const limited = proxyHeaders('2001:db8:abcd::1')
+      for (let i = 0; i < 60; i++) expect(allowIyzicoReturn.ip(new Headers(limited))).toBe(true)
+      const blocked = await handleIyzicoCallback(deps, callback(`token=${nextOrder.token}`, proxyHeaders('2001:db8:abcd::2')))
+      expect(blocked.status).toBe(429)
+      expect(blocked.headers.get('cache-control')).toBe('no-store')
+      expect(provider.calls).toBe(baseline + 2)
+      expect((await handleIyzicoCallback(deps, callback(`token=${nextOrder.token}`, proxyHeaders('2001:db8:abce::1')))).status).toBe(303)
+      expect(provider.calls).toBe(baseline + 3)
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+})
+
+describe('iyzico callback while the drain is closed', () => {
+  it('keeps answering a plain 404 even when the address budget is exhausted', async () => {
+    const { handleIyzicoCallback } = await import('../../src/lib/payments/events')
+    const { allowIyzicoReturn } = await import('../../src/lib/payments/return-limit')
+    const order = await createOrder()
+    vi.stubEnv('FORM_PROXY_SECRET', proxySecret)
+    try {
+      const headers = proxyHeaders('198.51.100.77')
+      for (let i = 0; i < 60; i++) expect(allowIyzicoReturn.ip(new Headers(headers))).toBe(true)
+      await setMode('quote-only', new Date(Date.now() - 73 * 3600_000))
+      expect((await handleIyzicoCallback(deps, callback(`token=${order.token}`, headers))).status).toBe(404)
+      await setMode('payments')
+      expect((await handleIyzicoCallback(deps, callback(`token=${order.token}`, headers))).status).toBe(429)
+    } finally {
+      vi.unstubAllEnvs()
+      await setMode('payments')
+    }
+  })
+})
+
+describe('Stripe browser return', () => {
+  it('only retrieves matched pending orders within the drain, subject to independent token and IP limits', async () => {
+    const { syncStripeReturn } = await import('../../src/lib/portal/checkout-orders')
+    const { allowStripeReturn } = await import('../../src/lib/payments/return-limit')
+    const load = vi.spyOn(await import('../../src/lib/payments/runtime'), 'loadPaymentsDeps').mockResolvedValue(deps)
+    const customer = { id: customerId } as Parameters<typeof syncStripeReturn>[0]
+    const session = 'cs_test_P8ReturnA'
+    const order = await createOrder({ provider: 'stripe', providerRef: session })
+    const other = await createOrder({ provider: 'stripe', providerRef: 'cs_test_P8ReturnB' })
+    const terminal = await createOrder({ provider: 'stripe', providerRef: 'cs_test_P8ReturnC', status: 'fulfilled' })
+    const baseline = provider.calls
+    vi.stubEnv('FORM_PROXY_SECRET', proxySecret)
+    const sync = (target: typeof order, ip: string, selected = customer) =>
+      syncStripeReturn(selected, target.id, target.orderNumber, target.token, new Headers(proxyHeaders(ip)))
+    try {
+      await sync(order, '192.0.2.1', { ...customer, id: customerId + 1 })
+      await sync(terminal, '192.0.2.1')
+      expect(provider.calls).toBe(baseline)
+      for (const ip of ['192.0.2.1', '192.0.2.2', '192.0.2.3']) await sync(order, ip)
+      expect(provider.calls).toBe(baseline + 2)
+
+      const limited = proxyHeaders('192.0.2.4')
+      for (let i = 0; i < 60; i++) expect(allowStripeReturn.ip(new Headers(limited))).toBe(true)
+      await sync(other, '192.0.2.4')
+      expect(provider.calls).toBe(baseline + 2)
+      await setMode('quote-only', new Date(Date.now() - 73 * 3600_000))
+      await sync(other, '192.0.2.5')
+      expect(provider.calls).toBe(baseline + 2)
+      await setMode('payments')
+      await sync(other, '192.0.2.5')
+      expect(provider.calls).toBe(baseline + 3)
+    } finally {
+      vi.unstubAllEnvs()
+      load.mockRestore()
+    }
   })
 })
 

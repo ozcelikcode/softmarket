@@ -113,6 +113,8 @@ describe(`migration ${NAME}`, () => {
 // ---------------------------------------------------------------------------------------------------------------
 
 const password = 'p2s-test-password-123'
+const API_KEY = 'p8-fixture-api-key-0123456789abcdef'
+const ORIGIN = 'http://127.0.0.1:3198'
 let admin: TypedUser
 let apiKeyAdmin: TypedUser
 let editor: TypedUser
@@ -121,6 +123,28 @@ let bob: TypedUser
 let editionId: number
 const asUser = <T extends { id: number | string }>(doc: T, collection: 'users' | 'customers', extra: Record<string, unknown> = {}) =>
   ({ ...doc, collection, ...extra }) as unknown as TypedUser
+
+const keyAuth = { authorization: `users API-Key ${API_KEY}` }
+const cookieAuth = (token: string, name = 'payload-token') => ({ cookie: `${name}=${token}`, 'sec-fetch-site': 'same-origin' })
+async function rest(path: string[], auth: Record<string, string>, data?: object, method = data ? 'PATCH' : 'GET') {
+  const { REST_GET, REST_PATCH, REST_POST } = await import('@payloadcms/next/routes')
+  const config = (await import('../../src/payload.config')).default
+  const handler = method === 'GET' ? REST_GET : method === 'PATCH' ? REST_PATCH : REST_POST
+  return handler(config)(new Request(`${ORIGIN}/api/${path.join('/')}`, {
+    method, headers: { ...auth, ...(data ? { 'content-type': 'application/json' } : {}) },
+    body: data ? JSON.stringify(data) : undefined,
+  }), { params: Promise.resolve({ slug: path }) })
+}
+async function graphql(query: string, auth: Record<string, string>) {
+  const { GRAPHQL_POST } = await import('@payloadcms/next/routes')
+  const config = (await import('../../src/payload.config')).default
+  const res = await GRAPHQL_POST(config)(new Request(`${ORIGIN}/api/graphql`, {
+    method: 'POST', headers: { ...auth, 'content-type': 'application/json' }, body: JSON.stringify({ query }),
+  }))
+  expect(res.status).toBe(200)
+  return res.json()
+}
+const signIn = async (collection: 'users' | 'customers', email: string) => (await payload.login({ collection, data: { email, password } })).token!
 
 const orderData = (customer: number, status: string, extra: Record<string, unknown> = {}) => ({
   customer,
@@ -155,10 +179,11 @@ describe('P2-S through Payload', () => {
     // Migrations added after P2-S (the Payload config needs their columns).
     for (const m of later) await m.up(args())
     const u = async (email: string, roles: string[]) => payload.create({ collection: 'users', overrideAccess: true, data: { email, password, roles } as never })
-    const a = await u('admin@p2s.test', ['admin'])
-    admin = asUser(a, 'users')
+    const a = await payload.create({ collection: 'users', overrideAccess: true,
+      data: { email: 'admin@p2s.test', password, roles: ['admin'], enableAPIKey: true, apiKey: API_KEY } })
+    admin = asUser(a, 'users', { _strategy: 'local-jwt' })
     apiKeyAdmin = asUser(a, 'users', { _strategy: 'api-key' })
-    editor = asUser(await u('editor@p2s.test', ['editor']), 'users')
+    editor = asUser(await u('editor@p2s.test', ['editor']), 'users', { _strategy: 'local-jwt' })
     const c = async (email: string) => payload.create({ collection: 'customers', overrideAccess: true, disableVerificationEmail: true, data: { email, password, name: email, _verified: true } as never })
     alice = asUser(await c('alice@p2s.test'), 'customers')
     bob = asUser(await c('bob@p2s.test'), 'customers')
@@ -169,7 +194,9 @@ describe('P2-S through Payload', () => {
     let aliceOrder: number
     let bobOrder: number
     beforeAll(async () => {
-      aliceOrder = (await createOrder(Number(alice.id), 'fulfilled')).id as number
+      aliceOrder = (await createOrder(Number(alice.id), 'fulfilled', {
+        providerRef: 'fixture-provider-reference', providerPaymentId: 'fixture-provider-payment-id', failureReason: 'fixture_internal_code',
+      })).id as number
       bobOrder = (await createOrder(Number(bob.id), 'paid')).id as number
     })
     const read = async (user: TypedUser | null) => {
@@ -182,12 +209,68 @@ describe('P2-S through Payload', () => {
 
     it('read: anonymous none, customer only own (S3: independent of commerce mode), staff all', async () => {
       expect(await read(null)).toBe('forbidden')
+      expect(await read(apiKeyAdmin)).toBe('forbidden')
       expect((await read(alice)) as unknown[]).toHaveLength(1)
       expect(((await read(alice)) as { id: number }[])[0].id).toBe(aliceOrder)
       expect(((await read(bob)) as { id: number }[]).map((d) => d.id)).toEqual([bobOrder])
       await expect(payload.findByID({ collection: 'orders', id: bobOrder, user: alice, overrideAccess: false })).rejects.toThrow()
       expect((await read(editor)) as unknown[]).toHaveLength(2)
       expect((await read(admin)) as unknown[]).toHaveLength(2)
+    })
+
+    it('REST and GraphQL enforce API-key, staff-session, and customer boundaries', async () => {
+      const { PORTAL_COOKIE } = await import('@/lib/portal/cookie')
+      const adminToken = await signIn('users', 'admin@p2s.test')
+      expect((await payload.auth({ headers: new Headers(keyAuth) })).user).toMatchObject({ id: admin.id, _strategy: 'api-key' })
+      const adminCookie = cookieAuth(adminToken)
+      const editorCookie = cookieAuth(await signIn('users', 'editor@p2s.test'))
+      const owner = cookieAuth(await signIn('customers', 'alice@p2s.test'), PORTAL_COOKIE)
+      const other = cookieAuth(await signIn('customers', 'bob@p2s.test'), PORTAL_COOKIE)
+      const path = ['orders', String(aliceOrder)]
+      const query = `{ Order(id: ${aliceOrder}) { id status provider providerEnv providerRef providerPaymentId failureReason billing { identityNumber } } }`
+      const mutation = `mutation {
+        updateOrder(id: ${aliceOrder}, data: {
+          billing: { type: individual, name: "Ali Veli", email: "ali@example.test" }
+          notes: "panel only", requiresReview: true
+        }) { notes requiresReview }
+      }`
+      for (const auth of [keyAuth, { authorization: `Bearer ${API_KEY}` }, { authorization: `JWT ${adminToken}` }]) {
+        expect((await rest(['orders'], auth)).status).toBe(403)
+        expect((await rest(path, auth, { notes: 'panel only', requiresReview: true })).status).toBe(403)
+        for (const document of [query, mutation]) {
+          const result = await graphql(document, auth)
+          expect(result.errors?.[0]?.message).toMatch(/not allowed|forbidden|izniniz yok/i)
+        }
+      }
+      const stored = await payload.findByID({ collection: 'orders', id: aliceOrder })
+      expect(stored.notes).toBe('internal')
+      expect(stored.requiresReview).toBe(false)
+
+      const ownerView = await (await rest(path, owner)).json()
+      expect(ownerView).toMatchObject({ id: aliceOrder, billing: { identityNumber: '10000000146' } })
+      const ownerResult = await graphql(query, owner)
+      expect(ownerResult.errors).toBeUndefined()
+      expect(ownerResult.data.Order).toMatchObject({ status: 'fulfilled', billing: { identityNumber: '10000000146' } })
+      for (const field of ['provider', 'providerEnv', 'providerRef', 'providerPaymentId', 'failureReason']) {
+        expect(ownerView).not.toHaveProperty(field)
+        expect(ownerResult.data.Order[field]).toBeNull()
+      }
+      expect((await rest(path, other)).status).toBe(404)
+      expect((await graphql(query, other)).errors?.[0]?.message).toBeTruthy()
+      expect(await (await rest(path, editorCookie)).json()).toMatchObject({ providerRef: 'fixture-provider-reference' })
+      expect((await graphql(query, adminCookie)).data.Order).toMatchObject({ providerRef: 'fixture-provider-reference' })
+      expect((await rest(path, adminCookie, { notes: 'panel saved via REST' })).status).toBe(200)
+      expect((await graphql(mutation, adminCookie)).data.updateOrder).toMatchObject({ notes: 'panel only', requiresReview: true })
+      await payload.update({ collection: 'orders', id: aliceOrder, data: { notes: 'internal', requiresReview: false } })
+    })
+
+    it('API keys cannot modify account credentials or roles through the document APIs', async () => {
+      for (const [path, field, id] of [['users', 'User', admin.id], ['customers', 'Customer', alice.id]] as const) {
+        expect((await rest([path, String(id)], keyAuth, { name: 'Blocked account update' })).status).toBe(403)
+        const response = await graphql(`mutation { update${field}(id: ${id}, data: { name: "Blocked account update" }) { id } }`, keyAuth)
+        expect(response.errors?.[0]?.message).toMatch(/not allowed|forbidden|izniniz yok/i)
+      }
+      expect((await rest(['users'], keyAuth, { email: 'blocked-admin@p8.test', password }, 'POST')).status).toBe(403)
     })
 
     it('field read: editor never sees billing/consents/idempotency; customer never sees notes/key', async () => {
@@ -214,7 +297,7 @@ describe('P2-S through Payload', () => {
     })
 
     it('update: only admin, and only invoice/notes/requiresReview', async () => {
-      for (const user of [null, alice, bob, editor]) {
+      for (const user of [null, alice, bob, editor, apiKeyAdmin]) {
         await expect(payload.update({ collection: 'orders', id: aliceOrder, user, overrideAccess: false, data: { notes: 'x' } as never })).rejects.toThrow()
       }
       const updated = await payload.update({
@@ -265,6 +348,20 @@ describe('P2-S through Payload', () => {
         await expect(payload.delete({ collection: 'payment-events', id: doc.id, user, overrideAccess: false })).rejects.toThrow()
       }
     })
+
+    it('REST and GraphQL journal writes remain closed and only the panel admin can read', async () => {
+      const panel = cookieAuth(await signIn('users', 'admin@p2s.test'))
+      const id = (await payload.find({ collection: 'payment-events', where: { eventKey: { equals: 'stripe:evt_access' } } })).docs[0]!.id
+      const path = ['payment-events', String(id)]
+      const query = `{ PaymentEvent(id: ${id}) { eventKey status } }`
+      const mutation = `mutation { updatePaymentEvent(id: ${id}, data: { status: processed }) { status } }`
+      expect((await rest(path, keyAuth)).status).toBe(403)
+      expect((await rest(path, keyAuth, { status: 'processed' })).status).toBe(403)
+      expect((await graphql(query, keyAuth)).errors?.[0]?.message).toMatch(/not allowed|forbidden|izniniz yok/i)
+      expect((await graphql(mutation, keyAuth)).errors?.[0]?.message).toMatch(/not allowed|forbidden|izniniz yok/i)
+      expect(await (await rest(path, panel)).json()).toMatchObject({ eventKey: 'stripe:evt_access', status: 'received' })
+      expect((await graphql(query, panel)).data.PaymentEvent).toMatchObject({ eventKey: 'stripe:evt_access', status: 'received' })
+    })
   })
 
   describe('commerce fields (editions + site-settings)', () => {
@@ -300,6 +397,9 @@ describe('P2-S through Payload', () => {
       await rejectsWith(payload.updateGlobal({ slug: 'site-settings', user: admin, overrideAccess: false, data: { commerce: ready } as never }), /PAYMENTS_ENABLED/)
       process.env.PAYMENTS_ENABLED = 'true'
       try {
+        const jwt = await signIn('users', 'admin@p2s.test')
+        expect((await rest(['globals', 'site-settings'], { authorization: `JWT ${jwt}` }, { commerce: ready }, 'POST')).status).toBe(200)
+        expect(await commerceOf(admin)).toMatchObject({ mode: 'quote-only', providers: { iyzico: { enabled: false } } })
         await rejectsWith(payload.updateGlobal({ slug: 'site-settings', user: admin, overrideAccess: false, data: { commerce: { ...ready, vat: { try: { rule: null } } } } as never }), /VAT/)
         await rejectsWith(payload.updateGlobal({ slug: 'site-settings', user: admin, overrideAccess: false, data: { commerce: { ...ready, providers: { stripe: { enabled: true } } } } as never }), /PAYMENTS_STRIPE_ENABLED/)
         await payload.updateGlobal({ slug: 'site-settings', user: admin, overrideAccess: false, data: { commerce: ready } as never })

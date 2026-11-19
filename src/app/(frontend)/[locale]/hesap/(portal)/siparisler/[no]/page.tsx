@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
@@ -32,7 +33,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
   if (!order) notFound()
   const session = (await searchParams).s
   if (order.status === 'pending' && typeof session === 'string') {
-    await syncStripeReturn(customer, order.id, order.orderNumber, session)
+    await syncStripeReturn(customer, order.id, order.orderNumber, session, await headers())
     order = (await getMyOrder(customer, locale, no)) ?? order
   }
   const [t, st] = await Promise.all([

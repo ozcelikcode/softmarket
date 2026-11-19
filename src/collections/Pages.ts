@@ -1,6 +1,6 @@
-import { ValidationError, type Access, type FieldAccess, type CollectionBeforeValidateHook, type CollectionConfig, type TextFieldSingleValidation, type Where } from 'payload'
+import { ValidationError, type Access, type CollectionBeforeValidateHook, type CollectionConfig, type TextFieldSingleValidation, type Where } from 'payload'
 
-import { isAdminOrEditor, isAdminOrEditorField, isAdminOrEditorUser, isAdminUser } from '@/access'
+import { isAdminOrEditor, isAdminOrEditorField, isAdminOrEditorUser, isPanelAdminField } from '@/access'
 import { nextApprovalHash, type LegalReview } from '@/lib/legal-approval'
 import { pageLayoutField, publishedAtField } from '@/fields/common'
 import { linkField } from '@/fields/link'
@@ -9,9 +9,7 @@ import { HOME_SLUG, isReservedSlug, isSystemKey, LANDING_PAGE_TYPES, SYSTEM_KEYS
 
 export const PAGES_AUTOSAVE_INTERVAL = 2000
 
-const panelAdminField: FieldAccess = ({ req: { user } }) =>
-  isAdminUser(user) && (user as { _strategy?: string } | null)?._strategy !== 'api-key'
-const reviewAccess = { read: isAdminOrEditorField, create: panelAdminField, update: panelAdminField }
+const reviewAccess = { read: isAdminOrEditorField, create: isPanelAdminField, update: isPanelAdminField }
 
 const L = (tr: string, en: string) => ({ tr, en })
 const opt = (value: string, tr: string, en: string) => ({ value, label: L(tr, en) })

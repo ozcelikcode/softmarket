@@ -5,7 +5,7 @@ import { Editions } from '../../src/collections/Editions'
 import { Orders } from '../../src/collections/Orders'
 import { PaymentEvents } from '../../src/collections/PaymentEvents'
 import { SiteSettings } from '../../src/globals/SiteSettings'
-import { isOwnerCustomer, nobody } from '../../src/access'
+import { isPanelAdmin, nobody } from '../../src/access'
 import { flatFields } from '../../src/lib/content-import/model'
 import { seedSchema, validateSeed } from '../../src/lib/content-import/schema'
 import { mcpCollections } from '../../src/lib/mcp'
@@ -109,10 +109,17 @@ describe('content:import never accepts commerce values', () => {
 })
 
 describe('collection access and MCP scope', () => {
-  it('orders: staff/owner read, nobody creates or deletes; payment-events: admin read only', () => {
+  it('orders: panel staff and owners read, nobody creates or deletes; payment-events: panel admin read only', async () => {
     expect(Orders.access?.create).toBe(nobody)
     expect(Orders.access?.delete).toBe(nobody)
-    expect(String(Orders.access?.read)).toBe(String(isOwnerCustomer('customer')))
+    expect(Orders.access?.update).toBe(isPanelAdmin)
+    expect(PaymentEvents.access?.read).toBe(isPanelAdmin)
+    const read = (user: object, headers = new Headers()) => Orders.access!.read!({ req: { user, headers } } as never)
+    const editor = { id: 1, collection: 'users', roles: ['editor'], _strategy: 'local-jwt' }
+    expect(await read(editor)).toBe(true)
+    expect(await read(editor, new Headers({ authorization: 'JWT fixture' }))).toBe(false)
+    expect(await read({ ...editor, roles: ['admin'], _strategy: 'api-key' })).toBe(false)
+    expect(await read({ id: 2, collection: 'customers' })).toEqual({ customer: { equals: 2 } })
     for (const op of ['create', 'update', 'delete'] as const) expect(PaymentEvents.access?.[op]).toBe(nobody)
   })
 

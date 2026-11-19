@@ -433,6 +433,40 @@ Kurallar: yazan ≠ denetleyen. Ödeme fazlarında QA **en yüksek effort** ile 
 - **Kapsam:** sıfır bağlamla güvenlik denetimi (webhook, callback, IDOR, CSRF, CSP, MCP, log/PII, env sızıntısı, rate limit). Sandbox runbook'unun gerçek sağlayıcı test ortamlarında koşulması (kullanıcı anahtarları gelince). Perf ölçümü. `AGENTS.md` ("Satış ve ödeme" bölümü; "Online ödeme yok" ifadesinin "seçimli" olarak güncellenmesi), `projectbrief.md` kararı, `memory-bank`, `docs/payments/acceptance.md`.
 - **Kabul:** kritik/yüksek bulgu 0. Sandbox senaryolarının tamamı yeşil. Quote modu yokluk testi yeşil. Kullanıcı onayı.
 
+**P8 security fixes (2026-11-19).** REST and GraphQL require staff panel sessions or customer ownership for order reads, and an admin panel session for order updates, the payment journal, and integration settings. Order provider metadata is staff-only. Commerce switches and legal approvals use the shared admin panel field guard. Users API keys cannot change staff or customer credentials.
+
+The 72-hour quote-mode drain applies to payment notifications and browser returns. Verified Stripe refunds and disputes for existing orders continue after it while payment capability and the adapter are enabled. Signed events still ignored after the drain return an empty 200. Browser returns have independent per-token and per-IP budgets for each provider, and skip provider calls for orders outside their eligible states. Real-provider sandbox acceptance and deployment performance remain pending.
+
+#### P8 security audit record (2026-11-19)
+
+Scope: independent audit of webhook, callback, IDOR, CSRF, CSP, MCP, PII and rate-limit surfaces, followed by targeted fixes and regression tests. Full record and evidence: the audit and fix notes (scratchpad), not committed.
+
+| Finding | Priority | Verdict | Fix |
+|---|---|---|---|
+| F-01 Users API key can read and mutate order, payment-event and integration data | P1 | Partially confirmed (P1 order exposure and mutation confirmed) | Orders need a staff panel session or customer ownership to read and an admin panel session to edit invoice, notes and requiresReview. `payment-events` and `integrations` need an admin panel session. Users API keys lose staff and customer account mutations. |
+| F-02 Verified Stripe refund and dispute events dropped after the quote-mode drain | P2 | Confirmed | Verified refund and dispute events for linked orders are processed after the drain while payments capability and the adapter are enabled. Other post-drain events stay `ignored` with an empty 200. |
+| F-03 Browser return sync unbounded per request | P2 | Partially confirmed (starvation and throttling impact unmeasured) | Per-token and per-IP fixed windows for iyzico and Stripe returns: two syncs per token and 60 requests per trusted IPv4 address or IPv6 /48 per minute. Maps are bounded (10,000 entries) with a shared overflow window. Terminal orders and states outside the eligible set skip provider calls. Saturation returns 429. |
+| F-04 Provider identifiers and failure reasons readable by customers | P3 | Confirmed | Provider, providerEnv, providerRef, providerPaymentId and failureReason are staff-panel-only. Owners keep ordinary order and billing data. |
+| F-05 Any admin JWT (including Authorization-header JWT) accepted for commerce, integration and legal approval writes | P3 | Confirmed | Commerce switches, integration settings and legal approval fields use the shared admin panel guard. |
+
+**Sonnet QA fix:** the iyzico callback IP limiter now runs after the payments capability and drain-window checks, so a closed surface still returns 404. Regression test added.
+
+**Verification:** typecheck; full suite 1891 tests passed; isolated e2e 30/30; MCP works with a Bearer key; REST and GraphQL refuse the API key for orders, payment-events and integrations; admin cookie session works; `content:import` and `payments:reconcile` dry runs clean.
+
+**Residual risks**
+
+- The admin API key can still read licenses, users, customers, support tickets, support ticket messages and form submissions through generic Payload APIs. These are credential-scope risks outside this fix. Narrowing them is a separate decision.
+- Return limits are per process and reset on restart. Shared addresses share budgets, and distributed bursts still generate provider calls. Multi-process SQLite contention is unmeasured.
+- Lifecycle events journaled as `ignored` before deployment stay terminal. Reconcile or the provider dashboard covers affected orders.
+- iyzico disputes have no notification and still depend on manual staff review.
+
+**Pending: real sandbox acceptance (waits for user-supplied keys)**
+
+1. iyzico sandbox key and secret: complete, decline, 3DS, abandon/expire, cancel and refund. Verify V3 webhook fields, signatures, retry/backoff, retrieve status variants, callback behaviour and CSP redirect hops in Chromium, Safari and Firefox.
+2. iyzico merchant configuration: VKN, buyer IP and phone formats, `VIRTUAL` baskets without shipping data, merchant-enabled USD/EUR alongside TRY.
+3. iyzico refund reporting: IYZWSv2 signing of the reporting GET, actual `cancels[]` and refund-status shapes, reporting lag, same-day cancellation versus the refund path.
+4. Stripe, only if enabled: test or restricted key and webhook secret; pinned API version, hosted checkout and 3DS, expiry, PaymentIntent charge expansion, dashboard refunds and dispute webhooks for linked orders after the drain.
+
 ### Ajan dağılımı
 
 | Faz | Yazan (effort) | Denetleyen (effort) | Not |

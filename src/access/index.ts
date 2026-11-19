@@ -27,13 +27,18 @@ export const isAdminOrEditorField: FieldAccess = ({ req: { user } }) => isAdminO
 
 export const nobodyField: FieldAccess = () => false
 
-/**
- * Admin acting through a panel/session login, never through a users API key (MCP or REST `users API-Key`).
- * Used for security/licensing data: a leaked API key must not read IP prefixes, device hashes or change
- * license status (docs/plan-licensing-security.md T6).
- */
-export const hasPanelAdminSession = ({ user, headers }: PayloadRequest): boolean =>
-  isAdminUser(user) && (user as { _strategy?: string })._strategy === 'local-jwt' && !headers.has('authorization')
+const hasPanelJwt = ({ user, headers }: PayloadRequest): boolean =>
+  (user as { _strategy?: string } | null)?._strategy === 'local-jwt' && !headers.has('authorization')
+
+/** Cookie-authenticated staff sessions for payment, security and licensing data. */
+export const hasPanelStaffSession = (req: PayloadRequest): boolean =>
+  isAdminOrEditorUser(req.user) && hasPanelJwt(req)
+
+export const hasPanelAdminSession = (req: PayloadRequest): boolean =>
+  isAdminUser(req.user) && hasPanelJwt(req)
+
+export const isUsersApiKey = ({ user }: PayloadRequest): boolean =>
+  isStaffUser(user) && (user as { _strategy?: string })._strategy === 'api-key'
 
 export const isPanelAdmin: Access = ({ req }) => hasPanelAdminSession(req)
 

@@ -1,6 +1,6 @@
-import type { Access, Field, FieldAccess, GlobalConfig, PayloadRequest } from 'payload'
+import type { Field, GlobalConfig, PayloadRequest } from 'payload'
 
-import { isAdmin, isAdminUser } from '@/access'
+import { isPanelAdmin, nobodyField } from '@/access'
 import { SECRET_IDS, SECRET_LABELS, type SecretId } from '@/lib/integrations/ids'
 
 /*
@@ -18,9 +18,6 @@ import { SECRET_IDS, SECRET_LABELS, type SecretId } from '@/lib/integrations/ids
  * Writes need an admin PANEL session: a users API key (MCP) can neither read nor change anything here.
  */
 
-const panelAdmin = (user: unknown) => isAdminUser(user as never) && (user as { _strategy?: string } | null)?._strategy !== 'api-key'
-const panelAdminAccess: Access = ({ req: { user } }) => panelAdmin(user)
-const nobodyField: FieldAccess = () => false
 const L = (tr: string, en: string) => ({ tr, en })
 const noImport = { contentImport: false }
 const bilingual = (tr: string, en: string) => `${tr} / ${en}`
@@ -77,7 +74,7 @@ export const Integrations: GlobalConfig = {
       'Payment provider keys and the SMTP account. Secret values are stored encrypted and never shown again; a server environment variable, when set, takes precedence.',
     ),
   },
-  access: { read: isAdmin, update: panelAdminAccess, readVersions: () => false },
+  access: { read: isPanelAdmin, update: isPanelAdmin, readVersions: () => false },
   endpoints: [
     {
       path: '/secret',

@@ -1,6 +1,6 @@
-import type { Field, FieldAccess, GlobalConfig } from 'payload'
+import type { Field, GlobalConfig } from 'payload'
 
-import { anyone, isAdmin, isAdminOrEditorField, isAdminUser } from '@/access'
+import { anyone, isAdmin, isAdminOrEditorField, isPanelAdminField } from '@/access'
 import { normalizeHex, validateAccent } from '@/lib/brand'
 import { readCapability } from '@/lib/payments/mode'
 import { percentToBasisPoints, readVatSettings, VAT_GROUPS, VAT_RULE_KINDS } from '@/lib/payments/settings'
@@ -13,9 +13,7 @@ import { CURRENCIES, SITE_COMMERCE_MODES } from '@/lib/payments/types'
  * silently drops such a write. Never accepted by content:import. Provider secrets live in env or, encrypted, in the
  * admin-only `integrations` global (src/globals/Integrations.ts), never here.
  */
-const panelAdmin: FieldAccess = ({ req: { user } }) =>
-  isAdminUser(user) && (user as { _strategy?: string } | null)?._strategy !== 'api-key'
-const commerceAccess = { read: isAdminOrEditorField, create: panelAdmin, update: panelAdmin }
+const commerceAccess = { read: isAdminOrEditorField, create: isPanelAdminField, update: isPanelAdminField }
 const noImport = { contentImport: false }
 type Sibling = Partial<Record<string, unknown>>
 const bilingual = (tr: string, en: string) => `${tr} / ${en}`
@@ -165,8 +163,8 @@ const commerceFields: Field[] = [
       readOnly: true,
       date: { pickerAppearance: 'dayAndTime' },
       description: {
-        tr: 'Ödeme modundan çıkıldığında otomatik yazılır; sağlayıcı bildirimleri bundan sonra 72 saat işlenir.',
-        en: 'Written automatically when payments are switched off; provider notifications are processed for 72 hours after it.',
+        tr: 'Ödeme modundan çıkıldığında otomatik yazılır. Yeni ödeme bildirimleri 72 saat, mevcut siparişlerin iade ve itiraz bildirimleri sonrasında da işlenir.',
+        en: 'Set when payments mode closes. Payment notifications drain for 72 hours. Refund and dispute notifications for existing orders continue afterward.',
       },
     },
     hooks: {

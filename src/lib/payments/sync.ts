@@ -128,9 +128,13 @@ export type SyncOutcome = {
   fulfil?: FulfillResult
 }
 
-export async function syncOrderFromProvider(deps: PaymentsDeps, orderId: Id): Promise<SyncOutcome> {
+export async function syncOrderFromProvider(deps: PaymentsDeps, orderId: Id, allowedStatuses?: readonly OrderStatus[]): Promise<SyncOutcome> {
   const order = await loadOrderRow(deps.payload, orderId)
   if (!order) return { decision: { kind: 'noop', reason: 'not_found' } }
+  // Browser returns have a narrower scope than verified events and reconciliation.
+  if (allowedStatuses && !allowedStatuses.includes(order.status)) {
+    return { orderNumber: order.orderNumber, decision: { kind: 'noop', reason: 'return_status' }, status: order.status }
+  }
   if (!order.providerRef) return { orderNumber: order.orderNumber, decision: { kind: 'noop', reason: 'no_provider_ref' }, status: order.status }
   const provider = deps.providers[order.provider]
   if (!provider) throw new PaymentError('not_configured', { provider: order.provider })

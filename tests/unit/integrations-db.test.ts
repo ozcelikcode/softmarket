@@ -45,9 +45,9 @@ const token = async (collection: 'users' | 'customers', data: { email: string; p
 let jwt: { admin: string; admin2: string; editor: string; customer: string }
 const panel = (j: string) => ({ origin: ORIGIN, 'sec-fetch-site': 'same-origin', cookie: `payload-token=${j}` })
 
-async function rest(method: 'GET' | 'POST', path: string[], headers: Record<string, string>, body?: unknown) {
+async function rest(method: 'GET' | 'PATCH' | 'POST', path: string[], headers: Record<string, string>, body?: unknown) {
   const routes = await import('@payloadcms/next/routes')
-  const handler = method === 'GET' ? routes.REST_GET(await config()) : routes.REST_POST(await config())
+  const handler = (method === 'GET' ? routes.REST_GET : method === 'PATCH' ? routes.REST_PATCH : routes.REST_POST)(await config())
   const res = await handler(new Request(`${ORIGIN}/api/${path.join('/')}`, {
     method, headers: { host: '127.0.0.1:3100', ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...headers },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
@@ -206,20 +206,35 @@ describe('write-only secrets (admin panel session only)', () => {
     expect((await get({})).status).toBe(403)
     expect((await get(panel(jwt.customer))).status).toBe(403)
     expect((await get(panel(jwt.editor))).status).toBe(403)
-    for (const headers of [{ cookie: `payload-token=${jwt.admin}`, 'sec-fetch-site': 'none' }, { authorization: `users API-Key ${API_KEY}` }] as Record<string, string>[]) {
-      const res = await get(headers)
-      expect(res.status).toBe(200)
-      expect(JSON.parse(res.text)).not.toHaveProperty('secrets')
-      noLeak(res.text)
-    }
+    const panelRead = await get({ cookie: `payload-token=${jwt.admin}`, 'sec-fetch-site': 'none' })
+    expect(panelRead.status).toBe(200)
+    expect(JSON.parse(panelRead.text)).not.toHaveProperty('secrets')
+    noLeak(panelRead.text)
+    expect((await get({ authorization: `users API-Key ${API_KEY}` })).status).toBe(403)
+    expect((await get({ authorization: `JWT ${jwt.admin}` })).status).toBe(403)
     const { GRAPHQL_POST } = await import('@payloadcms/next/routes')
-    for (const auth of [{}, panel(jwt.admin), { authorization: `users API-Key ${API_KEY}` }] as Record<string, string>[]) {
+    const graph = async (query: string, auth: Record<string, string>) => {
       const res = await GRAPHQL_POST(await config())(new Request(`${ORIGIN}/api/graphql`, {
         method: 'POST', headers: { host: '127.0.0.1:3100', 'content-type': 'application/json', ...auth },
-        body: JSON.stringify({ query: '{ Integration { secrets smtp { host } } }' }),
+        body: JSON.stringify({ query }),
       }))
-      noLeak(await res.text())
+      const body = await res.text()
+      noLeak(body)
+      return JSON.parse(body)
     }
+    const denied: Record<string, string>[] = [{}, { authorization: `users API-Key ${API_KEY}` }, { authorization: `JWT ${jwt.admin}` }]
+    const mutation = `mutation {
+      updateIntegration(data: {
+        iyzico: { environment: sandbox }, stripe: { environment: sandbox }, smtp: { host: "blocked.example.test" }
+      }) { smtp { host } }
+    }`
+    for (const auth of denied) {
+      expect((await graph('{ Integration { secrets smtp { host } } }', auth)).errors?.[0]?.message).toMatch(/not allowed|forbidden|izniniz yok/i)
+      expect((await graph(mutation, auth)).errors?.[0]?.message).toMatch(/not allowed|forbidden|izniniz yok/i)
+    }
+    const panelGraph = await graph('{ Integration { secrets smtp { host } } }', panel(jwt.admin))
+    expect(panelGraph.errors).toBeUndefined()
+    expect(panelGraph.data.Integration).toMatchObject({ secrets: null, smtp: { host: JSON.parse(panelRead.text).smtp.host } })
     const admin = (await payload.find({ collection: 'users', where: { email: { equals: ADMIN.email } }, overrideAccess: true })).docs[0]!
     const editor = (await payload.find({ collection: 'users', where: { email: { equals: EDITOR.email } }, overrideAccess: true })).docs[0]!
     const local = await payload.findGlobal({ slug: 'integrations', overrideAccess: false, user: { ...admin, collection: 'users', _strategy: 'local-jwt' } as never })
@@ -234,6 +249,7 @@ describe('write-only secrets (admin panel session only)', () => {
     const forged = { 'iyzico.sandbox.apiKey': { enc: 'sm1.forged', kid: 'x', last4: 'XXXX', updatedAt: '2020-01-01T00:00:00.000Z' } }
     expect((await rest('POST', ['globals', 'integrations'], { ...panel(jwt.editor) }, { secrets: forged })).status).toBe(403)
     expect((await rest('POST', ['globals', 'integrations'], { origin: ORIGIN, authorization: `users API-Key ${API_KEY}` }, { smtp: { host: 'evil.example' } })).status).toBe(403)
+    expect((await rest('POST', ['globals', 'integrations'], { authorization: `JWT ${jwt.admin}` }, { smtp: { host: 'blocked.example.test' } })).status).toBe(403)
     // Admin form save (non-secret fields + a forged vault) → settings saved, vault untouched.
     const res = await rest('POST', ['globals', 'integrations'], panel(jwt.admin), { secrets: forged, smtp: { host: 'smtp.panel.test', port: 465, secure: true, user: 'mailer', fromAddress: 'shop@example.test', fromName: 'Shop' } })
     expect(res.status).toBe(200)
@@ -372,6 +388,8 @@ describe('legal approval + company placeholders (legalReady)', () => {
 
     // API key admin (MCP) cannot approve either.
     await payload.update({ collection: 'pages', id: ids[0]!, locale: 'tr', overrideAccess: false, user: apiKeyAdmin as never, data: { legalReview: { approvedBy: 'Bot', approvedAt: '2026-11-17' } } as never })
+    expect((await rest('PATCH', ['pages', String(ids[0]!)], { authorization: `JWT ${jwt.admin}` },
+      { legalReview: { approvedBy: 'Header JWT', approvedAt: '2026-11-17' } })).status).toBe(200)
     expect((await facts()).some((f) => f.approved)).toBe(false)
 
     // Admin panel approves both locales.

@@ -15,7 +15,7 @@ import { CURRENCIES, PRICE_FIELDS, type Currency, type EDITION_SALE_MODES, type 
 export type SiteCommerceMode = (typeof SITE_COMMERCE_MODES)[number]
 export type EditionSaleMode = (typeof EDITION_SALE_MODES)[number]
 
-/** S3: after switching to quote-only, provider webhooks keep being processed for 72 hours. */
+/** S3: after switching to quote-only, checkout payment notifications drain for 72 hours. */
 export const WEBHOOK_DRAIN_MS = 72 * 60 * 60 * 1000
 
 export function readCapability(env: Record<string, string | undefined>): boolean {
@@ -61,11 +61,11 @@ export function resolveEditionMode(gate: CommerceGate, edition: unknown): Editio
 }
 
 /**
- * S3 drain window. Webhooks/callbacks are processed when:
+ * S3 drain window for payment webhooks and browser returns. Checkout sync is allowed when:
  *   - capability is on AND site mode is payments, or
  *   - capability is on AND mode is quote-only AND now ∈ [quoteSince, quoteSince + 72h).
- * Missing/invalid quoteSince or capability off → not processed (route returns 404).
- * The caller must additionally require a valid signature and an existing order during the drain.
+ * Missing/invalid quoteSince or capability off closes the window. Verified lifecycle events can
+ * still apply to existing orders outside this window while capability remains on.
  */
 export function isWebhookProcessingAllowed(input: {
   capability: boolean

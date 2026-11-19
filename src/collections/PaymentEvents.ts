@@ -1,6 +1,6 @@
 import type { CollectionConfig, Field } from 'payload'
 
-import { isAdmin, nobody } from '@/access'
+import { isPanelAdmin, nobody } from '@/access'
 import { PROVIDER_IDS } from '@/lib/payments/types'
 
 /*
@@ -21,7 +21,7 @@ export const PaymentEvents: CollectionConfig = {
     group: 'Sales',
   },
   defaultSort: '-receivedAt',
-  access: { read: isAdmin, create: nobody, update: nobody, delete: nobody },
+  access: { read: isPanelAdmin, create: nobody, update: nobody, delete: nobody },
   fields: readOnly([
     {
       name: 'provider', type: 'select', required: true, label: { tr: 'Sağlayıcı', en: 'Provider' },

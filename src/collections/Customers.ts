@@ -1,6 +1,6 @@
-import { Forbidden, type CollectionConfig } from 'payload'
+import { Forbidden, type Access, type CollectionConfig } from 'payload'
 
-import { isAdmin, isAdminField, isAdminOrEditorUser, isStaffOrSelfCustomer } from '@/access'
+import { isAdmin, isAdminField, isAdminOrEditorUser, isStaffOrSelfCustomer, isUsersApiKey } from '@/access'
 import {
   resetEmailHTML,
   resetEmailSubject,
@@ -10,6 +10,9 @@ import {
 import { portalCookieStrategy } from '@/lib/portal/strategy'
 import { KVKK_CONSENT_VERSION } from '@/lib/portal/policy'
 import { PROFILE_FIELDS } from '@/lib/portal/schemas'
+
+// Portal ownership also protects payment history. Staff API keys must not change customer credentials.
+const manageCustomers: Access = (args) => !isUsersApiKey(args.req) && isAdmin(args)
 
 /** Portal customers. Separate auth collection; never allowed into the admin panel. */
 export const Customers: CollectionConfig = {
@@ -34,11 +37,12 @@ export const Customers: CollectionConfig = {
   access: {
     admin: () => false,
     // Self-registration is mediated by the validated portal action (Turnstile + KVKK).
-    create: ({ req }) => isAdminOrEditorUser(req.user) || (!req.user && req.context?.portalRegistration === true),
+    create: ({ req }) => !isUsersApiKey(req)
+      && (isAdminOrEditorUser(req.user) || (!req.user && req.context?.portalRegistration === true)),
     read: isStaffOrSelfCustomer,
-    update: isStaffOrSelfCustomer,
-    delete: isAdmin,
-    unlock: isAdmin,
+    update: (args) => !isUsersApiKey(args.req) && isStaffOrSelfCustomer(args),
+    delete: manageCustomers,
+    unlock: manageCustomers,
   },
   hooks: {
     beforeOperation: [({ args, operation, req }) => {

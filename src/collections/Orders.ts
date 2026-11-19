@@ -1,6 +1,6 @@
 import { ValidationError, type CollectionBeforeValidateHook, type CollectionConfig, type Field, type FieldAccess, type PayloadRequest } from 'payload'
 
-import { isAdmin, isAdminField, isAdminOrEditorField, isAdminUser, isCustomerUser, isOwnerCustomer, nobody } from '@/access'
+import { hasPanelAdminSession, hasPanelStaffSession, isCustomerUser, isPanelAdmin, isPanelAdminField, nobody, nobodyField } from '@/access'
 import { BUYER_TYPES, isValidTckn, isValidVkn } from '@/lib/payments/identity'
 import { generateOrderNumber, ORDER_NUMBER_RE } from '@/lib/payments/idempotency'
 import { isValidMinor } from '@/lib/payments/money'
@@ -10,15 +10,15 @@ import { LICENSE_TYPES } from './Editions'
 
 /*
  * P2-S orders (plan §2.1). Created ONLY by server code (`overrideAccess: true`, P4/P5); no REST/GraphQL/MCP
- * create for anyone. Staff read all; a customer reads only their own orders, in every commerce mode (S3: after
- * switching to quote-only the history stays visible read-only). Admins may update only `invoice`, `notes` and
+ * create for anyone. Staff panel sessions read all; a customer reads only their own orders, in every commerce mode.
+ * Admin panel sessions may update only `invoice`, `notes` and
  * `requiresReview`; every other field is locked by field access. Never deleted (VUK/TTK retention).
  * Buyer identity/address (`billing`) and consent evidence are hidden from editors.
  */
 
-const nobodyField: FieldAccess = () => false
 const ORDER_ACTIONS = ['refund', 'cancel', 'resend-notifications'] as const
-const adminOrCustomer: FieldAccess = ({ req: { user } }) => isAdminUser(user) || isCustomerUser(user)
+const adminOrCustomer: FieldAccess = ({ req }) => hasPanelAdminSession(req) || isCustomerUser(req.user)
+const staffOnly = { read: (({ req }) => hasPanelStaffSession(req)) satisfies FieldAccess }
 type Sibling = Partial<Record<string, unknown>>
 const msg = (tr: string, en: string) => `${tr} / ${en}`
 const requiredMinor = (value: unknown) => isValidMinor(value) ? true : msg('Geçersiz tutar (kuruş/cent).', 'Invalid amount (minor units).')
@@ -160,9 +160,9 @@ export const Orders: CollectionConfig = {
   })),
   defaultSort: '-createdAt',
   access: {
-    read: isOwnerCustomer('customer'),
+    read: ({ req }) => isCustomerUser(req.user) ? { customer: { equals: req.user.id } } : hasPanelStaffSession(req),
     create: nobody,
-    update: isAdmin,
+    update: isPanelAdmin,
     delete: nobody,
   },
   indexes: [{ fields: ['provider', 'providerRef'], unique: true }],
@@ -195,18 +195,20 @@ export const Orders: CollectionConfig = {
       { name: 'totalMinor', type: 'number', required: true, validate: requiredMinor, label: { tr: 'Genel toplam (kuruş/cent)', en: 'Grand total (minor units)' } },
       {
         name: 'provider', type: 'select', required: true, label: { tr: 'Ödeme sağlayıcısı', en: 'Payment provider' },
+        access: staffOnly,
         options: PROVIDER_IDS.map((p) => ({ value: p, label: { tr: p, en: p } })),
       },
       {
         name: 'providerEnv', type: 'select', label: { tr: 'Sağlayıcı ortamı', en: 'Provider environment' },
+        access: staffOnly,
         options: opts(PROVIDER_ENVS, { sandbox: ['Test', 'Sandbox'], live: ['Canlı', 'Live'] }),
       },
-      { name: 'providerRef', type: 'text', index: true, label: { tr: 'Sağlayıcı oturum referansı', en: 'Provider session reference' } },
-      { name: 'providerPaymentId', type: 'text', index: true, label: { tr: 'Sağlayıcı ödeme no', en: 'Provider payment ID' } },
+      { name: 'providerRef', type: 'text', index: true, access: staffOnly, label: { tr: 'Sağlayıcı oturum referansı', en: 'Provider session reference' } },
+      { name: 'providerPaymentId', type: 'text', index: true, access: staffOnly, label: { tr: 'Sağlayıcı ödeme no', en: 'Provider payment ID' } },
       {
         name: 'idempotencyKey', type: 'text', required: true, unique: true,
         label: { tr: 'Tekrar koruma anahtarı', en: 'Idempotency key' },
-        access: { read: isAdminOrEditorField },
+        access: staffOnly,
         validate: (value: unknown) => typeof value === 'string' && /^[A-Za-z0-9_:.-]{16,128}$/.test(value) ? true : msg('Geçersiz anahtar.', 'Invalid key.'),
       },
       {
@@ -217,7 +219,7 @@ export const Orders: CollectionConfig = {
       dateField('fulfilledAt', 'Lisans atama zamanı', 'Fulfilled at'),
       dateField('refundedAt', 'İade zamanı', 'Refunded at'),
       dateField('cancelledAt', 'İptal zamanı', 'Cancelled at'),
-      { name: 'failureReason', type: 'text', label: { tr: 'Hata kodu', en: 'Failure code' } },
+      { name: 'failureReason', type: 'text', access: staffOnly, label: { tr: 'Hata kodu', en: 'Failure code' } },
       {
         name: 'billing', type: 'group', label: { tr: 'Fatura bilgisi', en: 'Billing details' },
         access: { read: adminOrCustomer },
@@ -237,7 +239,7 @@ export const Orders: CollectionConfig = {
         // P4 notification delivery state (src/lib/payments/notify.ts): written only by server code with conditional
         // SQL. Staff-only, no buyer data: timestamps, an attempt counter and a short error code.
         name: 'notifications', type: 'group', label: { tr: 'Bildirim teslimi', en: 'Notification delivery' },
-        access: { read: isAdminOrEditorField },
+        access: staffOnly,
         admin: { description: { tr: 'Sunucu yazar; e-posta tekrar gönderimini önler.', en: 'Written by the server; prevents duplicate e-mails.' } },
         fields: [
           dateField('confirmationSentAt', 'Sipariş onayı gönderildi', 'Order confirmation sent'),
@@ -258,7 +260,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'requiresReview', type: 'checkbox', defaultValue: false,
       label: { tr: 'İnceleme gerekiyor', en: 'Needs review' },
-      access: { read: isAdminOrEditorField, create: nobodyField, update: isAdminField },
+      access: { ...staffOnly, create: nobodyField, update: isPanelAdminField },
       admin: {
         position: 'sidebar',
         description: { tr: 'Tutar uyuşmazlığı, geç ödeme, belirsiz iade veya ödeme itirazı: lisans otomatik atanmaz.', en: 'Amount mismatch, late payment, unknown refund outcome or payment dispute: no license is assigned automatically.' },
@@ -266,7 +268,7 @@ export const Orders: CollectionConfig = {
     },
     {
       name: 'invoice', type: 'group', label: { tr: 'Fatura', en: 'Invoice' },
-      access: { read: adminOrCustomer, create: nobodyField, update: isAdminField },
+      access: { read: adminOrCustomer, create: nobodyField, update: isPanelAdminField },
       admin: { description: { tr: 'Faturayı kestikten sonra numarasını ve tarihini girin; müşteri portalda görür.', en: 'Enter the number and date after issuing the invoice; the customer sees them in the portal.' } },
       fields: [
         { name: 'number', type: 'text', label: { tr: 'Fatura no', en: 'Invoice number' } },
@@ -276,7 +278,7 @@ export const Orders: CollectionConfig = {
     },
     {
       name: 'notes', type: 'textarea', label: { tr: 'Notlar', en: 'Notes' },
-      access: { read: isAdminOrEditorField, create: nobodyField, update: isAdminField },
+      access: { ...staffOnly, create: nobodyField, update: isPanelAdminField },
       admin: { position: 'sidebar', description: { tr: 'Yalnız personel görür.', en: 'Visible to staff only.' } },
     },
   ],

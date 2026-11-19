@@ -5,7 +5,7 @@ import { getPayloadClient } from '@/lib/site'
 
 /**
  * Customer view of `orders` (P5). Every query runs AS the customer with access rules enforced
- * (`isOwnerCustomer('customer')`), plus an explicit `customer = me` filter as defence in depth: another customer's
+ * (`orders.access.read`), plus an explicit `customer = me` filter as defence in depth: another customer's
  * order number is indistinguishable from a missing one (null → 404). Read-only in every commerce mode (S3).
  * Staff-only fields (`requiresReview`, `notifications`, `notes`, `idempotencyKey`, provider references) are never
  * selected, and field access hides them from customers anyway.

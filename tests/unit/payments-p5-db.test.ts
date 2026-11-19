@@ -327,12 +327,12 @@ describe('portal reads: customers only see their own orders (no IDOR)', () => {
     const raw = await payload.findByID({ collection: 'orders', id: full.id, user: asA, overrideAccess: false, depth: 0 }) as unknown as Record<string, unknown>
     expect(raw).not.toHaveProperty('idempotencyKey')
     expect(raw).not.toHaveProperty('notes')
-    const editor = { id: 999, collection: 'users', roles: ['editor'] }
+    const editor = { id: 999, collection: 'users', roles: ['editor'], _strategy: 'local-jwt' }
     const editorView = await payload.findByID({ collection: 'orders', id: full.id, user: editor as never, overrideAccess: false, depth: 0 }) as unknown as Record<string, unknown>
     expect(editorView).not.toHaveProperty('billing')
     expect(editorView).not.toHaveProperty('consents')
     expect(editorView).not.toHaveProperty('contractSnapshot')
-    const admin = { id: 998, collection: 'users', roles: ['admin'] }
+    const admin = { id: 998, collection: 'users', roles: ['admin'], _strategy: 'local-jwt' }
     const adminView = await payload.findByID({ collection: 'orders', id: full.id, user: admin as never, overrideAccess: false, depth: 0 }) as unknown as Record<string, unknown>
     expect(adminView.contractSnapshot).toContain(a)
   })

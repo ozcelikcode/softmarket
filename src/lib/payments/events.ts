@@ -6,6 +6,7 @@ import { applyDispute, flagDisputeClosed, reconcileRefund } from './admin-action
 import { readLimitedBody } from './body'
 import { bodySha256, ORDER_NUMBER_RE, paymentEventKey } from './idempotency'
 import { MAX_WEBHOOK_BYTES } from './providers/http'
+import { allowIyzicoReturn } from './return-limit'
 import { errorCode, orderReturnPath, readWebhookWindow, type PaymentsDeps } from './runtime'
 import { createPaymentEventStore } from './store/events'
 import { syncOrderFromProvider } from './sync'
@@ -17,8 +18,8 @@ import type { ProviderId, VerifiedWebhookEvent } from './types'
  * Webhook (plan §4.2 + S3 drain):
  *   capability off / adapter not configured        → 404 (no body read, no DB)
  *   outside the drain window, bad/oversized body    → 404 (the closed surface looks absent to probes)
- *   outside the window, VALID signature            → event recorded `ignored` (drain_closed), 200: the provider stops
- *                                                    retrying and the late notification stays visible to staff
+ *   outside the window, VALID signature            → recorded `ignored` (drain_closed), 200, unless it is a
+ *                                                    refund or dispute matched to an existing order
  *   inside the window: body > 256 KB (counted while streaming) → 413, invalid UTF-8/signature → 400 (empty body)
  *   duplicate (already processed/ignored)           → 200
  *   unknown order                                   → `ignored` (unknown_order), 200
@@ -95,6 +96,8 @@ export async function handleProviderWebhook(deps: PaymentsDeps, providerId: Prov
 
 /** Returns the HTTP status for an already verified notification. Exported for tests. */
 export async function processVerifiedEvent(deps: PaymentsDeps, event: VerifiedWebhookEvent, sha256: string, inWindow: boolean): Promise<number> {
+  if (!deps.env.capability) return 404
+  const kind = classifyProviderEvent(event)
   const key = paymentEventKey(event.provider, event.eventId)
   if (!key) {
     deps.log.warn(`webhook rejected provider=${event.provider} reason=bad_event_id`)
@@ -111,9 +114,9 @@ export async function processVerifiedEvent(deps: PaymentsDeps, event: VerifiedWe
       deps.log.info(`webhook duplicate provider=${event.provider} event=${event.eventId}`)
       return 200
     }
-    if (!inWindow || !order) {
+    if (!order || (!inWindow && kind === 'payment')) {
       // A charge event may precede the checkout sync that stores providerPaymentId. Keep it retryable.
-      if (inWindow && !order && event.providerPaymentId && classifyProviderEvent(event) !== 'payment') {
+      if (inWindow && !order && event.providerPaymentId && kind !== 'payment') {
         await events.mark(key, 'error', { failureCode: 'order_not_yet_linked' })
         return 500
       }
@@ -128,7 +131,6 @@ export async function processVerifiedEvent(deps: PaymentsDeps, event: VerifiedWe
   }
 
   try {
-    const kind = classifyProviderEvent(event)
     if (kind !== 'payment') {
       if (kind === 'dispute_opened') await applyDispute(deps, order.id)
       else if (kind === 'dispute_closed') await flagDisputeClosed(deps, order.id)
@@ -163,6 +165,7 @@ export async function processVerifiedEvent(deps: PaymentsDeps, event: VerifiedWe
 
 const CALLBACK_MAX_BYTES = 16 * 1024
 const TOKEN_RE = /^[A-Za-z0-9_-]{8,128}$/
+const IYZICO_RETURN_STATUSES = ['pending', 'paid'] as const
 
 /** Static bilingual page: no request data echoed, no scripts, not indexable, not cacheable. */
 export function callbackErrorPage(status: number): Response {
@@ -195,6 +198,8 @@ export async function handleIyzicoCallback(deps: PaymentsDeps, request: Request)
     return callbackErrorPage(503)
   }
   if (!inWindow) return empty(404)
+  // After the window check: a closed surface keeps answering a uniform 404 and never reveals the limiter.
+  if (!allowIyzicoReturn.ip(request.headers)) return callbackErrorPage(429)
 
   const body = await readLimitedBody(request, CALLBACK_MAX_BYTES)
   const token = body.ok ? new URLSearchParams(body.text).get('token') : null
@@ -202,33 +207,30 @@ export async function handleIyzicoCallback(deps: PaymentsDeps, request: Request)
     deps.log.warn(`callback rejected reason=${body.ok ? 'bad_token' : body.reason}`)
     return callbackErrorPage(400)
   }
-  let orderId: number | string | undefined
-  let orderLocale: string | undefined
+  let order
   try {
     const { docs } = await deps.payload.find({
       collection: 'orders', where: { and: [{ provider: { equals: 'iyzico' } }, { providerRef: { equals: token } }] },
-      limit: 1, depth: 0, overrideAccess: true, select: { orderNumber: true, locale: true },
+      limit: 1, depth: 0, overrideAccess: true, select: { status: true, locale: true },
     })
-    orderId = (docs[0] as { id: number | string } | undefined)?.id
-    orderLocale = (docs[0] as { locale?: string } | undefined)?.locale
+    order = docs[0]
   } catch (error) {
     deps.log.error(`callback lookup failed code=${errorCode(error)}`)
     return callbackErrorPage(503)
   }
   // Syntactically valid unknown tokens get the same redirect as known tokens.
-  if (orderId === undefined) {
-    deps.log.warn('callback rejected reason=unknown_token')
-    return new Response(null, { status: 303, headers: { Location: orderReturnPath('tr'), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } })
-  }
-  try {
-    const outcome = await syncOrderFromProvider(deps, orderId)
-    deps.log.info(`callback synced order=${outcome.orderNumber ?? '?'} status=${outcome.status ?? 'unknown'}`)
-  } catch (error) {
-    // Webhook/reconcile complete it later; the order page shows the confirmed state only.
-    deps.log.warn(`callback sync deferred code=${errorCode(error)}`)
+  if (!order) deps.log.warn('callback rejected reason=unknown_token')
+  else if ((order.status === 'pending' || order.status === 'paid') && allowIyzicoReturn.token(token)) {
+    try {
+      const outcome = await syncOrderFromProvider(deps, order.id, IYZICO_RETURN_STATUSES)
+      deps.log.info(`callback checked order=${outcome.orderNumber ?? '?'} status=${outcome.status ?? 'unknown'}`)
+    } catch (error) {
+      // Webhook/reconcile complete it later; the order page shows the confirmed state only.
+      deps.log.warn(`callback sync deferred code=${errorCode(error)}`)
+    }
   }
   return new Response(null, {
     status: 303,
-    headers: { Location: orderReturnPath(orderLocale), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' },
+    headers: { Location: orderReturnPath(order?.locale), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' },
   })
 }

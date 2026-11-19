@@ -8,6 +8,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { readPaymentsEnv } from '../../src/lib/payments/env'
 import type { PaymentsDeps } from '../../src/lib/payments/runtime'
 import { iyzicoResponseSignature, iyzicoSignaturePrice } from '../../src/lib/payments/signature/iyzico'
+import { computeStripeSignature } from '../../src/lib/payments/signature/stripe'
 import type { FetchLike } from '../../src/lib/payments/types'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn(), unstable_noStore: vi.fn() }))
@@ -467,6 +468,42 @@ describe('cancel', () => {
 })
 
 describe('provider events (Stripe)', () => {
+  it('after the quote drain, signed lifecycle events still apply to a linked order', async () => {
+    const { handleProviderWebhook } = await import('../../src/lib/payments/events')
+    const order = await paidOrder({ provider: 'stripe' })
+    const now = Math.floor(deps.now().getTime() / 1000)
+    const send = (eventId: string, type: string, paymentIntent: string) => {
+      const body = JSON.stringify({ id: eventId, type, data: { object: { payment_intent: paymentIntent } } })
+      return handleProviderWebhook(deps, 'stripe', new Request('https://shop.example/api/payments/stripe/webhook', {
+        method: 'POST', body, headers: { 'stripe-signature': `t=${now},v1=${computeStripeSignature(body, STRIPE_WHSEC, now)}` },
+      }))
+    }
+    const deliver = async (id: string, type: string, intent = order.paymentId) => {
+      const res = await send(id, type, intent)
+      expect(res.status).toBe(200)
+      expect(res.headers.get('cache-control')).toBe('no-store')
+      expect(await res.text()).toBe('')
+      return journal(`stripe:${id}`)
+    }
+    await run(`UPDATE site_settings SET commerce_mode = 'quote-only', commerce_quote_since = '${new Date((now - 73 * 3600) * 1000).toISOString()}'`)
+    try {
+      expect(await deliver('evt_P8Unknown', 'charge.refunded', 'pi_Unknown')).toMatchObject({ status: 'ignored', failureCode: 'drain_closed' })
+      expect(await deliver('evt_P8Payment', 'checkout.session.completed')).toMatchObject({ status: 'ignored', failureCode: 'drain_closed' })
+      expect(await deliver('evt_P8Opened', 'charge.dispute.created')).toMatchObject({ status: 'processed' })
+      expect((await licenseOf(order)).status).toBe('suspended')
+      expect(await deliver('evt_P8Closed', 'charge.dispute.closed')).toMatchObject({ status: 'processed' })
+      expect(await orderOf(order.id)).toMatchObject({ requiresReview: true, failureReason: 'dispute_closed' })
+      fake.stripe.get(order.paymentId)!.refunded = 1200_00
+      expect(await deliver('evt_P8Refund', 'charge.refunded')).toMatchObject({ status: 'processed' })
+      expect(await deliver('evt_P8Refund', 'charge.refunded')).toMatchObject({ status: 'processed' })
+      expect((await orderOf(order.id)).status).toBe('refunded')
+      expect((await licenseOf(order)).status).toBe('revoked')
+      await settle()
+    } finally {
+      await run("UPDATE site_settings SET commerce_mode = 'payments', commerce_quote_since = NULL")
+    }
+  })
+
   it('retries a refund event until its payment is linked and the order has reached paid', async () => {
     const { processVerifiedEvent } = await import('../../src/lib/payments/events')
     const order = await paidOrder({ provider: 'stripe' })

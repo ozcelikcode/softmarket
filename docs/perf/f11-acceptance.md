@@ -1,128 +1,128 @@
-# F11 performans kabulu (2026-11-07)
+# F11 performance acceptance (2026-11-07)
 
-Ortam: `NEXT_DIST_DIR=.next-prod pnpm build` + `next start` 127.0.0.1:3200 (canlı SQLite, yalnız okuma); görselli sayfalar için DB **kopyası** + `.next-f11` build + 3300 (kopyada `media` kaydı + hero görselli landing sayfa `/tr/f11-gorsel-test` ve ana sayfa hero görseli; canlı DB'ye yazılmadı). Lighthouse 13.6 (`scripts/perf-lighthouse.mjs`, `LH_RUNS=3` → **3 koşu medyan**), Chrome for Testing 1248, mobil = varsayılan simüle throttling (Lantern), masaüstü = `--preset=desktop`. Ham sonuçlar: `docs/perf/f11-raw/` (summary-live.json, summary-image.json, isr-query-log.tsv).
+Environment: `NEXT_DIST_DIR=.next-prod pnpm build` + `next start` 127.0.0.1:3200 (live SQLite, read-only); for image pages, a DB **copy** + `.next-f11` build + 3300 (`media` record in copy + landing page with hero image `/tr/f11-gorsel-test` and home page hero image; not written to live DB). Lighthouse 13.6 (`scripts/perf-lighthouse.mjs`, `LH_RUNS=3` → **3-run median**), Chrome for Testing 1248, mobile = default simulated throttling (Lantern), desktop = `--preset=desktop`. Raw results: `docs/perf/f11-raw/` (`summary-live.json`, `summary-image.json`, `isr-query-log.tsv`).
 
-## Bütçe tablosu (plan §7)
+## Budget table (plan §7)
 
-| Metrik | Hedef | Ölçülen | Durum |
+| Metric | Target | Measured | Status |
 |---|---|---|---|
-| LCP (metin hero; /tr, /en, katalog, ürün, çözüm, destek, haberler) | < 2.0 s | 1.06–1.21 s | YEŞİL |
-| LCP (görselli hero; ana sayfa ve landing, kopya DB) | < 2.0 s | **3.01 s** (3 koşu 3007–3013 ms) | KIRMIZI |
-| CLS (tüm sayfalar, görselli dahil) | < 0.05 | 0.000 | YEŞİL |
-| TBT (INP vekili) mobil | < 150 ms | 73–89 ms | YEŞİL |
-| INP vekili (Playwright, 390 px, CPU x4: menü, SSS x3, sekme x3, dil) | < 200 ms | en kötü 128 ms (menü) | YEŞİL |
-| Lighthouse Performance (mobil) | ≥ 90 | 100 (metin) / 94 (görselli) | YEŞİL |
-| Lighthouse A11y / Best Practices | ≥ 95 | 100 / 100 | YEŞİL |
-| Lighthouse SEO | ≥ 95 | **92** (tek başarısız denetim `canonical`) | KIRMIZI (ortam) |
-| Ana sayfa JS gzip toplam | ≤ 130 KB | **191–198 KB** (Next "First Load JS" 132–136 KB) | KIRMIZI |
-| Sayfaya özel chunk | ≤ 15 KB | 0.3–0.8 KB (en büyük rota paylaşımı: global-error 11 KB, [locale]/layout 9 KB) | YEŞİL |
-| CSS gzip | ≤ 30 KB | 12.5 KB (1.4 + 11.1) | YEŞİL |
-| Hero görseli (mobil) | ≤ 180 KB | DPR 1,75'te seçilen `card` 768w = 10–11 KB; DPR 3'te `hero` 1280w = 100 KB (sentetik dokulu fixture; gerçek fotoğrafta değişir) | YEŞİL |
-| Font preload | ≤ 1 dosya / ≤ 60 KB | 1 dosya ama **70 KB**; ayrıca ikinci font (70 KB, preload'suz) ilk yükte iniyor | KIRMIZI |
-| TTFB, ISR HIT | < 50 ms | 123 rotada ikinci istek 2–8 ms (ilk soğuk `/tr` 55.7 ms) | YEŞİL |
-| TTFB, MISS | < 400 ms | MISS gözlenmedi (hepsi build'de üretilmiş); dinamik 24 rota 17–107 ms, ISR MISS yerine geçmez | DOĞRULANMADI |
-| DB sorgu / istek: ana sayfa ≤ 12, ürün ≤ 15 | | ana sayfa 0, ürün 0 (HIT); dinamik liste/form rotaları 11–18 (`/tr/iletisim` 18, `/tr/urunler` 16, arama 33) | SARI (ana sayfa/ürün bütçesi yeşil; dinamik sayfalar için bütçe tanımsız, 18 yüksek) |
+| LCP (text hero; `/tr`, `/en`, catalog, product, solutions, support, news) | < 2.0 s | 1.06–1.21 s | GREEN |
+| LCP (image hero; home page and landing, copy DB) | < 2.0 s | **3.01 s** (3 runs 3007–3013 ms) | RED |
+| CLS (all pages, including images) | < 0.05 | 0.000 | GREEN |
+| TBT (INP proxy) mobile | < 150 ms | 73–89 ms | GREEN |
+| INP proxy (Playwright, 390 px, CPU x4: menu, FAQ x3, tab x3, locale) | < 200 ms | worst 128 ms (menu) | GREEN |
+| Lighthouse Performance (mobile) | ≥ 90 | 100 (text) / 94 (image) | GREEN |
+| Lighthouse A11y / Best Practices | ≥ 95 | 100 / 100 | GREEN |
+| Lighthouse SEO | ≥ 95 | **92** (only failing audit `canonical`) | RED (environment) |
+| Home page JS gzip total | ≤ 130 KB | **191–198 KB** (Next "First Load JS" 132–136 KB) | RED |
+| Page-specific chunk | ≤ 15 KB | 0.3–0.8 KB (largest route share: `global-error` 11 KB, `[locale]/layout` 9 KB) | GREEN |
+| CSS gzip | ≤ 30 KB | 12.5 KB (1.4 + 11.1) | GREEN |
+| Hero image (mobile) | ≤ 180 KB | At DPR 1.75 selected `card` 768w = 10–11 KB; at DPR 3 `hero` 1280w = 100 KB (synthetic textured fixture; varies for real photos) | GREEN |
+| Font preload | ≤ 1 file / ≤ 60 KB | 1 file but **70 KB**; also second font (70 KB, unpreloaded) downloads on initial load | RED |
+| TTFB, ISR HIT | < 50 ms | 2nd request on 123 routes 2–8 ms (first cold `/tr` 55.7 ms) | GREEN |
+| TTFB, MISS | < 400 ms | No MISS observed (all generated at build); 24 dynamic routes 17–107 ms, does not substitute for ISR MISS | NOT VERIFIED |
+| DB queries / request: home ≤ 12, product ≤ 15 | | home 0, product 0 (HIT); dynamic list/form routes 11–18 (`/tr/iletisim` 18, `/tr/urunler` 16, search 33) | YELLOW (home/product budget green; budget undefined for dynamic pages, 18 is high) |
 
-Sonuç: §7 bütçesi **tamamen yeşil değil**; kabul için 4 kırmızı (görselli LCP, SEO, JS, font) kalıyor.
+Result: §7 budget is **not completely green**; 4 reds remain for acceptance (image LCP, SEO, JS, font).
 
-### Mobil (3 koşu medyan)
+### Mobile (3-run median)
 
-| Sayfa | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | JS gzip (KB) |
+| Page | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | JS gzip (KB) |
 |---|---|---|---|---|---|---|---|---|
-| /tr | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 81 | 192 |
-| /en | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 80 | 192 |
-| /tr/urunler | 100 | 100 | 100 | 92 | 1.21 | 0.000 | 87 | 193 |
-| /tr/urunler/…/akis-merkezi | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 81 | 192 |
-| /tr/cozumler | 100 | 100 | 100 | 92 | 1.21 | 0.000 | 89 | 193 |
-| /tr/destek | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 81 | 191 |
-| /tr/haberler | 100 | 100 | 100 | 92 | 1.21 | 0.000 | 88 | 197 |
-| /tr (görselli) | 94 | 100 | 100 | 92 | 3.01 | 0.000 | 75 | 191 |
-| /tr/f11-gorsel-test (görselli) | 94 | 100 | 100 | 92 | 3.01 | 0.000 | 73 | 192 |
+| `/tr` | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 81 | 192 |
+| `/en` | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 80 | 192 |
+| `/tr/urunler` | 100 | 100 | 100 | 92 | 1.21 | 0.000 | 87 | 193 |
+| `/tr/urunler/…/akis-merkezi` | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 81 | 192 |
+| `/tr/cozumler` | 100 | 100 | 100 | 92 | 1.21 | 0.000 | 89 | 193 |
+| `/tr/destek` | 100 | 100 | 100 | 92 | 1.06 | 0.000 | 81 | 191 |
+| `/tr/haberler` | 100 | 100 | 100 | 92 | 1.21 | 0.000 | 88 | 197 |
+| `/tr` (with image) | 94 | 100 | 100 | 92 | 3.01 | 0.000 | 75 | 191 |
+| `/tr/f11-gorsel-test` (with image) | 94 | 100 | 100 | 92 | 3.01 | 0.000 | 73 | 192 |
 
-### Masaüstü (3 koşu medyan)
+### Desktop (3-run median)
 
-| Sayfa | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | JS gzip (KB) |
+| Page | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | JS gzip (KB) |
 |---|---|---|---|---|---|---|---|---|
-| /tr | 100 | 100 | 100 | 92 | 0.29 | 0.000 | 0 | 192 |
-| /en | 100 | 100 | 100 | 92 | 0.29 | 0.000 | 0 | 192 |
-| /tr/urunler | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 0 | 195 |
-| /tr/urunler/…/akis-merkezi | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 5 | 193 |
-| /tr/cozumler | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 0 | 195 |
-| /tr/destek | 100 | 100 | 100 | 92 | 0.29 | 0.000 | 0 | 191 |
-| /tr/haberler | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 0 | 198 |
-| /tr (görselli) | 100 | 100 | 100 | 92 | 0.65 | 0.000 | 0 | 192 |
-| /tr/f11-gorsel-test (görselli) | 100 | 100 | 100 | 92 | 0.65 | 0.000 | 0 | 193 |
+| `/tr` | 100 | 100 | 100 | 92 | 0.29 | 0.000 | 0 | 192 |
+| `/en` | 100 | 100 | 100 | 92 | 0.29 | 0.000 | 0 | 192 |
+| `/tr/urunler` | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 0 | 195 |
+| `/tr/urunler/…/akis-merkezi` | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 5 | 193 |
+| `/tr/cozumler` | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 0 | 195 |
+| `/tr/destek` | 100 | 100 | 100 | 92 | 0.29 | 0.000 | 0 | 191 |
+| `/tr/haberler` | 100 | 100 | 100 | 92 | 0.33 | 0.000 | 0 | 198 |
+| `/tr` (with image) | 100 | 100 | 100 | 92 | 0.65 | 0.000 | 0 | 192 |
+| `/tr/f11-gorsel-test` (with image) | 100 | 100 | 100 | 92 | 0.65 | 0.000 | 0 | 193 |
 
-## Yorum
+## Interpretation
 
-- **Görselli LCP 3.0 s (Lantern).** Aynı sayfa gerçek throttling'te (`--throttling-method=devtools`) LCP = FCP = 2.18 s; metin sayfası 2.16 s: görsel gecikme eklemiyor. Gözlenen yükleme zinciri hızlı (görsel `fetchpriority=high`, `loading=eager`, preload'lu, 10 KB, keşif sorunu yok). Simülasyon görseli ana-iş parçacığı/JS zincirine bağlıyor (`interactive` = LCP = 3006 ms). Deney: görsel engellenince 1.06 s, font engellenince 2.68 s. Yani bütçeyi kurtaran hamleler: (1) JS'i küçült, (2) fontu 1 dosya ve < 60 KB yap/preload'u kaldır. Gerçek kullanıcı alan verisiyle (CrUX) doğrulanmadı.
-- **JS 192 KB gzip.** Dağılım: react-dom 53.7, next client 44.2, Radix NavigationMenu 16.6 (mega menü), ICU MessageFormat ayrıştırıcı 12.5 (istemcide mesaj ayrıştırma), tailwind-merge+cva 9.3, Radix primitifleri 8.2, `[locale]/layout` 9.3, `global-error` 11.2 (her sayfada). Çerçeve tabanı ~100 KB; 130 KB hedefi için ~60 KB site JS'inden en az 30 KB inmeli (mega menüyü CSS/`details` ile, mesajları sunucuda çözerek, tailwind-merge'siz). Büyük iş: ayrı faz.
-- **TBT** F0'daki 6–14 ms'den 73–89 ms'ye çıktı (hâlâ yeşil). Nedeni araştırılmadı (F2 animasyon gözlemcisi/hydration şüpheli; ölçüm makinede dev sunucu açıkken alındı).
-- **SEO 92:** yalnız `canonical`; canlıda alan adı (`NEXT_PUBLIC_SERVER_URL`) verilince kapanması beklenir (F0 ile aynı neden). `bf-cache` dinamik liste sayfalarında (`Cache-Control: private, no-store`) başarısız; bütçe dışı.
-- **Fontlar:** `b6ea3859…woff2` (preload) 70 166 B, `4b23c4cd…woff2` 68–70 KB. İkincisi muhtemelen mono aile (hero panelindeki "Ürün aileleri", sürüm numaraları). Alt küme (latin + latin-ext) veya mono'yu sistem yığınına çekmek önerilir.
-- **Dinamik rotalar:** `/tr/iletisim` (18 sorgu), `/tr/urunler`, `/tr/cozumler`, `/tr/haberler`, indirmeler, dokümantasyon listesi ISR'siz (`private, no-store`). Katalog/iletişim sorguları büyük olasılıkla globals + liste; ISR/`unstable_cache` ile 0'a inebilir.
-- Build: `.next-prod` ve `.next-f11` build'leri ilk denemede zaman aşımsız geçti (doküman build timeout kök neden araştırması bu fazda yapılmadı).
+- **Image LCP 3.0 s (Lantern).** On the same page under real throttling (`--throttling-method=devtools`), LCP = FCP = 2.18 s; text page 2.16 s: the image adds no delay. Observed loading chain is fast (image `fetchpriority=high`, `loading=eager`, preloaded, 10 KB, no discovery issue). Because simulation ties the image to the main-thread/JS chain (`interactive` = LCP = 3006 ms). Experiment: blocking image gives 1.06 s, blocking font gives 2.68 s. So the moves that save the budget are: (1) shrink JS, (2) make font 1 file and < 60 KB / remove preload. Not verified with real-user field data (CrUX).
+- **JS 192 KB gzip.** Breakdown: `react-dom` 53.7, `next client` 44.2, Radix NavigationMenu 16.6 (mega menu), ICU MessageFormat parser 12.5 (client-side message parsing), `tailwind-merge`+`cva` 9.3, Radix primitives 8.2, `[locale]/layout` 9.3, `global-error` 11.2 (on every page). Framework baseline is ~100 KB; for the 130 KB target, at least 30 KB must be cut from ~60 KB of site JS (replacing mega menu with CSS/`details`, resolving messages on server, removing `tailwind-merge`). Large effort: separate phase.
+- **TBT** rose from 6–14 ms in F0 to 73–89 ms (still green). Cause not investigated (F2 animation observer/hydration suspected; measurement was taken on a machine with a dev server running).
+- **SEO 92:** `canonical` only; expected to close in production once a domain (`NEXT_PUBLIC_SERVER_URL`) is set (same reason as F0). `bf-cache` fails on dynamic list pages (`Cache-Control: private, no-store`); out of budget.
+- **Fonts:** `b6ea3859…woff2` (preload) 70,166 B, `4b23c4cd…woff2` 68–70 KB. The second is likely the mono family (`Ürün aileleri` in the hero panel, version numbers). Subsetting (latin + latin-ext) or moving mono to the system stack is recommended.
+- **Dynamic routes:** `/tr/iletisim` (18 queries), `/tr/urunler`, `/tr/cozumler`, `/tr/haberler`, downloads, and documentation listing have no ISR (`private, no-store`). Catalog/contact queries are most likely globals + list; can drop to 0 with ISR/`unstable_cache`.
+- Build: `.next-prod` and `.next-f11` builds passed on the first attempt without timeout (root-cause investigation of documented build timeouts was not done in this phase).
 
-## Düzeltme turu sonrası (2026-11-08, JS/font/görselli LCP)
+## Post-fix round (2026-11-08, JS/font/image LCP)
 
-Ortam: canlı DB'nin salt okunur yedeği + boş uploads (scratchpad), kopyaya yalnız `content:import` ile 1 medya (1600×1000 dokulu JPEG → card 768w 22 KB) ve `/tr/f11-gorsel-test` landing (görselli `default` hero). `NEXT_DIST_DIR=.next-perf` prod build + `next start` 127.0.0.1:3300, Lighthouse 13.6 (`LH_RUNS=3`, medyan), mobil Lantern + masaüstü preset. **Önce** = aynı kopya/fixture ile değişiklik öncesi build (F11 tablosundaki 3.01 s farklı, daha hafif fixture'dandı). Font KB = Lighthouse ağ kaydındaki `Font` transfer toplamı (yeni `fontKb`/`fontCount` alanları).
+Environment: read-only backup of live DB + empty uploads (scratchpad), only 1 media item (1600×1000 textured JPEG → card 768w 22 KB) and `/tr/f11-gorsel-test` landing (`default` hero with image) added to copy via `content:import`. `NEXT_DIST_DIR=.next-perf` prod build + `next start` 127.0.0.1:3300, Lighthouse 13.6 (`LH_RUNS=3`, median), mobile Lantern + desktop preset. **Before** = pre-change build with the same copy/fixture (the 3.01 s in the F11 table was from a different, lighter fixture). Font KB = `Font` transfer total in the Lighthouse network log (new `fontKb`/`fontCount` fields).
 
-### Mobil (3 koşu medyan, önce → sonra)
+### Mobile (3-run median, before → after)
 
-| Sayfa | Perf | LCP (s) | TBT (ms) | CLS | JS gzip (KB) | Font KB (dosya) |
+| Page | Perf | LCP (s) | TBT (ms) | CLS | JS gzip (KB) | Font KB (files) |
 |---|---|---|---|---|---|---|
-| /tr | 100 → 100 | 1.06 → 1.06 | 77 → 71 | 0 → 0 | 192.0 → **129.0** | 138.7 (2) → **48.3 (2)** |
-| /en | 100 → 100 | 1.06 → 1.06 | 73 → 69 | 0 → 0 | 192.0 → **129.0** | 138.7 (2) → **48.3 (2)** |
-| /tr/urunler | 100 → 100 | 1.21 → 1.21 | 75 → 70 | 0 → 0 | 193.3 → 130.4 | 68.5 (1) → **28.1 (1)** |
-| /tr/urunler/akis-yonetimi/akis-merkezi | 100 → 100 | 1.06 → 1.06 | 75 → 67 | 0 → 0 | 192.0 → 129.0 | 68.5 (1) → 28.1 (1) |
-| /tr/f11-gorsel-test (görselli hero) | 93 → 97 | **3.16 → 2.53** | 59 → 70 | 0 → 0 | 192.0 → 129.0 | 68.5 (1) → 28.1 (1) |
+| `/tr` | 100 → 100 | 1.06 → 1.06 | 77 → 71 | 0 → 0 | 192.0 → **129.0** | 138.7 (2) → **48.3 (2)** |
+| `/en` | 100 → 100 | 1.06 → 1.06 | 73 → 69 | 0 → 0 | 192.0 → **129.0** | 138.7 (2) → **48.3 (2)** |
+| `/tr/urunler` | 100 → 100 | 1.21 → 1.21 | 75 → 70 | 0 → 0 | 193.3 → 130.4 | 68.5 (1) → **28.1 (1)** |
+| `/tr/urunler/akis-yonetimi/akis-merkezi` | 100 → 100 | 1.06 → 1.06 | 75 → 67 | 0 → 0 | 192.0 → 129.0 | 68.5 (1) → 28.1 (1) |
+| `/tr/f11-gorsel-test` (image hero) | 93 → 97 | **3.16 → 2.53** | 59 → 70 | 0 → 0 | 192.0 → 129.0 | 68.5 (1) → 28.1 (1) |
 
-### Masaüstü (3 koşu medyan, önce → sonra)
+### Desktop (3-run median, before → after)
 
-| Sayfa | Perf | LCP (s) | TBT (ms) | CLS | JS gzip (KB) | Font KB |
+| Page | Perf | LCP (s) | TBT (ms) | CLS | JS gzip (KB) | Font KB |
 |---|---|---|---|---|---|---|
-| /tr | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 192.0 → 129.0 | 138.7 → 48.3 |
-| /en | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 192.0 → 129.0 | 138.7 → 48.3 |
-| /tr/urunler | 100 → 100 | 0.33 → 0.33 | 0 → 0 | 0 → 0 | 194.6 → 131.9 | 68.5 → 28.1 |
-| /tr/urunler/…/akis-merkezi | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 193.3 → 130.4 | 68.5 → 28.1 |
-| /tr/f11-gorsel-test | 100 → 100 | 0.68 → 0.57 | 0 → 0 | 0 → 0 | 193.3 → 130.4 | 68.5 → 28.1 |
+| `/tr` | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 192.0 → 129.0 | 138.7 → 48.3 |
+| `/en` | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 192.0 → 129.0 | 138.7 → 48.3 |
+| `/tr/urunler` | 100 → 100 | 0.33 → 0.33 | 0 → 0 | 0 → 0 | 194.6 → 131.9 | 68.5 → 28.1 |
+| `/tr/urunler/…/akis-merkezi` | 100 → 100 | 0.29 → 0.29 | 0 → 0 | 0 → 0 | 193.3 → 130.4 | 68.5 → 28.1 |
+| `/tr/f11-gorsel-test` | 100 → 100 | 0.68 → 0.57 | 0 → 0 | 0 → 0 | 193.3 → 130.4 | 68.5 → 28.1 |
 
-Görselli hero gerçek throttling'te (`--throttling-method=devtools`, 3 koşu): LCP 2.24–2.27 s, FCP 2.14 s (görsel ≈ FCP + 0.1 s). A11y/BP 100, SEO 92 (yalnız `canonical`) değişmedi.
+Image hero under real throttling (`--throttling-method=devtools`, 3 runs): LCP 2.24–2.27 s, FCP 2.14 s (image ≈ FCP + 0.1 s). A11y/BP 100, SEO 92 (`canonical` only) unchanged.
 
-### Ne değişti
+### What changed
 
-- **Mega menü (Radix NavigationMenu + Dialog, ~16 KB):** header artık sunucu bileşeni (`header-shell.tsx`); tek istemci adası `header-frame.tsx` (scroll/portal açık tema) + DOM denetleyicisi `src/lib/header-nav.ts`. Paneller HTML'de `hidden`, tetikleyicide `aria-expanded`/`aria-controls`/`data-state`; hover-intent 80 ms aç / 150 ms kapat / 300 ms skip-delay, tıklama toggle (Radix gibi tıkla-kapat hover ile yeniden açılmaz), Escape kapatır ve tetikleyiciye odak döner, ←/→/Home/End üst öğeler arasında, ↓ paneli açıp ilk linke girer, ↑/↓ panel içinde, dışarı tıklama/odak kapatır, link tıklaması kapatır. Mobil menü yerel modal `<dialog>` (odak hapsi, Escape, arka plan inert, odak dönüşü yerleşik; backdrop/link/kapat tıklaması ve ≥64rem kapatır; `html:has(dialog[data-sheet][open])` kaydırma kilidi). `ui/sheet.tsx` silindi.
-- **ICU ayrıştırıcı + mesajlar (12.5 KB):** istemcide next-intl kancası kalmadı; `NextIntlClientProvider` kaldırıldı (provider tek başına `use-intl/format-message` → `intl-messageformat` getiriyordu). Dil seçici yerel ayarı URL'den, etiketini statik JSON seçiminden alır (`publicLanguageSwitch`); `error.tsx`/`global-error.tsx` yalnız `feedback` dizelerini içerir (eskiden iki mesaj dosyasının tamamı, 10.5 KB). Sunucu kodu `next-intl` kök girişini (`hasLocale`) içe aktarmıyor: react-server build'i `NextIntlClientProvider`'ı istemci referansı olarak kaydedip use-intl'i her sayfaya ekliyordu → `src/i18n/has-locale.ts`. Kanıt: build chunk'larında `MALFORMED_ARGUMENT`/`MISSING_MESSAGE` yok; `tests/unit/client-bundle-guard.test.ts` regresyonu kilitler.
-- **tailwind-merge + cva (9.3 KB):** `cn()` sunucuda kalır (F2 `text-small` testi değişmedi). Paylaşılan istemci adaları `cn`/cva/Button/Container kullanmaz; `safeHref` bağımlılıksız `src/lib/safe-href.ts`'e taşındı (i18n/paths istemcide tailwind-merge'i çekiyordu), `jsonLdString` → `src/lib/json-ld-string.ts` (JsonLd adası lib/seo + routing'i çekiyordu). Sayfa düzeyi adalar (tabs, accordion, portal-nav) `cx` (= clsx) kullanır. İstemci adalarındaki 3 lucide ikonu aynı SVG ile satır içi (`ui/client-icons.tsx`).
-- **Font:** `geist/font/sans` (70 KB, tüm diller) yerine `scripts/subset-fonts.sh` ile alt küme değişken Geist (OFL, `src/fonts/OFL.txt`): birincil Latin + Latin-1 + Türkçe (ĞğİıŞş) + noktalama/oklar/€/₺ = 28 KB, **tek preload**; Latin Extended-A'nın geri kalanı ayrı `unicode-range` yüzü (15 KB, yalnız bu karakterler sayfada varsa iner, ölçülen sayfalarda inmedi); Geist Mono alt kümesi 20 KB, preload yok. `font-display: swap`, ortak `Geist Fallback` (Arial + next/font'un hesapladığı ascent/descent/size-adjust) → CLS 0.
-- **Görselli LCP:** hero görseli zaten preload + `fetchpriority=high` + doğru `sizes` (390 px/DPR 1.75 → 768w) idi; render-blocking yalnız 2 CSS. Lantern görselli LCP'yi gözlenen LCP'den önce başlayan tüm JS/font ağ ve CPU düğümleriyle simüle ettiğinden kazanç JS (−63 KB) ve font (−40 KB) azaltımından geldi.
+- **Mega menu (Radix NavigationMenu + Dialog, ~16 KB):** header is now a server component (`header-shell.tsx`); single client island `header-frame.tsx` (scroll/portal light theme) + DOM controller `src/lib/header-nav.ts`. Panels have `hidden` in HTML, triggers have `aria-expanded`/`aria-controls`/`data-state`; hover-intent 80 ms open / 150 ms close / 300 ms skip-delay, click toggle (like Radix, click-to-close does not reopen on hover), Escape closes and returns focus to trigger, ←/→/Home/End across top items, ↓ opens panel and enters first link, ↑/↓ inside panel, outside click/focus closes, link click closes. Mobile menu uses native modal `<dialog>` (focus trap, Escape, background inert, built-in focus return; backdrop/link/close click and ≥64rem close it; `html:has(dialog[data-sheet][open])` scroll lock). `ui/sheet.tsx` deleted.
+- **ICU parser + messages (12.5 KB):** no `next-intl` hooks remain on the client; `NextIntlClientProvider` removed (the provider alone pulled `use-intl/format-message` → `intl-messageformat`). Language switcher gets locale from URL and its label from a static JSON selection (`publicLanguageSwitch`); `error.tsx`/`global-error.tsx` include only `feedback` strings (previously both full message files, 10.5 KB). Server code does not import the `next-intl` root entry (`hasLocale`): the react-server build was registering `NextIntlClientProvider` as a client reference and adding `use-intl` to every page → `src/i18n/has-locale.ts`. Evidence: no `MALFORMED_ARGUMENT`/`MISSING_MESSAGE` in build chunks; `tests/unit/client-bundle-guard.test.ts` locks the regression.
+- **tailwind-merge + cva (9.3 KB):** `cn()` remains on the server (F2 `text-small` test unchanged). Shared client islands do not use `cn`/cva/Button/Container; `safeHref` moved to dependency-free `src/lib/safe-href.ts` (`i18n/paths` was pulling `tailwind-merge` on the client), `jsonLdString` → `src/lib/json-ld-string.ts` (JsonLd island was pulling `lib/seo` + routing). Page-level islands (tabs, accordion, portal-nav) use `cx` (= clsx). 3 lucide icons in client islands inlined with the same SVG (`ui/client-icons.tsx`).
+- **Font:** instead of `geist/font/sans` (70 KB, all languages), subset variable Geist via `scripts/subset-fonts.sh` (OFL, `src/fonts/OFL.txt`): primary Latin + Latin-1 + Turkish (`ĞğİıŞş`) + punctuation/arrows/€/₺ = 28 KB, **single preload**; remaining Latin Extended-A is a separate `unicode-range` face (15 KB, downloaded only if those characters appear on the page; not downloaded on measured pages); Geist Mono subset 20 KB, no preload. `font-display: swap`, shared `Geist Fallback` (Arial + next/font-computed ascent/descent/size-adjust) → CLS 0.
+- **Image LCP:** hero image already had preload + `fetchpriority=high` + accurate `sizes` (390 px/DPR 1.75 → 768w); render-blocking was only 2 CSS files. Because Lantern simulates image LCP with all JS/font network and CPU nodes starting before observed LCP, the gain came from JS (−63 KB) and font (−40 KB) reductions.
 
-### Görsel/davranış karşılaştırması
+### Visual/behavioral comparison
 
-390/1440, 7 sayfa (+ /tr ve /tr/hesap/giris'te mega menü Ürünler hover, Şirket tık, Escape sonrası kapalı; mobil sheet açık ve akordeon açık): header, mega paneller ve mobil sheet piksel düzeyinde aynı (yalnız alt küme fontun alt-piksel kenar yumuşatma farkı, üst 900 px'te 0–25 piksel). Sayfa gövdelerindeki farklar (PageHero/breadcrumb boşluğu, ürün hero'su, footer dil seçici/telif) paralel görsel düzeltme turuna ait. Playwright: `tests/e2e/header-keyboard.spec.ts` (salt okunur, `E2E_BASE_URL` ile izole build'e yönlendirilebilir) 3/3.
+390/1440, 7 pages (+ on `/tr` and `/tr/hesap/giris`: mega menu `Ürünler` hover, `Şirket` click, closed after Escape; mobile sheet open and accordion open): header, mega panels, and mobile sheet are pixel-identical (only sub-pixel antialiasing difference from the subset font, 0–25 pixels in the top 900 px). Differences in page bodies (PageHero/breadcrumb spacing, product hero, footer language switcher/copyright) belong to the parallel visual-fix round. Playwright: `tests/e2e/header-keyboard.spec.ts` (read-only, can be pointed to an isolated build via `E2E_BASE_URL`) 3/3.
 
-### Kalan kırmızılar
+### Remaining reds
 
-- **Görselli hero LCP (Lantern) 2.53 s** (hedef < 2.5 s; 3.16'dan indi). Deney (1 koşu): tüm JS engellenince 1.97 s, yalnız site chunk'ları (`/chunks/app/*`, ~8 KB) engellenince 2.51 s, react-dom veya next chunk'ı engellenince 2.26 s; font engellenince 2.38 s. Kalan maliyet çerçeve tabanı (react-dom 53 + next 43 KB gzip) ve yerel `next start`'ın HTTP/1.1 bağlantı modeli; `experimental.inlineCss` denendi (2.83 s, daha kötü, geri alındı), koşullu adaları `next/dynamic` ile bölmek kazanç vermedi (geri alındı). Canlıda Caddy HTTP/2 ve gerçek fotoğraf boyutu ile yeniden ölçülmeli.
-- **Ana sayfada Geist Mono iniyor** (20 KB, toplam 48 KB ≤ 60 KB bütçesi içinde): hero panelindeki `font-mono` etiketleri ("Ürün aileleri", sayaçlar). Tamamen kaldırmak bu etiketleri sans/sistem mono'ya çevirmek demek (görsel değişiklik), yapılmadı.
-- JS: ana sayfa 129.0 KB (≤ 130); katalog 130.4 / masaüstü 131.9 KB (sayfaya özel liste/filtre chunk'ı) bütçe sınırında. SEO 92 (`canonical`, ortam) değişmedi.
+- **Image hero LCP (Lantern) 2.53 s** (target < 2.5 s; down from 3.16). Experiment (1 run): blocking all JS gives 1.97 s, blocking only site chunks (`/chunks/app/*`, ~8 KB) gives 2.51 s, blocking `react-dom` or `next` chunk gives 2.26 s; blocking font gives 2.38 s. Remaining cost is the framework baseline (`react-dom` 53 + `next` 43 KB gzip) and local `next start`'s HTTP/1.1 connection model; `experimental.inlineCss` was tried (2.83 s, worse, reverted), and splitting conditional islands with `next/dynamic` yielded no gain (reverted). Must be re-measured in production with Caddy HTTP/2 and real photo sizes.
+- **Geist Mono downloads on the home page** (20 KB, within total 48 KB ≤ 60 KB budget): `font-mono` labels in the hero panel (`Ürün aileleri`, counters). Removing it completely means switching these labels to sans/system mono (a visual change), not done.
+- JS: home page 129.0 KB (≤ 130); catalog 130.4 / desktop 131.9 KB (page-specific list/filter chunk) at the budget boundary. SEO 92 (`canonical`, environment) unchanged.
 
-## Yeniden üretme
+## Reproduction
 
-Build ve test için `DATABASE_URI` ve `UPLOADS_DIR` değişkenlerini önce geçici DB/yükleme kopyalarına ayarlayın; aşağıdaki build komutu tek başına DB izolasyonu sağlamaz. `.next` çalışan 3100 geliştirme sunucusuna aittir; bu dizini silmeyin.
+For builds and tests, first set `DATABASE_URI` and `UPLOADS_DIR` to temporary DB/upload copies; the build command below alone does not provide DB isolation. `.next` belongs to the running 3100 dev server; do not delete this directory.
 
-```
+```bash
 NEXT_DIST_DIR=.next-prod pnpm build && NEXT_DIST_DIR=.next-prod pnpm start --hostname 127.0.0.1 --port 3200
 CHROME_PATH=<chrome> LH_RUNS=3 node scripts/perf-lighthouse.mjs <outDir>
-# görselli sayfa: kopya DB + LH_BASE=http://127.0.0.1:3300 LH_URLS=/tr,/tr/<slug> LH_PRESETS=mobile,desktop
+# image page: copy DB + LH_BASE=http://127.0.0.1:3300 LH_URLS=/tr,/tr/<slug> LH_PRESETS=mobile,desktop
 ```
 
-### İzole E2E güvenlik denetimi
+### Isolated E2E security audit
 
-`pnpm test:e2e:isolated` yalnız `127.0.0.1:3400` kullanır; çalışan sunucuya bağlanmaz (`reuseExistingServer:false`). Normal `pnpm test:e2e --list` isolated klasörünü hariç tutar. Kaynak `E2E_SOURCE_DB` (varsayılan `data/softmarket.db`) Python SQLite `mode=ro` ile okunur, backup API'siyle özel geçici dizine kopyalanır; kaynak yoksa oluşturulmaz. Python 3 gereklidir. Uploads bu dizinde boş oluşturulur; canlı uploads kullanılmaz. Başka bir kaynak DB ayarlıysa açıkça `E2E_SOURCE_DB` verin.
+`pnpm test:e2e:isolated` uses `127.0.0.1:3400` only; it does not connect to a running server (`reuseExistingServer:false`). Normal `pnpm test:e2e --list` excludes the isolated folder. Source `E2E_SOURCE_DB` (default `data/softmarket.db`) is read with Python SQLite `mode=ro` and copied to a private temporary directory via the backup API; if the source does not exist, it is not created. Python 3 is required. Uploads are created empty in this directory; live uploads are not used. If another source DB is configured, pass `E2E_SOURCE_DB` explicitly.
 
-Seed `.env` yüklemez; izolasyon bayrağı/dizini, marker, kanonik DB/uploads yolları ve ayrı Payload secret olmadan Payload'ı başlatmaz. Symlink/hardlink DB ve symlink uploads reddedilir. Dosya URI'si `pathToFileURL` ile üretilir (`?`, `#`, `%`, boşluk ve tek tırnak yolu değiştiremez). Başlatılan Payload'ın gerçek DB dosyası (`PRAGMA database_list`) ve medya dizini yazmadan önce doğrulanır. Runtime Payload config de izole env eksik/yanlışsa canlı varsayılanlara düşmek yerine hata verir; 3400 portunda tüm izolasyon bayrakları kaybolsa da kontrol çalışır. Config yolu proje config'ine sabitlenir. Test admini `roles:['admin']` ve API key kapalı oluşturulur; parola/secret rastgele ve yalnız süreç ortamındadır. Parolayı içeren login gövdelerini saklamamak için isolated trace ve shell xtrace kapalıdır; kimlik bilgilerini komut satırına veya loglara yazmayın.
+Seed does not load `.env`; it refuses to start Payload without the isolation flag/directory, marker, canonical DB/uploads paths, and a separate Payload secret. Symlink/hardlink DB and symlink uploads are rejected. The file URI is constructed with `pathToFileURL` (`?`, `#`, `%`, spaces, and single quotes cannot alter the path). The launched Payload's actual DB file (`PRAGMA database_list`) and media directory are verified before writing. Runtime Payload config also errors rather than falling back to live defaults if isolated env is missing/invalid; on port 3400 the check still runs even if all isolation flags are lost. Config path is pinned to the project config. The test admin is created with `roles:['admin']` and API key disabled; password/secret are random and exist only in process env. Isolated trace and shell xtrace are off so login bodies containing passwords are not stored; do not print credentials to the command line or logs.
 
-EXIT/INT/TERM, seed/backup hataları dahil, yalnız testin süreç grubunu sonlandırır ve kendi geçici dizinini temizler. Seed doğrudan `node --import tsx`, Next ise `node_modules/.bin/next` shim'iyle çalışır; araya ayrı süreç grupları oluşturan `pnpm exec` girmez ve Next'in gerekli NODE_PATH ayarı korunur. Playwright `gracefulShutdown: SIGTERM` kullanır; varsayılan zorla kapatma trap'i atlıyordu. SIGKILL veya makine kapanmasında trap çalışamaz; özel geçici kopya/süreç kalabilir, canlı DB'ye geçiş yapılmaz. Hata enjeksiyon testleri eksik env, URI yanıltması, symlink/hardlink, özel karakter içeren yollar, eksik kaynak, seed hatası, xtrace'de parola gizliliği ve SIGTERM temizliğini kapsar. Lighthouse koşu sayısı 1–100 tam sayı olmalıdır; hatalı/kısmi raporlar artık çıkış kodu 1 ve summary içinde hata üretir; çift sayıda koşunun medyanı iki orta değerin ortalamasıdır.
+EXIT/INT/TERM, including seed/backup errors, terminates only the test's process group and cleans up its temporary directory. Seed runs directly via `node --import tsx`, and Next runs via the `node_modules/.bin/next` shim; `pnpm exec` (which creates separate process groups) does not sit in between, and Next's required `NODE_PATH` setting is preserved. Playwright uses `gracefulShutdown: SIGTERM`; default force-kill bypassed the trap. On SIGKILL or machine shutdown the trap cannot run; the private temporary copy/process may remain, and no switch to live DB happens. Fault-injection tests cover missing env, URI spoofing, symlink/hardlink, paths with special characters, missing source, seed error, password hiding under xtrace, and SIGTERM cleanup. Lighthouse run count must be an integer 1–100; malformed/partial reports now produce exit code 1 and an error in the summary; median for an even number of runs is the average of the two middle values.
 
-Denetim doğrulaması (2026-11-08): `pnpm typecheck`, `pnpm lint`, ayrı SQLite/uploads ile `NEXT_DIST_DIR=.next-prod pnpm build` başarılı. `pnpm test` varsayılan paralellikte mevcut ağır SQLite/medya testlerinde timeout verdi; son `pnpm test --maxWorkers=1` 52 dosya/643 test geçti. Normal Playwright listesi 15 test ve isolated dışarıda; isolated listesi 1 test. Gerçek izole E2E'nin API adımı önceden kullanıcısı olan kopyada geçti (yeni hesap admin, blok sırası ve staff/anon preview); eski wrapper kapanışı yetim süreç bıraktı. Bu denemenin süreçlerine sandbox sinyal gönderimini reddettiği için son doğrudan-shim/gracefulShutdown düzeltmesinin gerçek E2E kapanışı tekrar doğrulanamadı. Son shell/izolasyon regresyonu 19/19; 3100 süreci ve `.next` korundu, canlı DB'ye yazılmadı. Bu spec API tabanlıdır; Chromium açılmaz.
+Audit verification (2026-11-08): `pnpm typecheck`, `pnpm lint`, and `NEXT_DIST_DIR=.next-prod pnpm build` with separate SQLite/uploads succeeded. `pnpm test` under default parallelism timed out on existing heavy SQLite/media tests; latest `pnpm test --maxWorkers=1` passed 52 files/643 tests. Normal Playwright list has 15 tests and excludes isolated; isolated list has 1 test. The API step of real isolated E2E passed on a copy with an existing user (new account admin, block order, and staff/anon preview); the old wrapper shutdown left an orphaned process. Because sandbox denied sending signals to this trial's processes, real E2E shutdown of the latest direct-shim/gracefulShutdown fix could not be re-verified. Latest shell/isolation regression 19/19; 3100 process and `.next` preserved, nothing written to live DB. This spec is API-based; Chromium is not launched.

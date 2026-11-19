@@ -1,401 +1,401 @@
-# Plan — Sayfa Kurucu (Page Builder) + Dengeli Animasyon + Performans
+# Plan — Page Builder, Balanced Animation, and Performance
 
-## Kullanıcı kararları (2026-11-07)
+## User decisions (2026-11-07)
 
-- Her şirket için ayrı kurulum; multi-tenant yok.
-- Logo ve tek vurgu rengi admin'den değiştirilebilir; kontrast otomatik kontrol edilir.
-- Liste sayfalarında listenin kendisi de taşınabilir bloktur.
-- Hero'da opsiyonel kısa, sessiz döngü video: poster ve lazy yükleme; mobilde ve reduced-motion durumunda kapalı.
-- Live Preview autosave varsayılan açık (yaklaşık 2 saniye).
+- Separate installation for each company; no multi-tenancy.
+- The logo and single accent color can be changed in the admin; contrast is checked automatically.
+- On listing pages, the listing itself is also a movable block.
+- Optional short, silent looping video in the hero: poster and lazy loading; disabled on mobile and when reduced motion is requested.
+- Live Preview autosave is enabled by default (about 2 seconds).
 
-> Durum: TASLAK PLAN (2026-11-07). Kod değişikliği yok. Uygulama `takim-lideri` kurallarıyla, fazlar halinde.
-> Kaynak: `memory-bank/*`, `AGENTS.md`, `docs/implementation-plan.md`, mevcut kod (aşağıda dosya:satır kanıtlarıyla).
+> Status: DRAFT PLAN (2026-11-07). No code changes. Implementation proceeds in phases under the `takim-lideri` rules.
+> Sources: `memory-bank/*`, `AGENTS.md`, `docs/implementation-plan.md`, and current code (with file:line evidence below).
 
-## 0. Hedef (kullanıcı istekleri)
+## 0. Goal (user requests)
 
-1. Site **verimli ve animasyonlu** olmalı; animasyon dengeli, site hafif, tasarım profesyonel. Kullanıcının gördüğü tasarım hataları için **görsel QA + düzeltme turu** yapılacak (ayrıntılar sonra gelecek).
-2. İçerik **genel şablon** gibi değiştirilebilir olmalı: başlık, metin, menü, hero vb. Ana sayfa yerleşimi **WordPress tarzı blok blok** taşınabilir olmalı.
-
----
-
-## 1. Mevcut durum tespiti (kanıtlı)
-
-### 1.1 Ana sayfa tamamen kodda sabit
-- `src/app/(frontend)/[locale]/page.tsx:45-265`: hero, ürün aileleri, çözümler, logolar, vaka, haberler ve CTA bölümleri JSX içinde sabit sırada duruyor. Bölüm başlıkları ve metinleri i18n `home` sözlüğünden geliyor (`t('title')`, `t('familiesTitle')` …, 22 anahtar: `src/i18n/messages/tr.json` → `home`). CMS'ten yalnızca listelenen kayıtlar (aileler, çözümler, vakalar, haberler) geliyor.
-- Hero CTA hedefleri sabit: `page.tsx:105,108` (`/demo-talep`, `/urunler`). Alt CTA bandı da sabit: `page.tsx:254-263`.
-- Hero sağ paneli bir aile listesi olarak sabit tasarlanmış (`page.tsx:112-144`). Editör bunu görselle ya da videoyla değiştiremiyor.
-- `pages` koleksiyonunda "home" açıklaması var (`src/collections/Pages.ts:36`), ama ana sayfa `pages`'ı hiç okumuyor. Seed'de hiç sayfa kaydı yok (`content/seed/*.json`: globals, aileler/ürünler, çözümler, destek, haberler).
-
-### 1.2 Blok sistemi var, ama dar kullanılıyor
-- 10 blok var (`src/blocks/index.ts:17-28`): hero, featureGrid, mediaText, specTable, stats, logoWall, cta, faq, richText, videoEmbed. Hepsi tek `layoutField()` ile `pages/products/solutions/case-studies` koleksiyonlarında kullanılıyor (`src/fields/common.ts:6-11`).
-- Renderer'ı switch yapısında; tanımsız bloğu atlıyor (`src/components/blocks/render-blocks.tsx:16-37`). Kullanıldığı yerler: hakkımızda, yasal, çözüm detayı, referans detayı ve ürün "ek bloklar".
-- Bloklarda **tema, boşluk, hizalama, animasyon ve anchor alanları yok**. `HeroBlock` her zaman `theme="dark"` (`hero-block.tsx:15`) ve başlığı her zaman `h2` (`hero-block.tsx:20`). Hero sayfanın ilk bloğu olduğunda sayfada `h1` kalmıyor.
-- Ürün sayfası hero, featureGrid ve specTable bloklarını filtreliyor (`urunler/[family]/[product]/page.tsx:81-82`). Bu tek kaynak kuralı korunacak.
-- Admin etiketleri İngilizce (`labels: { singular: 'Hero' }` …). Payload `i18n` ayarı yok (`src/payload.config.ts:56-62`). Blok önizleme görseli (`imageURL`) yok.
-- Live Preview ve draft mode yok: `admin.livePreview` tanımlı değil, `draftMode` kullanımı yok. Drafts `autosave: false` (`common.ts:38-41`).
-
-### 1.3 Liste ve kurumsal sayfaların üst kısımları sabit
-- `PageHero title={t('title')} lead={t('lead')}` deseni şu sayfalarda var: `urunler/page.tsx:51`, `cozumler/page.tsx:44`, `haberler/page.tsx:51`, `referanslar/page.tsx:38`, `kariyer/page.tsx:38`, `is-ortaklari/page.tsx:43`. Üst metinler yalnız i18n'de; altlarına blok eklenemiyor.
-- Hakkımızda `pages` kaydını slug `hakkimizda|about` ile okuyor, ama hero'yu yine `PageHero` + i18n yedeği oluşturuyor (`sirket/hakkimizda/page.tsx:19,41`).
-- Serbest landing sayfası rotası yok: `pages` yalnız yasal ve hakkımızda için okunuyor (`src/lib/content.ts:210-219`).
-
-### 1.4 Globals kısmen düzenlenebilir
-- Header: `navItems` (link + mega `products|solutions` + children) ve tek CTA var (`src/globals/Header.ts`). CMS boşsa i18n yedek menüsü kodda (`src/components/layout/header.tsx:22-49`).
-- **Logo ve site adı CMS'ten gelmiyor**: `Logo` sabit bir SVG ve metin yer tutucusu (`src/components/layout/logo.tsx:3`). Header site adını `c('siteName')` i18n anahtarından alıyor (`header.tsx:58`). `SiteSettings.logo/logoDark` alanları var (`SiteSettings.ts:19-20`), ama header'da kullanılmıyor.
-- Link alanında site içi sabit yol tipi yok: `internal` yalnız bir koleksiyon `reference`'ı çözüyor (`src/fields/link.ts:58-64`). Bu yüzden seed menüsü `type: external, url: "/tr/urunler"` gibi bir geçici çözüm kullanıyor (`content/seed/01-globals.json`). Bu yol locale'e bağımlı (`/tr` sabit).
-- Footer: kolonlar, yasal linkler ve copyright CMS'te. Yedek kolonlar ve yasal linkler kodda (`footer.tsx:32-77`).
-
-### 1.5 Performans ve animasyon bulguları
-- `motion` bağımlılığı (`package.json:56`) `src` içinde **hiç import edilmiyor**. Kullanılmayan bir bağımlılık.
-- `Reveal` her kart için ayrı bir client bileşeni ve ayrı bir IntersectionObserver (`src/components/ui/reveal.tsx:1-26`). Ana sayfada kart sayısı kadar hydrate edilen ada oluşuyor (`page.tsx:99,112,159,186,242`). CSS tarafı doğru: JS yoksa görünür, reduced-motion'da kapalı (`globals.css:132-141,199-202`).
-- Görseller: `Media` için `imageSizes` yok (`src/collections/Media.ts:74-76`) ve tüm Payload görselleri `unoptimized` (`src/components/ui/media-image.tsx:32`, güvenlik gereği). Sonuç: srcset, WebP/AVIF ve boyut küçültme yok; orijinal dosya indiriliyor. LCP için en büyük risk bu.
-- `src/lib/content.ts` yükleyicileri React `cache()` ile sarılı değil (yalnız `site.ts`, `support.ts`, `static-params.ts` sarılı). `generateMetadata` ve sayfa aynı sorguyu iki kez çalıştırıyor: `sirket/hakkimizda/page.tsx:24` ve `:34` (`getPage`), ana sayfada `page.tsx:36` ve `:58` (`getContactSettings`).
-- Ana sayfa, aile başına ürün sayısını bulmak için 200 ürünü tam alanlarla çekiyor (`page.tsx:53,61-65`). Bu aşırı veri çekmek demek. Gereken tek alan `family`.
-- Revalidation çok kaba ve taslakta da tetikleniyor: her `afterChange` çağrısında `/tr` ve `/en` layout'larının tamamı geçersiz kılınıyor (`src/lib/revalidate.ts:10-12,21`). Taslak kaydı da tüm siteyi temizliyor. Autosave ya da live preview eklenirse bu ciddi bir regresyon olur.
-- Fontlar: Geist Sans ve Geist Mono her sayfada preload ediliyor (`src/app/(frontend)/[locale]/layout.tsx:2-3,55`). Mono yalnız küçük etiketlerde kullanılıyor.
-- Client bileşenleri (17): header-shell (382 satır), language-switcher, sheet, tabs, accordion, reveal, json-ld, set-alternates, formlar, portal ve analytics. FAQ için Radix accordion kullanılıyor. Yerine sıfır JS'li `<details>` kullanılabilir.
-- Doküman sayfası build'inde görülen 60 sn timeout'un kök nedeni belirlenemedi (`progress.md`, "404/güvenlik QA").
-
-### 1.6 Uyumlu altyapı (korunacak)
-- Content import şeması Payload config'ten türetiliyor; bloklar `$defs` ile otomatik geliyor (`src/lib/content-import/schema.ts:28`). Blok ve satır ID'leri korunuyor (`importer.ts:60-75`). Yeni bloklar otomatik destek alır. İstisna: `blockReferences` (string blok) şu an filtreleniyor (`schema.ts:28`, `importer.ts:52,71,172`).
-- MCP `pages` için CRUD'a izin veriyor. Header, footer ve site-settings için find/update açık.
-- CSP `frame-ancestors 'self'` (`src/lib/csp.ts:15`). Aynı origin'deki admin iframe önizlemesi uyumlu.
+1. The site should be **performant and animated**; animation should be balanced, the site lightweight, and the design professional. A **visual QA and fix pass** will address design issues observed by the user (details to follow).
+2. Content should be editable like a **general template**: headings, text, menus, hero, and so on. The home page layout should support movable **WordPress-style blocks**.
 
 ---
 
-## 2. Hedef mimari
+## 1. Current state (verified)
 
-### 2.1 Sayfa modeli
-- **Ana sayfa = bir `pages` kaydı.** `SiteSettings` alanına `homePage` (relationship → pages) eklenir. Boşsa slug `home` aranır. O da yoksa mevcut sabit kompozisyon **yedek** olarak render edilir (geriye uyum, boş DB'de site çalışır). Eşdeğerlik sağlandıktan sonra sabit sürüm F6'da "boş durum" bileşenine indirgenir.
-- **Sistem sayfası bağlama:** `pages.systemKey` (select, unique/locale bağımsız): `products | solutions | news | customers | careers | partners | support | contact | about`. Liste rotası `getSystemPage(locale, key)` ile kaydı okur:
-  - `hero` grubu (eyebrow/başlık/lead/medya/aksiyonlar) → `PageHero` yerine. Boşsa i18n yedeği kullanılır.
-  - `layout` blokları → dinamik listenin **altında** render edilir. Listeyi taşınabilir yapmak için `listing` bloğu açık soru 3'e bağlı.
-- **Serbest landing sayfaları:** `[locale]/[slug]/page.tsx` (tek segment). Statik dizinler ve `[...notFound]` daha spesifik/öncelikli kalır. `slug` alanına **ayrılmış slug doğrulaması** eklenir: `CANONICAL_PATHS` içindeki TR ve EN ilk segmentleri (`urunler`, `products`, `destek`, `hesap`, `account`, `ara`, `search`, `admin`, `api` …) reddedilir. EN rewrite tablosu (`src/i18n/paths.ts`) ile çakışma testi yazılır.
-- **ProductFamilies**'e opsiyonel `layout` eklenir. Aile sayfasında ürün ızgarasının altında render edilir. Ürünler mevcut `layout` alanını ve filtre kuralını korur.
-- `pageType`'a `template` eklenir: yayınlanmaz ve sitemap dışında kalır. Editör bunu Payload "Duplicate" ile çoğaltır (bkz. §6).
+### 1.1 The home page is entirely hard-coded
+- `src/app/(frontend)/[locale]/page.tsx:45-265`: the hero, product families, solutions, logos, case study, news, and CTA sections sit in fixed order inside JSX. Section headings and copy come from the i18n `home` dictionary (`t('title')`, `t('familiesTitle')` …, 22 keys: `src/i18n/messages/tr.json` → `home`). Only the listed records (families, solutions, case studies, news) come from the CMS.
+- Hero CTA targets are fixed: `page.tsx:105,108` (`/demo-talep`, `/urunler`). The bottom CTA band is also fixed: `page.tsx:254-263`.
+- The hero right panel is hard-coded as a family list (`page.tsx:112-144`). Editors cannot replace it with an image or video.
+- The `pages` collection has a "home" description (`src/collections/Pages.ts:36`), but the home page never reads `pages`. There are no page records in the seed (`content/seed/*.json`: globals, families/products, solutions, support, news).
 
-### 2.2 Blok kataloğu
-Ortak kurallar:
-- Her bloğa `blockSettings()` fabrikasıyla bir **`appearance` grubu** eklenir. Grup, `initCollapsed` bir `collapsible` ("Görünüm") içinde durur:
-  `theme: dark|light` (blok türüne göre varsayılan), `spacing: none|sm|md|lg`, `align: start|center`, `width: narrow|normal|wide`, `animation: none|subtle` (varsayılan `subtle`), `anchor` (`^[a-z0-9-]{1,40}$`; sayfada tekil olmalı, `beforeValidate` ile kontrol edilir).
-- Admin: `labels: { singular: { tr, en } }`, alan `admin.description`'ları TR, `imageURL` (`public/admin/blocks/<slug>.webp`, 480×300) + `imageAltText`. Blok sıralaması Payload `blocks` sürükle-bırak ile yapılır (dahili özellik). Payload 3.85 blok gruplamayı (`admin.group`) destekliyorsa "Giriş / İçerik / Katalog / Kanıt / Dönüşüm / Yardımcı" grupları kullanılır. Destek Faz 3 spike'ında doğrulanır.
-- Koleksiyon başına izinli set: `pageBlocks` (tümü), `productBlocks` (hero/productFamilies/listing yok), `solutionBlocks`, `familyBlocks`. **Yalnız ekleme yapılır**: bir koleksiyondan blok çıkarmak SQLite'ta tablo düşürür.
-- `blockReferences` (config seviyesinde paylaşılan bloklar) F3 spike'ında değerlendirilir. Tablo adları değişiyorsa veya import şeması (string blok) kırılıyorsa **kullanılmaz**. → **F3 kararı: şimdilik kullanılmaz** (gerekçe F3 bölümünde).
+### 1.2 A block system exists, but its use is limited
+- There are 10 blocks (`src/blocks/index.ts:17-28`): hero, featureGrid, mediaText, specTable, stats, logoWall, cta, faq, richText, videoEmbed. All are used via a single `layoutField()` in the `pages/products/solutions/case-studies` collections (`src/fields/common.ts:6-11`).
+- Its renderer uses a switch statement; it skips any undefined block (`src/components/blocks/render-blocks.tsx:16-37`). Used in: about, legal, solution detail, case study detail, and product "extra blocks".
+- Blocks **lack theme, spacing, alignment, animation, and anchor fields**. `HeroBlock` is always `theme="dark"` (`hero-block.tsx:15`) and its heading is always `h2` (`hero-block.tsx:20`). When a hero is the first block on a page, the page has no `h1`.
+- The product page filters out hero, featureGrid, and specTable blocks (`urunler/[family]/[product]/page.tsx:81-82`). This single-source rule will be preserved.
+- Admin labels are in English (`labels: { singular: 'Hero' }` …). There is no Payload `i18n` config (`src/payload.config.ts:56-62`). There are no block preview images (`imageURL`).
+- Live Preview and draft mode do not exist: `admin.livePreview` is not defined, and `draftMode` is not used. Drafts have `autosave: false` (`common.ts:38-41`).
 
-| Blok (slug) | TR etiket | Durum | Kaynak | İstemci JS |
+### 1.3 Listing and corporate page headers are fixed
+- The `PageHero title={t('title')} lead={t('lead')}` pattern appears on these pages: `urunler/page.tsx:51`, `cozumler/page.tsx:44`, `haberler/page.tsx:51`, `referanslar/page.tsx:38`, `kariyer/page.tsx:38`, `is-ortaklari/page.tsx:43`. Top copy lives only in i18n; blocks cannot be added below them.
+- About reads the `pages` record by slug `hakkimizda|about`, but still builds its hero from `PageHero` + i18n fallback (`sirket/hakkimizda/page.tsx:19,41`).
+- There is no free-form landing page route: `pages` is only read for legal and about pages (`src/lib/content.ts:210-219`).
+
+### 1.4 Globals are partially editable
+- Header: has `navItems` (link + mega `products|solutions` + children) and a single CTA (`src/globals/Header.ts`). When the CMS is empty, an i18n fallback menu is in code (`src/components/layout/header.tsx:22-49`).
+- **Logo and site name do not come from the CMS**: `Logo` is a hard-coded SVG and text placeholder (`src/components/layout/logo.tsx:3`). Header takes the site name from the `c('siteName')` i18n key (`header.tsx:58`). `SiteSettings.logo/logoDark` fields exist (`SiteSettings.ts:19-20`), but are not used in the header.
+- The link field has no internal static route type: `internal` only resolves a collection `reference` (`src/fields/link.ts:58-64`). Therefore, the seed menu uses a workaround like `type: external, url: "/tr/urunler"` (`content/seed/01-globals.json`). This path is locale-dependent (`/tr` hard-coded).
+- Footer: columns, legal links, and copyright are in the CMS. Fallback columns and legal links are in code (`footer.tsx:32-77`).
+
+### 1.5 Performance and animation findings
+- The `motion` dependency (`package.json:56`) is **never imported** in `src`. It is an unused dependency.
+- `Reveal` is a separate client component and a separate IntersectionObserver for each card (`src/components/ui/reveal.tsx:1-26`). On the home page, as many hydrated islands as there are cards are created (`page.tsx:99,112,159,186,242`). The CSS side is correct: visible without JS, disabled under reduced-motion (`globals.css:132-141,199-202`).
+- Images: `Media` has no `imageSizes` (`src/collections/Media.ts:74-76`) and all Payload images are `unoptimized` (`src/components/ui/media-image.tsx:32`, for security). Result: no srcset, WebP/AVIF, or downscaling; the original file is downloaded. This is the biggest risk for LCP.
+- `src/lib/content.ts` loaders are not wrapped with React `cache()` (only `site.ts`, `support.ts`, `static-params.ts` are wrapped). `generateMetadata` and the page run the same query twice: `sirket/hakkimizda/page.tsx:24` and `:34` (`getPage`), and on the home page `page.tsx:36` and `:58` (`getContactSettings`).
+- The home page fetches 200 products with full fields just to count products per family (`page.tsx:53,61-65`). This is over-fetching. The only field needed is `family`.
+- Revalidation is too coarse and also triggers on drafts: on every `afterChange` call, the entire `/tr` and `/en` layouts are invalidated (`src/lib/revalidate.ts:10-12,21`). Saving a draft also purges the whole site. If autosave or live preview is added, this becomes a severe regression.
+- Fonts: Geist Sans and Geist Mono are preloaded on every page (`src/app/(frontend)/[locale]/layout.tsx:2-3,55`). Mono is only used in small labels.
+- Client components (17): header-shell (382 lines), language-switcher, sheet, tabs, accordion, reveal, json-ld, set-alternates, forms, portal, and analytics. Radix accordion is used for FAQ. Zero-JS `<details>` can be used instead.
+- The root cause of the 60 s timeout seen during the docs page build could not be determined (`progress.md`, "404/security QA").
+
+### 1.6 Compatible infrastructure (to preserve)
+- The content import schema is derived from the Payload config; blocks are automatically included via `$defs` (`src/lib/content-import/schema.ts:28`). Block and row IDs are preserved (`importer.ts:60-75`). New blocks get automatic support. Exception: `blockReferences` (string blocks) are currently filtered out (`schema.ts:28`, `importer.ts:52,71,172`).
+- MCP allows CRUD for `pages`. Find/update is open for header, footer, and site-settings.
+- CSP `frame-ancestors 'self'` (`src/lib/csp.ts:15`). Same-origin admin iframe preview is compatible.
+
+---
+
+## 2. Target architecture
+
+### 2.1 Page model
+- **Home page = a `pages` record.** Add `homePage` (relationship → pages) to `SiteSettings`. If empty, look up slug `home`. If that is also missing, render the current hard-coded composition as a **fallback** (backward compatibility; the site works on an empty DB). Once parity is achieved, the hard-coded version is reduced to an "empty state" component in F6.
+- **System page binding:** `pages.systemKey` (select, unique / locale-independent): `products | solutions | news | customers | careers | partners | support | contact | about`. The listing route reads the record via `getSystemPage(locale, key)`:
+  - `hero` group (eyebrow/title/lead/media/actions) → replaces `PageHero`. If empty, the i18n fallback is used.
+  - `layout` blocks → rendered **below** the dynamic list. Making the list itself movable via a `listing` block depends on open question 3.
+- **Free-form landing pages:** `[locale]/[slug]/page.tsx` (single segment). Static directories and `[...notFound]` remain more specific / higher priority. **Reserved slug validation** is added to the `slug` field: TR and EN first segments in `CANONICAL_PATHS` (`urunler`, `products`, `destek`, `hesap`, `account`, `ara`, `search`, `admin`, `api` …) are rejected. A collision test against the EN rewrite table (`src/i18n/paths.ts`) is written.
+- Optional `layout` is added to **ProductFamilies**. Rendered below the product grid on the family page. Products keep their existing `layout` field and filter rule.
+- `template` is added to `pageType`: it is not published and stays out of the sitemap. Editors clone it via Payload "Duplicate" (see §6).
+
+### 2.2 Block catalog
+Common rules:
+- Each block gets an **`appearance` group** via the `blockSettings()` factory. The group lives inside an `initCollapsed` `collapsible` (`"Görünüm"` (Appearance)):
+  `theme: dark|light` (default depends on block type), `spacing: none|sm|md|lg`, `align: start|center`, `width: narrow|normal|wide`, `animation: none|subtle` (default `subtle`), `anchor` (`^[a-z0-9-]{1,40}$`; must be unique on the page, checked in `beforeValidate`).
+- Admin: `labels: { singular: { tr, en } }`, field `admin.description` in TR, `imageURL` (`public/admin/blocks/<slug>.webp`, 480×300) + `imageAltText`. Block ordering uses Payload `blocks` drag-and-drop (built-in feature). If Payload 3.85 supports block grouping (`admin.group`), the groups `"Giriş / İçerik / Katalog / Kanıt / Dönüşüm / Yardımcı"` (Intro / Content / Catalog / Proof / Conversion / Utility) are used. Support is verified in the Phase 3 spike.
+- Allowed set per collection: `pageBlocks` (all), `productBlocks` (no hero/productFamilies/listing), `solutionBlocks`, `familyBlocks`. **Additive changes only**: removing a block from a collection drops a table in SQLite.
+- `blockReferences` (config-level shared blocks) are evaluated in the F3 spike. If table names change or the import schema (string blocks) breaks, they are **not used**. → **F3 decision: not used for now** (rationale in the F3 section).
+
+| Block (slug) | TR label | Status | Source | Client JS |
 |---|---|---|---|---|
-| `hero` | Giriş (Hero) | genişlet | varyant: `cinematic` (grid+glow, sağda medya/aile paneli) · `split` · `centered` · `minimal` · `mediaBackground`; medya: görsel/video/aile paneli; ilk blok ise `h1` | yok (video ise küçük ada) |
-| `featureGrid` | Özellik ızgarası | genişlet | `style: cards|plain`, ikon allowlist select (lucide adları) | yok |
-| `productFamilies` | Ürün aileleri vitrini | yeni | otomatik (sortOrder) / elle seçim, `showCount`, `layout: grid|list`, limit | yok |
-| `productShowcase` | Ürün vitrini | yeni | seçili ürünler veya `featured`, `layout: cards|alternating` | yok |
-| `solutionsGrid` | Çözümler | yeni | otomatik/elle, limit | yok |
-| `logoWall` | Logo duvarı | mevcut | manual/caseStudies/partners | yok |
-| `stats` | Rakamlar | mevcut | — | yok |
-| `caseStudy` | Öne çıkan vaka | yeni | otomatik `featured` / elle seçim; sonuç metrikleri | yok |
-| `testimonial` | Müşteri görüşü | yeni | alıntı, kişi, rol, şirket, logo; ya da vaka ilişkisi | yok |
-| `cta` | Çağrı bandı | genişlet | `style: band|card|split`, 1-2 aksiyon | yok |
-| `richText` | Zengin metin | mevcut | — | yok |
-| `mediaText` | Medya + metin | mevcut | — | yok |
-| `media` | Görsel / galeri | yeni | tek veya 2-4'lü ızgara, `aspect`, alt yazı | yok |
-| `videoEmbed` | Video | genişlet | poster + **facade** (tıklayınca iframe), nocookie | küçük ada |
-| `faq` | SSS | mevcut→refactor | Radix yerine `<details name>` | **yok** |
-| `tabs` | Sekmeler | yeni | 2-6 sekme × (richText + medya) | küçük ada |
-| `newsList` | Haber listesi | yeni | son N haber, kategori filtresi | yok |
-| `specTable` | Teknik tablo | mevcut | — | yok |
-| `leadForm` | Form (demo/teklif/iletişim) | opsiyonel (P2) | `ensure-forms` sabit başlıkları | mevcut form adası |
-| `spacer` / `divider` | Boşluk / ayraç | yeni | boyut, çizgi | yok |
+| `hero` | `Giriş (Hero)` | extend | variant: `cinematic` (grid+glow, media/family panel on right) · `split` · `centered` · `minimal` · `mediaBackground`; media: image/video/family panel; `h1` if first block | none (small island if video) |
+| `featureGrid` | `Özellik ızgarası` | extend | `style: cards|plain`, icon allowlist select (lucide names) | none |
+| `productFamilies` | `Ürün aileleri vitrini` | new | auto (sortOrder) / manual selection, `showCount`, `layout: grid|list`, limit | none |
+| `productShowcase` | `Ürün vitrini` | new | selected products or `featured`, `layout: cards|alternating` | none |
+| `solutionsGrid` | `Çözümler` | new | auto/manual, limit | none |
+| `logoWall` | `Logo duvarı` | existing | manual/caseStudies/partners | none |
+| `stats` | `Rakamlar` | existing | — | none |
+| `caseStudy` | `Öne çıkan vaka` | new | auto `featured` / manual selection; outcome metrics | none |
+| `testimonial` | `Müşteri görüşü` | new | quote, person, role, company, logo; or case-study relation | none |
+| `cta` | `Çağrı bandı` | extend | `style: band|card|split`, 1-2 actions | none |
+| `richText` | `Zengin metin` | existing | — | none |
+| `mediaText` | `Medya + metin` | existing | — | none |
+| `media` | `Görsel / galeri` | new | single or 2-4 grid, `aspect`, caption | none |
+| `videoEmbed` | `Video` | extend | poster + **facade** (iframe on click), nocookie | small island |
+| `faq` | `SSS` | existing → refactor | `<details name>` instead of Radix | **none** |
+| `tabs` | `Sekmeler` | new | 2-6 tabs × (richText + media) | small island |
+| `newsList` | `Haber listesi` | new | latest N news posts, category filter | none |
+| `specTable` | `Teknik tablo` | existing | — | none |
+| `leadForm` | `Form (demo/teklif/iletişim)` | optional (P2) | `ensure-forms` fixed titles | existing form island |
+| `spacer` / `divider` | `Boşluk / ayraç` | new | size, line | none |
 
-### 2.3 Header / Footer / SiteSettings (tam düzenlenebilir)
-- **Link alanı:** `type: internal|route|external`. `route` tipi `CANONICAL_PATHS` anahtarlarından bir select'tir ve locale'e göre otomatik çözülür. Seed'deki `external + "/tr/..."` geçici çözümü kalkar. `safeHref` korunur.
-- **SiteSettings:** `siteName`, `logo` ve `logoDark` header/footer/JSON-LD'de gerçekten kullanılır. `logo.tsx` CMS logosunu yoksa bugünkü SVG yedeğini render eder. Ayrıca `homePage`, `motion: subtle|none` (site geneli kapatma) ve opsiyonel `brand.accent` / `brand.accentHover` (hex) eklenir. Son ikisi kök `style` CSS değişkeni olarak basılır. Kontrast doğrulaması (WCAG AA, `accent-contrast` ile) hook'ta yapılır; geçmezse kayıt reddedilir (açık soru 2).
-- **Header:** `navItems` (mevcut + `megaMenu: products|solutions|custom`; `custom` = kolonlar + öne çıkan kart), `cta` 1-2 buton, `utility` görünürlükleri (arama/dil/hesap), `announcement` (açık/kapalı, metin, link; JS'siz ve kapatılamaz).
-- **Footer:** kolonlar, yasal linkler, `brandBlurb`, `showContact`, `showSocial` (SiteSettings'ten), copyright `{year}` ve `{siteName}` yer tutucuları.
-- Kod içi yedekler (header/footer menüsü, ana sayfa) yalnız CMS boşken çalışır. Bu, testle kilitlenir.
+### 2.3 Header / Footer / SiteSettings (fully editable)
+- **Link field:** `type: internal|route|external`. The `route` type is a select from `CANONICAL_PATHS` keys and resolves automatically per locale. The `external + "/tr/..."` workaround in the seed is removed. `safeHref` is preserved.
+- **SiteSettings:** `siteName`, `logo`, and `logoDark` are actually used in header/footer/JSON-LD. `logo.tsx` renders the CMS logo or falls back to today's SVG placeholder. Also adds `homePage`, `motion: subtle|none` (site-wide disable), and optional `brand.accent` / `brand.accentHover` (hex). The last two are output as root `style` CSS variables. Contrast validation (WCAG AA, with `accent-contrast`) runs in a hook; if it fails, the save is rejected (open question 2).
+- **Header:** `navItems` (existing + `megaMenu: products|solutions|custom`; `custom` = columns + featured card), `cta` 1-2 buttons, `utility` visibilities (search/language/account), `announcement` (on/off, text, link; no-JS and non-dismissible).
+- **Footer:** columns, legal links, `brandBlurb`, `showContact`, `showSocial` (from SiteSettings), copyright `{year}` and `{siteName}` placeholders.
+- In-code fallbacks (header/footer menu, home page) run only when the CMS is empty. This is locked by tests.
 
-### 2.4 CMS ↔ i18n sınırı (net kural)
-> **Kural:** Başka bir şirket için değişmesi gereken her metin **CMS'te**, her şirkette aynı kalan arayüz metni **i18n'de** durur.
+### 2.4 CMS ↔ i18n boundary (clear rule)
+> **Rule:** Any text that must change for another company belongs in the **CMS**; interface text that stays the same for every company belongs in **i18n**.
 
-- **CMS:** hero ve bölüm başlıkları/lead'leri, CTA metinleri ve hedefleri, menü, footer, şirket/iletişim bilgisi, sayfa üst metinleri, SEO meta, logo, site adı, marka rengi, duyuru bandı.
-- **i18n (`messages/*.json`):** form etiketleri ve doğrulama mesajları, buton mikro metinleri ("Tümünü gör", "Devamını oku", "Kapat"), breadcrumb "Ana sayfa", aria etiketleri, filtre ve sayfalama, portal, 404/hata, boş durumlar, tarih/çoğul kalıpları, ürün sekme adları.
-- **Yedek:** CMS alanı boşsa i18n'deki varsayılan kullanılır. `home` sözlüğü F6 sonunda yalnız yedek/seed kaynağı olarak kalır. Yeni pazarlama metni i18n'e **eklenmez** (lint/test kuralı: `home.*` anahtar sayısı artamaz).
+- **CMS:** hero and section headings/leads, CTA labels and targets, menu, footer, company/contact info, page header copy, SEO meta, logo, site name, brand color, announcement bar.
+- **i18n (`messages/*.json`):** form labels and validation messages, button microcopy (`"Tümünü gör"`, `"Devamını oku"`, `"Kapat"`), breadcrumb `"Ana sayfa"`, aria labels, filters and pagination, portal, 404/error, empty states, date/plural patterns, product tab names.
+- **Fallback:** when a CMS field is empty, the i18n default is used. The `home` dictionary remains only as a fallback/seed source at the end of F6. New marketing copy is **not added** to i18n (lint/test rule: `home.*` key count cannot increase).
 
-### 2.5 Live Preview + taslak
-- Payload `admin.livePreview`: `pages`, `products`, `solutions`, `case-studies`, `posts` için URL fonksiyonu tanımlanır. Breakpoint'ler 390/768/1440.
-- Rota `src/app/(frontend)/api/preview/route.ts` (veya `src/app/api/preview`): `payload.auth({ headers })` ile **yalnız staff** (admin/editor) kabul edilir. `draftMode().enable()` çağrılır, ardından locale'li yola yönlendirilir. Aynı origin olmayan bir `redirect` parametresi reddedilir. Çıkış için `/api/preview/exit` kullanılır.
-- Draft mode'da sayfa yükleyicileri `draft: true` kullanır. Her render'da staff yeniden doğrulanır, aksi halde public sorguya düşülür. Draft mode ISR'i otomatik atlar.
-- `@payloadcms/live-preview-react` `RefreshRouteOnSave` (RSC uyumlu; client'ta blok render gerekmez). Yalnız draft mode'da mount edilir.
-- **Autosave** yalnız `pages` için açılır, `interval ≥ 2000 ms` (SQLite yazma yükü; açık soru 5).
-- **Revalidation kuralı (zorunlu):** hook yalnız `doc._status === 'published'` ise ya da `previousDoc._status === 'published'` ise (yayından kaldırma) çalışır. Taslak/autosave hiçbir zaman cache temizlemez. Drafts olmayan koleksiyonlarda davranış değişmez.
+### 2.5 Live Preview and drafts
+- Payload `admin.livePreview`: URL function defined for `pages`, `products`, `solutions`, `case-studies`, `posts`. Breakpoints 390/768/1440.
+- Route `src/app/(frontend)/api/preview/route.ts` (or `src/app/api/preview`): accepts **staff only** (admin/editor) via `payload.auth({ headers })`. Calls `draftMode().enable()`, then redirects to the localized path. A `redirect` parameter not on the same origin is rejected. `/api/preview/exit` is used to exit.
+- In draft mode, page loaders use `draft: true`. Staff is re-verified on every render; otherwise it falls back to a public query. Draft mode automatically bypasses ISR.
+- `@payloadcms/live-preview-react` `RefreshRouteOnSave` (RSC-compatible; no client-side block rendering needed). Mounted only in draft mode.
+- **Autosave** is enabled only for `pages`, `interval ≥ 2000 ms` (SQLite write load; open question 5).
+- **Revalidation rule (mandatory):** the hook runs only if `doc._status === 'published'` or `previousDoc._status === 'published'` (unpublish). Draft/autosave never purges the cache. Behavior is unchanged for non-drafted collections.
 
 ---
 
-## 3. Veri modeli ve migration stratejisi
+## 3. Data model and migration strategy
 
-| Değişiklik | Koleksiyon/Global | Migration adı (öneri) | Faz |
+| Change | Collection/Global | Migration name (proposed) | Phase |
 |---|---|---|---|
-| `appearance` grubu tüm bloklara | pages/products/solutions/case-studies (+ `_v` tabloları) | `blocks_appearance` | F3 |
-| Hero varyant/medya tipi, cta style, featureGrid style | blok tabloları | aynı | F3 |
-| Yeni bloklar (statik) | pageBlocks vb. | `blocks_static_set` | F4 |
-| Yeni bloklar (dinamik) + ilişki tabloları | pageBlocks | `blocks_dynamic_set` | F5 |
+| `appearance` group on all blocks | pages/products/solutions/case-studies (+ `_v` tables) | `blocks_appearance` | F3 |
+| Hero variant/media type, cta style, featureGrid style | block tables | same | F3 |
+| New blocks (static) | pageBlocks etc. | `blocks_static_set` | F4 |
+| New blocks (dynamic) + relation tables | pageBlocks | `blocks_dynamic_set` | F5 |
 | `pages.systemKey`, `pages.hero`, `pageType: template`, SiteSettings `homePage`, families `layout` | pages, site-settings, product-families | `page_builder_pages` | F6 |
-| Link `route` tipi, header/footer/settings alanları | globals + tüm link kullanımları | `globals_editable` | F7 |
-| `pages` autosave | `_pages_v` (`autosave` kolonu) | `pages_autosave` | F8 |
+| Link `route` type, header/footer/settings fields | globals + all link usages | `globals_editable` | F7 |
+| `pages` autosave | `_pages_v` (`autosave` column) | `pages_autosave` | F8 |
 | `media` `imageSizes` + `focalX/Y` | media | `media_image_sizes` | F9 |
 
-Kurallar:
-- `push: false` ile devam edilir. Her şema değişikliğinde `pnpm migrate:create <ad>` ve ardından `pnpm migrate` çalışır. Tipler (`generate:types`) ve importmap aynı committe güncellenir.
-- **Yalnız eklemeli değişiklik yapılır.** Alan/blok yeniden adlandırma ve kaldırma yasaktır: drizzle SQLite tabloyu `__new_` kopyasıyla yeniden kurar ve veri kaybı riski doğar. Select seçeneği ekleme/çıkarma text kolonunda güvenlidir ve migration SQL'inde doğrulanır.
-- Her migration için **önce kopya DB**: `cp data/*.db $TMPDIR/softmarket-<ad>.db` → `DATABASE_URI` kopyaya → `pnpm migrate` → `pnpm content:import --dry-run` → `sqlite-integrity` testi. SQL'de `DROP TABLE` (yalnız `__new_` yeniden kurulum dışında) veya `DELETE` varsa durulur.
-- **Geriye uyum:** renderer eksik `appearance` için blok türü varsayılanlarını kullanır. Eski `hero.variant: default` `cinematic`'e eşlenir. Bilinmeyen blok atlanır (mevcut davranış). `home` kaydı yoksa yedek ana sayfa render edilir.
-- **Content import:** şema config'ten üretildiği için yeni bloklar otomatik gelir. Gerekenler: `schema.json` yeniden üretilir (test senkron olduğunu kontrol eder), `collapsible` ve `route` link alanı `flatFields` ile kapsanır, `blockReferences` kullanılırsa `schema.ts`/`importer.ts` string blok çözümü eklenir. Yeni `content/seed/05-pages.json`: `home` (bugünkü ana sayfanın blok karşılığı), `about` ve sistem sayfası kayıtları (`systemKey`). Header seed'i `route` linklerine dönüştürülür. İki çalıştırmada idempotent olmalı (0 create / N update).
-- **Seed dönüşümü (ana sayfa → bloklar):** `hero(cinematic, aile paneli)` → `productFamilies` → `solutionsGrid(theme dark)` → `logoWall(source partners+caseStudies)` → `caseStudy(auto featured)` → `newsList(3)` → `cta(band)`. Metinler mevcut `home.*` TR/EN değerlerinden alınır.
-- **MCP:** `pages` ve globals zaten açık. Ajan tarifi `AGENTS.md` ve editör kılavuzuna eklenir: slug ile `find` → `layout`'un **tamamını** yeniden yaz (diziler kısmi güncellenmez, blok `id`'leri korunur) → `_status: published`, TR ve EN ayrı. Toplu/idempotent işlerde `content:import` kullanılır.
+Rules:
+- Continue with `push: false`. For every schema change, run `pnpm migrate:create <name>` followed by `pnpm migrate`. Types (`generate:types`) and importmap are updated in the same commit.
+- **Additive changes only.** Renaming or removing fields/blocks is forbidden: Drizzle rebuilds the SQLite table via a `__new_` copy, creating a risk of data loss. Adding/removing select options on a text column is safe and verified in the migration SQL.
+- For every migration, **test on a DB copy first**: `cp data/*.db $TMPDIR/softmarket-<name>.db` → point `DATABASE_URI` to the copy → `pnpm migrate` → `pnpm content:import --dry-run` → `sqlite-integrity` test. Stop if the SQL contains `DROP TABLE` (except `__new_` rebuilds) or `DELETE`.
+- **Backward compatibility:** the renderer uses block-type defaults for missing `appearance`. Legacy `hero.variant: default` maps to `cinematic`. Unknown blocks are skipped (existing behavior). If no `home` record exists, the fallback home page is rendered.
+- **Content import:** since the schema is generated from config, new blocks are included automatically. Required: regenerate `schema.json` (a test checks it is in sync), cover `collapsible` and the `route` link field with `flatFields`, and if `blockReferences` is used, add string block resolution to `schema.ts`/`importer.ts`. New `content/seed/05-pages.json`: `home` (block equivalent of today's home page), `about`, and system page records (`systemKey`). Convert the header seed to `route` links. Must be idempotent across two runs (0 create / N update).
+- **Seed conversion (home page → blocks):** `hero(cinematic, family panel)` → `productFamilies` → `solutionsGrid(theme dark)` → `logoWall(source partners+caseStudies)` → `caseStudy(auto featured)` → `newsList(3)` → `cta(band)`. Copy is taken from existing `home.*` TR/EN values.
+- **MCP:** `pages` and globals are already open. Add an agent recipe to `AGENTS.md` and the editor guide: `find` by slug → rewrite the **entire** `layout` (arrays are not partially updated; preserve block `id`s) → `_status: published`, TR and EN separately. Use `content:import` for bulk/idempotent work.
 
 ---
 
-## 4. Render mimarisi
+## 4. Rendering architecture
 
-- **Blok kaydı (registry):** `src/components/blocks/registry.ts` → `{ [slug]: Component }`. Bir parity testi her config bloğunun bir renderer'ı olduğunu doğrular.
-- **`BlockShell` (server):** `<Section theme spacing id={anchor} data-anim={animation}>` + `Container width`. Bloklar yalnız içerik üretir, tema ve boşluk tek yerde yönetilir. `index===0 && blockType==='hero'` ise başlık `h1`, diğerlerinde `h2` olur. Sayfa başına tek `h1` testle kilitlenir.
-- **Tüm bloklar RSC.** İstemci adaları yalnız `tabs`, `videoEmbed` facade, (opsiyonel) hero video ve `leadForm`. FAQ `<details>` ile JS'siz çalışır.
-- **Dinamik blok verisi:** `src/lib/blocks/data.ts` içinde `cache()` ile sarılı yükleyiciler kullanılır. Sayfa ilk aşamada `preloadBlockData(blocks)` çağırır, böylece kardeş bloklar paralel çalışır ve şelale oluşmaz. Her blok yalnız gereken alanları `select`/`populate` ile alır, `depth ≤ 1`.
-  - Aile başına ürün sayısı tek sorguyla alınır: `products` `select: { family: true }`, `depth: 0`, `pagination: false`. N+1 yasak.
-- **`content.ts` yükleyicilerinin tamamı `cache()` ile sarılır.** Metadata ve sayfa aynı sorguyu paylaşır.
-- **ISR:** 3600 sn ve on-demand korunur. Draft atlama kuralı eklenir (§2.5). Tag tabanlı ince revalidation **ölçüm sonrası** değerlendirilir: layout invalidation küçük sitede yeterli kabul edilir.
-- **Görseller:**
-  - `Media.upload.imageSizes`: `thumb 400`, `card 768`, `hero 1280`, `wide 1920` (genişlik, büyütme yok; Payload varsayılanı büyük hedefi atlar). `formatOptions: webp q74`, `focalPoint: true`, `crop: true`, `adminThumbnail: 'thumb'`.
-  - `MediaImage` boyut URL'lerinden `srcSet` ve doğru `sizes` üretir. Native `img` ile optimizer atlanır (optimizer cache'ine protected bayt girmez). Her boyut aynı `/api/media/file` erişim kuralından geçer; bu testle doğrulanır.
-  - LCP: yalnız ilk hero görseline `priority` + `fetchPriority="high"`. Diğer görseller `loading="lazy"`. `width/height` her zaman verilir (CLS).
-  - AVIF yalnız ölçüm hero'da anlamlı kazanç gösterirse eklenir (ek depolama ve sharp süresi).
-  - Mevcut medya için `pnpm media:regenerate` betiği: dosyayı yeniden işler, kimliği ve `seedPath`'i korur.
-- **Video:** üçüncü taraf video için facade (poster + oynat düğmesi; iframe tıklamada). Self-host hero videosu yalnız `prefers-reduced-motion: no-preference` ve `!saveData` ise ve ≥768px'de yüklenir: `muted playsinline loop preload="none"` + poster. Mobilde poster gösterilir.
-- **Font:** Geist Sans (variable, tek woff2) preload edilir. Geist Mono **preload edilmez** (`next/font/local`, `preload: false`) ya da sistem mono'ya düşülür. `display: swap` ve `adjustFontFallback`.
-- **Bağımlılık:** `motion` kaldırılır. Gelecekte bir blok gerçekten ihtiyaç duyarsa yalnız o ada içinde `import()` ile lazy yüklenir.
-
----
-
-## 5. Animasyon sistemi (CSS-first, dengeli)
-
-**Token'lar (`globals.css` `@theme`):** `--dur-fast: 150ms` (hover/focus), `--dur-base: 240ms` (menü/sekme), `--dur-reveal: 560ms`, `--ease-out-soft` (mevcut, `globals.css:103`), `--ease-standard: cubic-bezier(.2,0,0,1)`, `--reveal-distance: 12px`, `--stagger: 60ms` (en çok 4 öğe, toplam ≤ 240 ms).
-
-**Kurallar:**
-1. Yalnız `transform` ve `opacity` animasyonlu olur. Hover'da renk/border-color geçişi (`--dur-fast`) serbesttir. Layout özellikleri (width/height/top/margin), büyük alanlarda `filter: blur`, `box-shadow` ve `backdrop-filter` animasyonu yasaktır. Gölge efekti gerekiyorsa pseudo-element `opacity`'si kullanılır.
-2. **JS'siz içerik görünür:** gizli durum yalnız JS ekranın dışındaki öğeye `data-anim-state="pending"` koyduğunda uygulanır (bugünkü mantık, `reveal.tsx:14`).
-3. **Tek gözlemci:** her blok için client `Reveal` yerine server tarafında `data-anim="subtle"` ve öğe başına `style="--i:n"` basılır. Layout'a **tek** `<MotionObserver />` client bileşeni (~1 KB) eklenir. Bu bileşen tek bir `IntersectionObserver` ile `[data-anim]` öğelerini izler, rota değişiminde yeniden tarar ve öğeyi bir kez görünür yaptıktan sonra bırakır. `Reveal` kaldırılır.
-4. `prefers-reduced-motion: reduce` → CSS geçişleri sıfırlanır (mevcut) ve gözlemci hiç çalışmaz. `SiteSettings.motion = none` → `<html data-motion="none">` ile aynı etki. Blok `animation: none` → `data-anim` basılmaz.
-5. **Hero mikro animasyonları (JS'siz, CSS keyframe):** eyebrow, lead, aksiyonlar ve medya çerçevesi için 400-560 ms fade-up, 80 ms stagger. **LCP adayı (hero başlığı veya hero görseli) opacity 0'dan başlamaz.** Yalnız `translateY(8px)→0` uygulanır ya da hiç animasyon yapılmaz, çünkü opacity 0'dan başlamak LCP'yi geciktirir.
-6. Dekoratif glow/grid statik kalır. Opsiyonel yavaş gradient kayması yalnız `transform` ile, görünür alandayken ve reduced-motion kapalıyken çalışır. Varsayılanı kapalı.
-7. Kart hover: `translateY(-2px)` + border rengi. Görsel `scale(1.03)` 500 ms (mevcut). Mega menü `mega-in` 160 ms (mevcut).
-8. Sayı sayacı ve paralaks **yok** (ağırlık ve INP riski).
+- **Block registry:** `src/components/blocks/registry.ts` → `{ [slug]: Component }`. A parity test verifies that every config block has a renderer.
+- **`BlockShell` (server):** `<Section theme spacing id={anchor} data-anim={animation}>` + `Container width`. Blocks only produce content; theme and spacing are managed in one place. If `index===0 && blockType==='hero'`, the heading is `h1`; otherwise `h2`. Single `h1` per page is locked by test.
+- **All blocks are RSC.** Client islands are only `tabs`, `videoEmbed` facade, (optional) hero video, and `leadForm`. FAQ works with `<details>` and zero JS.
+- **Dynamic block data:** loaders wrapped with `cache()` in `src/lib/blocks/data.ts`. The page calls `preloadBlockData(blocks)` in the first pass so sibling blocks run in parallel with no waterfall. Each block fetches only needed fields via `select`/`populate`, `depth ≤ 1`.
+  - Product count per family is fetched in a single query: `products` `select: { family: true }`, `depth: 0`, `pagination: false`. No N+1.
+- **All loaders in `content.ts` are wrapped with `cache()`.** Metadata and page share the same query.
+- **ISR:** 3600 s and on-demand preserved. Draft bypass rule added (§2.5). Tag-based fine-grained revalidation is evaluated **after measurement**: layout invalidation is considered sufficient for a small site.
+- **Images:**
+  - `Media.upload.imageSizes`: `thumb 400`, `card 768`, `hero 1280`, `wide 1920` (width, no upscaling; Payload's default skips targets larger than source). `formatOptions: webp q74`, `focalPoint: true`, `crop: true`, `adminThumbnail: 'thumb'`.
+  - `MediaImage` generates `srcSet` and accurate `sizes` from the size URLs. Native `img` bypasses the optimizer (protected bytes never enter the optimizer cache). Every size goes through the same `/api/media/file` access rule; verified by test.
+  - LCP: `priority` + `fetchPriority="high"` only on the first hero image. Other images get `loading="lazy"`. `width/height` always provided (CLS).
+  - AVIF is added only if measurement shows meaningful gain on hero (extra storage and sharp time).
+  - `pnpm media:regenerate` script for existing media: reprocesses the file while preserving identity and `seedPath`.
+- **Video:** facade for third-party video (poster + play button; iframe on click). Self-hosted hero video loads only when `prefers-reduced-motion: no-preference`, `!saveData`, and ≥768px: `muted playsinline loop preload="none"` + poster. On mobile, only the poster is shown.
+- **Fonts:** Geist Sans (variable, single woff2) is preloaded. Geist Mono is **not preloaded** (`next/font/local`, `preload: false`) or falls back to system mono. `display: swap` and `adjustFontFallback`.
+- **Dependency:** `motion` is removed. If a block truly needs it in the future, it is lazy-loaded via `import()` only inside that island.
 
 ---
 
-## 6. Editör deneyimi
+## 5. Animation system (CSS-first, balanced)
 
-- Admin dili: Payload `i18n.supportedLanguages: { tr, en }`, varsayılan `tr`. Tüm koleksiyon, global, blok ve alan etiketleri `{ tr, en }` olur. Açıklamalar kısa ve "ne işe yarar / nerede görünür" biçiminde yazılır.
-- Varsayılanlar: hero `theme: dark`, diğer bloklar `light`, `spacing: lg`, `animation: subtle`. Yeni sayfaya `defaultValue` ile `[hero(minimal)]` başlangıç bloğu eklenir.
-- Blok önizleme görselleri: noindex bir "Blok galerisi" şablon sayfasının (seed, `pageType: template`) Playwright ile 480×300 ekran görüntüsü alınır → `public/admin/blocks/*.webp`. Görseller yeniden üretilebilir (`pnpm admin:block-previews`).
-- **Boş şablondan başlatma** (yeni şirket):
-  1. `content/templates/starter/` (globals: nötr site adı/renk/menü; `home`, `about`, sistem sayfaları; örnek görseller `protected:false`).
-  2. `pnpm content:import content/templates/starter` (idempotent). Ardından admin'de `Site Ayarları`'ndan logo, ad ve renk girilir.
-  3. Şablon sayfalar (`pageType: template`) "Duplicate" ile yeni landing sayfasına dönüştürülür.
-  4. Mevcut demo içeriği (`content/seed`) bu akıştan ayrıdır. Silme komutu **yoktur** (yıkıcı işlem yalnız kullanıcı onayıyla).
-- **`docs/editor-guide.md`** (TR): blok kataloğu (ekran görüntüsüyle), sıralama ve sürükle-bırak, tema/anchor/animasyon, Live Preview, taslak → yayın, menü/footer/logo/renk, görsel yükleme kuralları (boyut ≥ 2400 px, alt metin zorunlu, `protected` kapalı), SEO alanları, MCP/JSON ile toplu güncelleme ve sık hatalar.
+**Tokens (`globals.css` `@theme`):** `--dur-fast: 150ms` (hover/focus), `--dur-base: 240ms` (menu/tab), `--dur-reveal: 560ms`, `--ease-out-soft` (existing, `globals.css:103`), `--ease-standard: cubic-bezier(.2,0,0,1)`, `--reveal-distance: 12px`, `--stagger: 60ms` (at most 4 items, total ≤ 240 ms).
+
+**Rules:**
+1. Only `transform` and `opacity` are animated. Color/border-color transitions on hover (`--dur-fast`) are allowed. Layout properties (width/height/top/margin), `filter: blur` on large areas, `box-shadow`, and `backdrop-filter` animations are forbidden. If a shadow effect is needed, use pseudo-element `opacity`.
+2. **Content visible without JS:** hidden state is applied only when JS sets `data-anim-state="pending"` on off-screen elements (today's logic, `reveal.tsx:14`).
+3. **Single observer:** instead of a client `Reveal` per block, the server outputs `data-anim="subtle"` and per-item `style="--i:n"`. A **single** `<MotionObserver />` client component (~1 KB) is added to the layout. It observes `[data-anim]` elements with a single `IntersectionObserver`, re-scans on route changes, and unobserves an element once revealed. `Reveal` is removed.
+4. `prefers-reduced-motion: reduce` → CSS transitions are zeroed out (existing) and the observer never runs. `SiteSettings.motion = none` → same effect via `<html data-motion="none">`. Block `animation: none` → `data-anim` is not output.
+5. **Hero micro-animations (no JS, CSS keyframes):** 400–560 ms fade-up with 80 ms stagger for eyebrow, lead, actions, and media frame. **The LCP candidate (hero heading or hero image) does not start at opacity 0.** Only `translateY(8px)→0` is applied or no animation at all, because starting at opacity 0 delays LCP.
+6. Decorative glow/grid stays static. Optional slow gradient drift runs only with `transform`, while in viewport, and with reduced-motion off. Default is off.
+7. Card hover: `translateY(-2px)` + border color. Image `scale(1.03)` 500 ms (existing). Mega menu `mega-in` 160 ms (existing).
+8. **No** number counters or parallax (weight and INP risk).
 
 ---
 
-## 7. Performans bütçesi ve denetim
+## 6. Editor experience
 
-**Bütçe (mobil, Lighthouse varsayılan throttling, prod build):**
+- Admin language: Payload `i18n.supportedLanguages: { tr, en }`, default `tr`. All collection, global, block, and field labels use `{ tr, en }`. Descriptions are short and written in "what it does / where it appears" style.
+- Defaults: hero `theme: dark`, other blocks `light`, `spacing: lg`, `animation: subtle`. New pages get a `[hero(minimal)]` starter block via `defaultValue`.
+- Block preview images: a noindex "Block gallery" template page (seed, `pageType: template`) is screenshotted with Playwright at 480×300 → `public/admin/blocks/*.webp`. Images can be regenerated (`pnpm admin:block-previews`).
+- **Starting from an empty template** (new company):
+  1. `content/templates/starter/` (globals: neutral site name/color/menu; `home`, `about`, system pages; sample images `protected:false`).
+  2. `pnpm content:import content/templates/starter` (idempotent). Then in admin, enter logo, name, and color under `Site Ayarları` (Site Settings).
+  3. Template pages (`pageType: template`) are turned into new landing pages via "Duplicate".
+  4. Existing demo content (`content/seed`) is separate from this flow. There is **no** delete command (destructive actions only with user confirmation).
+- **`docs/editor-guide.md`** (TR): block catalog (with screenshots), ordering and drag-and-drop, theme/anchor/animation, Live Preview, draft → publish, menu/footer/logo/color, image upload rules (size ≥ 2400 px, alt text required, `protected` off), SEO fields, bulk updates via MCP/JSON, and common mistakes.
 
-| Metrik | Hedef |
+---
+
+## 7. Performance budget and audit
+
+**Budget (mobile, Lighthouse default throttling, prod build):**
+
+| Metric | Target |
 |---|---|
-| LCP | < 2.0 s (`/tr`, `/en`, katalog, ürün, çözüm, doküman detay) |
+| LCP | < 2.0 s (`/tr`, `/en`, catalog, product, solution, doc detail) |
 | CLS | < 0.05 |
-| INP | < 200 ms (lab'de TBT < 150 ms vekil) |
+| INP | < 200 ms (TBT < 150 ms proxy in lab) |
 | Lighthouse | Performance ≥ 90 · A11y/SEO/Best Practices ≥ 95 |
-| Ana sayfa ilk yük JS (gzip) | ≤ 130 KB toplam, sayfaya özel chunk ≤ 15 KB |
+| Home page first-load JS (gzip) | ≤ 130 KB total, page-specific chunk ≤ 15 KB |
 | CSS (gzip) | ≤ 30 KB |
-| Hero görseli (mobil) | ≤ 180 KB · font preload ≤ 1 dosya / ≤ 60 KB |
-| TTFB | ISR HIT < 50 ms · MISS < 400 ms (yerel prod) |
-| DB sorgu sayısı / istek | ana sayfa ≤ 12 · ürün ≤ 15 · liste öğesi başına sorgu = 0 |
+| Hero image (mobile) | ≤ 180 KB · font preload ≤ 1 file / ≤ 60 KB |
+| TTFB | ISR HIT < 50 ms · MISS < 400 ms (local prod) |
+| DB query count / request | home page ≤ 12 · product ≤ 15 · per-list-item query = 0 |
 
-**Ölçüm yöntemi:**
-- `NEXT_DIST_DIR=.next-prod pnpm build` → `next start -p 3200` (3100 dev'e dokunulmaz) → `@lhci/cli autorun` (3 koşu, medyan; `lighthouserc.json` bütçeleri). Sonuçlar `docs/perf/` altında saklanır.
-- Playwright `tests/perf/vitals.spec.ts`: 390×844, CDP CPU throttle ×4. LCP/CLS `PerformanceObserver` ile ölçülür, INP için menü/sekme/FAQ etkileşimleri kullanılır. `reducedMotion: 'reduce'` emülasyonunda transform yok.
-- Bundle: `@next/bundle-analyzer` (`ANALYZE=1`) ve `next build` "First Load JS" çıktısı. Bütçe aşımında test başarısız olur.
-- DB: `DB_QUERY_LOG=1` bayrağıyla adapter logger, AsyncLocalStorage ile istek başına sayaç. Rapor sayfa → sorgu sayısı ve tekrar eden sorgular.
-- ISR doğrulaması: `curl -sI` ile `x-nextjs-cache` HIT/STALE kontrolü. Yayın → sonraki istek MISS sonra HIT. **Taslak kayıt sonrası HIT kalmalı.**
-- **Doküman build timeout kök neden araştırması.** Hipotezler, olasılık sırasıyla:
-  - (a) dedupe edilmemiş yükleyiciler ve metadata+sayfa çift yükleme;
-  - (b) build worker'larının eşzamanlı Payload init'i (SQLite açılışı, plugin init, search sync);
-  - (c) çalışan dev sunucusunun aynı SQLite'ta tuttuğu yazma kilidi veya WAL checkpoint (busy timeout 5000);
-  - (d) büyük Lexical içerik dönüşümü ve başlık çıkarımı;
-  - (e) `getDocTree` alan seçimi.
+**Measurement method:**
+- `NEXT_DIST_DIR=.next-prod pnpm build` → `next start -p 3200` (3100 dev is untouched) → `@lhci/cli autorun` (3 runs, median; `lighthouserc.json` budgets). Results are stored under `docs/perf/`.
+- Playwright `tests/perf/vitals.spec.ts`: 390×844, CDP CPU throttle ×4. LCP/CLS measured with `PerformanceObserver`; menu/tab/FAQ interactions used for INP. No transform under `reducedMotion: 'reduce'` emulation.
+- Bundle: `@next/bundle-analyzer` (`ANALYZE=1`) and `next build` "First Load JS" output. Test fails if budget is exceeded.
+- DB: adapter logger with `DB_QUERY_LOG=1` flag, per-request counter via AsyncLocalStorage. Report shows page → query count and duplicate queries.
+- ISR verification: `curl -sI` to check `x-nextjs-cache` HIT/STALE. Publish → next request MISS then HIT. **Must remain HIT after a draft save.**
+- **Docs build timeout root-cause investigation.** Hypotheses, in order of likelihood:
+  - (a) un-deduped loaders and double metadata+page loading;
+  - (b) concurrent Payload init across build workers (SQLite open, plugin init, search sync);
+  - (c) write lock or WAL checkpoint held on the same SQLite DB by a running dev server (busy timeout 5000);
+  - (d) large Lexical content conversion and heading extraction;
+  - (e) `getDocTree` field selection.
 
-  Yöntem: sayfa ve `generateStaticParams` başına zamanlama bayrağı, dev açık/kapalı × `experimental.cpus=1/varsayılan` matrisi, 5 ardışık build. Kabul: kök neden yazılı ve düzeltilmiş olmalı, 5/5 build timeout'suz geçmeli, build süresi kayıtlı olmalı.
-
----
-
-## 8. Fazlar
-
-Her faz ayrı commit'lenebilir, kendi testleriyle gelir ve kullanıcı istemeden commit yapılmaz. Şema içeren fazlar migration + tipler + importmap + `schema.json`'ı **aynı** değişiklikte taşır. Ortak kapılar: `pnpm typecheck && pnpm lint && pnpm test` ve `NEXT_DIST_DIR=.next-prod pnpm build`.
-
-Bağımlılık: `F0 → (F1 ∥ F2 ∥ F9) → F3 → (F4 ∥ F5 ∥ F7) → F6 → F8 → F10 → F11`. G (görsel düzeltme) F0'dan sonra herhangi bir anda yapılabilir.
-
-### F0 — Ölçüm temeli + görsel QA turu 1 (kod davranışı değişmez)
-- **Kapsam:** Lighthouse/LHCI baseline, bundle raporu, DB sorgu sayacı bayrağı, ISR doğrulama betiği, doküman timeout araştırması (§7). Tüm public sayfaların 390/768/1440 ekran görüntüsü matrisi → `docs/qa/visual-baseline.md` (hata listesi; kullanıcının listesi buraya eklenir).
-- **Dosyalar:** `lighthouserc.json`, `tests/perf/*`, `scripts/perf-*.ts`, `src/lib/db-query-log.ts` (bayraklı), `docs/perf/baseline.md`.
-- **Kabul:** baseline tablosu dolu, timeout için kök neden raporu (düzeltme F1'de), bayrak kapalıyken sıfır davranış farkı.
-- **Test:** sayaç birim testi, perf spec'in çalışması (izinli hostta; MachPort sınırı not edilir).
-- **Risk:** Chromium macOS sandbox'ı (bilinen). Çözüm: izinli host veya kullanıcı makinesi.
-
-### F1 — Hızlı performans kazanımları (şema yok)
-- **Kapsam:** `content.ts` için `cache()`, ana sayfa aile sayısı tek hafif sorgu, revalidation taslak atlama, Mono preload kapatma, `motion` bağımlılığını kaldırma, FAQ `<details>`, F0 timeout düzeltmesi.
-- **Dosyalar:** `src/lib/content.ts`, `src/lib/revalidate.ts`, `[locale]/page.tsx`, `[locale]/layout.tsx`, `components/blocks/faq-block.tsx`, `package.json`.
-- **Kabul:** sorgu sayısı baseline'a göre düşük, metadata+sayfa çift sorgusu yok, taslak kayıt cache'i bozmuyor, JS ilk yük ≥ 5 KB azalmış, 5/5 build.
-- **Test:** revalidate (published/draft/unpublish), FAQ JS'siz klavye/erişilebilirlik, mevcut 345 test.
-- **Risk:** `cache()` yalnız istek kapsamında geçerli; CLI ve import yolları etkilenmez (testle doğrulanır).
-
-### F2 — Animasyon sistemi
-- **Kapsam:** token'lar, `data-anim` + tek `MotionObserver`, hero CSS mikro animasyonları (LCP kuralı), hover standardı, `SiteSettings.motion` okuması (alan F7'de; şimdilik yalnız `html[data-motion]` desteği), `Reveal` kaldırma.
-- **Dosyalar:** `src/app/(frontend)/globals.css`, `components/ui/motion-observer.tsx`, `components/ui/reveal.tsx` (silinir), ana sayfa ve blok bileşenlerindeki `Reveal` kullanımları.
-- **Kabul:** client ada sayısı azalmış (tek gözlemci), JS'siz ve reduced-motion'da tüm içerik görünür, CLS < 0.05, LCP regresyonu yok.
-- **Test:** vitest (SSR'da gizli durum yok, `data-anim=none`), Playwright reduced-motion + JS kapalı görünürlük, CLS ölçümü.
-- **Risk:** client navigasyonunda yeniden tarama → `usePathname` bağımlılığı ve MutationObserver yok (bilinçli seçim).
-
-### F3 — Blok çekirdeği + veri modeli (şema)
-- **Kapsam:** `blockSettings()`/`appearance`, `BlockShell`, registry, hero `h1` kuralı, hero varyantları, cta/featureGrid genişletmeleri, admin `i18n` + TR etiketler (çekirdek bloklar), `imageURL` yer tutucuları, `blockReferences` spike kararı, migration `blocks_appearance`.
-- **Dosyalar:** `src/blocks/*`, `src/fields/block-settings.ts`, `src/components/blocks/{registry,block-shell}.tsx`, `render-blocks.tsx`, `src/payload.config.ts`, `src/migrations/*`, `src/payload-types.ts`, `content/seed/schema.json`.
-- **Kabul:** mevcut tüm sayfalar görsel olarak aynı (ekran görüntüsü farkı ≈ 0), eski veriler varsayılanlarla render ediliyor, kopya DB'de migration temiz, import dry-run 0 hata.
-- **Test:** config↔registry parity, anchor tekilliği, tek `h1`, schema senkronu, `sqlite-integrity`, eski blok verisiyle render.
-- **Risk:** blok tablo/kolon değişiklikleri `_v` tablolarını da etkiler. Çözüm: SQL incelemesi ve kopya DB.
-- [x] **Uygulandı (2026-11-07).** Migration `20261107_110012_blocks_appearance`: 80 blok tablosuna (4 koleksiyon + `_v`) yalnız `ADD COLUMN` (560 ifade; `DROP TABLE`/`DELETE`/`__new_` yok), kolon varsayılanları = eski görünüm. Kopya DB → migrate → import dry-run 0 hata → canlı DB; import iki kez 0 create/88 update.
-  - `src/fields/block-settings.ts`: `blockSettings(slug)` ("Görünüm" collapsible → `appearance` grubu: `theme auto|dark|light`, `spacing none|sm|md|lg`, `align start|center`, `width narrow|normal|wide` (richText hariç; kendi `width` alanı var), `animation subtle|none`, `anchor` (regex + ayrılmış id + sayfada tekil doğrulama), `hidden`). `BLOCK_DEFAULTS` + `resolveAppearance()` config ve renderer'ın tek kaynağı; `theme: auto` blok varsayılanına (CTA'da stile) çözülür.
-  - `BlockShell` (tema/spacing/tone/container/anchor id + `scroll-mt`, `data-anim` **container'da**; section arka planı solmaz), `registry.ts` (mapped type: eksik renderer = tip hatası), `lib/blocks/render-plan.ts` (gizli/bilinmeyen atlanır, tek h1, yinelenen anchor HTML'den düşer). `RenderBlocks firstHeroH1` yalnız sayfanın kendi h1'i yoksa (F6 CMS sayfaları) açılır; PageHero'lu sayfalarda tüm hero'lar h2.
-  - Hero varyantları: `default` (= sinematik; değer adı korunarak yeniden adlandırma/tablo yeniden kurulumu önlendi), `split`, `centered`, `minimal`. `mediaBackground` + video F4. CTA `split` stili; featureGrid `style: cards|plain` + ikon allowlist select (`src/lib/icon-names.ts`, eski metin değerleri normalize edilir).
-  - Admin `i18n` (`payload/i18n/tr|en`, varsayılan TR), çekirdek 10 blok + link alanı TR/EN etiketleri, `admin.group` (3.85'te destekleniyor: Giriş/İçerik/Katalog/Kanıt/Dönüşüm/Yardımcı), `imageURL` yer tutucuları `public/admin/blocks/*.webp` (`node scripts/admin-block-placeholders.mjs`).
-  - **`blockReferences` kararı: kullanılmaz (F3).** 3.85'te tip yorumu "`@todo` 4.0'da `blocks` ile birleşecek" (API kararlı değil); content-import şeması/importer string blokları atlıyor (ek çözümleyici gerekir); kazanç (admin client config tekrarı) 4 koleksiyon × 10 blokta küçük. SQLite tablo adı her iki yolda `<kök>_blocks_<slug>` (drizzle `traverseFields`), yani ileride geçiş migration'sız: blok sayısı/admin bundle ölçümü gerektirirse F10/4.0'da yeniden değerlendirilir.
-  - Doğrulama: typecheck/lint/34 dosya 398 test (yeni: `blocks-core.test.tsx`, `blocks-appearance-migration.test.ts`), `.next-prod` build, 3200 1440/390 ekran görüntüsü: 7 sayfada yükseklik birebir, piksel farkı dev↔dev ≤ %0,021.
-
-### F4 — Statik yeni bloklar
-- **Kapsam:** `media`, `testimonial`, `tabs` (ada), `videoEmbed` facade, `spacer`/`divider`, hero `mediaBackground` + opsiyonel video. Migration `blocks_static_set`.
-- **Kabul:** her blok dark/light × 390/1440 görsel olarak doğru, tabs klavye (ok tuşları/ARIA) çalışıyor, video iframe tıklamadan yüklenmiyor.
-- **Test:** blok render birim testleri, Playwright klavye + ağ (iframe isteği yok) kontrolü.
-- **Risk:** CSP video izinleri (mevcut allowlist) ve facade poster CLS.
-- [x] **Uygulandı (2026-11-07).** Migration `20261107_111754_blocks_static_set`: yalnız `CREATE TABLE` (96) + `CREATE INDEX` ve 8 `ALTER TABLE ... ADD video_id` (hero, 4 koleksiyon + `_v`); up'ta `DROP`/`DELETE FROM`/`__new_` yok (yeniden kurulum yalnız `down`'da). Kopya DB → migrate → import dry-run 0 hata → canlı DB.
-  - Yeni bloklar (4 koleksiyonun `layout` alanına eklendi): `media` (1-4 görsel, caption, `aspect` auto|16-9|4-3|1-1|21-9), `testimonial`, `tabs` (2-6 sekme × richText + opsiyonel görsel), `spacer` (`size`), `divider` (`style` line|accent). `videoEmbed` mevcuttu: şemada değişiklik yok, facade'e çevrildi. Hero: `variant` seçeneğine `mediaBackground` eklendi (mevcut değerler/default değişmedi) + `video` upload (yalnız mediaBackground'da görünür).
-  - Hepsi `blockMeta` + `blockSettings` + `BLOCK_DEFAULTS` + registry + `public/admin/blocks/*.webp` yer tutucu. İstemci adaları: `tabs-island` (WAI-ARIA tablist, ok/Home/End, otomatik aktivasyon; tüm paneller SSR'da, ilk panel dışında `hidden` → JS'siz ilk sekme görünür), `video-facade` (poster + oynat; iframe yalnız tıklayınca, `youtube-nocookie` / Vimeo `dnt=1`, mevcut CSP `frame-src` ile uyumlu), `hero-video` (SSR'da boş; ≥768px + reduced-motion kapalı + saveData kapalı + `data-motion≠none` ise `<video muted loop playsinline>` mount eder, ekran dışında duraklatır). Saf mantık `src/lib/blocks/static.ts`.
-  - Hero `mediaBackground`: poster = `media` (server `<img>` + preload, LCP), video üstte. Mobil/reduced-motion'da video isteği yok.
-  - Doğrulama: typecheck/lint/36 dosya 420 test; `.next-prod` build; 3200'de geçici `qa-blocks` (legal rota `/tr/yasal/qa-blocks`, sonra silindi): CLS 0 (390/1440), 390'da video isteği 0, 1440 reduced-motion'da 0, 1440'ta video oynuyor; sağlayıcıya istek tıklamadan önce 0, tıklayınca nocookie iframe; tabs klavye (Right/End/wrap/Left/Home) ve JS kapalı doğrulandı. Ekran görüntüleri `scratchpad/f4/shots`.
-
-### F5 — Dinamik (veri bağlı) bloklar
-- **Kapsam:** `productFamilies`, `productShowcase`, `solutionsGrid`, `caseStudy`, `newsList`, `logoWall` kaynak iyileştirmesi; `src/lib/blocks/data.ts` (`cache`, `select`, preload). Migration `blocks_dynamic_set`.
-- **Kabul:** blok başına sabit sorgu sayısı (N+1 yok), yayınlanmamış kayıt hiç görünmüyor (anon kalıbı), boş kaynakta blok sessizce gizleniyor.
-- **Test:** sorgu sayacıyla N+1 testi, taslak ve gizli kayıt sızıntı testi, import ilişki çözümü (TR slug).
-- **Risk:** ilişki derinliği ve populate şişmesi. Çözüm: `populate` beyaz listesi.
-- [x] **Uygulandı (2026-11-07).** Migration `20261107_130000_blocks_dynamic_set`: 80 `CREATE TABLE` (5 blok × 4 koleksiyon × normal/`_v` × ana+`_locales`) + indeksler + logoWall `limit` için 8 `ADD COLUMN`; up'ta `DROP`/`DELETE`/`__new_` yok, down yalnız kendi tablolarını ve `limit` sütununu düşürür. Kopya DB → migrate → dry-run 0 hata → yedek (`scratchpad/softmarket-pre-f5.db*`) → canlı DB.
-  - Bloklar: `productFamilies`, `productShowcase`, `solutionsGrid`, `caseStudy`, `newsList` (layoutBlocks sonuna eklendi); ortak alanlar `src/blocks/list-fields.ts`: eyebrow/heading/description, `source`, `limit` (1-24), `sort` (order|newest|oldest|manual), `layout` (grid-3|grid-2|grid-4|list; showcase ek `alternating`), `showViewAll/viewAllLabel/viewAllUrl`. Elle seçim ilişkileri `maxDepth: 0` (sayfa sorgusu populate etmez). logoWall: yeni kaynaklar `allPartners|allCaseStudies|partnersAndCaseStudies` + `limit`; eski değerler aynı.
-  - `src/lib/blocks/data.ts`: `cache()` + primitive anahtar, anonim (`overrideAccess:false`, `draft:false`), `pagination:false`, select/populate beyaz listesi, depth 1; `preloadBlockData` `RenderBlocks` içinde. Boş kaynak → sorgusuz boş, blok render edilmez.
-  - Not: 15+ karakterli slug'larda `enum_..._appearance_animation` 63 karakteri aşıyordu; `blockSettings` animasyon select'ine `enumName` fonksiyonu eklendi (yalnız drizzle şeması, SQLite etkisiz). Blok `dbName` KULLANMA (tablo adı kökten bağımsız olup 4 koleksiyonda çakışır).
-  - Sorgu sayısı (loader başına, kayıt sayısından bağımsız): families 4, products 4, solutions 3, posts 3, logos 4, caseStudy 1. 3200 prod: 9 veri bloklu sayfa toplam 29 sorgu.
-  - Test: typecheck/lint/38 dosya 457 test (yeni `blocks-dynamic.test.tsx`, `blocks-dynamic-db.test.tsx`, content-import F5 ilişki testi). Ekran görüntüleri `scratchpad/f5/qa-{390,1440}-{dark,light}.png`; geçici `qa-dynamic` sayfası ve QA kayıtları silindi.
-
-### F6 — Ana sayfa ve sistem sayfaları CMS'e
-- **Kapsam:** `SiteSettings.homePage`, `pages.systemKey` + `hero` grubu, `pageType: template`, ailelere `layout`, `[locale]/[slug]` landing rotası + ayrılmış slug doğrulaması, liste sayfalarında CMS hero + alt bloklar, `content/seed/05-pages.json` (bugünkü ana sayfanın birebir blok karşılığı), sabit ana sayfanın yedeğe indirgenmesi. Migration `page_builder_pages`.
-- **Kabul:** seed sonrası `/tr` ve `/en` bugünküyle görsel olarak eşdeğer. Admin'de blok sırası değişince (yayın sonrası) ana sayfa sırası değişiyor. Liste sayfası başlıkları CMS'ten, boşken i18n'den geliyor. Sitemap ve hreflang landing sayfalarını kapsıyor. Template sayfalar public değil.
-- **Test:** ayrılmış slug ve EN rewrite çakışması, home çözümleme sırası (homePage → slug home → yedek), Playwright: API ile blok sırasını değiştir → yayınla → sıra değişti, import idempotent (2. koşu 0 create).
-- **Risk:** `[slug]` ile `[...notFound]` ve rewrite önceliği; locale'e özel slug ile dil değiştirici.
-- [x] **Uygulandı (2026-11-07).** Migration `20261107_144850_page_builder_pages`: up'ta yalnız 66 `CREATE TABLE` (pages `listing` bloğu + `_v`, `pages_hero_actions` + `_v`, ürün ailesi `layout` blok tabloları + `product_families_rels`), 154 indeks ve 185 `ADD COLUMN` (160 × `appearance_separator`, hero `aside`/`panel_title` 8+8, pages `system_key` + hero metinleri + `_v`, `site_settings.home_page_id`) + `site_settings_home_page_delete` trigger'ı (ALTER ADD FK'si `ON DELETE SET NULL` taşıyamaz; sayfa silinince ayar boşalır). Üretilen `down()` `site_settings`'i `__new_` ile yeniden kuruyordu → elle: yalnız F6 nesneleri düşer (F7 deseni); testle kilitli. Kopya DB → migrate → dry-run 0 hata → 3200 doğrulama → yedek `scratchpad/softmarket-pre-f6.db*` (+ `.snapshot.db`) → canlı DB; import 2× (10 create → 0 create/98 update).
-  - Sayfa modeli (`src/lib/system-pages.ts` tek kaynak): `pages.systemKey` (`products|solutions|news|customers|careers|partners|support|contact|about`, unique, çoğaltmada boşalır) + `hero` grubu (eyebrow/title/lead/actions ≤2; yalnız sistem sayfasında görünür), `pageType: template` (anonim okuma erişimde NULL-güvenli olarak dışlanır; rota/sitemap/arama yok), `SiteSettings.homePage` (legal/template/sistem sayfaları filtreli), ailelere `layout` (ürün listesinin altında). Ana sayfa çözümü `getHomePage`: tek anonim sorguda homePage ID'si → slug `home` → `null` = `components/home/fallback-home.tsx` (eski kompozisyon, birebir). `/home` ve homePage'in kendi slug'ı `/`'a 308.
-  - Liste kendisi taşınabilir blok: yeni `listing` bloğu (yalnız pages; alanı yok, görünüm ayarları var). `SystemBody`: kayıt yoksa eski düzen; kayıtta `listing` yoksa liste hero'nun hemen altında; varsa bloğun konumunda; gizli blok = liste yok. 9 rota `SystemHero` (CMS → i18n yedeği; SEO meta → hero → i18n) kullanır; iş ortakları CTA bandı yalnız kayıt yokken (seed'de `cta` bloğu).
-  - Landing: `[locale]/[slug]` (ISR 3600 + statik parametreler sitemap'ten). Ayrılmış slug = tüm `CANONICAL_PATHS` ilk segmentleri + `SEGMENTS_EN` anahtar/değerleri + admin/api/arama/tr/en/_next/metadata yolları; yalnız standard/landing + sistem anahtarı olmayan sayfalarda kaydı reddeder, rota da tekrar kontrol eder. `/[slug]` next-intl `pathnames`'e EKLENMEDİ (EN rewrite'ları etkilenmez); `LINK_ROUTES`'a yalnız yeni `slug` anahtarı eklendi. `referencePath` sayfalar için `pagePath()` (legal/sistem/home/landing, template yok). Sitemap + hreflang landing sayfalarını kapsar.
-  - Ana sayfa birebir: hero `aside: families` (eski aile paneli) + sinematik pageTop dolgusu/lead/buton aralığı ve ikincil butonda ok; yeni görünüm alanı `separator` (`none|top`, ince üst çizgi); ListFrame `mt-14`; CTA `banner` boşlukları CtaBand ile eşitlendi (ürün sayfalarındaki CTA bandı +8 px). Seed `content/seed/05-pages.json` (home + 9 sistem sayfası, linkler `route`), `01-globals.json` `homePage: "home"`.
-  - Revalidate düzeltmesi: `revalidatePath('/tr'|'/en', 'layout')` Next'in türetilmiş etiketlerine (`/layout`, `/(frontend)/[locale]/layout`, URL yolu) hiç uymuyordu → `revalidatePath('/', 'layout')` (taslak-güvenli kural aynı). Sitemap `force-dynamic` (Next 15.4 dosya ISR önbelleği route handler'larda etiket geçersizliğine bakmıyor).
-  - Doğrulama: `.next-prod` + 3200 (DB kopyası): /tr, /en ve 9 sistem sayfası 390/1440 önce(dev)/sonra yükseklik birebir, piksel farkı %0 (eşiksiz); API ile blok sırası değişti → yayın → 3200'de değişti → geri alındı; liste başlığı CMS'ten / boşken i18n'den; landing TR/EN 200 + hreflang + sitemap, ayrılmış slug 400, template 404 ve anonim API'de yok; taslak ana sayfa anonimde görünmüyor. Sorgu: /tr MISS 20, HIT 0. typecheck/lint/44 dosya 536 test.
-
-### F7 — Globals tam düzenlenebilirlik
-- **Kapsam:** link `route` tipi (tüm link kullanımları), header logo/site adı/duyuru/utility/custom mega/çoklu CTA, footer blurb/iletişim/sosyal/yer tutucular, SiteSettings `motion` + `brand.accent` (kontrast hook'u), seed menüsünün `route`'a dönüşümü. Migration `globals_editable`.
-- **Kabul:** logo ve site adı CMS'ten geliyor, seed menüsünde `/tr` sabiti yok, EN menü doğru yollara çıkıyor, düşük kontrastlı renk reddediliyor.
-- **Test:** route çözümleme TR/EN, kontrast doğrulama, header/footer CMS-boş yedek testi, MCP global update.
-- **Risk:** link alanı birçok tabloda kullanılıyor ve migration geniş. Çözüm: yalnız ekleme.
-- [x] **Uygulandı (2026-11-07).** Migration `20261107_141523_globals_editable`: up'ta yalnız 6 `CREATE TABLE` (+11 indeks) ve 91 `ADD COLUMN` (link `route`/`route_param` 24 blok action tablosu + header/footer link tabloları; header/footer/site-settings yeni alanları). Üretilen `down()` `header_nav_items` ve `site_settings`'i `__new_` ile yeniden kuruyordu (transaction içinde `PRAGMA foreign_keys=OFF` etkisiz → locales/children/social cascade silinirdi); elle yalnız F7 nesnelerini düşüren `down()` yazıldı ve testle kilitlendi. Kopya DB → migrate → dry-run 0 hata → yedek (`scratchpad/softmarket-pre-f7.db*`) → canlı DB. Import 2× 0 create/88 update.
-  - Link: `type` radyosuna `route` eklendi (internal/external/default aynı). `route` select değerleri kararlı anahtarlar (`urunler`, `destek_surum-notlari`, `yasal_slug`…; yol değil, GraphQL enum uyumu), etiketler TR yolu/EN yolu; en çok tek dinamik segmentli `CANONICAL_PATHS` (token/ID portal sayfaları hariç) + `routeParam` (slug regex). `linkTarget()` TR kanonik yolu üretir, `AppLink/localizedHref` EN'e çevirir. Header/footer/hero/CTA/mediaText aynı `linkField` → hepsi destekler; eski internal/external verisi aynen render edilir.
-  - Header: `megaMenu: custom` (+ `columns` ≤4 × links + `featured` kart: başlık/açıklama/public görsel/link), `cta.secondary`, `announcement` (enabled/text/link/dismissible; normal akışta header üstünde, `announcement-bar` adası yalnız kapatma + localStorage, id = metin+link hash), `utility` (≤4 küçük link, desktop üst çubuk + mobil menü; `showSearch/showLanguage/showAccount`). Footer: `brandBlurb`, `showContact`, `showSocial`, copyright `{year}`/`{siteName}`.
-  - SiteSettings: `favicon`, "Marka ve hareket" sekmesi `brand.accent` + `motion` (subtle|none → `html[data-motion]`). Logo/logoDark/site adı header/footer/metadata/OG/JSON-LD'de (yalnız public, image MIME; protected medya asla). İkonlar `src/app` → `public/` (dosya tabanlı app ikonları CMS favicon'unu ezerdi); admin `meta.icons`.
-  - Kontrast kuralı (`src/lib/brand.ts`): girilen renk en az bir temada olduğu gibi geçmeli (zemin+surface üzerinde metin ve kendi buton metni beyaz/#0b0d10 ≥4,5:1); diğer tema tonu aynı hue ile HSL açıklığı kaydırılarak türetilir, hover ±%8 ve aynı kuralı sağlar. İki temada da geçmeyen orta parlaklık bandı (ör. #e11d48, #d9480f) ve hex dışı değer field `validate` ile reddedilir (admin/REST/Local API/MCP). Layout `<html style>` `--brand-{dark,light}-accent(-hover|-contrast)` yazar; `globals.css` `var(--brand-…, varsayılan)`. Boşsa eski palet.
-  - Yer tutucu temizliği: `publicText()` `[BÜYÜK HARF]` kalıplarını boş sayar → iletişim/footer/JSON-LD satırı gizlenir. Seed: menü/footer/ürün CTA'ları `route` (seed'de `/tr`/`/en` ve `mailto:[COMPANY EMAIL]` yok), siteName TR/EN `SoftMarket`, nötr iletişim (İstanbul, +90 212 000 00 00, hafta içi 09–18; e-posta bilerek boş → bildirim yanlış adrese gitmez).
-  - Test: `globals-editable.test.tsx` (route TR/EN, kontrast kabul/ret/format, CMS-boş yedek, eski link, yer tutucu, MCP izni), `globals-editable-db.test.ts` (gerçek SQLite: MCP API key yolu ile update + ret), `globals-editable-migration.test.ts`. 42 dosya/516 test, `.next-prod` build, 3200 Playwright 390/1440 (`scratchpad/f7/shots`), accent geçici değiştirme Local API ile doğrulandı ve geri alındı.
-
-### F8 — Live Preview + taslak modu
-- **Kapsam:** `admin.livePreview`, preview/exit rotaları (staff doğrulama, açık yönlendirme koruması), draft yükleyiciler, `RefreshRouteOnSave`, `pages` autosave. Migration `pages_autosave`.
-- **Kabul:** editör kaydettiğinde iframe ≤ 2 sn içinde yenileniyor, anonim kullanıcı draft göremiyor (cookie çalınsa bile staff kontrolü var), taslak ISR'i bozmuyor.
-- **Test:** preview rotası anon/customer/editor, `redirect` doğrulaması, draft sızıntısı, revalidate atlama, Playwright admin iframe akışı.
-- **Risk:** güvenlik (draft sızıntısı). Bu yüzden QA en yüksek effort'ta yapılır.
-- [x] **Uygulandı (2026-11-07).** Migration `20261107_190342_pages_autosave`: up yalnız `ALTER TABLE _pages_v ADD autosave` + indeks (DROP/DELETE/`__new_` yok); down yalnız indeks + kolonu düşürür (tablo yeniden kurulmaz), testle kilitli. Kopya DB → migrate → dry-run 0 hata → yedek `scratchpad/softmarket-pre-f8.db*` (+ `.snapshot.db`) → canlı DB. Yeni bağımlılık `@payloadcms/live-preview-react@3.85.1`.
-  - Güvenlik modeli: `GET /api/preview?redirect=/<tr|en>/...` (`src/lib/preview-route.ts`) yalnız `payload.auth` ile doğrulanan staff (users, admin/editor) için `draftMode().enable()`; paylaşılan gizli token yok (tek başına asla yetmez). Sıra: `Sec-Fetch-Site` cross-site/same-site 403 → geçersiz redirect 400 → oturum yok 401 → customer (portal çerezi, `payload-token` içinde customer JWT, `Authorization: JWT`) 403; hiçbirinde draft çerezi yazılmaz. Redirect allow-list (`safePreviewRedirect`): yalnız `/tr|/en` + slug biçimli segmentler; `%` (kodlanmış `/`, `\`, CRLF), `//`, `\`, şema, nokta segmenti, query/hash reddedilir; Location göreli. `GET /api/exit-preview` her zaman draft modunu kapatır (aynı doğrulama, varsayılan `/tr`).
-  - Draft okuma: `src/lib/preview.ts` `getPreviewUser` (istek başına `cache`) = draft modu açık **ve** istekte canlı staff oturumu (her render'da `payload.auth`); aksi halde `null` (fail-closed, Next iç hataları `unstable_rethrow`). `readAs(locale)` → staff ise `draft: true` + `overrideAccess: false` + staff user, değilse anonim yayınlı okuma. Yalnız tekil belge yükleyicileri: `getHomePage`, `getSystemPage`, `getLandingPage`, `getPage` (yasal/hakkımızda), `getFamily`, `getProductDetail` (ürün sorgusu), `getSolution`, `getCaseStudy`, `getPost`; liste/ilişkili sorgular (sürümler, indirmeler, blok listeleri) anonim kalır. Çalınan draft çerezi tek başına, customer oturumu, rolü düşen/oturumu silinen staff → yayınlı içerik.
-  - Önbellek: Next draft modunda ISR anahtarı yok (render istek başına, ISR'a yazılmaz) ve `Cache-Control: private, no-cache, no-store…`; middleware `__prerender_bypass` çerezli her isteğe ayrıca `private, no-store`. Ana sayfanın `dynamic = 'error'` ayarı kaldırıldı (draft modunda bile `headers()`'ı yasaklıyordu; sayfa hâlâ SSG ●). Birim testi: hiçbir frontend rota `dynamic = 'error'|'force-static'` kullanamaz. Autosave/taslak `_pages_v`'ye yazar, revalidate kuralı (F1/F6) değişmedi: yalnız yayın/yayından kaldırma önbelleği yeniler.
-  - Admin: `admin.livePreview` (`src/lib/preview-url.ts`): `pages, products, product-families, solutions, case-studies, posts`; breakpoint 390×844 / 768×1024 / 1440×900. URL = `<origin>/api/preview?redirect=<localizedHref>`; pages: homePage ID'si veya slug `home` → `/`, sistem/yasal/landing `pagePath`, template → önizleme yok; ürün aile slug'ı aranır. Origin: public `NEXT_PUBLIC_SERVER_URL` varsa o, yerelde (loopback) admin isteğinin loopback host'u (3100/3200 kendini önizler; sahte Host yok sayılır). `pages` autosave `interval: 2000` (diğer drafted koleksiyonlar elle taslak).
-  - İstemci adası `components/preview/live-preview-refresh.tsx`: yalnız staff draft render'ında layout'a eklenir; `RefreshRouteOnSave` `serverURL = window.location.origin` (yalnız aynı-origin `payload-document-event` → `router.refresh()`); iframe dışında açılırsa "Önizlemeden çık" rozeti (`common.exitPreview`). Draft modunda Cloudflare beacon yüklenmez. CSP değişmedi (`frame-ancestors 'self'`, admin `frame-src 'self'` zaten aynı-origin iframe'e izin veriyor).
-  - Doğrulama (`.next-prod` + 3200, DB kopyası, geçici admin/editor/customer yalnız kopyada): anonim 401, customer 3 varyant 403, sahte JWT 401, cross-site 403, 10 redirect vektörü 400, hiçbirinde `__prerender_bypass` yok; editor 307 + çerez. /tr, haber, çözüm, ürün, yalnız-taslak vaka ve landing: editor+draft taslağı görür (`private, no-store`), draft çerezi tek başına/customer+draft/editor draftsız yayınlı görür; ardından anonim yine yayınlı + `x-nextjs-cache: HIT`; yalnız-taslak sayfalar anonimde 404. Yayın → MISS + yeni içerik (geri alındı). Playwright: editor admin'de ana sayfa → Live Preview iframe (`/api/preview?redirect=%2Ftr`) → hero başlığı yazıldı → autosave 2061 ms → iframe 92 ms sonra güncellendi; aynı anda anonim ziyaretçi yayınlıyı gördü; mobil breakpoint 390×844; posts EN → `/en/news/...`. Ekranlar `scratchpad/f8/shots`. Test: `live-preview.test.ts` (43: redirect vektörleri, hedef yollar, origin, config, mesaj sözleşmesi, middleware, rota ayarı) + `live-preview-db.test.ts` (6: migration, gate anon/customer/editor/admin, exit, draft sızıntısı, rol/oturum iptali, autosave revalidate atlama, tek autosave sürümü); 46 dosya/585 test.
-
-### F9 — Görsel pipeline (F1 sonrası bağımsız)
-- **Kapsam:** `imageSizes` + webp + focal point, `MediaImage` srcset/sizes, hero `priority`/`fetchPriority`, `media:regenerate`. Migration `media_image_sizes`.
-- **Kabul:** mobil hero ≤ 180 KB, `sizes` doğru seçiliyor, protected boyut URL'leri yetkisiz kullanıcıya 404/403 dönüyor, LCP hedefi tutuyor.
-- **Test:** srcset üretimi, boyut URL erişim testleri (anon/customer/staff), regenerate idempotent.
-- **Risk:** disk kullanımı (~4×) ve sharp süresi. Çözüm: `withoutEnlargement` ve gereksiz boyutları atlamak.
-- [x] **Uygulandı (2026-11-07).** `20261107_192347_media_image_sizes`: up 24 ADD COLUMN + 4 indeks; down yalnız kendi indeks/kolonları, yeniden kurulum yok. Kopya DB → transaction down/up veri koruma testi → canlı DB/WAL/SHM + snapshot yedeği → canlı migration. Native MediaImage: responsive srcset/sizes + CLS ölçüleri, lazy varsayılanı, hero eager/high + responsive preload, focal CSS; tüm img tüketicileri ortak bileşende. `mediaRead` orijinal ve boyut dosya adlarını aynı kayda ve mevcut lisans filtresine bağlar. `media:regenerate` idempotent; kopyada 3 → 0 işlem.
-  - Güvenlik: 45 production HTTP dosya/rol kontrolü, protected/licensed anon/customer 404, staff 200; tümü private/no-store. Geçerli lisans ve iptali gerçek handler/SQLite testinde. F8 staff+draft protected srcset görür; anon/customer/draft çerezi tek başına yalnız yayınlı/public görür.
-  - Doğrulama: typecheck/lint, 47 dosya/591 test, `.next-prod` production build ve 3200 duman geçti. Mobil fixture 390px/DPR 1–3 için 1.24/23.28/171.17 KB (kalite 74); gerçek tarayıcı aday seçimi yerine HTML sözleşmesinden hesaplandı. **LCP/CLS regresyon ölçümü açık:** Chromium MachPort 1100, Lighthouse debugging port ve browser host erişim engeli. Yeni ölçüm olmadan LCP kabulü doğrulandı sayılmadı. Ayrıntı: `docs/perf/f9-media-pipeline.md`.
-
-### F10 — Editör deneyimi
-- **Kapsam:** tüm admin etiketleri ve açıklamaları TR/EN, blok galeri sayfası + önizleme görselleri, `content/templates/starter`, `docs/editor-guide.md`, `AGENTS.md`'ye page builder/MCP tarifi.
-- **Kabul:** admin TR'de İngilizce etiket kalmamış (test: config tarayıcısı), starter import boş DB'de çalışan site üretiyor, kılavuz her bloğu kapsıyor.
-- **Test:** label tarayıcı birim testi, starter import (izole SQLite).
-- **Kod kısmı uygulandı (2026-11-07):** [x] TR/EN etiketler (`src/lib/admin-i18n.ts` sözlüğü; şema değişmedi, `migrate:create` "No schema changes"), [x] `tests/unit/admin-labels.test.ts`, [x] `content/templates/starter` + `tests/unit/starter-template-db.test.ts`, [x] 21/21 blok önizleme görseli (wireframe; gerçek ekran görüntüsü yenileme F11'e kalabilir), [x] AGENTS.md starter bölümü. Not: Live Preview breakpoint `label` Payload'da React child olarak basıldığından `{tr,en}` nesnesi çökerdi; "Mobil / Mobile" string olarak kaldı. `docs/editor-guide.md` ayrı ajanda.
-
-### F11 — Görsel QA turu 2 + perf kabul
-- **Kapsam:** F0 matrisinin tekrarı, kullanıcı hata listesinin kapanışı, bütçe kapıları, e2e (katalog → teklif, dil, blok sırası, preview).
-- **Kabul:** §7 bütçesinin tamamı yeşil, `docs/qa/visual-baseline.md` maddeleri kapalı.
-- **Uygulandı (2026-11-07), kabul KARŞILANMADI:** [x] 432 ekran görüntüsü turu 2 + `visual-baseline.md` güncellemesi (K1/K2/Y2/Y4-Y8/O1/O2/O4/O8/D1/D2 kapalı; Y1/O7 kısmen; Y3/O3/O5/O6/D3-D6 açık), [x] 3 koşu medyan Lighthouse + Playwright INP vekili + DB sorgu/ISR ölçümü (`docs/perf/f11-acceptance.md`), [x] e2e: `tests/e2e/f11-flows.spec.ts` (katalog→ürün→Teklif İste formu, anonim preview reddi; canlı DB'ye yazmaz) ve `tests/e2e/isolated/block-order.spec.ts` (DB kopyası + 3400; `pnpm test:e2e:isolated`; blok sırası API'siyle değişince ana sayfa sırası + preview staff/anon), [x] editör kılavuzu admin UI'siyle hizalandı. **Kırmızı bütçeler:** görselli hero mobil LCP 3.0 s (Lantern; gerçek throttling'te LCP=FCP), SEO 92 (canonical, alan adı bekliyor), JS 192 KB gzip (>130), font 70 KB (>60). Takip: ayrı faz "JS/font diyeti" (mega menü Radix, istemci ICU ayrıştırıcı, tailwind-merge, mono font) + yasal sayfa yer tutucuları + boş durum sayfaları.
-
-### G — Görsel hata düzeltme turu (kullanıcı listesi gelince, F0 sonrası)
-- Her madde için sayfa, ekran genişliği, beklenen ve gerçekleşen kaydedilir. Düzeltmeler küçük ve madde başına commit'lenir. Önce/sonra ekran görüntüsü alınır.
+  Method: per-page and `generateStaticParams` timing flag, dev on/off × `experimental.cpus=1/default` matrix, 5 consecutive builds. Acceptance: root cause documented and fixed, 5/5 builds pass without timeout, build duration recorded.
 
 ---
 
-## 9. Ajan dağılımı (`takim-lideri`; yazan ≠ denetleyen)
+## 8. Phases
 
-| Faz | Yazan (effort) | QA (effort) |
+Each phase can be committed separately, comes with its own tests, and no commit is made unless the user requests it. Phases with schema changes carry migration + types + importmap + `schema.json` in the **same** change. Common gates: `pnpm typecheck && pnpm lint && pnpm test` and `NEXT_DIST_DIR=.next-prod pnpm build`.
+
+Dependency: `F0 → (F1 ∥ F2 ∥ F9) → F3 → (F4 ∥ F5 ∥ F7) → F6 → F8 → F10 → F11`. G (visual fixes) can happen at any time after F0.
+
+### F0 — Measurement baseline + visual QA pass 1 (no code behavior changes)
+- **Scope:** Lighthouse/LHCI baseline, bundle report, DB query counter flag, ISR verification script, docs timeout investigation (§7). 390/768/1440 screenshot matrix of all public pages → `docs/qa/visual-baseline.md` (bug list; the user's list is added here).
+- **Files:** `lighthouserc.json`, `tests/perf/*`, `scripts/perf-*.ts`, `src/lib/db-query-log.ts` (flagged), `docs/perf/baseline.md`.
+- **Acceptance:** baseline table filled, root cause report for timeout (fix in F1), zero behavior difference when flag is off.
+- **Tests:** counter unit test, perf spec execution (on permitted host; MachPort limitation noted).
+- **Risk:** Chromium macOS sandbox (known). Mitigation: permitted host or user machine.
+
+### F1 — Quick performance wins (no schema)
+- **Scope:** `cache()` for `content.ts`, single lightweight query for home page family count, draft-skipping revalidation, disable Mono preload, remove `motion` dependency, FAQ `<details>`, F0 timeout fix.
+- **Files:** `src/lib/content.ts`, `src/lib/revalidate.ts`, `[locale]/page.tsx`, `[locale]/layout.tsx`, `components/blocks/faq-block.tsx`, `package.json`.
+- **Acceptance:** query count lower than baseline, no double metadata+page query, draft save does not bust cache, first-load JS reduced by ≥ 5 KB, 5/5 builds.
+- **Tests:** revalidate (published/draft/unpublish), FAQ no-JS keyboard/accessibility, existing 345 tests.
+- **Risk:** `cache()` is per-request only; CLI and import paths are unaffected (verified by test).
+
+### F2 — Animation system
+- **Scope:** tokens, `data-anim` + single `MotionObserver`, hero CSS micro-animations (LCP rule), hover standard, `SiteSettings.motion` reading (field in F7; for now `html[data-motion]` support only), remove `Reveal`.
+- **Files:** `src/app/(frontend)/globals.css`, `components/ui/motion-observer.tsx`, `components/ui/reveal.tsx` (deleted), `Reveal` usages in home page and block components.
+- **Acceptance:** fewer client islands (single observer), all content visible without JS and under reduced-motion, CLS < 0.05, no LCP regression.
+- **Tests:** vitest (no hidden state in SSR, `data-anim=none`), Playwright reduced-motion + JS-disabled visibility, CLS measurement.
+- **Risk:** re-scanning on client navigation → `usePathname` dependency and no MutationObserver (intentional choice).
+
+### F3 — Block core + data model (schema)
+- **Scope:** `blockSettings()`/`appearance`, `BlockShell`, registry, hero `h1` rule, hero variants, cta/featureGrid extensions, admin `i18n` + TR labels (core blocks), `imageURL` placeholders, `blockReferences` spike decision, migration `blocks_appearance`.
+- **Files:** `src/blocks/*`, `src/fields/block-settings.ts`, `src/components/blocks/{registry,block-shell}.tsx`, `render-blocks.tsx`, `src/payload.config.ts`, `src/migrations/*`, `src/payload-types.ts`, `content/seed/schema.json`.
+- **Acceptance:** all existing pages visually identical (screenshot diff ≈ 0), legacy data renders with defaults, migration clean on DB copy, import dry-run 0 errors.
+- **Tests:** config↔registry parity, anchor uniqueness, single `h1`, schema sync, `sqlite-integrity`, rendering with legacy block data.
+- **Risk:** block table/column changes also affect `_v` tables. Mitigation: SQL review and DB copy.
+- [x] **Implemented (2026-11-07).** Migration `20261107_110012_blocks_appearance`: `ADD COLUMN` only across 80 block tables (4 collections + `_v`) (560 statements; no `DROP TABLE`/`DELETE`/`__new_`), column defaults = legacy appearance. DB copy → migrate → import dry-run 0 errors → live DB; import twice 0 create/88 update.
+  - `src/fields/block-settings.ts`: `blockSettings(slug)` (`"Görünüm"` (Appearance) collapsible → `appearance` group: `theme auto|dark|light`, `spacing none|sm|md|lg`, `align start|center`, `width narrow|normal|wide` (except richText; has its own `width` field), `animation subtle|none`, `anchor` (regex + reserved id + per-page uniqueness validation), `hidden`). `BLOCK_DEFAULTS` + `resolveAppearance()` single source for config and renderer; `theme: auto` resolves to block default (style on CTA).
+  - `BlockShell` (theme/spacing/tone/container/anchor id + `scroll-mt`, `data-anim` **on container**; section background does not fade), `registry.ts` (mapped type: missing renderer = type error), `lib/blocks/render-plan.ts` (hidden/unknown skipped, single h1, duplicate anchor dropped from HTML). `RenderBlocks firstHeroH1` is enabled only when the page has no own h1 (F6 CMS pages); on pages with PageHero all heroes are h2.
+  - Hero variants: `default` (= cinematic; value name preserved to avoid rename/table rebuild), `split`, `centered`, `minimal`. `mediaBackground` + video in F4. CTA `split` style; featureGrid `style: cards|plain` + icon allowlist select (`src/lib/icon-names.ts`, legacy text values normalized).
+  - Admin `i18n` (`payload/i18n/tr|en`, default TR), TR/EN labels for core 10 blocks + link field, `admin.group` (supported in 3.85: `Giriş/İçerik/Katalog/Kanıt/Dönüşüm/Yardımcı`), `imageURL` placeholders `public/admin/blocks/*.webp` (`node scripts/admin-block-placeholders.mjs`).
+  - **`blockReferences` decision: not used (F3).** In 3.85, type comment says "`@todo` merge with `blocks` in 4.0" (API not stable); content-import schema/importer skips string blocks (would need extra resolver); gain (admin client config duplication) is small for 4 collections × 10 blocks. SQLite table name in both paths is `<root>_blocks_<slug>` (drizzle `traverseFields`), so future migration is zero-migration: revisit in F10/4.0 if block count/admin bundle measurement requires it.
+  - Verification: typecheck/lint/34 files 398 tests (new: `blocks-core.test.tsx`, `blocks-appearance-migration.test.ts`), `.next-prod` build, 3200 1440/390 screenshots: exact height match on 7 pages, pixel diff dev↔dev ≤ 0.021%.
+
+### F4 — Static new blocks
+- **Scope:** `media`, `testimonial`, `tabs` (island), `videoEmbed` facade, `spacer`/`divider`, hero `mediaBackground` + optional video. Migration `blocks_static_set`.
+- **Acceptance:** each block visually correct across dark/light × 390/1440, tabs keyboard (arrow keys/ARIA) working, video iframe not loaded before click.
+- **Tests:** block render unit tests, Playwright keyboard + network (no iframe request) check.
+- **Risk:** CSP video permissions (existing allowlist) and facade poster CLS.
+- [x] **Implemented (2026-11-07).** Migration `20261107_111754_blocks_static_set`: only `CREATE TABLE` (96) + `CREATE INDEX` and 8 `ALTER TABLE ... ADD video_id` (hero, 4 collections + `_v`); no `DROP`/`DELETE FROM`/`__new_` in up (rebuild only in `down`). DB copy → migrate → import dry-run 0 errors → live DB.
+  - New blocks (added to `layout` of all 4 collections): `media` (1–4 images, caption, `aspect` auto|16-9|4-3|1-1|21-9), `testimonial`, `tabs` (2–6 tabs × richText + optional image), `spacer` (`size`), `divider` (`style` line|accent). `videoEmbed` already existed: no schema change, converted to facade. Hero: added `mediaBackground` to `variant` options (existing values/default unchanged) + `video` upload (visible only on mediaBackground).
+  - All have `blockMeta` + `blockSettings` + `BLOCK_DEFAULTS` + registry + `public/admin/blocks/*.webp` placeholder. Client islands: `tabs-island` (WAI-ARIA tablist, arrow/Home/End, automatic activation; all panels in SSR, `hidden` except first panel → first tab visible without JS), `video-facade` (poster + play; iframe only on click, `youtube-nocookie` / Vimeo `dnt=1`, compatible with existing CSP `frame-src`), `hero-video` (empty in SSR; mounts `<video muted loop playsinline>` when ≥768px + reduced-motion off + saveData off + `data-motion≠none`, pauses off-screen). Pure logic in `src/lib/blocks/static.ts`.
+  - Hero `mediaBackground`: poster = `media` (server `<img>` + preload, LCP), video on top. No video request on mobile/reduced-motion.
+  - Verification: typecheck/lint/36 files 420 tests; `.next-prod` build; temporary `qa-blocks` on 3200 (legal route `/tr/yasal/qa-blocks`, deleted afterwards): CLS 0 (390/1440), 0 video requests at 390, 0 at 1440 reduced-motion, video plays at 1440; 0 requests to provider before click, nocookie iframe on click; tabs keyboard (Right/End/wrap/Left/Home) and JS-disabled verified. Screenshots `scratchpad/f4/shots`.
+
+### F5 — Dynamic (data-bound) blocks
+- **Scope:** `productFamilies`, `productShowcase`, `solutionsGrid`, `caseStudy`, `newsList`, `logoWall` source improvements; `src/lib/blocks/data.ts` (`cache`, `select`, preload). Migration `blocks_dynamic_set`.
+- **Acceptance:** fixed query count per block (no N+1), unpublished records never appear (anon pattern), block hides silently on empty source.
+- **Tests:** N+1 test with query counter, draft and hidden record leak test, import relation resolution (TR slug).
+- **Risk:** relation depth and populate bloat. Mitigation: `populate` allowlist.
+- [x] **Implemented (2026-11-07).** Migration `20261107_130000_blocks_dynamic_set`: 80 `CREATE TABLE` (5 blocks × 4 collections × normal/`_v` × main+`_locales`) + indexes + 8 `ADD COLUMN` for logoWall `limit`; no `DROP`/`DELETE`/`__new_` in up, down drops only its own tables and `limit` column. DB copy → migrate → dry-run 0 errors → backup (`scratchpad/softmarket-pre-f5.db*`) → live DB.
+  - Blocks: `productFamilies`, `productShowcase`, `solutionsGrid`, `caseStudy`, `newsList` (appended to layoutBlocks); shared fields `src/blocks/list-fields.ts`: eyebrow/heading/description, `source`, `limit` (1–24), `sort` (order|newest|oldest|manual), `layout` (grid-3|grid-2|grid-4|list; showcase adds `alternating`), `showViewAll/viewAllLabel/viewAllUrl`. Manual selection relations use `maxDepth: 0` (page query does not populate). logoWall: new sources `allPartners|allCaseStudies|partnersAndCaseStudies` + `limit`; legacy values unchanged.
+  - `src/lib/blocks/data.ts`: `cache()` + primitive key, anonymous (`overrideAccess:false`, `draft:false`), `pagination:false`, select/populate allowlist, depth 1; `preloadBlockData` inside `RenderBlocks`. Empty source → empty without querying, block not rendered.
+  - Note: on 15+ char slugs, `enum_..._appearance_animation` exceeded 63 chars; added `enumName` function to `blockSettings` animation select (drizzle schema only, no SQLite impact). Do NOT use block `dbName` (table name becomes root-independent and collides across 4 collections).
+  - Query count (per loader, independent of record count): families 4, products 4, solutions 3, posts 3, logos 4, caseStudy 1. 3200 prod: page with 9 data blocks = 29 queries total.
+  - Tests: typecheck/lint/38 files 457 tests (new `blocks-dynamic.test.tsx`, `blocks-dynamic-db.test.tsx`, content-import F5 relation test). Screenshots `scratchpad/f5/qa-{390,1440}-{dark,light}.png`; temporary `qa-dynamic` page and QA records deleted.
+
+### F6 — Home page and system pages to CMS
+- **Scope:** `SiteSettings.homePage`, `pages.systemKey` + `hero` group, `pageType: template`, `layout` on families, `[locale]/[slug]` landing route + reserved slug validation, CMS hero + bottom blocks on listing pages, `content/seed/05-pages.json` (1:1 block equivalent of today's home page), reducing hard-coded home page to fallback. Migration `page_builder_pages`.
+- **Acceptance:** after seed, `/tr` and `/en` are visually equivalent to today. Changing block order in admin (after publish) changes home page order. Listing page headings come from CMS, falling back to i18n when empty. Sitemap and hreflang cover landing pages. Template pages are not public.
+- **Tests:** reserved slug and EN rewrite collision, home resolution order (`homePage` → slug `home` → fallback), Playwright: reorder blocks via API → publish → order changed, import idempotent (2nd run 0 create).
+- **Risk:** `[slug]` vs `[...notFound]` and rewrite priority; language switcher with locale-specific slugs.
+- [x] **Implemented (2026-11-07).** Migration `20261107_144850_page_builder_pages`: up has only 66 `CREATE TABLE` (pages `listing` block + `_v`, `pages_hero_actions` + `_v`, product-family `layout` block tables + `product_families_rels`), 154 indexes, and 185 `ADD COLUMN` (160 × `appearance_separator`, hero `aside`/`panel_title` 8+8, pages `system_key` + hero texts + `_v`, `site_settings.home_page_id`) + `site_settings_home_page_delete` trigger (ALTER ADD FK cannot carry `ON DELETE SET NULL`; clears setting when page is deleted). Generated `down()` rebuilt `site_settings` with `__new_` → manual: drops only F6 objects (F7 pattern); locked by test. DB copy → migrate → dry-run 0 errors → 3200 verification → backup `scratchpad/softmarket-pre-f6.db*` (+ `.snapshot.db`) → live DB; import 2× (10 create → 0 create/98 update).
+  - Page model (`src/lib/system-pages.ts` single source): `pages.systemKey` (`products|solutions|news|customers|careers|partners|support|contact|about`, unique, cleared on duplicate) + `hero` group (eyebrow/title/lead/actions ≤2; visible only on system pages), `pageType: template` (NULL-safely excluded from anonymous read access; no route/sitemap/search), `SiteSettings.homePage` (filters out legal/template/system pages), `layout` on families (below product list). Home resolution `getHomePage`: single anonymous query for homePage ID → slug `home` → `null` = `components/home/fallback-home.tsx` (legacy composition, 1:1). `/home` and homePage's own slug 308 to `/`.
+  - Listing itself as a movable block: new `listing` block (`pages` only; no fields, has appearance settings). `SystemBody`: legacy layout if no record; if record has no `listing`, list appears right below hero; if present, at block's position; hidden block = no list. 9 routes use `SystemHero` (CMS → i18n fallback; SEO meta → hero → i18n); partners CTA band only when no record exists (`cta` block in seed).
+  - Landing: `[locale]/[slug]` (ISR 3600 + static params from sitemap). Reserved slug = all `CANONICAL_PATHS` first segments + `SEGMENTS_EN` keys/values + admin/api/arama/tr/en/_next/metadata paths; rejects save only on standard/landing pages without systemKey, and route also re-checks. `/[slug]` was NOT added to next-intl `pathnames` (EN rewrites unaffected); only new `slug` key added to `LINK_ROUTES`. `referencePath` uses `pagePath()` for pages (legal/system/home/landing, no template). Sitemap + hreflang cover landing pages.
+  - Home page 1:1: hero `aside: families` (legacy family panel) + cinematic pageTop padding/lead/button spacing and arrow on secondary button; new appearance field `separator` (`none|top`, thin top line); ListFrame `mt-14`; CTA `banner` spacing matched to CtaBand (CTA band on product pages +8 px). Seed `content/seed/05-pages.json` (home + 9 system pages, `route` links), `01-globals.json` `homePage: "home"`.
+  - Revalidate fix: `revalidatePath('/tr'|'/en', 'layout')` never matched Next's derived tags (`/layout`, `/(frontend)/[locale]/layout`, URL path) → `revalidatePath('/', 'layout')` (same draft-safe rule). Sitemap `force-dynamic` (Next 15.4 file ISR cache ignores tag invalidation on route handlers).
+  - Verification: `.next-prod` + 3200 (DB copy): /tr, /en, and 9 system pages 390/1440 before(dev)/after exact height match, 0% pixel diff (no threshold); block order changed via API → publish → changed on 3200 → reverted; listing title from CMS / from i18n when empty; landing TR/EN 200 + hreflang + sitemap, reserved slug 400, template 404 and absent from anonymous API; draft home page hidden from anonymous. Queries: /tr MISS 20, HIT 0. typecheck/lint/44 files 536 tests.
+
+### F7 — Full globals editability
+- **Scope:** link `route` type (all link usages), header logo/site name/announcement/utility/custom mega/multi CTA, footer blurb/contact/social/placeholders, SiteSettings `motion` + `brand.accent` (contrast hook), converting seed menu to `route`. Migration `globals_editable`.
+- **Acceptance:** logo and site name come from CMS, no hard-coded `/tr` in seed menu, EN menu routes to right paths, low-contrast color rejected.
+- **Tests:** route resolution TR/EN, contrast validation, header/footer CMS-empty fallback test, MCP global update.
+- **Risk:** link field is used in many tables and migration is wide. Mitigation: additive only.
+- [x] **Implemented (2026-11-07).** Migration `20261107_141523_globals_editable`: up has only 6 `CREATE TABLE` (+11 indexes) and 91 `ADD COLUMN` (link `route`/`route_param` 24 block action tables + header/footer link tables; new header/footer/site-settings fields). Generated `down()` rebuilt `header_nav_items` and `site_settings` with `__new_` (`PRAGMA foreign_keys=OFF` ineffective inside transaction → would cascade-delete locales/children/social); manual `down()` drops only F7 objects and is locked by test. DB copy → migrate → dry-run 0 errors → backup (`scratchpad/softmarket-pre-f7.db*`) → live DB. Import 2× 0 create/88 update.
+  - Link: added `route` to `type` radio (internal/external/default unchanged). `route` select values are stable keys (`urunler`, `destek_surum-notlari`, `yasal_slug`…; not paths, GraphQL enum compatibility), labels TR path/EN path; `CANONICAL_PATHS` with at most one dynamic segment (excluding token/ID portal pages) + `routeParam` (slug regex). `linkTarget()` produces TR canonical path, `AppLink/localizedHref` translates to EN. Header/footer/hero/CTA/mediaText share `linkField` → all support it; legacy internal/external data renders as before.
+  - Header: `megaMenu: custom` (+ `columns` ≤4 × links + `featured` card: title/description/public image/link), `cta.secondary`, `announcement` (enabled/text/link/dismissible; in normal flow above header, `announcement-bar` island only handles dismiss + localStorage, id = text+link hash), `utility` (≤4 small links, desktop top bar + mobile menu; `showSearch/showLanguage/showAccount`). Footer: `brandBlurb`, `showContact`, `showSocial`, copyright `{year}`/`{siteName}`.
+  - SiteSettings: `favicon`, "Marka ve hareket" (Brand and motion) tab `brand.accent` + `motion` (subtle|none → `html[data-motion]`). Logo/logoDark/site name in header/footer/metadata/OG/JSON-LD (public only, image MIME; never protected media). Icons moved `src/app` → `public/` (file-based app icons overrode CMS favicon); admin `meta.icons`.
+  - Contrast rule (`src/lib/brand.ts`): entered color must pass as-is in at least one theme (text on background+surface and own button text white/#0b0d10 ≥4.5:1); the other theme's shade is derived with the same hue by shifting HSL lightness, hover ±8% satisfying the same rule. Mid-luminance band failing in both themes (e.g. #e11d48, #d9480f) and non-hex values are rejected by field `validate` (admin/REST/Local API/MCP). Layout writes `<html style>` `--brand-{dark,light}-accent(-hover|-contrast)`; `globals.css` uses `var(--brand-…, default)`. Empty = legacy palette.
+  - Placeholder cleanup: `publicText()` treats `[BÜYÜK HARF]` (UPPERCASE) patterns as empty → contact/footer/JSON-LD line is hidden. Seed: menu/footer/product CTAs use `route` (no `/tr`/`/en` or `mailto:[COMPANY EMAIL]` in seed), siteName TR/EN `SoftMarket`, neutral contact (Istanbul, +90 212 000 00 00, weekdays 09–18; email intentionally empty → notifications never go to a wrong address).
+  - Tests: `globals-editable.test.tsx` (route TR/EN, contrast accept/reject/format, CMS-empty fallback, legacy link, placeholder, MCP permission), `globals-editable-db.test.ts` (real SQLite: update + reject via MCP API key path), `globals-editable-migration.test.ts`. 42 files/516 tests, `.next-prod` build, 3200 Playwright 390/1440 (`scratchpad/f7/shots`), temporary accent change verified via Local API and reverted.
+
+### F8 — Live Preview + draft mode
+- **Scope:** `admin.livePreview`, preview/exit routes (staff auth, open-redirect protection), draft loaders, `RefreshRouteOnSave`, `pages` autosave. Migration `pages_autosave`.
+- **Acceptance:** iframe refreshes within ≤ 2 s when editor saves, anonymous users cannot see drafts (staff check even if cookie is stolen), drafts do not corrupt ISR.
+- **Tests:** preview route anon/customer/editor, `redirect` validation, draft leak, revalidate skip, Playwright admin iframe flow.
+- **Risk:** security (draft leak). Therefore QA runs at highest effort.
+- [x] **Implemented (2026-11-07).** Migration `20261107_190342_pages_autosave`: up is only `ALTER TABLE _pages_v ADD autosave` + index (no DROP/DELETE/`__new_`); down drops only index + column (no table rebuild), locked by test. DB copy → migrate → dry-run 0 errors → backup `scratchpad/softmarket-pre-f8.db*` (+ `.snapshot.db`) → live DB. New dependency `@payloadcms/live-preview-react@3.85.1`.
+  - Security model: `GET /api/preview?redirect=/<tr|en>/...` (`src/lib/preview-route.ts`) calls `draftMode().enable()` only for staff (users, admin/editor) verified by `payload.auth`; no shared secret token (never sufficient alone). Order: `Sec-Fetch-Site` cross-site/same-site 403 → invalid redirect 400 → no session 401 → customer (portal cookie, customer JWT in `payload-token`, `Authorization: JWT`) 403; no draft cookie written in any of these. Redirect allowlist (`safePreviewRedirect`): only `/tr|/en` + slug-shaped segments; `%` (encoded `/`, `\`, CRLF), `//`, `\`, scheme, dot segment, query/hash rejected; Location is relative. `GET /api/exit-preview` always disables draft mode (same validation, default `/tr`).
+  - Draft reading: `src/lib/preview.ts` `getPreviewUser` (per-request `cache`) = draft mode on **and** live staff session on the request (`payload.auth` on every render); otherwise `null` (fail-closed, Next internal errors via `unstable_rethrow`). `readAs(locale)` → if staff, `draft: true` + `overrideAccess: false` + staff user; otherwise anonymous published read. Singular document loaders only: `getHomePage`, `getSystemPage`, `getLandingPage`, `getPage` (legal/about), `getFamily`, `getProductDetail` (product query), `getSolution`, `getCaseStudy`, `getPost`; list/related queries (releases, downloads, block lists) stay anonymous. Stolen draft cookie alone, customer session, demoted/revoked staff → published content.
+  - Cache: no ISR key in Next draft mode (per-request render, not written to ISR) and `Cache-Control: private, no-cache, no-store…`; middleware also adds `private, no-store` to every request with `__prerender_bypass` cookie. Removed `dynamic = 'error'` from home page (forbade `headers()` even in draft mode; page is still SSG ●). Unit test: no frontend route may use `dynamic = 'error'|'force-static'`. Autosave/draft writes to `_pages_v`, revalidate rule (F1/F6) unchanged: only publish/unpublish refreshes cache.
+  - Admin: `admin.livePreview` (`src/lib/preview-url.ts`): `pages, products, product-families, solutions, case-studies, posts`; breakpoints 390×844 / 768×1024 / 1440×900. URL = `<origin>/api/preview?redirect=<localizedHref>`; pages: homePage ID or slug `home` → `/`, system/legal/landing `pagePath`, template → no preview; product looks up family slug. Origin: public `NEXT_PUBLIC_SERVER_URL` if set, locally (loopback) the loopback host of the admin request (3100/3200 previews itself; spoofed Host ignored). `pages` autosave `interval: 2000` (other drafted collections manual draft).
+  - Client island `components/preview/live-preview-refresh.tsx`: added to layout only on staff draft render; `RefreshRouteOnSave` `serverURL = window.location.origin` (only same-origin `payload-document-event` → `router.refresh()`); when opened outside iframe, shows `"Önizlemeden çık"` (Exit preview) badge (`common.exitPreview`). Cloudflare beacon not loaded in draft mode. CSP unchanged (`frame-ancestors 'self'`, admin `frame-src 'self'` already allows same-origin iframe).
+  - Verification (`.next-prod` + 3200, DB copy, temporary admin/editor/customer only on copy): anonymous 401, customer 3 variants 403, fake JWT 401, cross-site 403, 10 redirect vectors 400, none with `__prerender_bypass`; editor 307 + cookie. /tr, news, solution, product, draft-only case study and landing: editor+draft sees draft (`private, no-store`), draft cookie alone/customer+draft/editor without draft sees published; afterwards anonymous still sees published + `x-nextjs-cache: HIT`; draft-only pages 404 for anonymous. Publish → MISS + new content (reverted). Playwright: editor opens home page in admin → Live Preview iframe (`/api/preview?redirect=%2Ftr`) → hero heading edited → autosave 2061 ms → iframe updated 92 ms later; simultaneously anonymous visitor saw published; mobile breakpoint 390×844; posts EN → `/en/news/...`. Screenshots `scratchpad/f8/shots`. Tests: `live-preview.test.ts` (43: redirect vectors, target paths, origin, config, message contract, middleware, route config) + `live-preview-db.test.ts` (6: migration, gate anon/customer/editor/admin, exit, draft leak, role/session revocation, autosave revalidate skip, single autosave version); 46 files/585 tests.
+
+### F9 — Image pipeline (independent after F1)
+- **Scope:** `imageSizes` + webp + focal point, `MediaImage` srcset/sizes, hero `priority`/`fetchPriority`, `media:regenerate`. Migration `media_image_sizes`.
+- **Acceptance:** mobile hero ≤ 180 KB, `sizes` selected accurately, protected size URLs return 404/403 to unauthorized users, LCP target met.
+- **Tests:** srcset generation, size URL access tests (anon/customer/staff), regenerate idempotent.
+- **Risk:** disk usage (~4×) and sharp time. Mitigation: `withoutEnlargement` and skipping unnecessary sizes.
+- [x] **Implemented (2026-11-07).** `20261107_192347_media_image_sizes`: up 24 ADD COLUMN + 4 indexes; down only its own indexes/columns, no rebuild. DB copy → transaction down/up data-preservation test → live DB/WAL/SHM + snapshot backup → live migration. Native MediaImage: responsive srcset/sizes + CLS dimensions, lazy default, hero eager/high + responsive preload, focal CSS; all img consumers on shared component. `mediaRead` binds original and size filenames to the same record and existing license filter. `media:regenerate` idempotent; 3 → 0 operations on copy.
+  - Security: 45 production HTTP file/role checks, protected/licensed anon/customer 404, staff 200; all private/no-store. Valid license and revocation tested against real handler/SQLite. F8 staff+draft sees protected srcset; anon/customer/draft cookie alone sees only published/public.
+  - Verification: typecheck/lint, 47 files/591 tests, `.next-prod` production build and 3200 smoke passed. Mobile fixture 1.24/23.28/171.17 KB for 390px/DPR 1–3 (quality 74); calculated from HTML contract rather than real browser candidate selection. **LCP/CLS regression measurement open:** Chromium MachPort 1100, Lighthouse debugging port, and browser host access block. LCP acceptance is not considered verified without a new measurement. Details: `docs/perf/f9-media-pipeline.md`.
+
+### F10 — Editor experience
+- **Scope:** all admin labels and descriptions in TR/EN, block gallery page + preview images, `content/templates/starter`, `docs/editor-guide.md`, page builder/MCP recipe in `AGENTS.md`.
+- **Acceptance:** no English labels left in TR admin (test: config scanner), starter import produces a working site on empty DB, guide covers every block.
+- **Tests:** label scanner unit test, starter import (isolated SQLite).
+- **Code portion implemented (2026-11-07):** [x] TR/EN labels (`src/lib/admin-i18n.ts` dictionary; no schema change, `migrate:create` "No schema changes"), [x] `tests/unit/admin-labels.test.ts`, [x] `content/templates/starter` + `tests/unit/starter-template-db.test.ts`, [x] 21/21 block preview images (wireframe; real screenshot refresh can wait for F11), [x] AGENTS.md starter section. Note: Live Preview breakpoint `label` is rendered as a React child in Payload so an `{tr,en}` object would crash; kept as `"Mobil / Mobile"` string. `docs/editor-guide.md` in a separate agent.
+
+### F11 — Visual QA pass 2 + perf acceptance
+- **Scope:** repeat F0 matrix, close user bug list, budget gates, e2e (catalog → quote, language, block order, preview).
+- **Acceptance:** entire §7 budget green, `docs/qa/visual-baseline.md` items closed.
+- **Implemented (2026-11-07), acceptance NOT MET:** [x] 432-screenshot pass 2 + `visual-baseline.md` update (K1/K2/Y2/Y4-Y8/O1/O2/O4/O8/D1/D2 closed; Y1/O7 partial; Y3/O3/O5/O6/D3-D6 open), [x] 3-run median Lighthouse + Playwright INP proxy + DB query/ISR measurement (`docs/perf/f11-acceptance.md`), [x] e2e: `tests/e2e/f11-flows.spec.ts` (catalog→product→`Teklif İste` (Request a Quote) form, anonymous preview rejection; does not write to live DB) and `tests/e2e/isolated/block-order.spec.ts` (DB copy + 3400; `pnpm test:e2e:isolated`; changing block order via API changes home page order + preview staff/anon), [x] editor guide aligned with admin UI. **Red budgets:** hero with image mobile LCP 3.0 s (Lantern; on real throttling LCP=FCP), SEO 92 (canonical, awaiting domain), JS 192 KB gzip (>130), font 70 KB (>60). Follow-up: separate phase "JS/font diet" (mega menu Radix, client ICU parser, tailwind-merge, mono font) + legal page placeholders + empty state pages.
+
+### G — Visual bug-fix pass (once user list arrives, after F0)
+- For each item, record page, viewport width, expected, and actual. Fixes are small and committed per item. Before/after screenshots are taken.
+
+---
+
+## 9. Agent distribution (`takim-lideri`; author ≠ reviewer)
+
+| Phase | Author (effort) | QA (effort) |
 |---|---|---|
-| F0 | GPT 6.1 Terra (High): perf/DB/timeout · Claude Sonnet 5.5 (Medium): ekran görüntüsü matrisi | GPT 6.1 Sol (Medium) |
-| F1 | GPT 6.1 Terra (Medium) | Claude Opus alt ajan (Medium) |
+| F0 | GPT 6.1 Terra (High): perf/DB/timeout · Claude Sonnet 5.5 (Medium): screenshot matrix | GPT 6.1 Sol (Medium) |
+| F1 | GPT 6.1 Terra (Medium) | Claude Opus subagent (Medium) |
 | F2 | Claude Sonnet 5.5 (Medium) | GPT 6.1 Terra (High) |
-| F3 | Claude Opus alt ajan (High): şema/renderer · GPT 6.1 Sol (Medium): migration/import/test | GPT 6.1 Terra (High) |
-| F4 | Claude Sonnet 5.5 (Medium): UI · GPT 6.1 Sol (Medium): migration/test | GPT 6.1 Terra (High) |
-| F5 | GPT 6.1 Terra (High): veri yükleyiciler · Claude Sonnet 5.5 (Medium): UI | GPT 6.1 Sol (High) + Claude Opus (Low) çapraz okuma |
-| F6 | Claude Opus alt ajan (High): sayfa modeli/rota · GPT 6.1 Sol (Medium): seed/migration/test | GPT 6.1 Terra (High) |
-| F7 | Claude Opus alt ajan (Medium): şema · Claude Sonnet 5.5 (Medium): header/footer UI · GPT 6.1 Sol (Medium): migration/seed | GPT 6.1 Terra (High) |
-| F8 | Claude Opus alt ajan (High) | GPT 6.1 Terra (High), sıfır bağlam güvenlik incelemesi |
-| F9 | GPT 6.1 Terra (High) | Claude Sonnet 5.5 (Medium) + Opus (Low) erişim kontrolü |
-| F10 | Claude Haiku 5.5 (Low): etiket/çeviri/kılavuz · Claude Sonnet 5.5 (Low): önizleme görselleri | GPT 6.1 Sol (Medium) |
-| F11 / G | Claude Sonnet 5.5 (Medium): düzeltmeler · GPT 6.1 Terra (Medium): perf doğrulama | GPT 6.1 Sol (High) |
+| F3 | Claude Opus subagent (High): schema/renderer · GPT 6.1 Sol (Medium): migration/import/tests | GPT 6.1 Terra (High) |
+| F4 | Claude Sonnet 5.5 (Medium): UI · GPT 6.1 Sol (Medium): migration/tests | GPT 6.1 Terra (High) |
+| F5 | GPT 6.1 Terra (High): data loaders · Claude Sonnet 5.5 (Medium): UI | GPT 6.1 Sol (High) + Claude Opus (Low) cross-read |
+| F6 | Claude Opus subagent (High): page model/routes · GPT 6.1 Sol (Medium): seed/migration/tests | GPT 6.1 Terra (High) |
+| F7 | Claude Opus subagent (Medium): schema · Claude Sonnet 5.5 (Medium): header/footer UI · GPT 6.1 Sol (Medium): migration/seed | GPT 6.1 Terra (High) |
+| F8 | Claude Opus subagent (High) | GPT 6.1 Terra (High), zero-context security review |
+| F9 | GPT 6.1 Terra (High) | Claude Sonnet 5.5 (Medium) + Opus (Low) access control |
+| F10 | Claude Haiku 5.5 (Low): labels/translations/guide · Claude Sonnet 5.5 (Low): preview images | GPT 6.1 Sol (Medium) |
+| F11 / G | Claude Sonnet 5.5 (Medium): fixes · GPT 6.1 Terra (Medium): perf verification | GPT 6.1 Sol (High) |
 
-Kota dengesi: Claude ağırlıklı fazlar (F2–F4, F6–F7) GPT ağırlıklı fazlarla (F1, F5, F9) dönüşümlü yürür. Tıkanıklıkta lider danışmanlık ister ama kod yazmaz.
+Quota balance: Claude-heavy phases (F2–F4, F6–F7) alternate with GPT-heavy phases (F1, F5, F9). When blocked, the lead asks for consultation but does not write code.
 
 ---
 
-## 10. Riskler (özet)
-- **Veri kaybı (SQLite yeniden kurulum):** yalnız ekleme, kopya DB, SQL incelemesi.
-- **Taslak sızıntısı veya cache bozulması:** staff doğrulaması ve yayın durumuna bağlı revalidation.
-- **Blok sayısı arttıkça admin config/bundle şişmesi:** `blockReferences` spike'ı ve koleksiyon başına alt kümeler.
-- **Genellik ↔ sadelik:** blok seçenekleri bilinçli olarak az tutulur (tema, boşluk, hizalama, genişlik, animasyon, anchor). Serbest renk, font ve piksel ayarı yok.
-- **Browser testleri:** macOS MachPort sınırı (bilinen); kabul ölçümleri izinli hostta yapılır.
+## 10. Risks (summary)
+- **Data loss (SQLite rebuild):** additive only, DB copy, SQL review.
+- **Draft leak or cache corruption:** staff verification and publish-status-gated revalidation.
+- **Admin config/bundle bloat as block count grows:** `blockReferences` spike and per-collection subsets.
+- **Generality ↔ simplicity:** block options are intentionally kept minimal (theme, spacing, alignment, width, animation, anchor). No free-form color, font, or pixel settings.
+- **Browser tests:** macOS MachPort limitation (known); acceptance measurements run on a permitted host.
 
-## 11. Açık sorular (kullanıcıya)
-1. "Genel şablon" her şirket için **ayrı kurulum** (tek site/tek DB) mu, yoksa aynı kurulumda **çok siteli (multi-tenant)** yapı mı gerekiyor? Plan ayrı kurulumu varsayıyor.
-2. Marka rengi (kobalt yerine) ve logo admin'den değiştirilebilsin mi (kontrast denetimli), yoksa renk kod/token dosyasında mı kalsın?
-3. Liste sayfalarında (Ürünler, Haberler, Referanslar…) yalnız üst hero + alt bloklar yeterli mi, yoksa listenin kendisi de taşınabilir bir "Liste" bloğu olsun mu?
-4. Hero'da self-host video (MP4/WebM) istiyor musunuz? Mobilde yalnız poster gösterilir ve bütçeyi korumak için masaüstünde yüklenir.
-5. Live Preview için autosave (yaklaşık 2 sn aralık, SQLite yazma yükü) açılsın mı, yoksa "Kaydet → önizleme yenilenir" yeterli mi?
+## 11. Open questions (for the user)
+1. Should the "general template" use a **separate installation** (single site/single DB) per company, or a **multi-tenant** setup on one installation? The plan assumes separate installations.
+2. Should the brand color (instead of cobalt) and logo be editable from admin (with contrast checks), or stay in code/token files?
+3. On listing pages (Products, News, Customers…), are top hero + bottom blocks enough, or should the listing itself also be a movable "Listing" block?
+4. Do you want self-hosted video (MP4/WebM) in the hero? On mobile only the poster is shown, and it loads on desktop to protect the budget.
+5. Should autosave (approx. 2 s interval, SQLite write load) be enabled for Live Preview, or is "Save → preview refreshes" sufficient?

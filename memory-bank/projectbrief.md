@@ -1,53 +1,53 @@
-# Proje Özeti — SoftMarket
+# Project Brief — SoftMarket
 
-Kapsamın tek doğru kaynağı. Çelişki olursa önce bu dosya, sonra `progress.md`.
+The single source of truth for scope. If there is a conflict, this file comes first, then `progress.md`.
 
-## Amaç
-Kurumsal yazılım şirketinin 5-20 yazılım ürününü tanıttığı için teklif ve demo talebi topladığı site.
-Ruh: Vizrt / Blackmagic (ürün aileleri, çözümler, destek merkezi, indirmeler). Tasarım kopyası değil.
+## Purpose
+A site for a corporate software company that showcases its 5-20 software products and collects quote and demo requests.
+Spirit: Vizrt / Blackmagic (product families, solutions, support center, downloads). Not a design copy.
 
-## Kesin kararlar
-- **Satış modeli:** tanıtım + Teklif İste / Demo İste. Sürümlerde fiyat yok; her sürüm teklif talebine gider.
+## Firm decisions
+- **Sales model:** promotion + Request a Quote / Request a Demo. Editions have no price; every edition goes to a quote request.
 - **Stack:** Next.js 15 (App Router), Payload CMS 3, SQLite, TypeScript strict, Node 24, pnpm.
-- **Diller:** TR (varsayılan, `localePrefix: 'always'` → `/tr/...`) + EN (`/en/...`). Lokalize slug.
-- **Analitik:** Cloudflare Web Analytics; Umami Postgres gerektirdiği için seçilmedi. Çerezsiz; analitik çerez bandı gerekmez. Token yoksa beacon yüklenmez; admin/portal hariç.
-- **Online ödeme:** tamamen kaldırıldı.
-- **Lisans:** site içi modül; yetkili yönetici panel/API/MCP üzerinden müşteriye atar. CSPRNG anahtar sunucuda üretilir.
-- **Dağıtım:** systemd self-host (tek VPS), Caddy ile otomatik TLS.
-- **AI ile yönetilebilirlik (kritik):** `AGENTS.md`, Makefile/pnpm script'leri, JSON seed/import, Payload REST/Local API, Payload MCP plugin (Faz 8a).
-- **Görsel:** koyu ağırlıklı + açık bölümler; tek vurgu rengi kobalt; palet bizden. Ayrıntı: `productContext.md`.
-- **Kullanıcı:** SQLite bilmiyor; manuel veritabanı müdahalesi istemiyor. Migration ve script'ler otomatik olmalı.
-- **Git:** kullanıcı istemeden commit yapılmaz.
+- **Languages:** TR (default, `localePrefix: 'always'` → `/tr/...`) + EN (`/en/...`). Localized slugs.
+- **Analytics:** Cloudflare Web Analytics; Umami was not chosen because it requires Postgres. Cookieless; no analytics cookie banner needed. If there is no token, the beacon is not loaded; admin/portal are excluded.
+- **Online payment:** fully removed.
+- **License:** an in-site module; an authorized administrator assigns it to the customer through the panel/API/MCP. The CSPRNG key is generated on the server.
+- **Deployment:** systemd self-hosted (single VPS), automatic TLS with Caddy.
+- **AI manageability (critical):** `AGENTS.md`, Makefile/pnpm scripts, JSON seed/import, Payload REST/Local API, Payload MCP plugin (Phase 8a).
+- **Visual:** dark-dominant with light sections; a single accent color, cobalt; the palette is ours. Details: `productContext.md`.
+- **User:** does not know SQLite and does not want to perform manual database interventions. Migrations and scripts must be automatic.
+- **Git:** no commits unless the user asks.
 
-## Kapsam dışı (v1)
-- e-Fatura / e-Arşiv entegrasyonu (sonra Paraşüt vb.).
-- Yazılım içi aktivasyon API'si: v1'de kapsam dışıydı; 2026-11-17 kullanıcı isteğiyle plana alındı (aşağıdaki "Planlanan hedefler").
-- Abonelik yenileme otomasyonu.
+## Out of scope (v1)
+- e-Invoice / e-Archive integration (later, e.g. Paraşüt).
+- In-software activation API: it was out of scope for v1; it was added to the plan at the user's request on 2026-11-17 (see "Planned goals" below).
+- Subscription renewal automation.
 
-## Planlanan hedefler (2026-11-17, kullanıcı onayı bekliyor)
-- **Lisans API'si:** satılan programlar `/api/v1/licensing/*` ile aktivasyon, doğrulama (çevrimdışı tolerans), deaktivasyon, koltuk/cihaz bağlama, güncelleme kontrolü ve lisanslı indirme yapar. Plan: `docs/plan-licensing-security.md`.
-- **Lisans iptali:** admin elle askıya alır, iptal eder, yeniden etkinleştirir; otomatik: iade, itiraz, kural ihlali (geri alınabilir, denetim izli).
-- **Güvenlik merkezi:** admin panelinde ihlal, IP ve şüpheli hareketlerin toplandığı tek sayfa; KVKK uyumlu minimizasyon ve saklama.
-- **Barındırma:** lisans API'si alt alan adında (öneri `lisans.<alan>`); VPS'siz paylaşımlı hosting yalnız koşullu. Değerlendirme: `docs/plan-hosting.md`.
+## Planned goals (2026-11-17, awaiting user approval)
+- **License API:** shipped programs perform activation, verification (with offline tolerance), deactivation, seat/device binding, update checks, and licensed downloads via `/api/v1/licensing/*`. Plan: `docs/plan-licensing-security.md`.
+- **License revocation:** the admin manually suspends, revokes, and re-enables; automatic: refund, dispute, rule violation (reversible, with an audit trail).
+- **Security center:** a single page in the admin panel that collects violations, IPs, and suspicious activity; KVKK-compliant minimization and retention.
+- **Hosting:** the license API on a subdomain (suggestion `lisans.<domain>`); VPS-less shared hosting only conditionally. Evaluation: `docs/plan-hosting.md`.
 
-## Site kapsamı (özet)
-- Ana sayfa; ürün kataloğu (`/tr/urunler`, aile, ürün detay sekmeleri); çözümler; referanslar; haberler; kariyer; iş ortakları; iletişim; şirket.
-- Destek merkezi (`/tr/destek`): indirmeler, dokümantasyon, sürüm notları, SSS, destek talebi, iletişim.
-- Dönüşüm: `/tr/demo-talep`, `/tr/teklif-iste`.
-- Müşteri portalı `/tr/hesap`: özet, lisanslar, indirmeler, destek talepleri, profil.
-- Yasal: KVKK, gizlilik, çerez, kullanım koşulları, EULA.
-- Admin paneli: `/admin` (Payload).
-- Tam sayfa haritası ve koleksiyon listesi: `systemPatterns.md`.
+## Site scope (summary)
+- Home page; product catalog (`/tr/urunler`, families, product detail tabs); solutions; references; news; careers; partners; contact; company.
+- Support center (`/tr/destek`): downloads, documentation, release notes, FAQ, support request, contact.
+- Conversion: `/tr/demo-talep`, `/tr/teklif-iste`.
+- Customer portal `/tr/hesap`: summary, licenses, downloads, support requests, profile.
+- Legal: KVKK, privacy, cookies, terms of use, EULA.
+- Admin panel: `/admin` (Payload).
+- Full page map and collection list: `systemPatterns.md`.
 
-## Başarı kriterleri (plan §8)
-- `make dev` sonrası `127.0.0.1:3100/tr`, `/en`, `/admin` açılır; seed sonrası sayfalar dolu.
-- `pnpm typecheck && pnpm lint && pnpm test` geçer (lisans atama, abonelik süresi, access control).
-- Playwright e2e: katalog → ürün → Teklif İste; yönetici lisans atar → lisans portalda → licensed indirme açılır; Teklif İste gönderimi; dil değiştirme + hreflang.
-- Lighthouse ≥ 90 (Performance/SEO/A11y); WCAG AA kontrast.
-- MCP üzerinden ajanla ürün ekle/güncelle testi.
-- systemd ile staging sunucuda; Caddy TLS; backup/restore denemesi.
+## Success criteria (plan §8)
+- After `make dev`, `127.0.0.1:3100/tr`, `/en`, and `/admin` open; after seeding, the pages are populated.
+- `pnpm typecheck && pnpm lint && pnpm test` pass (license assignment, subscription period, access control).
+- Playwright e2e: catalog → product → Request a Quote; the admin assigns a license → the license appears in the portal → licensed download opens; quote submission; language switch + hreflang.
+- Lighthouse ≥ 90 (Performance/SEO/A11y); WCAG AA contrast.
+- Test via MCP: add/update a product through an agent.
+- Staging server with systemd; Caddy TLS; backup/restore trial.
 
-## Kaynaklar
-- Güncel repo planı: `docs/implementation-plan.md` (harici kaynak salt okunur olduğu için çalışma kopyası).
-- Onaylı kaynak plan: `/Users/ozcelik/.claude/plans/imdi-yapmam-z-gereken-proje-greedy-lynx.md`
-- Ajan kuralları: `/Users/ozcelik/dev/softmarket/AGENTS.md`
+## Sources
+- Current repo plan: `docs/implementation-plan.md` (a working copy, because the external source is read-only).
+- Approved source plan: `/Users/ozcelik/.claude/plans/imdi-yapmam-z-gereken-proje-greedy-lynx.md`
+- Agent rules: `/Users/ozcelik/dev/softmarket/AGENTS.md`

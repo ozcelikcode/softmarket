@@ -1,3 +1,5 @@
+# Progress
+
 ## VPS disk footprint
 
 - Classified `tsx` and TypeScript as runtime dependencies and Tailwind/PostCSS as build dependencies. The disposable macOS release used 952 MiB of production dependencies and 39 MiB of compiled output after excluding 885 MiB of Webpack cache.
@@ -81,335 +83,338 @@
 - Audit verified copy migration up/down/up, all 723 original table hashes, integrity, foreign keys, the schema snapshot and seed rollback. Regression tests exercise panel and bearer access, hidden-field predicates, transactional status history, rule gating and draft code reservation.
 - Open: settings-change audit and reason-required status edits (L6), payment raw-SQL transition logging (L3), `licenses.activations` join (L3).
 
-## Lisans API / güvenlik merkezi / hosting planı — 2026-11-17 (yalnız plan)
+## License API / security center / hosting plan — 2026-11-17 (plan only)
 
-- Yazıldı: `docs/plan-licensing-security.md` (tehdit modeli, API sözleşmesi, veri modeli, L0–L11 fazları, ajan dağılımı, 6 açık soru) ve `docs/plan-hosting.md` (alt alan adı olur; Passenger paylaşımlı hosting koşullu/önerilmez). Kod, şema, migration, commit yok. Bulgu: `admin-actions.ts` lisans durumunu ham SQL ile değiştiriyor; durum günlüğü bu yollara da bağlanmalı (L3).
+- Written: `docs/plan-licensing-security.md` (threat model, API contract, data model, phases L0–L11, agent allocation, 6 open questions) and `docs/plan-hosting.md` (a subdomain is used; shared Passenger hosting is conditional and not recommended). No code, schema, migration or commit. Finding: `admin-actions.ts` changes license status with raw SQL; status logging must also be attached to these paths (L3).
 
-## Entegrasyon güvenlik denetimi — 2026-11-17
+## Integration security audit — 2026-11-17
 
-- Sır güncellemesinde eşzamanlı kayıp, kısa sır gösterimi, okunamayan SMTP'de sahte başarı, eksik şirket bilgisiyle satış açılması, hukuk özetinde satır sınırı ve migration down'da port/TLS kaybı düzeltildi. Typecheck/lint temiz, tam test 91 dosya/1531 test geçti; canlıya migration yapılmadı.
+- Fixed: concurrent loss during secret updates, short secret display, false success with an unreadable SMTP, opening sales with missing company details, a line limit in the legal summary, and port/TLS loss in migration down. Typecheck/lint clean, full test 91 files/1531 tests passed; no migration applied to live.
 
-## Entegrasyon ayarları — 2026-11-17 (QA bekliyor, commit yok, canlıya uygulanmadı)
+## Integration settings — 2026-11-17 (QA pending, no commit, not applied to live)
 
-- Yeni versiyonsuz `integrations` global'i (admin; MCP yok): iyzico/Stripe test+canlı anahtarları, ortam (canlı ek onay), SMTP. Sırlar AES-256-GCM, anahtar `SOFTMARKET_SECRETS_KEY` (yoksa kayıt reddedilir; kaybolursa sırlar okunamaz). Write-only uç `POST /api/globals/integrations/secret`, test e-postası `/test-email`. Env tanımlıysa env kazanır.
-- E-posta `softmarketEmailAdapter` her gönderimde env→panel ayarını okur. Yasal şirket yer tutucuları render anında dolar; `pages.legalReview` metne bağlı hukukçu onayı, `legalReady` onay ister. `site-settings.company.etbisNo` eklendi.
-- Migration `20261117_092957_integrations_settings` (CREATE TABLE + 7 ADD COLUMN, korumalı down); kopyada doğrulandı. Test 91/1527, build OK. Ayrıntı `docs/plan-payments.md` "Entegrasyon ayarları kaydı".
+- New unversioned `integrations` global (admin; no MCP): iyzico/Stripe test+live keys, environment (live needs extra confirmation), SMTP. Secrets AES-256-GCM, key `SOFTMARKET_SECRETS_KEY` (if absent, saving is rejected; if lost, secrets cannot be read). Write-only endpoint `POST /api/globals/integrations/secret`, test e-mail `/test-email`. If set in env, env wins.
+- E-mail `softmarketEmailAdapter` reads the env → panel setting on every send. Legal company placeholders are filled at render time; `pages.legalReview` binds lawyer approval to the text, and `legalReady` requires approval. `site-settings.company.etbisNo` added.
+- Migration `20261117_092957_integrations_settings` (CREATE TABLE + 7 ADD COLUMN, guarded down); verified on a copy. Tests 91/1527, build OK. Details in `docs/plan-payments.md` "Integration settings record".
 
-## P6 güvenlik denetimi — 2026-11-17 (commit yok)
+## P6 security audit — 2026-11-17 (no commit)
 
-- Belirsiz iade kilidi süreyle açılmaz; gecikmiş sağlayıcı sonucu için tekrar iade yasak. Stripe/iyzico sunucu ve belirsiz yanıtları açık ret sayılmaz; iyzico iptal kaydı başarı/tutar/para birimiyle doğrulanır.
-- Stripe iade/itiraz bildirimi sipariş kimliği henüz bağlanmadığında, iade bildirimi sağlayıcıda henüz doğrulanmadığında yeniden teslim için 500 döner. Regresyonlar `payments-p6*.test.ts`.
-- Son kodla typecheck/lint temiz, tam test 89 dosya/1492 test geçti.
-- İade e-postası en az bir kez teslimdir; SMTP ve işaret yazımı arasındaki kesintide tekrar olası. Kesin tek teslim sağlanmadı. İzole E2E betiği süreç grubu sonlandırdığı için bu denetimde çalıştırılmadı; sonda 404/sitemap testi eklendi.
+- An uncertain refund lock is not opened by time; no repeat refund is allowed for a delayed provider result. Stripe/iyzico server and uncertain responses are not counted as explicit rejections; an iyzico cancellation record is verified with success/amount/currency.
+- A Stripe refund/dispute notice returns 500 when the order ID is not yet linked, or when the refund notice is not yet verified at the provider, so it is redelivered. Regressions in `payments-p6*.test.ts`.
+- Typecheck/lint clean with the latest code; full test 89 files/1492 tests passed.
+- Refund e-mail is delivered at least once; a repeat is possible if the outage happens between SMTP and the marker write. Exactly-once delivery was not achieved. The isolated E2E script was not run in this audit because it terminates the process group; a 404/sitemap test was added at the end.
 
-## P6 yönetici işlemleri — 2026-11-17 (QA bekliyor, commit yok, şemasız)
+## P6 admin operations — 2026-11-17 (QA pending, no commit, no schema)
 
-- Sipariş yan paneli "Sipariş işlemleri": İade et / İptal et / Bildirimi yeniden gönder → `POST /api/orders/:id/{refund,cancel,resend-notifications}` (yalnız admin panel oturumu + aynı origin; anonim 401, editor/customer/API key/MCP 403). İade: önce `refundStatus()`, sipariş başına tek kilit (`payment-events` `admin-refund`), tek refund, tek transaction'da `refunded` + lisans `revoked`; belirsizde kör tekrar yok (`requiresReview`, reconcile yalnız okur). İade e-postası `notify.ts` tür `refund` (işaret `refund-notice` satırı). Stripe dispute → `suspended`; iyzico'da itiraz bildirimi yok. Operasyon: `docs/payments/operations.md`.
-- `/yasal` static→dynamic 500 kök nedeni: capability'li derlemede yolu olmayan (boş `generateStaticParams`) rotalar ISR fallback kalıyordu, ilk runtime render `noStore` ile 500. Düzeltme: layout `commerceRenderBoundary()` + `contentStaticParams` sonda yolu (`__dynamic__`); E2E derlemede `dynamicRoutes` 0. Test 89/1488 (+1), e2e 29/29. Ayrıntı `docs/plan-payments.md` P6 kaydı.
+- Order side panel "`Sipariş işlemleri`" (Order actions): `İade et` (Refund) / `İptal et` (Cancel) / `Bildirimi yeniden gönder` (Resend notifications) → `POST /api/orders/:id/{refund,cancel,resend-notifications}` (admin panel session only + same origin; anonymous 401, editor/customer/API key/MCP 403). Refund: first `refundStatus()`, one lock per order (`payment-events` `admin-refund`), single refund, in one transaction `refunded` + license `revoked`; on uncertainty no blind retry (`requiresReview`, reconcile only reads). Refund e-mail via `notify.ts` type `refund` (`refund-notice` marker row). Stripe dispute → `suspended`; there is no dispute notification for iyzico. Operations: `docs/payments/operations.md`.
+- Root cause of the `/yasal` static→dynamic 500: in a capability build, routes without a path (empty `generateStaticParams`) remained ISR fallback, and the first runtime render with `noStore` gave 500. Fix: layout `commerceRenderBoundary()` + `contentStaticParams` catch-all path (`__dynamic__`); in the E2E build `dynamicRoutes` is 0. Tests 89/1488 (+1), e2e 29/29. Details in the P6 record of `docs/plan-payments.md`.
 
-## P5 checkout UI + portal siparişleri — 2026-11-16 (QA bekliyor, commit yok, şemasız)
+## P5 checkout UI + portal orders — 2026-11-16 (QA pending, no commit, no schema)
 
-- P5 QA: normal üretim derlemesinde loopback ödeme sağlayıcısı ortam değişkeniyle açılamaz; ayrı `SOFTMARKET_E2E_BUILD=1` derlemesi ve izole DB gerekir. E2E derlemesi dağıtılmamalıdır. Fatura verilerini içeren sözleşme kopyası editörden gizlendi; alıcı VKN görüntülemede maskelendi. Ortamı belirsiz CLI süreçleri de loopback sağlayıcıyı reddeder. Son QA: typecheck/lint temiz, 87 dosya/1462 test geçti; izole build başarılı, tarayıcılı E2E PID kısıtı nedeniyle çalıştırılmadı.
-- `/hesap/satin-al/[sku]` (EN `checkout`), `/hesap/siparisler[/no]` (EN `orders`), `startCheckoutAction` + `createCheckoutOrder` (sunucuda fiyat/KDV, form jetonu idempotency, sözleşme kopyası SHA), CSP form-action yalnız checkout yolunda, `CHECKOUT_READY=true` (varsayılan kurulumda `open` kapalı; teklif modu HTML'i HEAD ile birebir). Callback 303 → göreli `/{dil}/hesap/siparisler?donus=1` → oturumdaki müşterinin son siparişi.
-- P3 önbellek bulgusu düzeltildi: capability açıkken `getCommerceState` her render'ı dinamik yapar; build ortamında `PAYMENTS_ENABLED=true` gerekir (aksi halde ödeme kapalıya düşer). Izole e2e sahte iyzico (`scripts/e2e-fake-iyzico.ts`, port 3500): 28/28. Ayrıntı `docs/plan-payments.md` P5 kaydı.
+- P5 QA: in a normal production build, the loopback payment provider cannot be enabled by environment variable; a separate `SOFTMARKET_E2E_BUILD=1` build and an isolated DB are required. The E2E build must not be deployed. The contract copy containing invoice data was hidden from the editor; the recipient VKN is masked in display. CLI processes with an ambiguous environment also reject the loopback provider. Last QA: typecheck/lint clean, 87 files/1462 tests passed; isolated build succeeded; browser E2E was not run because of the PID restriction.
+- `/hesap/satin-al/[sku]` (EN `checkout`), `/hesap/siparisler[/no]` (EN `orders`), `startCheckoutAction` + `createCheckoutOrder` (price/VAT computed on the server, form token idempotency, contract copy SHA), CSP form-action only on the checkout path, `CHECKOUT_READY=true` (in the default setup `open` is off; quote mode HTML is identical to HEAD). Callback 303 → relative `/{locale}/hesap/siparisler?donus=1` → the logged-in customer's latest order.
+- P3 cache finding fixed: while the capability is on, `getCommerceState` makes every render dynamic; the build environment needs `PAYMENTS_ENABLED=true` (otherwise payments fall back to closed). Isolated e2e with the fake iyzico (`scripts/e2e-fake-iyzico.ts`, port 3500): 28/28. Details in the P5 record of `docs/plan-payments.md`.
 
-## P4 bildirim denetimi — 2026-11-16 (commit yok)
+## P4 notification audit — 2026-11-16 (no commit)
 
-- Reconcile gönderilemeyen/kilitli bildirimlerle dolu batch yüzünden hazır siparişleri atlamaz; yeni inceleme ve lisans ataması bildirim deneme bütçesini yeniler. Bildirim migration down teslim durumu varsa reddeder. İzole SQLite regresyonları eklendi; canlı DB ve 3100 sürecine dokunulmadı. Açık P2: reconcile pending/paid sorgularının sabit ilk sayfası, sürekli hatalı kayıtlarla dolarsa sonraki siparişler bekleyebilir. Güncel kapılar: typecheck/lint başarılı, tam test 85 dosya / 1407 test başarılı; commit edilebilir: hayır (açık P2).
+- Reconcile does not skip ready orders because of a batch full of undeliverable/locked notifications; a new review and license assignment refresh the notification retry budget. The notification migration down refuses if delivery status exists. Isolated SQLite regressions added; the live DB and the 3100 process were not touched. Open P2: reconcile pending/paid queries use a fixed first page; if it fills with persistently failing records, later orders may wait. Current gates: typecheck/lint passed, full test 85 files / 1407 tests passed; committable: no (open P2).
 
-## P4 bildirim kalıcılığı — 2026-11-16 (commit yok)
+## P4 notification durability — 2026-11-16 (no commit)
 
-- `notify.ts`, `orders.notifications`, migration `20261116_175713_p4_order_notifications`; testler `payments-p4-db` (+7) ve `payments-p4n-db` (migration up/down). Canlı DB'ye uygulanmadı. Ayrıntı `docs/plan-payments.md` P4 kaydı.
+- `notify.ts`, `orders.notifications`, migration `20261116_175713_p4_order_notifications`; tests `payments-p4-db` (+7) and `payments-p4n-db` (migration up/down). Not applied to the live DB. Details in the P4 record of `docs/plan-payments.md`.
 
-## P4 bağımsız denetim — 2026-11-16 (commit yok)
+## P4 independent audit — 2026-11-16 (no commit)
 
-- Callback yönlendirmesi, kapalı adaptör 404, doğrulanmamış sağlayıcı hatası ve koşullu iptal düzeltildi; CLI lisans e-postası ve kalıcı bildirim garantisi açık. Ayrıntı `docs/plan-payments.md` P4 kaydı.
-- Kontroller: typecheck/lint geçti; ödeme paketi 16 dosya/439 test geçti, son P4 DB 18/18; tam paket 84 dosya, 1387 geçti/6 başarısız (`legal-draft.test.ts`, eşzamanlı P7 kapsamı). Commit edilebilir: hayır.
+- Callback redirect, closed adapter 404, unverified provider error and conditional cancellation fixed; the CLI license e-mail and durable notification guarantee remain open. Details in the P4 record of `docs/plan-payments.md`.
+- Checks: typecheck/lint passed; payments package 16 files/439 tests passed, latest P4 DB 18/18; full package 84 files, 1387 passed / 6 failed (`legal-draft.test.ts`, concurrent P7 scope). Committable: no.
 
-## P4 sağlayıcılar/webhook/fulfillment — 2026-11-16 (QA bekliyor, commit yok, şemasız)
+## P4 providers/webhook/fulfillment — 2026-11-16 (QA pending, no commit, no schema)
 
-- Rotalar `src/app/(payload)/api/payments/{iyzico/webhook,iyzico/callback,stripe/webhook}`, çekirdek `src/lib/payments/{body,runtime,events,sync,fulfill,reconcile,route}.ts`, e-posta `src/lib/email/order-{confirmation,review}.ts`, CLI `pnpm payments:reconcile`, `deploy/payments-reconcile.{service,timer}`. `checkoutReady` hâlâ false.
-- Testler `tests/unit/payments-p4{,-db}.test.ts` (10 + 17): imza/boyut, tek lisans (tekrar + eşzamanlı webhook/callback), review, drain, retrieve hatası/busy → 500 + tekrar, callback, reconcile, e-posta, log PII taraması. Ayrıntı ve açıklar `docs/plan-payments.md` P4 uygulama kaydı.
+- Routes `src/app/(payload)/api/payments/{iyzico/webhook,iyzico/callback,stripe/webhook}`, core `src/lib/payments/{body,runtime,events,sync,fulfill,reconcile,route}.ts`, e-mail `src/lib/email/order-{confirmation,review}.ts`, CLI `pnpm payments:reconcile`, `deploy/payments-reconcile.{service,timer}`. `checkoutReady` is still false.
+- Tests `tests/unit/payments-p4{,-db}.test.ts` (10 + 17): signature/size, single license (repeat + concurrent webhook/callback), review, drain, retrieve error/busy → 500 + retry, callback, reconcile, e-mail, log PII scan. Details and notes in the P4 implementation record of `docs/plan-payments.md`.
 
-## P3 bağımsız denetim — 2026-11-16 (commit yok)
+## P3 independent audit — 2026-11-16 (no commit)
 
-- P1 kapandı: açık ödeme HTML/RSC'si ISR'dan env kapalıyken de HIT dönüyordu (production'da yeniden üretildi). Açık ödeme yüzeyleri `unstable_noStore`, teklif modu ISR; Next bailout content/DB catch dışında. Ödeme modu ISR HIT hedefi güvenlik için kaldırıldı.
-- P2: aynı-origin mutlak/normalize yasal URL filtresi, hatalı fiyat girişinden sonra reset, hazırlık fiyat/KDV/sağlayıcı uyumu ve aktif sağlayıcı test/canlı/KARMA rozeti düzeltildi. Saf/SQLite ve gerçek React DOM regresyonları eklendi.
-- Production render 6/6: açık fiyat; DB quote/env off fiyat yok, satış yasal 404. Anonim REST/GraphQL ve draft/staff sınırları doğrulandı. P3 sınırı: slug yeniden adlandırılırsa satış türü tanınmaz (`commerceLegal` sonraki faz). Ayrıntı `docs/plan-payments.md` P3 denetim kaydı.
-- Son kapılar: typecheck/lint 0 hata, tam test 80 dosya/1339 test (296 sn), son kodla açık/quote iki build, production render 9/9, diff-check temiz. Build/scratchpad silindi, tsconfig geri alındı. Canlı DB, 3100, `.next`, techContext korunuyor; P3 commit edilebilir EVET.
+- P1 closed: open payment HTML/RSC was returning HIT from ISR even when the env was off (reproduced in production). Open payment surfaces use `unstable_noStore`, quote mode uses ISR; Next bailout is outside the content/DB catch. The ISR HIT target for payment mode was removed for security.
+- P2: same-origin absolute/normalized legal URL filter, reset after an invalid price entry, readiness price/VAT/provider consistency, and the active provider's test/live/MIXED badge were fixed. Pure/SQLite and real React DOM regressions were added.
+- Production render 6/6: open price; DB quote/env off shows no price, sales legal 404. Anonymous REST/GraphQL and draft/staff boundaries verified. P3 limit: if a slug is renamed, the sales type is not recognized (`commerceLegal` in a later phase). Details in the P3 audit record of `docs/plan-payments.md`.
+- Final gates: typecheck/lint 0 errors, full test 80 files/1339 tests (296 s), both open and quote builds with the latest code, production render 9/9, diff-check clean. Build/scratchpad deleted, tsconfig restored. Live DB, 3100, `.next`, techContext preserved; P3 committable: YES.
 
-## P3 mod kapısı ve görünürlük — 2026-11-16 (QA bekliyor, commit yok, şemasız, checkout yok)
+## P3 mode gate and visibility — 2026-11-16 (QA pending, no commit, no schema, no checkout)
 
-- `getCommerceState` (env + site-settings.commerce + sağlayıcı/KDV; fail-closed, env yoksa DB'ye dokunmaz), `resolveProductActions`, `EditionCard` buy/quote, hero birincil eylem, fiyat biçimi (sunucu Intl, TR/EN), JSON-LD `offers`, yasal satış sayfası slug sabiti (footer/`/yasal` 404/sitemap), admin hazırlık `ui` alanı, ondalık fiyat girişi (`price-minor-field`), i18n mesajları. `checkoutReady=false`: "Satın al" devre dışı, checkout linki yok; P5 açar.
-- Şema/migration yok (kopya DB `migrate:create` = "No schema changes detected"). Quote modunda ürün HTML'i P3 öncesiyle birebir aynı (dondurulmuş eski kart + build karşılaştırması). Testler: `tests/unit/payments-p3{,-render,-db}.test`. Ayrıntı `docs/plan-payments.md` P3 uygulama kaydı.
-- Doğrulama: 78 dosya/1313 test yeşil; quote modunda DOM+JSON-LD HEAD ile birebir (21/21), ödeme modu kopya DB'de doğru, Lighthouse Perf 100/JS ~129,6 KB.
-- Açık: `pages.commerceLegal` şema önerisi (onay bekliyor), `legalReady` P7'de `open`'a katılır, checkout P5.
+- `getCommerceState` (env + site-settings.commerce + provider/VAT; fail-closed, does not touch the DB when env is absent), `resolveProductActions`, `EditionCard` buy/quote, hero primary action, price formatting (server Intl, TR/EN), JSON-LD `offers`, sales legal page slug constant (footer/`/yasal` 404/sitemap), admin readiness `ui` field, decimal price entry (`price-minor-field`), i18n messages. `checkoutReady=false`: "`Satın al`" (Buy) disabled, no checkout link; P5 opens it.
+- No schema/migration (copy DB `migrate:create` = "No schema changes detected"). In quote mode, product HTML is identical to pre-P3 (frozen old card + build comparison). Tests: `tests/unit/payments-p3{,-render,-db}.test`. Details in the P3 implementation record of `docs/plan-payments.md`.
+- Verification: 78 files/1313 tests green; in quote mode DOM+JSON-LD identical to HEAD (21/21), payment mode correct on the DB copy, Lighthouse Perf 100/JS ~129.6 KB.
+- Open: `pages.commerceLegal` schema proposal (awaiting approval), `legalReady` joins `open` in P7, checkout in P5.
 
-## P2-S ödeme şeması + store — 2026-11-16 (QA bekliyor, commit yok, canlı DB'ye uygulanmadı)
+## P2-S payment schema + store — 2026-11-16 (QA pending, no commit, not applied to live DB)
 
-- Migration `20261116_141401_p2_payments_commerce`: up yalnız 3 CREATE TABLE (`orders`, `orders_items`, `payment_events`) + 21 indeks + 20 ADD COLUMN (`editions` 5, `site_settings` 13, `payload_locked_documents_rels` 2). Elle güvenli down: satış/kilit satırı varsa reddeder, yoksa yalnız eklenenleri kaldırır (rebuild/DELETE yok). Kopya DB: migrate + `content:import --dry-run` 0 hata, integrity ok.
-- Tek yazım: `quote-only|payments`, `quote|buy` (takma adlar kaldırıldı). Fiyat `editions.pricing.{taxMode,tryMinor,usdMinor,eurMinor}`; KDV `site-settings.commerce.vat.{try,usd,eur}` (yüzde girilir, baz puan saklanır). Yeni alanlar staff okur, admin yazar; commerce anahtarı API key ile yazılamaz; content:import reddeder (`custom.contentImport:false`).
-- `orders`: okuma staff + sahip müşteri; create/delete nobody; admin yalnız invoice/notes/requiresReview. `payment-events`: okuma admin. MCP'de yok.
-- Store `src/lib/payments/store/**`: BEGIN IMMEDIATE (V5 kuyruğu), koşullu `license_id IS NULL` ve `status = from` yazımları, çakışmada tam rollback, yan etkiler commit + bağımsız okuma doğrulaması sonrası. Testler `tests/unit/payments-{db,schema}.test.ts`; eski migration testlerine P2-S up eklendi.
+- Migration `20261116_141401_p2_payments_commerce`: up is only 3 CREATE TABLE (`orders`, `orders_items`, `payment_events`) + 21 indexes + 20 ADD COLUMN (`editions` 5, `site_settings` 13, `payload_locked_documents_rels` 2). Hand-written safe down: refuses if sales/lock rows exist; otherwise removes only what was added (no rebuild/DELETE). Copy DB: migrate + `content:import --dry-run` 0 errors, integrity ok.
+- Single write: `quote-only|payments`, `quote|buy` (aliases removed). Price `editions.pricing.{taxMode,tryMinor,usdMinor,eurMinor}`; VAT `site-settings.commerce.vat.{try,usd,eur}` (entered as a percentage, stored as basis points). New fields are read by staff and written by admin; the commerce key cannot be written with an API key; content:import refuses (`custom.contentImport:false`).
+- `orders`: read staff + owner customer; create/delete nobody; admin only invoice/notes/requiresReview. `payment-events`: read admin. Not in MCP.
+- Store `src/lib/payments/store/**`: BEGIN IMMEDIATE (V5 queue), conditional `license_id IS NULL` and `status = from` writes, full rollback on conflict, side effects after commit + independent read verification. Tests `tests/unit/payments-{db,schema}.test.ts`; P2-S up added to the old migration tests.
 
-## V5 P1 bağımsız denetim — 2026-11-10
+## V5 P1 independent audit — 2026-11-10
 
-- P1: aynı transaction ID'sinde eşzamanlı bitirme erken kilit açıyordu; bitirme promise'i paylaşıldı. Timestamp yerine ham tüm-dil snapshot SHA-256 token'ı (ilk sanal alan, DB kolonu yok); aynı ms/saat geri alma testli.
-- P1/P2: blok/dizi ID bazlı merge; Lexical/değer/silme/sıra çakışmasında yazmaz. Flush tabanı güncellenir, merge eski undo'yu temizler; gecikmiş yanıt/locale, gizli sekme 409, boş/null token ve restore 409 düzeltildi. Sürümsüz API/bulk ve açık restore kasıtlı koşulsuzdur. Anonim token görünmez; kopya şema içerik alanlarıyla sınırlı.
-- Odaklı 4 dosya/36 test geçti; 30 yazım + 30 okuma: 0 hata, 1579 ms, max read 190 ms. Typecheck/lint temiz; tam paket 73 dosya/1186 test: 1184 geçti, 2 kırmızı (kapsam dışı media fixture ve eski migration 60 sn timeout; aynı migration 120 sn geçici sınırda 3/3 geçti). Ana dala kabul HAYIR: build/tarayıcı E2E eksik ve standart kapı kırmızı. Commit index.lock sandbox engeliyle oluşmadı; çalışma ağacında. Verilen scratchpad DB yok: 3531 build/E2E yapılamadı. Canlı DB/3100/ana repo/şema korunuyor. Ayrıntı `docs/qa/v5-concurrency-audit.md`.
+- P1: concurrent finalization on the same transaction ID released the lock early; the finalization promise is now shared. A raw all-locale snapshot SHA-256 token replaced the timestamp (first virtual field, no DB column); same-ms/hour rollback tested.
+- P1/P2: block/array ID-based merge; no write on Lexical/value/delete/order conflict. Flush base is updated, merge clears old undo; late response/locale, hidden tab 409, empty/null token and restore 409 fixed. Unversioned API/bulk and explicit restore are intentionally unconditional. Anonymous token is invisible; the copy is limited to schema content fields.
+- Focused 4 files/36 tests passed; 30 writes + 30 reads: 0 errors, 1579 ms, max read 190 ms. Typecheck/lint clean; full suite 73 files/1186 tests: 1184 passed, 2 red (out-of-scope media fixture and an old migration 60 s timeout; the same migration passed 3/3 with a temporary 120 s limit). Branch acceptance: NO: build/browser E2E missing and the standard gate is red. The commit did not get created because of an `index.lock` sandbox block; it is in the working tree. The provided scratchpad DB was missing: build/E2E on port 3531 could not be run. Live DB/3100/main repo/schema preserved. Details in `docs/qa/v5-concurrency-audit.md`.
 
-## V5 denetim düzeltmeleri (2026-11-09)
+## V5 audit fixes (2026-11-09)
 
-- QA P2 (Terra): EN boş fallback'te Escape, başarısız kayıtla dil geçişi, UTF-8 keepalive, dile göre undo geçmişi düzeltildi.
-- P1 kapandı: sanal `editorVersion` + `beforeChange` 409 (aynı transaction), süreç içi SQLite transaction sırası (`src/lib/db-serial-transactions.ts`; libsql eşzamanlı BEGIN'de SQLITE_BUSY + görünmeyen yazım vardı), editörde Birleştir/Kopyala/Yeniden yükle. MCP/import sürümsüz geçer. İzole e2e 20/20, 71 dosya/1163 test (1 kapsam dışı kırmızı), LH JS 129,62 KB. Ayrıntı plan 'V5 P1 kapanış kaydı'.
+- QA P2 (Terra): fixed Escape on an empty EN fallback, language switch after a failed save, UTF-8 keepalive, and per-language undo history.
+- P1 closed: virtual `editorVersion` + `beforeChange` 409 (same transaction), in-process SQLite transaction ordering (`src/lib/db-serial-transactions.ts`; libsql had SQLITE_BUSY on concurrent BEGIN and invisible writes), Merge/Copy/Reload in the editor. MCP/import pass without a version. Isolated e2e 20/20, 71 files/1163 tests (1 out-of-scope red), LH JS 129.62 KB. Details in the plan's "V5 P1 closure record".
 
-## V5 — Görsel editör (2026-11-09, `feat/visual-editor`)
+## V5 — Visual editor (2026-11-09, `feat/visual-editor`)
 
-- Uygulandı: varsayılan görsel düzen, sertleştirilmiş köprü (origin+source+strict şema, id+locale, allowlist yollar), inline düz metin kapsamı, palet, çekmece odaklama, sürükle/klavye, gizli blok rozetleri, geri al/yinele, flush + çakışma, tur, TR/EN etiketler. V4 kapılarının tamamı yeşil; e2e 17/17; LH Perf 100, JS 129,62 KB.
-- Açık: popup önizleme, bazı alanlar yalnız formda (tabs etiketi, testimonial isim/rol, stats değeri, zengin metin), Lexical geri alım doğrulanmadı, çakışma yoklaması 15 sn, kullanıcı 8 görev denemesi, ikinci dalga koleksiyonlar.
+- Implemented: default visual layout, hardened bridge (origin+source+strict schema, id+locale, allowlisted paths), inline plain-text scope, palette, drawer focus, drag/keyboard, hidden-block badges, undo/redo, flush + conflict, tour, TR/EN labels. All V4 gates green; e2e 17/17; LH Perf 100, JS 129.62 KB.
+- Open: popup preview, some fields only in the form (tabs label, testimonial name/role, stats value, rich text), Lexical undo not verified, conflict polling 15 s, user 8-task trial, second-wave collections.
 
-## content:import karar b denetimi (2026-11-08)
+## content:import decision b audit (2026-11-08)
 
-- P2: korunacak seed layout'u silinmeden önce ilişki/Markdown dönüşümünden geçiyordu; kullanılmayan eski referans import ve dry-run'ı hata ile durdurabiliyordu. `importer.ts` layout'u dönüşümden önce çıkarır; önce başarısız olan regresyonlar düzeltmeyle geçti.
-- P3: editör kılavuzundaki koşulsuz koruma ve editörden eski seed'e dönme yönlendirmesi düzeltildi; kompozisyon seed'i istisnası ve taslak kompozisyonun import ile yayınlanması açıklandı. Ayrıntılı kapsam `activeContext.md` son maddesinde.
-- `pnpm typecheck`, `pnpm lint`, `git diff --check` başarılı. `pnpm test --maxWorkers=1`: **67 dosya / 1033 test**; odaklı import/SQLite: **2 dosya / 58 test**. DB yazıları yalnız geçici SQLite/uploads üzerinde; canlı DB, dev 3100, `.next`, payments ve commit işlemi yok.
+- P2: the seed layout to be preserved went through the relationship/Markdown conversion before being removed; an unused old reference could stop the import and dry-run with an error. `importer.ts` now removes the layout before the conversion; regressions that failed first passed after the fix.
+- P3: the unconditional protection in the editor guide and the redirect from the editor to the old seed were corrected; the exception for a composition seed and publishing the draft composition through import were explained. Detailed scope is in the last item of `activeContext.md`.
+- `pnpm typecheck`, `pnpm lint`, `git diff --check` passed. `pnpm test --maxWorkers=1`: **67 files / 1033 tests**; focused import/SQLite: **2 files / 58 tests**. DB writes only on temporary SQLite/uploads; live DB, dev 3100, `.next`, payments and commit not touched.
 
-## V2 denetimi (2026-11-08)
+## V2 audit (2026-11-08)
 
-- Zorunlu editions bloğunu tüm bağlı blokları kaldırarak/legacy restore ile atlatma, ham gizleme girdisinin sessiz temizlenmesi, çakışan blok ID'leri ve legacy ek blok LCP animasyon regresyonu düzeltildi. Ayrıntı/kanıt ve 3200 kapanış engeli `activeContext.md` başında.
-- Kapılar: typecheck/lint/diff-check, 67 dosya / 1015 test, kopya DB `.next-prod` build ve TR/EN 3200 duman başarılı. Legacy/kompozisyon MISS = 24/24 sorgu; anonim erişim, draft/ISR, REST/MCP, version restore, duplicate, import idempotansı ve migration up/down testleri geçti. Canlı DB/3100/`.next`/payments/commit korunuyor.
+- Fixed: bypass of the mandatory editions block by removing all bound blocks or by legacy restore, silent cleaning of raw hidden input, conflicting block IDs, and LCP animation regression for legacy extra blocks. Details/evidence and the 3200 shutdown blocker are at the top of `activeContext.md`.
+- Gates: typecheck/lint/diff-check, 67 files / 1015 tests, copy DB `.next-prod` build and TR/EN 3200 smoke passed. Legacy/composition MISS = 24/24 queries; anonymous access, draft/ISR, REST/MCP, version restore, duplicate, import idempotence and migration up/down tests passed. Live DB/3100/`.next`/payments/commit preserved.
 
-## V2 — Ürün sayfası bağlı bloklar (2026-11-08)
+## V2 — Product page bound blocks (2026-11-08)
 
-- 8 ürün bölüm bloğu (yalnız products), uyumluluk/kompozisyon modu, zorunlu `productEditions` (Teklif İste; validate + taslakta da kanca + render garantisi), productHero ilk blok/h1/LCP, products autosave 2 sn, admin TR/EN etiketleri + blok önizleme görselleri, seed şeması, editör kılavuzu §7.2a.
-- Migration `20261108_130717_v2_product_bound_blocks` yalnız CREATE TABLE/INDEX + ADD COLUMN; down yalnız kendi eklerini kaldırır. Kopya → yedek (`softmarket-pre-v2.db`) → canlı; eski veri farkı 0.
-- typecheck/lint temiz, `pnpm test --maxWorkers=1` 66 dosya / 1005 test (yeni: product-composition, product-bound-db), typecheck/lint temiz, `.next-prod` build, 3200 duman (404 dahil), eski ürünlerde `<main>` HTML bayt bayt aynı, LH mobil ürün Perf 100.
+- 8 product section blocks (products only), compatibility/composition modes, mandatory `productEditions` (Request a Quote; validation + draft hook + render guarantee), productHero first block/h1/LCP, products autosave 2 s, admin TR/EN labels + block preview images, seed schema, editor guide §7.2a.
+- Migration `20261108_130717_v2_product_bound_blocks` only CREATE TABLE/INDEX + ADD COLUMN; down removes only its own additions. Copy → backup (`softmarket-pre-v2.db`) → live; old data diff 0.
+- typecheck/lint clean, `pnpm test --maxWorkers=1` 66 files / 1005 tests (new: product-composition, product-bound-db), `.next-prod` build, 3200 smoke (including 404), `<main>` HTML byte-identical for old products, LH mobile product Perf 100.
 
-## V1 denetimi — 2026-11-08
+## V1 audit — 2026-11-08
 
-- Hero draft/autosave doğrulama atlatması, ilk içerik LCP koruması, bozuk admin preset kaydı, hover klavye odağı ve scroll-progress aralığı/fallback düzeltildi; ayrıntı `activeContext.md` başında. CSS değer enjeksiyonu saptanmadı; legacy `appearance.animation` ve stagger sınırları regresyonda korundu. Import şeması hero için aynı yedi seçeneği kullanır.
-- Son sabit kaynak koşusu: **`pnpm typecheck`, `pnpm lint`, `pnpm test --maxWorkers=1` (59 dosya / 737 test), `NEXT_DIST_DIR=.next-prod PORT=3200 pnpm build` geçti**. Build/duman için salt okunur kaynaktan SQLite kopyası ve ayrı uploads kullanıldı. Migration up/down + `_v`/satır koruması izole SQLite'ta geçti; migration dosyası/şema değiştirilmedi.
-- 3200: `/tr`, `/en`, `/tr/urunler`, `/tr/urunler/akis-yonetimi/akis-merkezi`, `/admin` 200; `/tr/olmayan` 404. SSR gizli animasyon durumu 0; public HTML'nin yüklediği 13 JS parçasında admin preset bileşeni yok. `next start` pnpm'in `node_modules/.bin/next` shim'iyle çalıştırılmalı (NODE_PATH/libsql çözümü).
-- Chromium başlatılamadı: gerçek tarayıcıda no-JS/reduced-motion/klavye/sticky görsel QA bu denetimde doğrulanmadı; CSS sözleşmesi ve SSR kontrolleri geçti. 3200 kapalı; 3100 aynı PID 69553 ile açık, canlı DB/`.next` korunuyor; commit yok. `docs/plan-payments.md` kapsam dışında kaldı.
+- Fixed: hero draft/autosave validation bypass, first-content LCP protection, broken admin preset save, hover keyboard focus, and scroll-progress range/fallback; details at the top of `activeContext.md`. No CSS value injection found; legacy `appearance.animation` and stagger limits kept in regression. The import schema uses the same seven options for hero.
+- Final fixed-source run: **`pnpm typecheck`, `pnpm lint`, `pnpm test --maxWorkers=1` (59 files / 737 tests), `NEXT_DIST_DIR=.next-prod PORT=3200 pnpm build` passed**. A SQLite copy from the read-only source and separate uploads were used for build/smoke. Migration up/down + `_v`/row preservation passed on isolated SQLite; migration file/schema not changed.
+- 3200: `/tr`, `/en`, `/tr/urunler`, `/tr/urunler/akis-yonetimi/akis-merkezi`, `/admin` 200; `/tr/olmayan` 404. Hidden animation state in SSR 0; none of the 13 JS chunks loaded by the public HTML contain the admin preset component. `next start` must run through pnpm's `node_modules/.bin/next` shim (NODE_PATH/libsql resolution).
+- Chromium could not start: real-browser no-JS/reduced-motion/keyboard/sticky image QA was not verified in this audit; the CSS contract and SSR checks passed. 3200 closed; 3100 open with the same PID 69553, live DB/`.next` preserved; no commit. `docs/plan-payments.md` stayed out of scope.
 
-## V0 — Payload güvenlik yükseltmesi (2026-11-08)
+## V0 — Payload security upgrade (2026-11-08)
 
-- `payload` + tüm `@payloadcms/*` **3.85.1 → 3.93.0**, tam sabit/hizalı; Next **15.4.11**, React **19.2.6** korundu. Node minimum **24.22.1**; host **24.21.0** değiştirilmedi, test/build/migration geçici resmi **24.22.2** runtime ile yapıldı.
-- Migration `20261108_093334_v0_payload_393`: **2 auth sütunu + 309 lokalize parent indeksi**; yıkıcı up yok, down yalnız kendi eklerini kaldırır. Önce kopyada up/down/veri koruma; sonra `scratchpad/softmarket-pre-v0.db{,-wal,-shm}` + `.snapshot.db` yedeği ve canlı migrate. Kopya/canlı: **680 tablo, eski veri farkı 0, integrity ok, FK 0**.
-- Sürüm notları 3.86–3.93 (patch'ler dahil) incelendi: blok read/tip erişimi, upload/SVG/XML/SSRF güvenliği; API key gizleme, yeni JWT authVersion (eski oturumlarda tekrar giriş), localized draft, Lexical 0.50, Nodemailer 10, SQLite/MCP/admin/i18n/preview uyumu. Güvenlik varsayılanları gevşetilmedi. TIFF `.tif`, aktif SVG reddi, draft-only ilişki ve JWT testleri güncellendi.
-- **typecheck/lint, 56 dosya/703 test, generate:types/importmap, kopya DB `.next-prod` build, 3200 duman, isolated E2E 1/1 geçti**. Taze MCP **69 araç**, TR/EN create/update + kimlik/yetki kontrolleri geçti. Import map değişmedi. Upstream mcp-handler SDK peer uyarısı sürüyor; güvenli SDK düşürülmedi. Preview 401 testi geçerli `?redirect=/tr` ile; çıplak endpoint mevcut şekilde 400.
-- **3200/3400 kapalı; 3100 PID 53048 ve `.next` korundu; commit yok.** pnpm install HMR'yi bozabilir: yönetici Node >=24.22.1 sonrası dev'i yeniden başlatmalı; bu görevde restart yapılmadı. Ayrıntılı release/migration/test/dosya kaydı: `docs/plan-visual-editor.md` sonundaki V0 bölümü. **V0 tamamlandı; V1/V2/pilotlar uygulanmadı.**
+- `payload` + all `@payloadcms/*` **3.85.1 → 3.93.0**, fully pinned/aligned; Next **15.4.11**, React **19.2.6** kept. Minimum Node **24.22.1**; host **24.21.0** not changed; tests/build/migration were run with a temporary official **24.22.2** runtime.
+- Migration `20261108_093334_v0_payload_393`: **2 auth columns + 309 localized parent indexes**; no destructive up; down removes only its own additions. First up/down/data-preservation on a copy; then the `scratchpad/softmarket-pre-v0.db{,-wal,-shm}` + `.snapshot.db` backup and live migrate. Copy/live: **680 tables, old data diff 0, integrity ok, FK 0**.
+- Release notes for 3.86–3.93 (including patches) reviewed: block read/tip access, upload/SVG/XML/SSRF safety; API key hiding, new JWT authVersion (re-login for old sessions), localized draft, Lexical 0.50, Nodemailer 10, SQLite/MCP/admin/i18n/preview compatibility. Security defaults were not relaxed. TIFF `.tif`, active SVG rejection, draft-only relationship and JWT tests were updated.
+- **typecheck/lint, 56 files/703 tests, generate:types/importmap, copy DB `.next-prod` build, 3200 smoke, isolated E2E 1/1 passed**. Fresh MCP **69 tools**, TR/EN create/update + identity/permission checks passed. Import map unchanged. An upstream mcp-handler SDK peer warning remains; the safe SDK was not downgraded. Preview 401 test uses a valid `?redirect=/tr`; a bare endpoint is 400 as before.
+- **3200/3400 closed; 3100 PID 53048 and `.next` preserved; no commit.** pnpm install may break HMR: the admin must restart dev after Node >=24.22.1; no restart was done in this task. Detailed release/migration/test/file record: the V0 section at the end of `docs/plan-visual-editor.md`. **V0 completed; V1/V2/pilots not applied.**
 
-- F11 perf düzeltme turu (2026-11-08): Radix mega menü/sheet → sunucu markup + `lib/header-nav.ts` + `<dialog>`; ICU/next-intl istemciden çıktı (provider yok, `has-locale`); tailwind-merge yalnız sunucu; Geist alt kümeleri (28 KB tek preload + ext unicode-range + mono 20 KB). JS 192→129 KB, font 138.7→48.3 KB, görselli LCP 3.16→2.53 s (hedef 2.5, kalan çerçeve JS). Testler 54/696, e2e header klavye 3/3. Ayrıntı `docs/perf/f11-acceptance.md`.
+- F11 performance fix round (2026-11-08): Radix mega menu/sheet → server markup + `lib/header-nav.ts` + `<dialog>`; ICU/next-intl removed from the client (no provider, `has-locale`); tailwind-merge server-only; Geist subsets (28 KB single preload + ext unicode-range + mono 20 KB). JS 192→129 KB, font 138.7→48.3 KB, image LCP 3.16→2.53 s (target 2.5; remaining is framework JS). Tests 54/696, header keyboard e2e 3/3. Details in `docs/perf/f11-acceptance.md`.
 
-- F11 güvenlik/kalite denetimi (2026-11-08): izolasyon, seed yetkisi/parola gizliliği, süreç temizliği ve Lighthouse hata/medyan düzeltmeleri uygulandı. Typecheck/lint/izole build ve `pnpm test --maxWorkers=1` (52 dosya, 643/643) geçti; varsayılan paralel koşuda timeout var. Gerçek E2E kapanışının yeniden doğrulanması eski test süreçlerinin sandbox dışında kapatılmasını bekliyor; ayrıntı ve PID/kopya yolları activeContext.md başında. Canlı DB/3100/.next/commit değişmedi.
+- F11 security/quality audit (2026-11-08): isolation, seed authority/password privacy, process cleanup and Lighthouse error/median fixes applied. Typecheck/lint/isolated build and `pnpm test --maxWorkers=1` (52 files, 643/643) passed; the default parallel run times out. Re-verification of the real E2E shutdown depends on the old test processes being closed outside the sandbox; details and PID/copy paths at the top of `activeContext.md`. Live DB/3100/.next/commit unchanged.
 
-- 2026-11-07 F9 özgün medya gizliliği: `Media.beforeOperation` → `src/lib/media-upload.ts`; yeni/create ve replacement/update JPEG/PNG/WebP/TIFF/HEIC/HEIF yüklemelerinde EXIF yönü uygulanır, EXIF/GPS/XMP/IPTC atılır, ICC tutulabilir. JPEG q90/mozjpeg, PNG/WebP kayıpsız, TIFF LZW; HEIC HEVC desteği gerektirir, temizleme hatası 400. SVG/GIF/video/PDF ve mevcut dosyalar değiştirilmez; regenerate özgünü korur. Geçici SQLite/uploads üzerinde 10 yeni test (GPS JPEG, fiziksel yön/boyut, formatlar, tempFilePath, 400 ve kapsam dışı dosyalar); typecheck/lint ve 48 dosya/603 test geçti. Risk notu `docs/perf/f9-media-pipeline.md` içinde kapatıldı. Canlı DB/3100/commit işlemi yok.
+- 2026-11-07 F9 original media privacy: `Media.beforeOperation` → `src/lib/media-upload.ts`; on new/create and replacement/update uploads of JPEG/PNG/WebP/TIFF/HEIC/HEIF, the EXIF orientation is applied and EXIF/GPS/XMP/IPTC are removed; ICC may be kept. JPEG q90/mozjpeg, PNG/WebP lossless, TIFF LZW; HEIC requires HEVC support, a cleaning error is 400. SVG/GIF/video/PDF and existing files are not changed; regenerate preserves the original. 10 new tests on temporary SQLite/uploads (GPS JPEG, physical orientation/size, formats, tempFilePath, 400 and out-of-scope files); typecheck/lint and 48 files/603 tests passed. Risk note in `docs/perf/f9-media-pipeline.md` closed. No live DB/3100/commit action.
 
-- F10 kod kısmı tamamlandı (2026-11-07): TR/EN etiket sözlüğü + walker, label tarayıcı testi (dosya sistemi taraması, EN kalıntı kuralı, blok önizleme dosyası varlığı), `content/templates/starter` (01-globals, 05-pages, 10-families-products; `--dry-run` canlı DB'de 0 hata, izole boş SQLite'ta gerçek import + idempotans testi). Kalan: `docs/editor-guide.md` (ayrı ajan), blok önizleme wireframe'leri gerçek ekran görüntüsüne yükseltme (isteğe bağlı, F11), F10 QA (yazan≠denetleyen).
+- F10 code part completed (2026-11-07): TR/EN label dictionary + walker, label scanner test (filesystem scan, EN leftover rule, block preview file existence), `content/templates/starter` (01-globals, 05-pages, 10-families-products; `--dry-run` 0 errors on live DB, real import + idempotence test on an isolated empty SQLite). Remaining: `docs/editor-guide.md` (separate agent), upgrading block preview wireframes to real screenshots (optional, F11), F10 QA (writer ≠ reviewer).
 
-- F9 denetimi (2026-11-07): UUID türev adları, eski çakışan dosyalarda fail-closed erişim, SVG sandbox CSP/nosniff; regenerate orijinali koruyarak aşamalı üretir. Tam test 47 dosya/593 test, typecheck/lint, izole DB ile build; 3200 duman 200/200/200/200/404, optimizer 400; 3200 kapatıldı, 3100 korundu. Özgün JPEG/PNG EXIF/GPS içerebilir; gerçek disk dolması ve zorla kesme test edilmedi. Ayrıntı docs/perf/f9-media-pipeline.md.
+- F9 audit (2026-11-07): UUID-derived names, fail-closed access on old conflicting files, SVG sandbox CSP/nosniff; regenerate builds in stages while preserving the original. Full test 47 files/593 tests, typecheck/lint, build with the isolated DB; 3200 smoke 200/200/200/200/404, optimizer 400; 3200 closed, 3100 preserved. Original JPEG/PNG may contain EXIF/GPS; real disk-full and forced kill were not tested. Details in docs/perf/f9-media-pipeline.md.
 
-- F9 görsel pipeline uygulandı (2026-11-07): Media thumb400/card768/hero1280/wide1920 WebP q74, focal/crop; büyük hedefler Payload varsayılanıyla atlanır (`withoutEnlargement:true` gereksiz orijinal kopyalar üretir). Native ortak MediaImage tüm img tüketicilerinde: srcset/sizes, container boşlukları, width/height, lazy, hero eager/high + responsive preload. `mediaRead` boyut filename'larını aynı medya kaydı + mevcut lisans filtresiyle yetkilendirir; optimizer kapalı, private/no-store. Migration `20261107_192347_media_image_sizes` (24 ADD COLUMN + 4 indeks; down rebuild yok) kopyada test edilip canlıya uygulandı; `scratchpad/softmarket-pre-f9.db{,-wal,-shm,.snapshot.db}` yedeği, eski veri farkı 0, integrity ok/FK 0. `pnpm media:regenerate` kimlik/seedPath/TR-EN/izin/orijinal baytlarını korur; kopyada 3 → 0 regenerate. Gerçek handler/SQLite anon/customer/staff + geçerli/iptal lisans testleri, 45 production HTTP dosya/rol kontrolü; F8 staff+draft protected srcset görürken anon/customer/draft çerezi tek başına yalnız public görür. Mobil dokulu fixture 390px/DPR1–3: 1.24/23.28/171.17 KB. Typecheck/lint, 47 dosya/591 test, production build ve /tr,/en,/tr/urunler,/admin 200; /tr/olmayan 404. **LCP/CLS ve tarayıcı currentSrc ölçümü doğrulanamadı:** Chromium MachPort 1100, Lighthouse port ve browser host engeli; regresyon yok iddiası yok. Kanıt/sınır: `docs/perf/f9-media-pipeline.md`. Testler/kullanıcılar yalnız DB kopyasında, canlı medya=0; 3200 kapatıldı (ECONNREFUSED); 3100 açık/.next korundu, commit yok.
+- F9 visual pipeline implemented (2026-11-07): Media thumb400/card768/hero1280/wide1920 WebP q74, focal/crop; large targets are skipped with the Payload default (`withoutEnlargement:true` produces unnecessary original copies). Native shared MediaImage on all img consumers: srcset/sizes, container spacing, width/height, lazy, hero eager/high + responsive preload. `mediaRead` authorizes size filenames with the same media record + the existing license filter; optimizer off, private/no-store. Migration `20261107_192347_media_image_sizes` (24 ADD COLUMN + 4 indexes; down without rebuild) tested on a copy and applied live; backup `scratchpad/softmarket-pre-f9.db{,-wal,-shm,.snapshot.db}`, old data diff 0, integrity ok/FK 0. `pnpm media:regenerate` keeps identity/seedPath/TR-EN/permissions/original bytes; on the copy 3 → 0 regenerate. Real handler/SQLite anon/customer/staff + valid/cancelled license tests, 45 production HTTP file/role checks; with F8 staff+draft see protected srcset, while anon/customer/draft cookie alone see only public. Mobile textured fixture 390px/DPR1–3: 1.24/23.28/171.17 KB. Typecheck/lint, 47 files/591 tests, production build and /tr,/en,/tr/urunler,/admin 200; /tr/unknown 404. **LCP/CLS and browser currentSrc measurement not verified:** Chromium MachPort 1100, Lighthouse port and browser host blocked; no claim of no regression. Evidence/limits: `docs/perf/f9-media-pipeline.md`. Tests/users only in the DB copy, live media=0; 3200 closed (ECONNREFUSED); 3100 open/.next preserved, no commit.
 
-- [x] 2026-11-07 F8 Live Preview + taslak modu: staff-only `/api/preview` + `/api/exit-preview` (açık yönlendirme allow-list, cross-site ret, gizli token yok), draft okuma yalnız draft modu + yeniden doğrulanan staff oturumu (`readAs`), 6 koleksiyonda `admin.livePreview` (390/768/1440), `RefreshRouteOnSave` adası, `pages` autosave 2 sn, migration `20261107_190342_pages_autosave` (additif) canlı DB'de. Draft yanıtları no-store/ISR dışı; autosave önbelleği yenilemez. Playwright iframe ≤2 sn (92 ms). 585 test. Ayrıntı: plan F8 notu.
-  - F9 notu: `MediaImage`/imageSizes eklerken draft modunda staff `populate` protected medyayı da döndürebilir; görsel URL'leri yine yalnız iframe'deki staff'a gider (ISR'a yazılmaz) ama srcset üretimi `mediaOf`/visibility kontrolünü korumalı.
-  - F10 notu: editör kılavuzuna Live Preview (autosave, breakpoint, template sayfalarında önizleme yok, ilişkili listelerde yalnız yayınlı kayıtlar görünür, "Önizlemeden çık") eklenmeli; admin etiketleri breakpoint adları TR/EN tek string ("Mobil / Mobile"). Diğer drafted koleksiyonlara autosave istenirse her biri ayrı `ADD COLUMN autosave` migration'ı gerektirir.
-  - Açık not: CSP varsayılan Report-Only → `frame-ancestors` canlıda zorlanmıyor (önceden var). Draft sızıntısı yine yok (çapraz-site iframe'de `payload-token` SameSite=Lax gönderilmez), ama clickjacking için prod'da `CSP_ENFORCE=true` veya `X-Frame-Options: SAMEORIGIN` önerilir.
+- [x] 2026-11-07 F8 Live Preview + draft mode: staff-only `/api/preview` + `/api/exit-preview` (open-redirect allow-list, cross-site rejection, no secret token); draft reads only with draft mode + re-verified staff session (`readAs`); `admin.livePreview` on 6 collections (390/768/1440), `RefreshRouteOnSave` island, `pages` autosave 2 s, migration `20261107_190342_pages_autosave` (additive) on live DB. Draft responses are no-store/outside ISR; autosave does not refresh the cache. Playwright iframe ≤2 s (92 ms). 585 tests. Details: plan F8 note.
+  - F9 note: when adding `MediaImage`/imageSizes, in draft mode staff `populate` can return protected media too; image URLs still reach only the staff member in the iframe (not written to ISR), but srcset generation must keep the `mediaOf`/visibility check.
+  - F10 note: Live Preview should be added to the editor guide (autosave, breakpoints, no preview for template pages, only published records appear in related lists, "Exit preview"); admin breakpoint labels are TR/EN single strings ("Mobil / Mobile"). If autosave is requested for other drafted collections, each needs its own `ADD COLUMN autosave` migration.
+  - Open note: CSP is Report-Only by default → `frame-ancestors` is not enforced in production (pre-existing). Draft leakage still does not happen (`payload-token` SameSite=Lax is not sent in a cross-site iframe), but for clickjacking protection `CSP_ENFORCE=true` or `X-Frame-Options: SAMEORIGIN` is recommended in production.
 
-- F6 denetimi (2026-11-07): sitemap içerik sorguları `public-sitemap` etiketiyle 1 saat önbellekli, yayın/silme/global değişikliğinde geçersizlenir; yapılandırılmış ana sayfanın landing adresi sitemap dışındadır. `20261107_160000_globals_media_delete` medya FK trigger migration'ı yalnız DB kopyasında uygulandı ve test edildi; canlıya uygulanmadı.
+- F6 audit (2026-11-07): sitemap content queries cached for 1 hour with the `public-sitemap` tag, invalidated on publish/delete/global change; the configured home page's landing address is excluded from the sitemap. Migration `20261107_160000_globals_media_delete` (media FK trigger) applied and tested only on the DB copy; not applied to live.
 
-- [x] 2026-11-07 F7 globals tam düzenlenebilir: link `route` tipi (locale'den bağımsız, `src/i18n/paths.ts` LINK_ROUTES/routePath), header custom mega/ikinci CTA/duyuru bandı (kapatılabilir ada)/utility linkleri, footer blurb/iletişim/sosyal toggle/`{year}{siteName}` telif, SiteSettings favicon + `brand.accent` (kontrast kuralı `src/lib/brand.ts`) + `motion`. Migration `20261107_141523_globals_editable` (up yalnız CREATE/ADD; üretilen yıkıcı `__new_` down elle değiştirildi) canlı DB'de; yedek `scratchpad/softmarket-pre-f7.db*`. Seed route'a dönüştü, yer tutucular temizlendi; import 2× 0 create/88 update. 42 dosya/516 test, `.next-prod` build, 3200 Playwright 390/1440 + accent Local API geçici değişim (DB kopyası) doğrulandı, geri alındı; 3200 kapalı, commit yok.
-- 2026-11-07 F5 denetimi: elle seçim/limit, eski logoWall anonim yeniden okuma, otomatik logo boş sonuç/dedup ve import şeması üst sınırı düzeltildi. Typecheck/lint, 39 dosya/467 test ve SQLite kopyasıyla `.next-prod` build geçti. Farklı medya ID'leriyle sorgu sayıları sabit: aile/ürün 4, çözüm/haber/vaka 3, birleşik logo 6. Geçici SQLite'ta migration up/down transaction testi tüm eski tablo satırlarını (normal + `_v` çeviriler dahil) korudu; migration dosyası değiştirilmedi. Locale/draft, kapalı kariyer, protected medya, URL whitelist ve 63 karakter enum sınırı regresyonları geçti. 3200: /tr, /en, /tr/urunler, /tr/urunler/akis-yonetimi/akis-merkezi, /admin 200; /tr/olmayan 404. 3200 kapatıldı; 3100 PID 64423 korundu, canlı migration/commit/.next silme yok.
-- [x] F5 dinamik (veri bağlı) bloklar: 5 yeni blok + logoWall kaynakları, liste kaynağı/limit/sıralama/düzen/tümünü gör, sabit sorgu + taslak sızıntı + import ilişki testleri (457 test geçti).
-# İlerleme
+- [x] 2026-11-07 F7 globals fully editable: link `route` type (locale-independent, `src/i18n/paths.ts` LINK_ROUTES/routePath), header custom mega/second CTA/announcement bar (dismissable island)/utility links, footer blurb/contact/social toggle/`{year}{siteName}` copyright, SiteSettings favicon + `brand.accent` (contrast rule `src/lib/brand.ts`) + `motion`. Migration `20261107_141523_globals_editable` (up only CREATE/ADD; the generated destructive `__new_` down was replaced by hand) on live DB; backup `scratchpad/softmarket-pre-f7.db*`. Seed converted to route, placeholders cleaned; import 2× 0 create/88 update. 42 files/516 tests, `.next-prod` build, 3200 Playwright 390/1440 + accent Local API temporary change (DB copy) verified, then reverted; 3200 closed, no commit.
+- 2026-11-07 F5 audit: manual selection/limit, old logoWall anonymous re-read, automatic logo empty result/dedup and the import schema upper bound fixed. Typecheck/lint, 39 files/467 tests and `.next-prod` build with the SQLite copy passed. Query counts with different media IDs are fixed: family/product 4, solution/news/case 3, combined logo 6. On temporary SQLite, the migration up/down transaction test preserved all old table rows (including normal + `_v` translations); the migration file was not changed. Regressions for locale/draft, closed career, protected media, URL whitelist and 63-character enum limit passed. 3200: /tr, /en, /tr/urunler, /tr/urunler/akis-yonetimi/akis-merkezi, /admin 200; /tr/unknown 404. 3200 closed; 3100 PID 64423 preserved; no live migration/commit/.next deletion.
+- [x] F5 dynamic (data-bound) blocks: 5 new blocks + logoWall sources, list source/limit/sorting/layout/show-all, fixed query + draft leak + import relationship tests (457 tests passed).
 
-- 2026-11-07 F10 denetimi tamamlandı: mevcut slug/SKU ve globals'ın starter tarafından ezilmesi AGENTS.md'de açıkça uyarıldı; izole test gerçek CLI transaction/rollback yolunu ve üzerine yazma riskini kanıtlıyor. Admin etiketi testleri davranış ayarlarının korunmasını, plugin erişimlerini ve MCP dışlamalarını kapsıyor. Editör kılavuzundaki yetki, yayın, şablon, medya gizliliği, lisans ve çeviri yönlendirmeleri koda uyarlandı. Typecheck/lint/613 test/izole `.next-prod` build geçti; migrate:create şema farkı/dosya üretmedi. Starter'da gerçek kişi/şirket verisi veya güvensiz link bulunmadı; uygulama erişim mantığında regresyon saptanmadı. Canlı DB/3100/.next/commit değişmedi.
+## Progress log
 
-- 2026-11-07 F8 denetimi: preview ve çıkış CSRF kontrolü güçlendirildi; SAMEORIGIN frame başlığı eklendi. typecheck, lint, 585 test, izole build ve 3200 duman/gerçek draft-ISR sınaması geçti.
+- 2026-11-07 F10 audit completed: overwriting of existing slugs/SKUs and globals by the starter is explicitly warned in AGENTS.md; the isolated test proves the real CLI transaction/rollback path and the overwrite risk. Admin label tests cover preservation of behavior settings, plugin access and MCP exclusions. Authorization, publishing, template, media privacy, license and translation guidance in the editor guide were adapted to the code. Typecheck/lint/613 tests/isolated `.next-prod` build passed; migrate:create produced no schema diff/file. No real person/company data or unsafe link found in the starter; no regression found in application access logic. Live DB/3100/.next/commit unchanged.
 
-- [x] 2026-11-07 F6 page builder: ana sayfa CMS `pages` kaydı (homePage → `home` → yedek), 9 sistem sayfası (`systemKey` + hero + taşınabilir `listing` bloğu), landing `[locale]/[slug]` + ayrılmış slug, template gizliliği, aile `layout`, sitemap/hreflang, migration `20261107_144850_page_builder_pages` (additif up, elle güvenli down, home silme trigger'ı) canlı DB'de; seed `05-pages.json` 2× (10 → 0 create). Revalidate kök neden düzeltmesi (`'/'` layout) + dinamik sitemap. 3200 görsel eşdeğerlik %0 piksel farkı; 536 test. Ayrıntı: plan F6 notu + activeContext.
+- 2026-11-07 F8 audit: preview and exit-preview CSRF checks strengthened; SAMEORIGIN frame header added. typecheck, lint, 585 tests, isolated build and the 3200 smoke/real draft-ISR test passed.
 
-- `20261107_120000_hero_video_delete` migration'ı yedek alındıktan sonra canlı DB'ye bilerek uygulandı (commit `a45a9df`).
+- [x] 2026-11-07 F6 page builder: home page as a CMS `pages` record (homePage → `home` → fallback), 9 system pages (`systemKey` + hero + movable `listing` block), landing `[locale]/[slug]` + reserved slugs, template privacy, family `layout`, sitemap/hreflang, migration `20261107_144850_page_builder_pages` (additive up, hand-written safe down, home delete trigger) on live DB; seed `05-pages.json` 2× (10 → 0 create). Revalidate root cause fix (`'/'` layout) + dynamic sitemap. 3200 visual equivalence 0% pixel difference; 536 tests. Details: plan F6 note + activeContext.
 
-- 2026-11-07 F4 denetimi: migration down veri kaybı, video FK silme hatası (yeni ileri migration sonradan canlıya uygulandı), video URL doğrulaması, public video/MIME/poster sınırları, JS'siz tabs ve testimonial alt fallback düzeltildi. Typecheck/lint/438 test/izole build ve 3200 HTTP duman geçti; geçici SQLite izolasyonu, import tekrarı, protected URL/404 ve richText XSS regresyonları doğrulandı. Chromium UI MachPort izniyle engellendi. 3200 kapalı; denetim sırasında 3100'e dokunulmadı. Ayrıntı activeContext.
+- Migration `20261107_120000_hero_video_delete` was deliberately applied to the live DB after a backup (commit `a45a9df`).
 
-- 2026-11-07 F4 statik bloklar: media/testimonial/tabs/spacer/divider + videoEmbed facade + hero mediaBackground/video; migration `blocks_static_set` (additif) canlı DB'de; 420 test, build, 3200 Playwright QA (CLS 0, iframe/video ağ kontrolü, tabs klavye) geçti. Ayrıntı: plan F4 notu + activeContext.
+- 2026-11-07 F4 audit: migration down data loss, video FK delete error (a new forward migration applied to live later), video URL validation, public video/MIME/poster limits, no-JS tabs and testimonial alt fallback fixed. Typecheck/lint/438 tests/isolated build and 3200 HTTP smoke passed; temporary SQLite isolation, import repetition, protected URL/404 and richText XSS regressions verified. Chromium UI blocked by MachPort permission. 3200 closed; 3100 not touched during the audit. Details in activeContext.
 
-- 2026-11-07 F3/F0 denetimi: ayrılmış anchor çakışması ve tanılama günlüğünde URL/başlık kaynaklı bilgi sızıntısı düzeltildi. Geçici DB migration up/down testi, typecheck, lint, 399 test, izole build ve 3200 HTTP duman kontrolü geçti; süreç kapatıldı.
+- 2026-11-07 F4 static blocks: media/testimonial/tabs/spacer/divider + videoEmbed facade + hero mediaBackground/video; migration `blocks_static_set` (additive) on live DB; 420 tests, build, 3200 Playwright QA (CLS 0, iframe/video network checks, tabs keyboard) passed. Details: plan F4 note + activeContext.
 
-- 2026-11-07 F3 blok çekirdeği tamamlandı (2026-11-07): migration `20261107_110012_blocks_appearance` (yalnız ADD COLUMN, 80 blok tablosu, varsayılanlar eski görünüm; kopya DB + dry-run sonra canlı; import 2× 0 create/88 update). `src/fields/block-settings.ts` (`blockSettings`, `BLOCK_DEFAULTS`, `resolveAppearance`, anchor doğrulama), `components/blocks/{block-shell.tsx,registry.ts,types.ts}`, `lib/blocks/render-plan.ts` (tek h1: `RenderBlocks firstHeroH1` yalnız h1'siz CMS sayfası/F6; PageHero'lu sayfalarda hero h2). Hero `default`=sinematik + split/centered/minimal; CTA `split`; featureGrid `style` + ikon select (`lib/icon-names.ts`). Admin i18n TR varsayılan, blok TR/EN etiket + `admin.group` + `public/admin/blocks/*.webp` yer tutucu. `blockReferences` kullanılmadı (plan F3 gerekçesi). typecheck/lint/34 dosya 398 test, `.next-prod` build; 3200 1440/390 görüntü farkı ≈0 (`scratchpad/f3/`). 3200 kapalı, 3100'e dokunulmadı, commit yok.
+- 2026-11-07 F3/F0 audit: fixed reserved anchor collision and information leak of URL/title source in the diagnostic log. Temporary DB migration up/down test, typecheck, lint, 399 tests, isolated build and 3200 HTTP smoke check passed; process closed.
 
-- F0 SQLite sorgu ölçümü tamamlandı (2026-11-07): `src/lib/db-query-log.ts`, Node `instrumentation.ts` ve bayrakla etkin Payload adapter sarmalı. `SM_DB_QUERY_LOG=1` ile libSQL statement sayısı/süre + HTTP isteğine ALS bağlamı; server render `getDbQueryStats()` okuyabilir. Streaming sonrası `finish` logları `scripts/perf-isr.ts` tarafından `SM_DB_QUERY_LOG_FILE` ve istek kimliğiyle eşlenir. Bayrak kapalıyken adapter/client/HTTP emit sarılmaz. `.next-perf` build + 3300 production ölçümü: 146 route/292 HTTP 200; 122 HIT/HIT çiftinde 0/0 sorgu. Arama 33/33, katalog 17/14 (ilk 3 PRAGMA), iletişim/indirmeler 16/16, portal giriş 9/9; eşzamanlı 33/9/14 izolasyonu doğrulandı. İlk 10 route `docs/perf/baseline.md` içinde. typecheck/lint/32 dosya 376 test/diff-check geçti. 3300 kapalı; 3100'e dokunulmadı; commit yok.
+- 2026-11-07 F3 block core completed: migration `20261107_110012_blocks_appearance` (only ADD COLUMN, 80 block tables, defaults keep the old look; copy DB + dry-run, then live; import 2× 0 create/88 update). `src/fields/block-settings.ts` (`blockSettings`, `BLOCK_DEFAULTS`, `resolveAppearance`, anchor validation), `components/blocks/{block-shell.tsx,registry.ts,types.ts}`, `lib/blocks/render-plan.ts` (single h1: `RenderBlocks firstHeroH1` only for CMS pages without h1 / F6; on pages with PageHero the hero is h2). Hero `default`=cinematic + split/centered/minimal; CTA `split`; featureGrid `style` + icon select (`lib/icon-names.ts`). Admin i18n TR default, block TR/EN labels + `admin.group` + `public/admin/blocks/*.webp` placeholders. `blockReferences` not used (rationale in the F3 plan). typecheck/lint/34 files 398 tests, `.next-prod` build; 3200 1440/390 image difference ≈0 (`scratchpad/f3/`). 3200 closed, 3100 untouched, no commit.
 
-- 2026-11-07 F1/F2/G çapraz denetim: taslak sonrası unpublish invalidation, nesne seçenekli cache anahtarları, eksik aile sayaçları, observer hata/URL query temizliği, hero görseli opacity gecikmesi, uzun breadcrumb taşması ve kodlanmış mailto yer tutucuları düzeltildi. Gerçek Payload/SQLite yayın yaşam döngüsü regresyonu eklendi. Typecheck/lint/31 dosya 372 test/`.next-prod` build geçti. 3200 `pnpm start` duman: 6 rota 200, olmayan rota 404, SSR pending=0, Mono preload=0. Süreç kapatıldı; 3100/.next/commit işlemi yok.
+- F0 SQLite query measurement completed (2026-11-07): `src/lib/db-query-log.ts`, Node `instrumentation.ts` and a flag-enabled Payload adapter wrapper. With `SM_DB_QUERY_LOG=1`, libSQL statement count/time + ALS context per HTTP request; server render can read `getDbQueryStats()`. After streaming, `finish` logs are matched by `scripts/perf-isr.ts` via `SM_DB_QUERY_LOG_FILE` and the request ID. With the flag off, the adapter/client/HTTP emit is not wrapped. `.next-perf` build + 3300 production measurement: 146 routes/292 HTTP 200; 0/0 queries in 122 HIT/HIT pairs. Search 33/33, catalog 17/14 (first 3 PRAGMA), contact/downloads 16/16, portal login 9/9; concurrent isolation 33/9/14 verified. The first 10 routes are in `docs/perf/baseline.md`. typecheck/lint/32 files 376 tests/diff-check passed. 3300 closed; 3100 untouched; no commit.
 
-- 2026-11-07 F0 kısmi tarayıcısız ölçüm: bundle ve 144 URL HTTP sonuçları `docs/perf/baseline.md`; SQLite sayacı ve timeout kök nedeni henüz eksik.
+- 2026-11-07 F1/F2/G cross-audit: unpublish invalidation after a draft, object-option cache keys, missing family counters, observer error/URL query cleanup, hero image opacity delay, long breadcrumb overflow and encoded mailto placeholders fixed. Real Payload/SQLite publish lifecycle regression added. Typecheck/lint/31 files 372 tests/`.next-prod` build passed. 3200 `pnpm start` smoke: 6 routes 200, unknown route 404, SSR pending=0, Mono preload=0. Process closed; no 3100/.next/commit action.
 
-- Güvenlik QA (2026-11-07): lisans e-postası HTTP yanıtı sonrası, bağımsız doğrulanmış kalıcı kayıt için gönderilir; SMTP yoksa anahtar konsola yazılmaz. İstek bağlamı dışındaki atamalarda bildirim zamanlanmaz. Uygulanmış `20261107_092304_remove_sales_legal_fields` üç eski ilişki değerini siler; down değerleri geri getirmez. Migration geçmişi değiştirilmedi.
+- 2026-11-07 F0 partial browserless measurement: bundle and 144 URL HTTP results in `docs/perf/baseline.md`; SQLite counter and timeout root cause still missing.
 
-- UX denetimi düzeltmeleri (13 madde) tamamlandı: dil değiştirici bağlamı, yasal/footer linkleri, header seed + CTA, buton kontrastı (cn/twMerge kök neden), ürün sayfası tek kaynak, form sürüm filtresi + satır içi hatalar, localized 404 (catch-all), favicon seti, mobil 44px, CSP nonce hydration uyarısı, indirme filtreleri. Typecheck/lint/345 test/izole build geçti; Playwright ile 3100'de doğrulandı. Yeni test: `tests/unit/ux-audit.test.tsx`.
+- Security QA (2026-11-07): the license e-mail is sent after the HTTP response, for independently verified durable recording; the key is not written to the console when SMTP is absent. Notifications are not scheduled for assignments outside a request context. The applied `20261107_092304_remove_sales_legal_fields` deletes three old relationship values; down does not restore them. Migration history not changed.
 
-- 404/güvenlik QA: medya dosyası varlık kontrolü erişim filtresinden sonra yapılır; yetkisiz ve olmayan dosyalar 404. Geçici SQLite regresyon testi eklendi. İzole prod build başarılı; doküman sayfası timeout yeniden üretilemedi, kesin kök neden belirlenemedi.
+- UX audit fixes (13 items) completed: language switcher context, legal/footer links, header seed + CTA, button contrast (cn/twMerge root cause), product page single source, form edition filter + inline errors, localized 404 (catch-all), favicon set, mobile 44px, CSP nonce hydration warning, download filters. Typecheck/lint/345 tests/isolated build passed; verified on 3100 with Playwright. New test: `tests/unit/ux-audit.test.tsx`.
 
-- Faz 8a güvenlik QA: MCP derinlik/dosya yolu ve medya boyutu/symlink düzeltildi; canlı HTTP erişim testleri ve 264 Vitest testi geçti; CLI medya dosyaları için artık aşağıdaki telafi temizliğini uygular.
+- 404/security QA: the media file existence check runs after the access filter; unauthorized and nonexistent files return 404. A temporary SQLite regression test was added. The isolated prod build passed; the document page timeout could not be reproduced and the exact root cause was not determined.
 
-## Durum özeti
-- Tamamlandı: Faz 0, Faz 1, Faz 2 (QA geçti). Faz 3 yazıldı; Faz 4 tamamlandı. Online ödeme kapsamdan çıkarıldı.
-- Faz 6 (müşteri portalı) tamamlandı. Faz 7 tamamlandı (metinler, README, yasal taslaklar; hukuk incelemesi bekliyor). Faz 8a tamamlandı; kalan: Faz 8b, Faz 9.
-- Commit yok; çalışma ağacı commit edilmemiş durumda.
-
-## Çalışanlar
-- Repo iskeleti, Next.js 15 + Payload CMS 3 + SQLite.
-- Makefile ve pnpm script'leri (liste: `techContext.md`).
-- 21 özel koleksiyon (destek mesajları dahil), 3 global; access kuralları; 3 SQLite migration.
-- Tasarım sistemi: tokenlar, `<Section>` teması, Header/Footer/mega menü, `alternates` ve `LanguageSwitcher`.
-- Ana sayfa, ürün katalog/detay, çözümler, kurumsal sayfalar, blok renderer (Faz 3; QA sürüyor).
-- Birim testler lisans atama, erişim kuralları, şema/veri korunumu ve frontend sınırlarını kapsar.
-
-## Kalanlar
-- **Faz 7:** tamamlandı (aşağıdaki "Faz 7" bölümüne bakın).
-- **Faz 8b:** gerçek seed içerik (5-20 ürün JSON), backup/deploy script'leri; import/MCP altyapısı Faz 8a'da tamamlandı.
-- **Faz 9:** SEO, performans, erişilebilirlik (Lighthouse ≥ 90), e2e.
-
-## Faz 4 — tamamlandı (2026-11-06)
-- Destek merkezi, ürün/sürüm/OS filtreli public indirmeler, doküman ağacı/sidebar/detay/başlık listesi/önceki-sonraki, sürüm notları ve kategori/ürün SSS + güvenli FAQPage.
-- `/ara` ↔ `/en/search`: Payload search indeksi, 2–120 karakter, sayfalama; yalnız güncel anonim kaynaklar. Ham indeks erişimi de taslak/silinmiş kayıtlara kapalı.
-- Demo/teklif/iletişim/genel destek formları: CMS tanımı, idempotent TR/EN ensure betiği, ürün+SKU doğrulaması; progressive enhancement ve erişilebilir hata/odak/durum yönetimi.
-- Zod uzunluk sınırları, honeypot, 5 deneme/10 dakika/IP bellek limiti, origin, Turnstile sunucu doğrulama, KVKK zorunlu. `form-submissions` public create kapalı.
-- Bildirim kayıt sonrası; kullanıcı girdisi e-posta başlıklarına girmez. E-posta hatası başarılı kaydı bozmaz. SMTP yoksa konsol.
-- paths, mesajlar, hreflang/alternates/breadcrumb/sitemap tamam. Şema değişikliği ve yeni migration yok.
-- Payload 3.85 SQLite lokalize `count` uyumsuzluğu scoped slug doğrulamasında sınırlı `find` ile giderildi; regresyon testi eklendi.
-
-## Eksik frontend rotaları
-- Yok (portal Faz 6'da eklendi).
-
-## Bilinen sorunlar / işletim girdileri
-- Next 15.4.11: `(frontend)/[locale]` kök layout altında `notFound()` SSR'da `__next_error__` kabuğu döndürür; yerelleştirilmiş 404 RSC payload'dan istemcide görünür. HTTP testi status 404 + HTML/RSC içeriğini, `smoke.spec.ts` tarayıcıda görünür `<main>` 404'ü kontrol eder.
-- Denenip sonuç vermeyenler: globalNotFound kapatma, sade layout, header/footer/error.tsx çıkarma, passthrough app/layout + app/not-found, OG dosyası taşıma. Page-builder fazında yeniden ele alınacak.
-- Canlı SMTP ve Turnstile site/secret anahtarları gerekli; gerçek dış servis testi yapılmadı.
-- `.env` canonical URL hâlâ `localhost:3100`; uygulama HTTP doğrulamaları `127.0.0.1:3100` üzerinden yapıldı. Mevcut localePrefix `always`: TR yolları `/tr` ile açılır, kök TR yolları yönlenir.
-- Yasal metin onayı ve gerçek içerik Faz 7–8'de. Git commit yok.
-- Faz 8a: content:import ve MCP eklendi; gerçek içerik/deploy Faz 8b'de.
-
-## Karar evrimi
-- **2026-11-06: Hibrit satış → tanıtım + teklif; lisans personel tarafından atanır.** Online ödeme tamamen iptal; müşteri portalı ve lisanslı indirmeler korunur.
-- **Yerel port:** `localhost:3000` başka projeye ait olduğu için site `127.0.0.1:3100` üzerinde çalışır.
-- **Migration:** DB push kapalı; her şema değişikliği `pnpm migrate:create` + `pnpm migrate` ile yapılır (düz `payload migrate:create` başarısız).
-- **Media:** `protected` varsayılanı `true` (güvenli varsayılan); genel görseller açıkça `false` yapılır.
-- **Müşteri ≠ panel kullanıcısı:** `customers.access.admin=false`; müşteri işlemleri sunucudan `overrideAccess: true` ile yapılır.
-- **Lisans modeli:** yazılım içi aktivasyon API'si v1 dışı; model buna hazır tasarlandı.
-- **Kapsam:** e-Fatura/e-Arşiv ve abonelik yenileme v1 dışı.
-- **Ekip modeli:** `takim-lideri` skill'i; Opus lider kod yazmaz, yazan ≠ denetleyen kuralı.
-
-## SQLite geçişi (2026-11-06)
-- SQLite WAL/FULL, busy timeout 5000; Payload transaction etkin, libSQL yazma transaction `BEGIN IMMEDIATE`.
-- Migration: `20261106_145404_initial_sqlite`, `20261106_150000_sqlite_integrity`.
-- Tek VPS: systemd, host Caddy, Litestream; kalıcı veri `data/`, `uploads/`. Yerel port 3100.
-- Karar evrimi: Postgres+Docker → SQLite+systemd (maliyet); henüz canlı veri yok.
-- Doğrulama: 135 test geçti; tip ve lint geçti. Çalışan dev sürecini durdurma OS tarafından engellendi; build ve yeniden başlatma doğrulanamadı.
-
-## Ödeme kaldırma (2026-11-06)
-- Yeni migration `20261106_151826_remove_online_sales` uygulandı; eski migration dosyaları korundu.
-- SKU teklif için kaldı; fiyat/vergi ve satın alınabilir alanlar, sipariş ilişkisi ve fatura adresi kaldırıldı.
-- Lisans bildirim e-postası isteğe bağlı olduğu için eklenmedi; mevcut konsol SMTP fallback düzeltildi.
-
-## Son doğrulama (2026-11-06)
-- Faz 4 güvenlik QA: sahte IP başlıkları, Origin ve LIKE jokerleri düzeltildi; typecheck, lint ve 139 test geçti, HTTP kötü girdi kontrolleri yapıldı.
-- `pnpm generate:types`, `pnpm typecheck`, `pnpm lint` başarılı. `pnpm test`: 13 dosya, 138 test geçti.
-- HTTP: 20 TR/EN public sayfa isteği 200; geçersiz sorgular ve olmayan dinamik kaynaklar 404; sitemap 200.
-- Geçici içerikle TR/EN doküman listesi/detayı, heading çapaları, hreflang, arama, filtreli indirmeler/sürüm notları/SSS doğrulandı. Taslak indeks ve lisanslı indirme adları gizli, lisanslı dosya 403, public dosya 200.
-- Anonim form-submissions POST 403; native Server Action geçerli gönderimde tam bir kayıt oluşturdu ve başarı gösterdi, kayıt sonra silindi. TR/EN form etiketleri ve iki ensure çalıştırmasının aynı dört kimliği koruduğu doğrulandı.
-- Geçici fixture/dosyalar temizlendi; kalıcı eklenen içerik yalnız yetkilendirilmiş dört form tanımı. Build/dev restart/commit yapılmadı; Makefile değişmedi.
-
-## Faz 7 — tamamlandı (2026-11-06)
-- i18n: tr/en anahtar ağaçları eşit; terminoloji tek sözlüğe çekildi (Teklif İste, Demo İste, Lisans, Destek, Hesabım); satın alma kalıntısı metni kaldırıldı; çoğul ICU kalıpları düzeltildi. Anahtar adları ve yer tutucular değişmedi.
-- Yasal metinler `content/legal/{tr,en}/`: kvkk-aydinlatma, gizlilik-politikasi, cerez-politikasi, kullanim-kosullari, eula. TASLAK; hukuk danışmanı incelemesi zorunlu. Mesafeli satış/ön bilgilendirme gerekmediği notu eklendi (teyit bekliyor).
-- README yeniden yazıldı (PostgreSQL/Docker kalıntısı kaldırıldı; komutlar Makefile ve package.json ile doğrulandı).
-- Hukuk incelemesi bekleyen noktalar: Cloudflare Web Analytics etkinliği ve veri işleme yeri; Cloudflare yurt dışı aktarımı; saklama süreleri; yedek ve sunucu log süreleri; sorumluluk sınırı; yetkili mahkeme; EULA ile sözleşme önceliği; DPA ihtiyacı; VERBİS durumu.
-- Build, commit ve kod değişikliği yapılmadı.
-
-## Faz 6 — tamamlandı (2026-11-06)
-- Yollar: giris/kayit/sifremi-unuttum/sifre-sifirla/dogrula, lisanslar, indirmeler, talepler(/yeni,/[id]), profil (EN: login, register, forgot-password, reset-password, verify, licenses, downloads, tickets, new, profile).
-- Doğrulama: typecheck, lint, 170 test (portal.test.ts eklendi) geçti. HTTP: anonim yönlendirme, müşteri 16 sayfa 200, başkasının ticket'ı 404, staff/yanlış token reddi, lisanslı dosya yalnız sahibe 200. Chromium: giriş/çıkış, anahtar göster, talep açma/yanıt, profil, kayıt/doğrulama/sıfırlama; 1440 ve 390 ekran görüntüsü, taşma düzeltildi. Geçici veri silindi.
-- Açık: KVKK onayı yalnız zorunlu kutu (kayıtta saklanmıyor, şema alanı yok); şifre değişiminde diğer oturumlar sonlanmaz; canlı SMTP/Turnstile test edilmedi (prod'da Turnstile yoksa kayıt/şifre-unuttum kapalı).
-- 2026-11-06 Faz 6 güvenlik QA: KVKK/sessions açıkları, auth API/limit bypass, enumeration, doğrudan lisanssız talep, transaction/redirect/maske/tarih/header uçları düzeltildi; `20261106_161413_portal_security_consent` uygulandı; generate:types/typecheck/lint ve 18 dosya/223 test geçti; HTTP IDOR/CSRF/token replay/limit/onay/no-store doğrulandı, fixture'lar silindi; açık: dev REST authStrategies HMR kaydı exp/alg sıkılaştırması için sonraki normal süreç başlangıcını bekliyor, sandbox nedeniyle screenshot ve canlı SMTP/Turnstile doğrulanmadı; build/restart/commit yapılmadı.
-
-## Faz 8a — içerik araçları (2026-11-06)
-- JSON Schema/AJV + slug/SKU import, TR/EN ayrı yazım, bloklar, medya güvenli yolları, globals, docs.parent, ürün↔SSS ilişkileri; `--dry-run` ve transaction rollback.
-- Seed yalnız 1 aile + 1 ürün + 1 sürüm. Gerçek DB ilk import 3 create; ikinci 0 create/3 update, kimlikler #1/#1/#1; kayıtlar bırakıldı. Yasal Markdown `--legal` ile import edilir; yerel taslaklar yalnız dry-run, izole test DB'sinde gerçek dönüşüm/yayın doğrulandı.
-- MCP 3.85.1, `/api/mcp`, 16 içerik koleksiyonu + 3 global. Admin users API anahtarı; licenses create/find/update açık, delete kapalı. Customers/users/forms/submissions/ticket/messages/deneysel araçlar kapalı.
-- Migration `20261106_164616_phase8a_content_mcp` uygulandı; önceki migration'lar değişmedi. API anahtarları admin alan erişimiyle korunur; editor rolüne geçiş anahtarı iptal eder.
-- Analitik kararı: Umami Postgres gerektirdiği için Cloudflare Web Analytics; çerezsiz, analitik çerez bandı gerekmez. Token yoksa beacon yok; admin/portal hariç; otomatik SPA ölçümü kapalı.
-- product.from/bestFor kullanım taraması boş; iki sözlükten kaldırıldı. TR önek bilgisi `/tr/...` olarak düzeltildi.
-- Harici kaynak plan sandbox dışında salt okunur; güncel çalışma kopyası `docs/implementation-plan.md`.
-- MCP taze Payload handler tools/list 200, 69 araç; anonim HTTP 401. Dev authStrategies HMR eski kaydı tuttuğu için geçerli anahtar HTTP 401; sonraki olağan süreç başlangıcı gerekli, restart yapılmadı.
-
-- Faz 8a medya kimliği: `media.seedPath` unique; Payload dosya adını çakışma nedeniyle değiştirse de tekrar import aynı kaydı/dosyayı günceller. Migration `20261106_165449_phase8a_media_identity` uygulandı.
-
-## Faz 8a son doğrulama
-- `pnpm generate:types`, `pnpm typecheck`, `pnpm lint`, `pnpm test` geçti: 21 dosya / 259 test. `git diff --check` temiz.
-- Gerçek ikinci import ve son tekrarlar: 0 create/3 update; aile/ürün/sürüm #1, TR/EN başlıklar ve FK kontrolü temiz. Geçici admin/MCP anahtarı silindi; users=0, pages=0; yalnız örnek katalog DB'de kaldı.
-- `--dry-run --legal`: 5 legal sayfa planlandı, DB'ye yazılmadı. İzole SQLite'ta legal Markdown/locale/block/idempotency ve medya çakışma testi geçti. CLI hatalı ilişki denemesi exit 1 verdi, transaction aile kaydını da geri aldı.
-- Build, dev restart ve commit yapılmadı. Canlı Cloudflare token yok; beacon sınırları SSR testinde doğrulandı. MCP dev HMR ve harici salt okunur kaynak plan sınırı yukarıda kayıtlı.
-
-## İçerik import hata düzeltmeleri (2026-11-06)
-- Dry-run yazmasız planlanmış referans tablosuyla yeni ürünlerin docs/releases sorgularını atlar; NaN/undefined/geçersiz DB kimliği sorguya ulaşmadan açık hata verir.
-- Markdown→Lexical link/autolink URL izin listesi (http/https/mailto/tel/site içi göreli), tehlikeli linkleri metne çevirme ve ham HTML düğümlerini atma eklendi.
-- CLI transaction sarmalı Payload beforeValidate aşamasında yeni dosya adlarını izler; hata/rollback durumunda yalnız yeni dosyaları siler, cleanup hatalarını raporlar. Kısmi dosya yazımı, rollback hatası, commit ve izole gerçek SQLite/medya regresyonları test edildi.
-- `content/seed/01-globals.json`: lokalize olmayan şirket/iletişim değerleri TR/EN eşitlendi; schema.json gevşetilmedi.
-- `pnpm typecheck`, `pnpm lint`, `pnpm test` geçti (23 dosya/293 test). `pnpm content:import --dry-run`: 88 oluşturulacak/0 güncellenecek kayıt + 3 global; yazma yok. Gerçek yerel import/build/dev restart/commit yapılmadı.
-- Seed uygulandı (2026-11-06): kök neden docs EN slug'ları ürün slug'ına eşitti (30-support.json düzeltildi) + 01-globals e-posta yer tutucuları geçersizdi; --dry-run artık gerçek yazma+ROLLBACK. Eski ornek-aile/ornek-urun/EXAMPLE-STANDARD silindi. make seed: 88 created/0 updated, 2. çalıştırma 0 created/88 updated; --legal 5 sayfa; HTTP TR/EN 200.
-
-## Faz 9 — denetim düzeltmeleri ve doğrulama (2026-11-06)
-- Kritik: Header sunucu çerez okuması kaldırıldı (herkese Hesabım); locale force-dynamic kaldırıldı. Ana sayfa/ürün-aile ve içerik detayları 3600 sn ISR; public koleksiyon/global hook'ları her iki locale layout'u ve sitemap'i invalidate eder; CLI/Next dışı bağlam güvenli.
-- Kritik: locale error/loading ve provider bağımsız global-error; TR/EN tasarım tokenlarıyla. Loading'in örtük server getTranslations çağrısının bütün ağacı dinamikleştirmesi client çeviriyle önlendi.
-- SEO: public origin kontrolü + production uyarısı, localhost yerine 127.0.0.1:3100 yerel fallback; x-default korunur. TR/EN next/og PNG ve OG/Twitter fallback; arama noindex/robots disallow ve sitemap dışında; tüm sitemap URL'lerinde lastmod; TechArticle JSON-LD.
-- Performans/güvenlik: next/image + ölçüler/sizes/lazy, priority yalnız hero kullanımları; Payload medya URL'leri unoptimized (aynı URL'de izin değişebilir), optimizer yalnız /images/** kabul eder; /api/media/file optimizer isteği HTTP 400. Motion reveal IntersectionObserver/CSS ile değişti, reduced-motion ve JS'siz görünürlük korundu; optimizePackageImports eklendi.
-- CSP Report-Only varsayılan; CSP_ENABLED/CSP_ENFORCE bayrakları, dinamik sayfalarda nonce + JSON-LD/next/script, admin ayrı relaxed politika, Turnstile/CF/video izinleri, Permissions-Policy ve COOP. Nonce + ISR Next'te birlikte desteklenmediğinden public ISR statik CSP; tüm frontend nonce uygulanmadı, teknik sınır kullanıcıya bildirildi.
-- A11y: select/label ayrıldı, product/SKU hata mesajları aria-describedby ile bağlandı; skip hedefi scroll margin; mobil menü focus trap/Escape/dil geçişi testleri yazıldı. Tasarım ve Makefile değişmedi.
-- Build `NEXT_DIST_DIR=.next-prod pnpm build` geçti. `●` ISR: /tr,/en; urunler/[family]/[product] ve aile; cozumler/haberler/referanslar/kariyer/yasal detayları; dokümantasyon ürün/detay; destek, şirket, referanslar/kariyer/partner listeleri, arama eski yönlendirmesi. `○`: robots; sitemap (1h). `ƒ`: query filtreli katalog/çözüm/haber/destek listeleri, arama/formlar, portal, OG, admin/API. Boş kariyer/referans detayları yeni public içerikte istekte ISR üretilebilir.
-- Production HTTP (geçici 3101, sonra kapatıldı): ana sayfa HIT, s-maxage=3600; EN katalog/teklif/portal/destek 200; no-store; admin unsafe-eval yalnız ayrı politikada. `skipMiddlewareUrlNormalize=true`, Next 15'in numeric loopback → localhost EN rewrite döngüsünü çözdü. Dev 127.0.0.1:3100 durdurulmadı.
-- Son kapılar: `pnpm typecheck`, `pnpm lint` geçti; `pnpm test` 25 dosya/310 test geçti. `pnpm test:e2e`: 3 HTTP geçti; 8 browser testi uygulama açılmadan macOS MachPort izni yüzünden başarısız. Chromium kurulumu tmp dizininde başarılı; UI/klavye/Lighthouse izinli hostta bekliyor. E2E artık build çalıştırmaz; .next-prod build ayrı yapılır.
-- Content import betiği/kütüphanesine, .env'e ve yerel içerik verisine dokunulmadı; migration/commit yok. Açık: production domain, browser/Lighthouse doğrulaması; CSP Report-Only gözlemi sonrası enforce. Genel SMTP/Turnstile/yasal onay girdileri önceki bölümlerde.
-# 2026-11-06 Faz 9 QA: kök 404 ve medya no-store düzeltildi; typecheck/lint/Vitest ve 3 HTTP testi geçti, Chromium MachPort engelli; production cache/invalidation ve protected medya canlı doğrulaması bekliyor.
-
-## Çoklu kök layout 404 düzeltmesi (2026-11-07)
-- `src/app/not-found.tsx` kök layout gerektirdiğinden production build ve dev route derlemesini bozuyordu. Bağımsız belge `global-not-found.tsx` olarak taşındı; Next 15.4 `experimental.globalNotFound` etkin (deneysel, çoklu root layout için resmi seçenek).
-- Catch-all + notFound denemesi locale loading ile 200, loading olmadan curl HTML’de boş hata belgesi verdi; nihai çözüm catch-all içermez, mevcut locale loading/not-found korunur. `src/app/[locale]/opengraph-image.tsx` layout gerektirmeyen metadata handler’dır; mevcut düz URL için konumu korundu (frontend grubuna taşımak URL’ye hash eki getiriyor).
-- Payload 3.85 statik dosya kontrolü, kayıt bulunmadığında erişim filtresini 403’e çeviriyordu. `mediaRead` yalnız statik isteklerde dosya kaydının yokluğunu 404 yapar; var olan medya erişim filtresi değişmez. Birim regresyonları anonim/customer/admin yokluk durumunu ve mevcut protected dosya filtresini kapsar.
-- `pnpm typecheck`, `pnpm test` (27 dosya / 317 test), `NEXT_DIST_DIR=.next-prod pnpm build` başarılı (lint dahil). 3200’de curl: /tr/xyz, /en/xyz, /xyz → 404 + main içinde 404; /tr, /admin → 200; /api/media/file/yok → 404; TR/EN OG → 200 PNG.
-- 3200’e özel geçici Playwright config ile 3 HTTP E2E geçti; 404/main beklentileri genişletildi, medya 404 eklendi. Origin kontrolü sabit 3100 yerine test baseURL origin’i ile tam eşitlik kullanır. Browser smoke uygulama açılmadan Chromium MachPort Permission denied (1100) nedeniyle engelli; görünürlük assertion’ı korunuyor.
-- Geçici production sunucusu kapatıldı; 3100 dev, .env, DB/şema ve commit işlemlerine dokunulmadı.
-
-- F2 + G (2026-11-07): animasyon sistemi (data-anim + tek MotionObserver, hero keyframe, token'lar) ve görsel düzeltmeler uygulandı. typecheck/lint/31 dosya 359 test geçti; prod build 3200'de Playwright: JS kapalı/reduced-motion'da gizli öğe 0, normalde kaydırma sonrası 0, CLS 0.000 (8 sayfa/genişlik), client nav yeniden tarıyor. Lighthouse mobil 100 (ilk koşu /tr TBT 274→13 ms), LCP ~1.05-1.2 s değişmedi. 3200 kapatıldı, commit yok.
-- 2026-11-07 F7 denetimi: medya koruma/MIME kontrolleri kapalı varsayılan, duyuru gizleme kimliğe bağlı; route saldırı girdileri ve `_v` migration verisi regresyon testlerine eklendi. typecheck, lint, 516 test, izole build ve 3200 HTTP dumanı başarılı; canlı DB migration yok.
-
-- F11 (2026-11-07): görsel QA turu 2 (432 görüntü, sorunsuz otomatik yoklama), Lighthouse 3 koşu medyan (9 sayfa x mobil/masaüstü), INP vekili, DB sorgu/ISR ölçümü, editör kılavuzu-admin UI hizalaması, 2 yeni e2e spec (biri izole DB kopyalı). typecheck/lint/613 birim test + 15 e2e (3100) + 1 izole e2e geçti. Perf kabulü kırmızı 4 madde (görselli LCP, SEO canonical, JS 192 KB, font 70 KB) → sonraki faz. Commit yok.
-
-- 2026-11-08 G2 (F11 yeni bulgular): yasal taslak sayfalar (`TASLAK —`/`DRAFT —` veya `[BÜYÜK HARF]`) `src/lib/legal-draft.ts` ile noindex + sitemap dışı (şema yok); ürün hero birincil Teklif İste; PageHero ritmi; sürüm notları ürün gruplu/katlı; MediaCard slug-hash kapak; footer alt satır; SEO plugin TR/EN alan etiketleri; lead form düğmesi lg. Detay: docs/qa/visual-baseline.md.
-- 2026-11-08 F11 diff denetimi: yasal taslak tespiti/sitemap fail-closed ve header navigasyon, odak, mobil scroll/close yarışı düzeltildi; typecheck/lint, 54 dosya 698 test, izole build ve HTTP duman geçti. Chromium MachPort sandbox nedeniyle header E2E çalıştırılamadı; iOS doğrulanmadı.
-- 2026-11-08 V1 animasyon preset sistemi: `motion` grubu + migration `blocks_motion` (yalnız ADD COLUMN, canlıda), CSS sözleşmesi + LCP koruması, admin Hareket paneli (preset kartları), editor-guide 2.6a. Testler/build/Playwright/Lighthouse yeşil; V2 (ürün bağlı bloklar) sırada.
-
-## 2026-11-08 V2 ürün sayfası bağlı bloklar (commit ve doğrulama)
-- V2: 8 ürün bağlı blok, Teklif İste zorunlu, hero ilk; eski layout birebir. Migration `20261108_130717_v2_product_bound_blocks` (yalnız ADD/CREATE), yedek scratchpad `softmarket-pre-v2.db`.
-- QA düzeltmeleri: restore/hidden/duplicate-id bypass kapatıldı, `.product-anchor` offset, ValidationError TR toast (`req.t`).
-- Ödeme P1 çekirdeği 16b565e (`src/lib/payments`, bağlı değil). Sonraki: V3a Puck pilotu, V3b native canvas pilotu (ayrı worktree, 3510/3520, migration yok).
-
-## 2026-11-08 V4 karar kaydı
-- V4 karar: native canvas kazandı; Puck pilot dalı ve worktree kaldırıldı, raporlar `docs/editor-pilot/` altında. Sonraki: V5 (`feat/visual-editor`).
-
-## 2026-11-16 V5 ana dala alındı
-- typecheck, lint, 73 dosya / 1188 birim test (maxWorkers=1), prod build, `test:e2e` 19 + `test:e2e:isolated` 20 (visual-editor dahil) geçti. Migration testi (~45 s, serializer'dan bağımsız; main'de aynı) zaman aşımı 240 s; content-import medya testi kendi fixture'ını üretir.
-
-- P2-S denetimi: sipariş satırı/net/KDV toplamları tutarlılığı, payment-event commit doğrulaması ve terminal durum koruması, fulfillment commit doğrulaması ve commerce verisi bulunan migration down koruması eklendi; izole SQLite regresyonları eklendi.
-
-## P7 commerceLegal bağımsız denetim — 2026-11-16 (tamamlandı, commit yok)
-
-- EN fallback/boş-gizli hukuki metinle legalReady açılması, eksik yer tutucu algılama, eşzamanlı taslak tür çakışması, yeniden adlandırılmış yasal URL sızıntısı ve importer symlink okuması düzeltildi. Header/footer iç referans projeksiyonu korundu; TR/EN metin tutarlılığı düzeltmeleri yapıldı.
-- Teknik taslak kontrolü hukukçu onayını doğrulamaz (P3); kılavuz ve plan açıklar. Ayrıntı `docs/plan-payments.md` P7 denetim kaydı.
-- Canlı DB/3100/.next, P4 dosyaları, techContext ve commit korunuyor. Migration değişmedi; geçici SQLite up/down ve NULL/UNIQUE/sürüm testleri var. Kapı sonucu aşağıda.
-- Son kapılar: `pnpm typecheck` ve `pnpm lint` exit 0; `pnpm test --maxWorkers=1`: **84 dosya / 1397 test, tamamı geçti (314,55 sn)**. P4 kaynaklı kırık yok. `git diff --check` temiz. **P7 migration canlıya güvenli: EVET; P7 kapsamı commit edilebilir: EVET** (commit atılmadı).
+- Phase 8a security QA: MCP depth/file path and media size/symlink fixed; live HTTP access tests and 264 Vitest tests passed; the CLI now applies compensating cleanup for media files.
+
+## Status summary
+- Completed: Phase 0, Phase 1, Phase 2 (QA passed). Phase 3 written; Phase 4 completed. Online payment removed from scope.
+- Phase 6 (customer portal) completed. Phase 7 completed (texts, README, legal drafts; lawyer review pending). Phase 8a completed; remaining: Phase 8b, Phase 9.
+- No commit; the working tree is uncommitted.
+
+## Team
+- Repo skeleton, Next.js 15 + Payload CMS 3 + SQLite.
+- Makefile and pnpm scripts (list: `techContext.md`).
+- 21 custom collections (including support messages), 3 globals; access rules; 3 SQLite migrations.
+- Design system: tokens, `<Section>` theme, Header/Footer/mega menu, `alternates` and `LanguageSwitcher`.
+- Home page, product catalog/detail, solutions, corporate pages, block renderer (Phase 3; QA ongoing).
+- Unit tests cover license assignment, access rules, schema/data preservation and frontend boundaries.
+
+## Remaining
+- **Phase 7:** completed (see the "Phase 7" section below).
+- **Phase 8b:** real seed content (5-20 products as JSON), backup/deploy scripts; the import/MCP infrastructure was completed in Phase 8a.
+- **Phase 9:** SEO, performance, accessibility (Lighthouse ≥ 90), e2e.
+
+## Phase 4 — completed (2026-11-06)
+- Support center, public downloads filtered by product/version/OS, documentation tree/sidebar/detail/heading list/previous-next, release notes and category/product FAQ with safe FAQPage.
+- `/ara` ↔ `/en/search`: Payload search index, 2–120 characters, pagination; only current anonymous sources. Raw index access is also closed to draft/deleted records.
+- Demo/quote/contact/general support forms: CMS definition, idempotent TR/EN ensure script, product+SKU validation; progressive enhancement and accessible error/focus/status management.
+- Zod length limits, honeypot, 5 attempts/10 minutes/IP memory limit, origin, Turnstile server verification, mandatory KVKK. Public create of `form-submissions` is closed.
+- Notification after saving; user input does not enter e-mail headers. An e-mail error does not break a successful save. Console when SMTP is absent.
+- paths, messages, hreflang/alternates/breadcrumb/sitemap done. No schema change or new migration.
+- The Payload 3.85 SQLite localized `count` mismatch in scoped slug validation was fixed with a bounded `find`; regression test added.
+
+## Missing frontend routes
+- None (portal added in Phase 6).
+
+## Known issues / operational inputs
+- Next 15.4.11: under the `(frontend)/[locale]` root layout, `notFound()` returns a `__next_error__` shell in SSR; the localized 404 is visible on the client from the RSC payload. The HTTP test checks status 404 + HTML/RSC content; `smoke.spec.ts` checks the visible `<main>` 404 in the browser.
+- Tried without result: disabling globalNotFound, simplified layout, removing header/footer/error.tsx, passthrough app/layout + app/not-found, moving the OG file. To be revisited in the page builder phase.
+- Live SMTP and Turnstile site/secret keys are required; no real external service test was done.
+- The `.env` canonical URL is still `localhost:3100`; app HTTP verifications were done via `127.0.0.1:3100`. The current localePrefix is `always`: TR paths open with `/tr`, root TR paths redirect.
+- Legal text approval and real content in Phases 7–8. No git commit.
+- Phase 8a: content:import and MCP added; real content/deploy in Phase 8b.
+
+## Decision evolution
+- **2026-11-06: Hybrid sales → promotion + quote; licenses assigned by staff.** Online payment fully cancelled; customer portal and licensed downloads kept.
+- **Local port:** `localhost:3000` belongs to another project, so the site runs on `127.0.0.1:3100`.
+- **Migration:** DB push is off; every schema change is done with `pnpm migrate:create` + `pnpm migrate` (plain `payload migrate:create` fails).
+- **Media:** the `protected` default is `true` (safe default); public images are set to `false` explicitly.
+- **Customer ≠ panel user:** `customers.access.admin=false`; customer operations run from server code with `overrideAccess: true`.
+- **License model:** an in-software activation API is outside v1; the model was designed to be ready for it.
+- **Scope:** e-Invoice/e-Archive and subscription renewal are outside v1.
+- **Team model:** `takim-lideri` skill; the Opus lead writes no code; the writer ≠ reviewer rule.
+
+## SQLite migration (2026-11-06)
+- SQLite WAL/FULL, busy timeout 5000; Payload transactions enabled, libSQL write transactions `BEGIN IMMEDIATE`.
+- Migrations: `20261106_145404_initial_sqlite`, `20261106_150000_sqlite_integrity`.
+- Single VPS: systemd, host Caddy, Litestream; persistent data in `data/`, `uploads/`. Local port 3100.
+- Decision evolution: Postgres+Docker → SQLite+systemd (cost); no live data yet.
+- Verification: 135 tests passed; typecheck and lint passed. Stopping the running dev process was blocked by the OS; the build and restart could not be verified.
+
+## Payment removal (2026-11-06)
+- New migration `20261106_151826_remove_online_sales` applied; old migration files kept.
+- The SKU stayed for quotes; price/tax and purchasable fields, the order relationship and the invoice address were removed.
+- The license notification e-mail was not added because it is optional; the existing console SMTP fallback was fixed.
+
+## Latest verification (2026-11-06)
+- Phase 4 security QA: fake IP headers, Origin and LIKE wildcards fixed; typecheck, lint and 139 tests passed; HTTP bad-input checks done.
+- `pnpm generate:types`, `pnpm typecheck`, `pnpm lint` succeeded. `pnpm test`: 13 files, 138 tests passed.
+- HTTP: 20 TR/EN public page requests 200; invalid queries and nonexistent dynamic resources 404; sitemap 200.
+- With temporary content, TR/EN document list/detail, heading anchors, hreflang, search, filtered downloads/release notes/FAQ verified. Draft index and licensed download names hidden, licensed file 403, public file 200.
+- Anonymous form-submissions POST 403; the native Server Action created exactly one record on a valid submission and showed success; the record was deleted afterwards. TR/EN form labels and two ensure runs keeping the same four identities verified.
+- Temporary fixtures/files cleaned up; only the four authorized form definitions were permanently added. No build/dev restart/commit; Makefile unchanged.
+
+## Phase 7 — completed (2026-11-06)
+- i18n: tr/en key trees equal; terminology consolidated into a single dictionary (Request a Quote, Request a Demo, License, Support, My Account); purchase-remnant text removed; plural ICU patterns fixed. Key names and placeholders unchanged.
+- Legal texts `content/legal/{tr,en}/`: kvkk-aydinlatma, gizlilik-politikasi, cerez-politikasi, kullanim-kosullari, eula. DRAFT; legal advisor review mandatory. A note was added that distance-sales/pre-information is not required (awaiting confirmation).
+- README rewritten (PostgreSQL/Docker remnants removed; commands verified against Makefile and package.json).
+- Points pending legal review: Cloudflare Web Analytics activity and data-processing location; Cloudflare transfer abroad; retention periods; backup and server log periods; liability limits; competent court; EULA vs. contract precedence; DPA need; VERBİS status.
+- No build, commit or code change performed.
+
+## Phase 6 — completed (2026-11-06)
+- Paths: giris/kayit/sifremi-unuttum/sifre-sifirla/dogrula, lisanslar, indirmeler, talepler(/yeni,/[id]), profil (EN: login, register, forgot-password, reset-password, verify, licenses, downloads, tickets, new, profile).
+- Verification: typecheck, lint, 170 tests (portal.test.ts added) passed. HTTP: anonymous redirect, customer 16 pages 200, another customer's ticket 404, staff/wrong token rejected, licensed file 200 only for the owner. Chromium: login/logout, show key, open request/reply, profile, registration/verification/reset; 1440 and 390 screenshots, overflow fixed. Temporary data deleted.
+- Open: KVKK consent is only a required checkbox (not stored at registration; no schema field); other sessions are not ended on password change; live SMTP/Turnstile not tested (registration/forgot-password are off in production without Turnstile).
+- 2026-11-06 Phase 6 security QA: KVKK/session holes, auth API/limit bypass, enumeration, direct unlicensed requests, transaction/redirect/mask/date/header endpoints fixed; `20261106_161413_portal_security_consent` applied; generate:types/typecheck/lint and 18 files/223 tests passed; HTTP IDOR/CSRF/token replay/limit/consent/no-store verified, fixtures deleted. Open: the dev REST authStrategies HMR registration waits for the next normal process start for the exp/alg tightening; the screenshot and live SMTP/Turnstile were not verified because of the sandbox; no build/restart/commit.
+
+## Phase 8a — content tools (2026-11-06)
+- JSON Schema/AJV + slug/SKU import, separate TR/EN writes, blocks, safe media paths, globals, docs.parent, product↔FAQ relationships; `--dry-run` and transaction rollback.
+- The seed contains only 1 family + 1 product + 1 edition. Real DB first import 3 creates; second 0 creates/3 updates, identities #1/#1/#1; records left in place. Legal Markdown is imported with `--legal`; local drafts only in dry-run, real conversion/publishing verified in an isolated test DB.
+- MCP 3.85.1, `/api/mcp`, 16 content collections + 3 globals. Admin users API key; licenses create/find/update open, delete closed. Customers/users/forms/submissions/tickets/messages/experimental tools closed.
+- Migration `20261106_164616_phase8a_content_mcp` applied; earlier migrations unchanged. API keys are protected by admin field access; switching to the editor role revokes the key.
+- Analytics decision: Cloudflare Web Analytics instead of Umami because Umami requires Postgres; cookieless, no analytics cookie banner needed. No beacon without a token; excluded for admin/portal; automatic SPA measurement off.
+- Usage scan of product.from/bestFor is empty; removed from both dictionaries. TR prefix information corrected to `/tr/...`.
+- The external source plan is read-only outside the sandbox; the current working copy is `docs/implementation-plan.md`.
+- MCP fresh Payload handler tools/list 200, 69 tools; anonymous HTTP 401. Dev authStrategies HMR kept the old registration, so a valid key gives HTTP 401; a later normal process start is required; no restart done.
+
+- Phase 8a media identity: `media.seedPath` unique; even when Payload changes the file name because of a conflict, a repeat import updates the same record/file. Migration `20261106_165449_phase8a_media_identity` applied.
+
+## Phase 8a final verification
+- `pnpm generate:types`, `pnpm typecheck`, `pnpm lint`, `pnpm test` passed: 21 files / 259 tests. `git diff --check` clean.
+- Real second import and final repeats: 0 create/3 updates; family/product/edition #1, TR/EN titles and FK check clean. Temporary admin/MCP key deleted; users=0, pages=0; only the sample catalog remains in the DB.
+- `--dry-run --legal`: 5 legal pages planned, nothing written to the DB. Legal Markdown/locale/block/idempotency and media conflict test passed in isolated SQLite. A faulty CLI relationship attempt exited with 1, and the transaction also rolled back the family record.
+- No build, dev restart or commit. No live Cloudflare token; beacon limits verified in SSR tests. MCP dev HMR and the external read-only source plan limit recorded above.
+- F7 security/quality audit (2026-11-07): `publicImage` accepts only media explicitly set to `protected: false` with an image MIME; the announcement hiding state is tied to the content identity. Route attack inputs and migration transaction rollback tests with normal + `_v` old link data expanded; typecheck/lint/516 tests, copy DB `.next-prod` build and 3200 HTTP smoke passed; 3200 closed, 3100 and live migration untouched. Browser hydration interaction not separately verified.
+
+## Content import error fixes (2026-11-06)
+- Dry-run skips docs/releases queries for new products using the planned reference table in write-free mode; NaN/undefined/invalid DB IDs fail with a clear error before reaching the query.
+- Markdown→Lexical link/autolink URL allowlist (http/https/mailto/tel/site-internal relative), dangerous links converted to text, and raw HTML nodes dropped.
+- The CLI transaction wrapper tracks new file names in Payload's beforeValidate stage; on error/rollback it deletes only new files and reports cleanup errors. Partial file writes, rollback errors, commit and isolated real SQLite/media regressions tested.
+- `content/seed/01-globals.json`: non-localized company/contact values synced for TR/EN; schema.json not loosened.
+- `pnpm typecheck`, `pnpm lint`, `pnpm test` passed (23 files/293 tests). `pnpm content:import --dry-run`: 88 records to create/0 to update + 3 globals; no writes. No real local import/build/dev restart/commit.
+- Seed applied (2026-11-06): root cause — docs EN slugs equaled the product slug (fixed in 30-support.json) + the 01-globals e-mail placeholders were invalid; `--dry-run` now performs a real write + ROLLBACK. Old ornek-aile/ornek-urun/EXAMPLE-STANDARD deleted. make seed: 88 created/0 updated; second run 0 created/88 updated; --legal 5 pages; HTTP TR/EN 200.
+
+## Phase 9 — audit fixes and verification (2026-11-06)
+- Critical: server cookie reading removed from the Header (everyone sees My Account); locale `force-dynamic` removed. Home/product-family and content details use 3600 s ISR; public collection/global hooks invalidate both locale layouts and the sitemap; the CLI/outside-Next context is safe.
+- Critical: locale error/loading and provider-independent global-error with TR/EN design tokens. Preventing the loading's implicit server getTranslations call from making the whole tree dynamic was addressed with client translation.
+- SEO: public origin check + production warning, local fallback 127.0.0.1:3100 instead of localhost; x-default kept. TR/EN next/og PNG and OG/Twitter fallback; search noindex/robots disallow and outside the sitemap; lastmod on all sitemap URLs; TechArticle JSON-LD.
+- Performance/security: next/image + dimensions/sizes/lazy, priority only for hero uses; Payload media URLs unoptimized (permission can change on the same URL), the optimizer accepts only `/images/**`; `/api/media/file` optimizer requests return HTTP 400. Motion reveal changed to IntersectionObserver/CSS; reduced-motion and no-JS visibility kept; optimizePackageImports added.
+- CSP Report-Only default; CSP_ENABLED/CSP_ENFORCE flags, nonce + JSON-LD/next/script on dynamic pages, separate relaxed admin policy, Turnstile/CF/video permissions, Permissions-Policy and COOP. Because nonce + ISR are not supported together in Next, the public ISR uses a static CSP; the nonce was not applied to the whole frontend, and the technical limit was reported to the user.
+- A11y: select/label separated, product/SKU error messages linked with aria-describedby, skip target scroll margin, mobile menu focus trap/Escape/language switch tests written. Design and Makefile unchanged.
+- Build `NEXT_DIST_DIR=.next-prod pnpm build` passed. `●` ISR: /tr,/en; urunler/[family]/[product] and family; cozumler/haberler/referanslar/kariyer/yasal details; documentation product/detail; support, company, references/careers/partner lists, search old redirect. `○`: robots; sitemap (1h). `ƒ`: query-filtered catalog/solution/news/support lists, search/forms, portal, OG, admin/API. Empty career/reference details can produce ISR on request for new public content.
+- Production HTTP (temporary 3101, then closed): home HIT, s-maxage=3600; EN catalog/quote/portal/support 200; no-store; admin unsafe-eval only in its separate policy. `skipMiddlewareUrlNormalize=true` solved Next 15's numeric loopback → localhost EN rewrite loop. Dev 127.0.0.1:3100 not stopped.
+- Final gates: `pnpm typecheck` and `pnpm lint` passed; `pnpm test` 25 files/310 tests passed. `pnpm test:e2e`: 3 HTTP passed; 8 browser tests failed before the app opened because of macOS MachPort permission. Chromium install succeeded in a tmp directory; UI/keyboard/Lighthouse waiting for an allowed host. E2E no longer runs the build; the `.next-prod` build is a separate step.
+- No changes to the content import script/library, `.env` or local content data; no migration/commit. Open: production domain, browser/Lighthouse verification; enforce after CSP Report-Only observation. General SMTP/Turnstile/legal approval inputs are in the earlier sections.
+
+## 2026-11-06 Phase 9 QA: root 404 and media no-store fixed; typecheck/lint/Vitest and 3 HTTP tests passed; Chromium blocked by MachPort; production cache/invalidation and protected media live verification pending.
+
+## Multi-root-layout 404 fix (2026-11-07)
+- `src/app/not-found.tsx` broke the production build and dev route compilation because it requires a root layout. The standalone document was moved to `global-not-found.tsx`; Next 15.4 `experimental.globalNotFound` enabled (experimental, the official option for multiple root layouts).
+- The catch-all + notFound attempt gave a 200 with locale loading, and without loading an empty error document in curl HTML; the final solution has no catch-all, and the existing locale loading/not-found is kept. `src/app/[locale]/opengraph-image.tsx` is a layout-free metadata handler; its location was kept for the existing plain URL (moving it into the frontend group adds a hash suffix to the URL).
+- Payload 3.85 static file check turned the access filter into 403 when no record exists. `mediaRead` now returns 404 only for the absence of the file record on static requests; the access filter for existing media is unchanged. Unit regressions cover the anonymous/customer/admin absence cases and the existing protected file filter.
+- `pnpm typecheck`, `pnpm test` (27 files / 317 tests), `NEXT_DIST_DIR=.next-prod pnpm build` passed (lint included). On 3200 with curl: /tr/xyz, /en/xyz, /xyz → 404 + 404 inside main; /tr, /admin → 200; /api/media/file/none → 404; TR/EN OG → 200 PNG.
+- Three HTTP E2E tests passed with a temporary Playwright config on 3200; 404/main expectations were extended and a media 404 added. The origin check uses full equality with the test baseURL origin instead of the fixed 3100. Browser smoke is blocked by Chromium MachPort Permission denied (1100) before the app opens; the visibility assertion is kept.
+- The temporary production server was closed; the 3100 dev process, `.env`, DB/schema and commit were not touched.
+
+- F2 + G (2026-11-07): animation system (data-anim + single MotionObserver, hero keyframe, tokens) and visual fixes applied. typecheck/lint/31 files 359 tests passed; production build on 3200 Playwright: hidden element count 0 with JS off/reduced-motion, 0 after scrolling normally, CLS 0.000 (8 pages/widths), client nav rescans. Mobile Lighthouse 100 (first run /tr TBT 274→13 ms), LCP ~1.05-1.2 s unchanged. 3200 closed, no commit.
+- 2026-11-07 F7 audit: media protection/MIME checks closed by default, announcement hiding tied to the identity; route attack inputs and `_v` migration data added to regression tests. typecheck, lint, 516 tests, isolated build and 3200 HTTP smoke passed; no live DB migration.
+
+- F11 (2026-11-07): visual QA round 2 (432 images, clean automated check), Lighthouse 3-run median (9 pages × mobile/desktop), INP proxy, DB query/ISR measurement, editor guide-admin UI alignment, 2 new e2e specs (one with an isolated DB copy). typecheck/lint/613 unit tests + 15 e2e (3100) + 1 isolated e2e passed. Performance acceptance red on 4 items (image LCP, SEO canonical, JS 192 KB, font 70 KB) → next phase. No commit.
+
+- 2026-11-08 G2 (F11 new findings): draft legal pages (`TASLAK —`/`DRAFT —` or `[UPPERCASE]`) are noindex + outside the sitemap via `src/lib/legal-draft.ts` (no schema); product hero primary Request a Quote; PageHero rhythm; release notes grouped and collapsible by product; MediaCard slug-hash cover; footer bottom line; SEO plugin TR/EN field labels; lead form button lg. Details: docs/qa/visual-baseline.md.
+- 2026-11-08 F11 diff audit: legal draft detection/sitemap made fail-closed and the header navigation, focus, and mobile scroll/close race fixed; typecheck/lint, 54 files 698 tests, isolated build and HTTP smoke passed. Header E2E could not run because of the Chromium MachPort sandbox; iOS not verified.
+- 2026-11-08 V1 animation preset system: `motion` group + migration `blocks_motion` (ADD COLUMN only, live), CSS contract + LCP protection, admin Motion panel (preset cards), editor-guide 2.6a. Tests/build/Playwright/Lighthouse green; V2 (product-bound blocks) next.
+
+## 2026-11-08 V2 product page bound blocks (commit and verification)
+- V2: 8 product-bound blocks, Request a Quote mandatory, hero first; old layout byte-identical. Migration `20261108_130717_v2_product_bound_blocks` (ADD/CREATE only), backup scratchpad `softmarket-pre-v2.db`.
+- QA fixes: restore/hidden/duplicate-id bypass closed, `.product-anchor` offset, ValidationError TR toast (`req.t`).
+- Payment P1 core 16b565e (`src/lib/payments`, not connected). Next: V3a Puck pilot, V3b native canvas pilot (separate worktree, 3510/3520, no migration).
+
+## 2026-11-08 V4 decision record
+- V4 decision: native canvas won; the Puck pilot branch and worktree removed; reports under `docs/editor-pilot/`. Next: V5 (`feat/visual-editor`).
+
+## 2026-11-16 V5 merged into main
+- typecheck, lint, 73 files / 1188 unit tests (maxWorkers=1), prod build, `test:e2e` 19 + `test:e2e:isolated` 20 (including visual-editor) passed. The migration test (~45 s, independent of the serializer; same on main) has a 240 s timeout; the content-import media test generates its own fixture.
+
+- P2-S audit: consistency of order line/net/VAT totals, payment-event commit verification and terminal status protection, fulfillment commit verification and migration-down protection when commerce data exists were added; isolated SQLite regressions added.
+
+## P7 commerceLegal independent audit — 2026-11-16 (complete, no commit)
+
+- Fixed: `legalReady` opening with an EN fallback/empty-hidden legal text, missing placeholder detection, concurrent draft type conflicts, leaked renamed legal URL, and importer symlink reads. Header/footer internal reference projection kept; TR/EN text consistency fixes made.
+- The technical draft check does not verify lawyer approval (P3); the guide and plan state this. Details in the P7 audit record of `docs/plan-payments.md`.
+- Live DB/3100/.next, P4 files, techContext and commit preserved. Migration unchanged; temporary SQLite up/down and NULL/UNIQUE/version tests exist. Gate result below.
+- Final gates: `pnpm typecheck` and `pnpm lint` exit 0; `pnpm test --maxWorkers=1`: **84 files / 1397 tests, all passed (314.55 s)**. No broken P4-related tests. `git diff --check` clean. **P7 migration safe for live: YES; P7 scope committable: YES** (no commit made).
 
 ## G1 revert live migration (2026-11-18)
 
@@ -422,5 +427,5 @@
 - Added portal device list/release (`src/lib/licensing/portal-devices.ts`, `src/lib/portal/device-actions.ts`, detail page), TR/EN strings, `customerDeviceReleased` queue message. Tests: `portal-devices-db.test.ts` (8), `portal-device-action.test.ts` (8). Gates: typecheck and lint clean, full suite 112 files / 1819 tests passed. Browser check on a DB copy (port 3580): owner released a device, foreign license 404 both ways.
 - The L7 audit added regressions for concurrent attempts, quota changes, atomic rollback, ownership transfers, license states, and SMTP loss. Bilingual legal drafts reflect the implemented lease limits, rule modes, and retention exceptions.
 
-## 2026-11-19 L10 tamamlandı
-- L10 deploy, audit düzeltmeleri ve QA düzeltmeleri tamam; kalan: yalnız VPS kabulü (DNS/proxy secret, Caddy/systemd doğrulama, signer, SECRETS_KEY yedeği, Linux preflight, p95 < 250 ms). Opsiyonel L11.
+## 2026-11-19 L10 completed
+- L10 deploy, audit fixes and QA fixes done; remaining: VPS acceptance only (DNS/proxy secret, Caddy/systemd validation, signer, SECRETS_KEY backup, Linux preflight, p95 < 250 ms). Optional L11.

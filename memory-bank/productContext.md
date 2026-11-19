@@ -1,41 +1,41 @@
-# Ürün Bağlamı
+# Product Context
 
-## Neden var
-Şirketin yazılım portföyü (5-20 ürün) tek yerde, aranabilir ve teklif talep edilebilir olmalı. Büyük ürün şirketlerinin (Vizrt, Blackmagic) düzeninde: ürün aileleri, çözümler, destek merkezi ve indirmeler.
+## Why it exists
+The company's software portfolio (5-20 products) must be in one place, searchable, and available for quote requests. Like the layout of large product companies (Vizrt, Blackmagic): product families, solutions, a support center, and downloads.
 
-## Çözdüğü sorunlar
-- Ürün bilgisi dağınık; ürün/sürüm/OS'e göre indirme ve doküman bulunamıyor → katalog + destek merkezi.
-- Her ürün/sürüm için teklif veya demo talep edilebilmeli → tanıtım ve talep toplama.
-- Müşteri lisanslarını ve indirmelerini tek yerde görmeli → müşteri portalı `/hesap`.
-- İçerik ekibi ve yapay zekâ ajanları, teknik bilgi olmadan içerik yönetebilmeli → Payload panel + API/MCP + JSON import.
+## Problems it solves
+- Product information is scattered; downloads and documentation cannot be found by product/edition/OS → catalog + support center.
+- A quote or demo must be requestable for every product/edition → promotion and request collection.
+- Customers must see their licenses and downloads in one place → customer portal `/hesap`.
+- The content team and AI agents must be able to manage content without technical knowledge → Payload panel + API/MCP + JSON import.
 
-## Kullanıcı akışları (hedef)
-1. **Ziyaretçi, ürün arar:** Header mega menü (aile → ürün) veya `/ara` → ürün sayfası.
-2. **Ürün sayfası:** sekmeler Genel Bakış · Özellikler · Teknik Özellikler & Sistem Gereksinimleri · Sürümler · İndirmeler · Dokümantasyon.
-3. **Teklif:** edition seç → `/teklif-iste?urun=...&surum=SKU` → lead e-postası + admin kaydı.
-4. **Lisans atama:** yetkili yönetici panel/API/MCP üzerinden müşteri ve sürümü seçer; anahtar üretilir, abonelik süresi hesaplanır. Müşteri portalda lisansını görür.
-5. **Demo:** `/demo-talep` formu.
-6. **Destek:** `/destek` → indirme (ürün/sürüm/OS filtreli), doküman, sürüm notu, SSS, destek talebi.
-7. **Müşteri:** `/hesap` → lisanslar, lisanslı indirmeler, destek talepleri, profil.
+## User flows (target)
+1. **Visitor searches for a product:** header mega menu (family → product) or `/ara` → product page.
+2. **Product page:** tabs Overview · Features · Technical Specs & System Requirements · Editions · Downloads · Documentation.
+3. **Quote:** select an edition → `/teklif-iste?urun=...&surum=SKU` → lead e-mail + admin record.
+4. **License assignment:** an authorized administrator selects the customer and edition via the panel/API/MCP; the key is generated, the subscription period is calculated. The customer sees the license in the portal.
+5. **Demo:** `/demo-talep` form.
+6. **Support:** `/destek` → download (filtered by product/edition/OS), documentation, release notes, FAQ, support request.
+7. **Customer:** `/hesap` → licenses, licensed downloads, support requests, profile.
 
-## UX hedefleri
-- Yeni nesil, minimal, profesyonel; kapsamlı ama abartısız.
-- Büyük tipografi, bol boşluk, ürün ekran görüntüsü/videosu öne çıkar.
-- Bilgi sayfaları (doküman, destek, portal, teknik özellik) açık ve okunaklı.
-- Telefon genişliğinde yatay kaydırma yok; erişilebilirlik WCAG AA.
-- Dil değiştirme: aynı içeriğin karşılık gelen dil yolu (hreflang, `LanguageSwitcher`).
-- Form spam koruması: Cloudflare Turnstile sunucu doğrulaması + honeypot + IP limiti (Faz 4).
+## UX goals
+- Next generation, minimal, professional; comprehensive but not flashy.
+- Large typography, generous whitespace; product screenshots/videos stand out.
+- Information pages (documentation, support, portal, technical specs) are open and readable.
+- No horizontal scrolling at phone width; accessibility at WCAG AA.
+- Language switching: the corresponding language path of the same content (hreflang, `LanguageSwitcher`).
+- Form spam protection: Cloudflare Turnstile server verification + honeypot + IP limit (Phase 4).
 
-## Tasarım ruhu
-- Sinematik koyu vitrinler (hero, ürün tanıtım) + açık bilgi alanları.
-- Referans: Vizrt / Blackmagic. Kopyalanmaz; yalnızca yapı ve ton.
-- Hareket ölçülü (Motion, scroll reveal).
+## Design spirit
+- Cinematic dark showcases (hero, product introductions) + light information areas.
+- Reference: Vizrt / Blackmagic. Not copied; only structure and tone.
+- Restrained motion (Motion, scroll reveal).
 - Font: Geist Sans + Geist Mono (`next/font`).
 
-## Palet (kullanıcı onaylı, kobalt tek vurgu)
-Saf siyah/beyaz kullanılmaz. Tüm renkler `globals.css` içinde CSS değişkeni (token).
+## Palette (user-approved, cobalt as the single accent)
+Pure black/white are not used. All colors are CSS variables (tokens) in `globals.css`.
 
-| Token | Koyu | Açık |
+| Token | Dark | Light |
 |---|---|---|
 | `bg` | `#0B0D10` | `#F7F8FA` |
 | `surface` | `#13161B` | `#FFFFFF` |
@@ -43,13 +43,13 @@ Saf siyah/beyaz kullanılmaz. Tüm renkler `globals.css` içinde CSS değişkeni
 | `border` | `#262B33` | `#E3E6EA` |
 | `text` | `#E7E9EC` | `#12161C` |
 | `text-muted` | `#9AA2AD` | `#5A6370` |
-| `accent` (kobalt) | `#4C7DFF` | `#2F5FE0` |
+| `accent` (cobalt) | `#4C7DFF` | `#2F5FE0` |
 | `accent-hover` | `#6B93FF` | `#244CC0` |
-| `success` / `warning` / `danger` | `#2FB37A` / `#E0A63B` / `#E5574F` | aynı tonların koyu varyantı |
+| `success` / `warning` / `danger` | `#2FB37A` / `#E0A63B` / `#E5574F` | dark variants of the same tones |
 
-- Bölüm teması: `<Section theme="dark|light">`.
-- Marka değişirse yalnızca token dosyası değişir.
-- Kontrast WCAG AA ile doğrulanır.
+- Section theme: `<Section theme="dark|light">`.
+- If the brand changes, only the token file changes.
+- Contrast is verified with WCAG AA.
 
-## Bileşen seti (hedef)
-Header (mega menü), Footer, Hero (video/görsel), ProductCard, FeatureGrid, SpecTable, Sürüm kartları (Teklif İste), CaseStudyCard, LogoWall, CTA band, Breadcrumb, Tabs, Accordion (SSS), DownloadList, ReleaseNotes, Form renderer.
+## Component set (target)
+Header (mega menu), Footer, Hero (video/image), ProductCard, FeatureGrid, SpecTable, Edition cards (Request a Quote), CaseStudyCard, LogoWall, CTA band, Breadcrumb, Tabs, Accordion (FAQ), DownloadList, ReleaseNotes, Form renderer.

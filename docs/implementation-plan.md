@@ -1,56 +1,56 @@
-> Faz 8a çalışma kopyası. Kaynak plan sandbox dışında salt okunur: /Users/ozcelik/.claude/plans/imdi-yapmam-z-gereken-proje-greedy-lynx.md
-> 2026-11-06 karar: Umami Postgres gerektirdiği için Cloudflare Web Analytics; çerezsiz, analitik için çerez bandı gerekmez. Güncel SQLite/systemd mimarisi için memory-bank/projectbrief.md esas alınır.
+> Phase 8a working copy. Source plan is read-only outside sandbox: `/Users/ozcelik/.claude/plans/imdi-yapmam-z-gereken-proje-greedy-lynx.md`
+> 2026-11-06 decision: Cloudflare Web Analytics because Umami requires Postgres; cookieless, no cookie banner needed for analytics. For the current SQLite/systemd architecture, `memory-bank/projectbrief.md` is authoritative.
 
-# SoftMarket — Kurumsal Yazılım Tanıtım + Satış Sitesi Planı
+# SoftMarket — Enterprise software showcase + sales site plan
 
 ## Context
-Boş repo (`/Users/ozcelik/dev/softmarket`: sadece README). Kurumsal bir şirketin 5-20 yazılım ürününü tanıttığı ve kısmen online sattığı site. Ruh: Vizrt / Blackmagic gibi büyük ürün şirketi (ürün aileleri, çözümler, destek merkezi, indirmeler); tasarım kopyası değil. Görünüm: yeni nesil, minimal, profesyonel, kapsamlı ama abartısız. Site kendi sunucumuzda, **yapay zekâ ajanlarınca kolay yönetilebilir** olmalı (manuel panel tıklaması değil; API/MCP/script ile).
+Empty repo (`/Users/ozcelik/dev/softmarket`: README only). A site where an enterprise company showcases 5–20 software products and sells partially online. Spirit: major product company like Vizrt / Blackmagic (product families, solutions, support center, downloads); not a design copy. Look: modern, minimal, professional, comprehensive yet understated. The site must be self-hosted on our own server and **easily manageable by AI agents** (not manual panel clicking; via API/MCP/scripts).
 
-Kararlar (kullanıcı onaylı): Hibrit satış · Next.js + Payload CMS · TR + EN · Ürünler/Çözümler + Destek + Kurumsal + Müşteri portalı · iyzico + Stripe · site içi lisans modülü · Docker self-host · koyu ağırlıklı + açık bölümler · palet önerisi bizden.
+Decisions (user-approved): Hybrid sales · Next.js + Payload CMS · TR + EN · Products/Solutions + Support + Corporate + Customer portal · iyzico + Stripe · in-site licensing module · Docker self-host · dark-dominant + light sections · palette proposed by us.
 
 ---
 
-## 1. Teknoloji Yığını
+## 1. Tech stack
 
-| Katman | Seçim | Neden |
+| Layer | Choice | Why |
 |---|---|---|
-| Framework | Next.js 15 (App Router, RSC, TypeScript strict) | SEO, ISR, Payload ile tek uygulama |
-| CMS + backend | Payload CMS 3 (Next içine gömülü) | Self-host, tipli koleksiyonlar, auth, Local/REST API |
-| Veritabanı | PostgreSQL 16 (`@payloadcms/db-postgres`) | İlişkisel sipariş/lisans verisi |
-| Dosya | MinIO (S3 uyumlu, `@payloadcms/storage-s3`) | Görseller + installer dosyaları, imzalı indirme URL'leri |
-| UI | Tailwind CSS v4 + shadcn/ui (Radix) + lucide-react | Erişilebilir, token tabanlı |
-| Animasyon | Motion (framer-motion) — ölçülü | Scroll reveal, ürün vitrinleri |
-| Font | Geist Sans + Geist Mono (`next/font`) | Modern, nötr, teknik |
-| i18n | next-intl (`/tr`, `/en`, lokalize slug) + Payload localization | İki dil, hreflang |
-| Ödeme | Soyut `PaymentProvider` → iyzico (TRY) + Stripe (USD/EUR) | Para birimine/ülkeye göre yönlendirme |
-| E-posta | Payload nodemailer adapter (SMTP) + React Email şablonları | Self-host uyumlu |
-| Formlar | `@payloadcms/plugin-form-builder` | Demo/teklif/iletişim; CMS'ten yönetilir |
-| Arama | `@payloadcms/plugin-search` (Postgres) | Ürün/doküman/SSS araması |
-| SEO | `@payloadcms/plugin-seo`, sitemap, JSON-LD (Product, Organization), OG görselleri | |
-| Analitik | Cloudflare Web Analytics | Çerezsiz, KVKK dostu |
-| Captcha | Cloudflare Turnstile | Form spam koruması |
-| Test | Vitest (unit), Playwright (e2e) | |
-| Altyapı | Docker Compose: `app`, `postgres`, `minio`, `caddy` (otomatik TLS), Cloudflare Web Analytics (harici beacon) | Tek sunucu |
+| Framework | Next.js 15 (App Router, RSC, TypeScript strict) | SEO, ISR, single app with Payload |
+| CMS + backend | Payload CMS 3 (embedded in Next) | Self-host, typed collections, auth, Local/REST API |
+| Database | PostgreSQL 16 (`@payloadcms/db-postgres`) | Relational order/license data |
+| Files | MinIO (S3-compatible, `@payloadcms/storage-s3`) | Images + installer files, signed download URLs |
+| UI | Tailwind CSS v4 + shadcn/ui (Radix) + lucide-react | Accessible, token-based |
+| Animation | Motion (framer-motion) — restrained | Scroll reveal, product showcases |
+| Font | Geist Sans + Geist Mono (`next/font`) | Modern, neutral, technical |
+| i18n | next-intl (`/tr`, `/en`, localized slug) + Payload localization | Bilingual, hreflang |
+| Payments | Abstract `PaymentProvider` → iyzico (TRY) + Stripe (USD/EUR) | Routing by currency/country |
+| Email | Payload nodemailer adapter (SMTP) + React Email templates | Self-host compatible |
+| Forms | `@payloadcms/plugin-form-builder` | Demo/quote/contact; managed in CMS |
+| Search | `@payloadcms/plugin-search` (Postgres) | Product/doc/FAQ search |
+| SEO | `@payloadcms/plugin-seo`, sitemap, JSON-LD (Product, Organization), OG images | |
+| Analytics | Cloudflare Web Analytics | Cookieless, KVKK-friendly |
+| Captcha | Cloudflare Turnstile | Form spam protection |
+| Testing | Vitest (unit), Playwright (e2e) | |
+| Infrastructure | Docker Compose: `app`, `postgres`, `minio`, `caddy` (automatic TLS), Cloudflare Web Analytics (external beacon) | Single server |
 | CI/CD | GitHub Actions: lint → typecheck → test → build image → ssh deploy | |
-| Paket yön. | pnpm | |
+| Package mgr. | pnpm | |
 
-### AI ile yönetilebilirlik (kritik gereksinim)
-- **Payload MCP plugin** (`@payloadcms/plugin-mcp`; kurulumda sürüm doğrulanacak) → ajanlar ürün/sayfa/haber CRUD'u MCP üzerinden yapar.
-- Admin API key'li **REST/GraphQL** + tip üretimi (`payload generate:types`).
-- **`AGENTS.md`**: mimari, koleksiyonlar, komutlar, kurallar.
-- **`Makefile` / pnpm script'leri**: `dev`, `seed`, `migrate`, `backup`, `restore`, `deploy`, `logs`, `content:import <json>`.
-- İçerik **JSON seed/import** (`/content/*.json`) → ürünler toplu eklenebilir.
-- Migrations (`payload migrate`) kodda; yedekleme cron'u (pg_dump + MinIO mirror).
+### AI manageability (critical requirement)
+- **Payload MCP plugin** (`@payloadcms/plugin-mcp`; version to be verified at install) → agents perform product/page/news CRUD over MCP.
+- **REST/GraphQL** with admin API key + type generation (`payload generate:types`).
+- **`AGENTS.md`**: architecture, collections, commands, rules.
+- **`Makefile` / pnpm scripts**: `dev`, `seed`, `migrate`, `backup`, `restore`, `deploy`, `logs`, `content:import <json>`.
+- Content **JSON seed/import** (`/content/*.json`) → products can be added in bulk.
+- Migrations (`payload migrate`) in code; backup cron (`pg_dump` + MinIO mirror).
 
 ---
 
-## 2. Tasarım Sistemi
+## 2. Design system
 
-**Ton:** sinematik koyu vitrinler (hero, ürün tanıtım), açık ve okunaklı bilgi alanları (doküman, destek, portal, teknik özellikler). Büyük tipografi, bol boşluk, tek vurgu rengi, ürün ekran görüntüsü/video öne çıkar.
+**Tone:** cinematic dark showcases (hero, product showcase), light and legible information areas (docs, support, portal, technical specs). Large typography, generous whitespace, single accent color, product screenshots/videos front and center.
 
-**Palet (göz yormayan, saf siyah/beyaz yok):**
+**Palette (easy on the eyes, no pure black/white):**
 
-| Token | Koyu | Açık |
+| Token | Dark | Light |
 |---|---|---|
 | `bg` | `#0B0D10` | `#F7F8FA` |
 | `surface` | `#13161B` | `#FFFFFF` |
@@ -58,65 +58,65 @@ Kararlar (kullanıcı onaylı): Hibrit satış · Next.js + Payload CMS · TR + 
 | `border` | `#262B33` | `#E3E6EA` |
 | `text` | `#E7E9EC` | `#12161C` |
 | `text-muted` | `#9AA2AD` | `#5A6370` |
-| `accent` (tek marka rengi, kobalt) | `#4C7DFF` | `#2F5FE0` |
+| `accent` (single brand color, cobalt) | `#4C7DFF` | `#2F5FE0` |
 | `accent-hover` | `#6B93FF` | `#244CC0` |
-| `success` / `warning` / `danger` | `#2FB37A` / `#E0A63B` / `#E5574F` | aynı tonların koyu varyantı |
+| `success` / `warning` / `danger` | `#2FB37A` / `#E0A63B` / `#E5574F` | dark variants of the same tones |
 
-- Tüm renkler `globals.css`'te CSS değişkeni; marka değişirse tek dosya. Kontrast WCAG AA kontrol edilir.
-- Bölüm bazlı tema: `<Section theme="dark|light">`.
-- Bileşenler: Header (mega menü), Footer, Hero (video/görsel), ProductCard, FeatureGrid, SpecTable, PricingTable (satın al / teklif iste), CaseStudyCard, LogoWall, CTA band, Breadcrumb, Tabs, Accordion (SSS), DownloadList, ReleaseNotes, Form renderer.
-
----
-
-## 3. Site Haritası (TR / EN)
-
-**Header:** Ürünler (mega menü: aileler → ürünler) · Çözümler (sektörler + kullanım senaryoları) · Destek · Şirket · Arama · Dil · Hesabım · **[Demo İste]**
-
-- `/` Ana sayfa: hero, öne çıkan ürün aileleri, çözümler, referans logoları, vaka çalışması, haberler, CTA
-- `/urunler` katalog (aile filtresi), `/urunler/[aile]`, `/urunler/[aile]/[urun]`
-  - Ürün sayfası sekmeleri: Genel Bakış · Özellikler · Teknik Özellikler & Sistem Gereksinimleri · Sürümler & Fiyat · İndirmeler · Dokümantasyon
-  - Sürüm (edition) bazında: `purchasable` → **Satın Al**, değilse → **Teklif İste**
-- `/cozumler`, `/cozumler/[slug]` (sektör/senaryo → ilgili ürünler + vaka)
-- `/destek`: `indirmeler` (ürün/sürüm/OS filtreli), `dokumantasyon/[urun]/[slug]`, `surum-notlari`, `sss`, `talep` (destek talebi), `iletisim`
-- Şirket: `hakkimizda`, `referanslar` + `referanslar/[slug]` (vaka), `haberler` + `[slug]`, `kariyer` + `[slug]`, `is-ortaklari`, `iletisim`
-- Dönüşüm: `demo-talep`, `teklif-iste`, `satin-al/[edition]` (checkout), `siparis/[id]/tamamlandi`
-- **Müşteri portalı** `/hesap`: Özet · Lisanslarım · İndirmelerim · Siparişler & Faturalar · Destek Taleplerim · Profil (giriş/kayıt/şifre sıfırlama)
-- Yasal: KVKK aydınlatma, gizlilik, çerez politikası (+ çerez banner), **mesafeli satış sözleşmesi**, **ön bilgilendirme formu**, iade/iptal, kullanım koşulları, EULA
-- `/admin` Payload paneli
+- All colors are CSS variables in `globals.css`; if branding changes, only one file changes. Contrast checked for WCAG AA.
+- Per-section theme: `<Section theme="dark|light">`.
+- Components: Header (mega menu), Footer, Hero (video/image), ProductCard, FeatureGrid, SpecTable, PricingTable (buy / request quote), CaseStudyCard, LogoWall, CTA band, Breadcrumb, Tabs, Accordion (FAQ), DownloadList, ReleaseNotes, Form renderer.
 
 ---
 
-## 4. Veri Modeli (Payload Koleksiyonları)
+## 3. Site map (TR / EN)
 
-- **Kimlik:** `users` (admin/editör, rol tabanlı) · `customers` (portal auth, firma bilgisi, vergi no)
-- **Katalog:** `product-families` · `products` (blok tabanlı sayfa, özellikler, spec, sistem gereksinimi, medya) · `editions` (ürün sürümü/paketi: fiyat TRY/USD/EUR, `purchasable`, lisans tipi: süreli/kalıcı, koltuk)
-- **Pazarlama:** `solutions` · `industries` · `case-studies` · `posts` · `careers` · `partners` · `pages` (blok tabanlı serbest sayfa) · `media`
-- **Destek:** `docs` (ürün bazlı, sıralı) · `releases` (sürüm no, notlar, dosyalar) · `downloads` (dosya, OS, ürün, `access: public|licensed`) · `faqs` · `support-tickets` (+ mesajlar)
-- **Ticaret:** `orders` (kalemler, tutar, para birimi, sağlayıcı, durum) · `licenses` (anahtar, müşteri, edition, başlangıç/bitiş, koltuk, durum)
-- **Formlar:** form-builder `forms` + `form-submissions` (lead)
-- **Globals:** `header`, `footer`, `site-settings` (iletişim, sosyal, yasal metin bağlantıları)
-- Tüm içerik alanları `localized: true` (TR/EN). Access control: public read yalnız yayınlanmış (drafts + versions açık).
+**Header:** `Ürünler` ("Products", mega menu: families → products) · `Çözümler` ("Solutions", industries + use cases) · `Destek` ("Support") · `Şirket` ("Company") · Search · Language · `Hesabım` ("My Account") · **`[Demo İste]`** ("Request Demo")
 
----
-
-## 5. Satış ve Lisans Akışı
-
-1. Edition sayfasında **Satın Al** → `satin-al/[edition]`: müşteri girişi/kayıt, fatura bilgisi, mesafeli satış + ön bilgilendirme onayı.
-2. Para birimi TRY → iyzico Checkout Form; USD/EUR → Stripe Checkout.
-3. Webhook (`/api/webhooks/iyzico`, `/api/webhooks/stripe`) imza doğrulama → `orders.status=paid` (idempotent).
-4. `licenses` oluştur (anahtar: kriptografik rastgele, formatlı) → e-posta + portalda görünür; `licensed` indirmeler açılır.
-5. Kurumsal (purchasable=false) → **Teklif İste** formu → lead e-postası + admin kaydı.
-- Kapsam dışı v1: e-Fatura/e-Arşiv entegrasyonu (sonra Paraşüt vb.), yazılım içi aktivasyon API'si (lisans modeli buna hazır tasarlanır), abonelik yenileme otomasyonu.
+- `/` Home page: hero, featured product families, solutions, customer logos, case study, news, CTA
+- `/urunler` catalog (family filter), `/urunler/[aile]`, `/urunler/[aile]/[urun]`
+  - Product page tabs: Overview · Features · Specs & System Requirements · Editions & Pricing · Downloads · Documentation
+  - Per edition: `purchasable` → **Buy** (`Satın Al`), otherwise → **Request a Quote** (`Teklif İste`)
+- `/cozumler`, `/cozumler/[slug]` (industry/scenario → related products + case study)
+- `/destek`: `indirmeler` (filtered by product/edition/OS), `dokumantasyon/[urun]/[slug]`, `surum-notlari`, `sss`, `talep` (support ticket), `iletisim`
+- Company: `hakkimizda`, `referanslar` + `referanslar/[slug]` (case study), `haberler` + `[slug]`, `kariyer` + `[slug]`, `is-ortaklari`, `iletisim`
+- Conversion: `demo-talep`, `teklif-iste`, `satin-al/[edition]` (checkout), `siparis/[id]/tamamlandi`
+- **Customer portal** `/hesap`: Overview · My Licenses · My Downloads · Orders & Invoices · My Support Tickets · Profile (login/register/password reset)
+- Legal: KVKK privacy notice, privacy policy, cookie policy (+ cookie banner), **distance sales agreement**, **pre-information form**, refund/cancellation, terms of use, EULA
+- `/admin` Payload panel
 
 ---
 
-## 6. Proje Yapısı
+## 4. Data model (Payload collections)
 
-```
+- **Identity:** `users` (admin/editor, role-based) · `customers` (portal auth, company info, tax ID)
+- **Catalog:** `product-families` · `products` (block-based page, features, specs, system requirements, media) · `editions` (product edition/package: price TRY/USD/EUR, `purchasable`, license type: subscription/perpetual, seats)
+- **Marketing:** `solutions` · `industries` · `case-studies` · `posts` · `careers` · `partners` · `pages` (block-based freeform page) · `media`
+- **Support:** `docs` (per-product, ordered) · `releases` (version number, notes, files) · `downloads` (file, OS, product, `access: public|licensed`) · `faqs` · `support-tickets` (+ messages)
+- **Commerce:** `orders` (items, amount, currency, provider, status) · `licenses` (key, customer, edition, start/end, seats, status)
+- **Forms:** form-builder `forms` + `form-submissions` (lead)
+- **Globals:** `header`, `footer`, `site-settings` (contact, social, legal text links)
+- All content fields `localized: true` (TR/EN). Access control: public read published only (drafts + versions enabled).
+
+---
+
+## 5. Sales and licensing flow
+
+1. On edition page **Buy** (`Satın Al`) → `satin-al/[edition]`: customer login/register, billing info, distance sales + pre-information consent.
+2. Currency TRY → iyzico Checkout Form; USD/EUR → Stripe Checkout.
+3. Webhook (`/api/webhooks/iyzico`, `/api/webhooks/stripe`) signature verification → `orders.status=paid` (idempotent).
+4. Create `licenses` (key: cryptographically random, formatted) → email + visible in portal; `licensed` downloads unlock.
+5. Enterprise (`purchasable=false`) → **Request a Quote** (`Teklif İste`) form → lead email + admin record.
+- Out of scope v1: e-Invoice/e-Archive integration (later `Paraşüt` etc.), in-software activation API (license model designed ready for it), subscription renewal automation.
+
+---
+
+## 6. Project structure
+
+```text
 softmarket/
   AGENTS.md  Makefile  docker-compose.yml  Caddyfile  .env.example
   src/
-    app/(frontend)/[locale]/...     # site sayfaları
+    app/(frontend)/[locale]/...     # site pages
     app/(frontend)/[locale]/hesap/  # portal
     app/(payload)/admin/...         # Payload admin
     app/api/webhooks/{iyzico,stripe}/route.ts
@@ -131,31 +131,31 @@ softmarket/
 
 ---
 
-## 7. Uygulama Fazları ve Ajan Dağılımı (`takim-lideri` skill'i)
+## 7. Implementation phases and agent allocation (`takim-lideri` skill)
 
-Her fazda: keşif/özet → üretim → **çapraz QA** (Claude yazdıysa GPT 6.1 Sol/Terra High denetler; yazan ≠ denetleyen).
+In each phase: discovery/summary → production → **cross-QA** (if Claude wrote it, GPT 6.1 Sol/Terra High audits; author ≠ auditor).
 
-| Faz | İş | Ajan (effort) | QA |
+| Phase | Work | Agent (effort) | QA |
 |---|---|---|---|
-| 0 | Repo iskeleti, `create-payload-app` (Next+Postgres), Docker Compose, Caddy, `.env.example`, Makefile, AGENTS.md | GPT 6 Luna (Low) + GPT 6.1 Sol (Medium) | Gemini 3.8 Flash özet kontrol |
-| 1 | Mimari çekirdek: koleksiyon şeması, access control, localization, ödeme soyutlaması arayüzü | Claude Opus 5.5 alt ajan (Medium) | GPT 6.1 Terra (High) |
-| 2 | Tasarım sistemi: tokenlar, tema, shadcn bileşenleri, Header/Footer/mega menü | Claude Sonnet 5.5 (Medium) | GPT 6.1 Sol (High) |
-| 3 | Sayfalar: ana sayfa, ürün katalog/detay, çözümler, kurumsal sayfalar, blok renderer | Claude Sonnet 5.5 (Medium) | GPT 6.1 Sol (High) |
-| 4 | Destek merkezi: docs, releases, downloads (imzalı URL), SSS, arama, destek talebi | GPT 6.1 Sol (Medium) | Claude Sonnet ≠ yazan; Sol yazdı → Terra (High) |
-| 5 | Ödeme (iyzico + Stripe), webhook, sipariş, lisans üretimi, e-posta | GPT 6.1 Terra (High) | GPT 6.1 Sol (High) sıfır bağlam |
-| 6 | Müşteri portalı (`/hesap`) | Claude Sonnet 5.5 (Medium) | GPT 6.1 Sol (High) |
-| 7 | i18n metinleri, UI yazıları, hata mesajları, yasal metin taslakları, README | Claude Haiku 5.5 (Low) | — (hukuki metin: kullanıcı/hukukçu onayı) |
-| 8 | Seed içerik (5-20 örnek ürün JSON), MCP plugin, backup/deploy script | GPT 6 Luna (Low) + GPT 6.1 Sol (Medium) | Terra (High) deploy/güvenlik |
-| 9 | SEO, performans, erişilebilirlik, e2e testler | GPT 6.1 Sol (Medium) | Gemini 3.8 Flash rapor özeti |
+| 0 | Repo skeleton, `create-payload-app` (Next+Postgres), Docker Compose, Caddy, `.env.example`, Makefile, `AGENTS.md` | GPT 6 Luna (Low) + GPT 6.1 Sol (Medium) | Gemini 3.8 Flash summary check |
+| 1 | Architecture core: collection schema, access control, localization, payment abstraction interface | Claude Opus 5.5 subagent (Medium) | GPT 6.1 Terra (High) |
+| 2 | Design system: tokens, theme, shadcn components, Header/Footer/mega menu | Claude Sonnet 5.5 (Medium) | GPT 6.1 Sol (High) |
+| 3 | Pages: home page, product catalog/detail, solutions, corporate pages, block renderer | Claude Sonnet 5.5 (Medium) | GPT 6.1 Sol (High) |
+| 4 | Support center: docs, releases, downloads (signed URL), FAQ, search, support ticket | GPT 6.1 Sol (Medium) | Claude Sonnet ≠ author; Sol wrote → Terra (High) |
+| 5 | Payments (iyzico + Stripe), webhook, orders, license generation, email | GPT 6.1 Terra (High) | GPT 6.1 Sol (High) zero context |
+| 6 | Customer portal (`/hesap`) | Claude Sonnet 5.5 (Medium) | GPT 6.1 Sol (High) |
+| 7 | i18n strings, UI copy, error messages, legal text drafts, README | Claude Haiku 5.5 (Low) | — (legal text: user/counsel approval) |
+| 8 | Seed content (5–20 sample products JSON), MCP plugin, backup/deploy script | GPT 6 Luna (Low) + GPT 6.1 Sol (Medium) | Terra (High) deploy/security |
+| 9 | SEO, performance, accessibility, e2e tests | GPT 6.1 Sol (Medium) | Gemini 3.8 Flash report summary |
 
-Tıkanıklıkta: GPT 6 Astra + Gemini 4 Argon danışmanlığı. Kota dengesi: Claude yoğun faz (2-3) sonrası 4-5 GPT'ye.
+On blockers: GPT 6 Astra + Gemini 4 Argon consultation. Quota balance: after Claude-heavy phases (2–3), shift 4–5 to GPT.
 
 ---
 
-## 8. Doğrulama
-- `make dev` → `localhost:3000/tr`, `/en`, `/admin` açılır; seed sonrası ürün/aile/çözüm sayfaları dolu.
-- `pnpm typecheck && pnpm lint && pnpm test` (Vitest: ödeme imza doğrulama, lisans üretimi, access control).
-- Playwright e2e: katalog → ürün → Satın Al (iyzico sandbox + Stripe test mode) → webhook → lisans portalda görünür → licensed indirme açılır; Teklif İste formu gönderimi; dil değiştirme + hreflang.
-- Lighthouse ≥ 90 (Performance/SEO/A11y), WCAG AA kontrast kontrolü.
-- MCP üzerinden ajan ile ürün ekle/güncelle testi.
-- `docker compose up` staging sunucuda; Caddy TLS, backup/restore denemesi.
+## 8. Verification
+- `make dev` → `localhost:3000/tr`, `/en`, `/admin` open; after seed, product/family/solution pages are populated.
+- `pnpm typecheck && pnpm lint && pnpm test` (Vitest: payment signature verification, license generation, access control).
+- Playwright e2e: catalog → product → Buy (iyzico sandbox + Stripe test mode) → webhook → license visible in portal → licensed download unlocks; Request a Quote form submission; language switch + hreflang.
+- Lighthouse ≥ 90 (Performance/SEO/A11y), WCAG AA contrast check.
+- Test adding/updating products via agent over MCP.
+- `docker compose up` on staging server; Caddy TLS, backup/restore rehearsal.

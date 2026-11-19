@@ -1,40 +1,40 @@
 # Memory Bank
 
-## Nedir
-Memory Bank, yapay zekâ ajanının oturumlar arasında bağlamı kaybetmemesi için projenin kalıcı özetidir. Her oturumda ajanın hafızası sıfırlanır; proje bilgisi yalnızca bu dosyalardan ve kod tabanından gelir.
+## What it is
+The Memory Bank is the persistent summary of the project, so the AI agent does not lose context between sessions. The agent's memory is reset in every session; project knowledge comes only from these files and the codebase.
 
-## Dosya hiyerarşisi
+## File hierarchy
 
 ```
-projectbrief.md          (temel: kapsam, kararlar, hedefler; tek doğru kaynak)
-   ├── productContext.md  (neden var, UX, tasarım, palet)
-   ├── systemPatterns.md  (mimari, desenler, kritik akışlar)
-   └── techContext.md     (sürümler, kurulum, kısıtlar, araçlar)
+projectbrief.md          (foundation: scope, decisions, goals; single source of truth)
+   ├── productContext.md  (why it exists, UX, design, palette)
+   ├── systemPatterns.md  (architecture, patterns, critical flows)
+   └── techContext.md     (versions, setup, constraints, tools)
             │
             ▼
-      activeContext.md    (şu an: odak, son değişiklikler, sonraki adımlar)
+      activeContext.md    (now: focus, recent changes, next steps)
             │
             ▼
-       progress.md        (çalışanlar, kalanlar, bilinen sorunlar, karar evrimi)
+       progress.md        (what works, what remains, known issues, decision evolution)
 ```
 
-- Üstteki dosyalar daha kararlıdır; alttakiler daha sık değişir.
-- Çelişki olursa daha üstteki dosya esastır. `activeContext.md` ve `progress.md` güncel durumu gösterir.
+- Files at the top are more stable; files at the bottom change more often.
+- If there is a conflict, the file higher in the hierarchy is authoritative. `activeContext.md` and `progress.md` show the current status.
 
-## Zorunlu okuma
-**Her görev başında `memory-bank/` altındaki TÜM dosyalar okunur.** Sıra: `projectbrief.md` → `productContext.md` → `systemPatterns.md` → `techContext.md` → `activeContext.md` → `progress.md`. Bu README'yi okumak da zorunludur.
+## Mandatory reading
+**At the start of every task, read ALL files under `memory-bank/`.** Order: `projectbrief.md` → `productContext.md` → `systemPatterns.md` → `techContext.md` → `activeContext.md` → `progress.md`. Reading this README is also mandatory.
 
-Okumadan kod değiştirme, plan yapma veya commit önerme.
+Do not change code, make plans, or suggest commits without reading.
 
-## Güncelleme tetikleyicileri
-- **Yeni desen** veya mimari karar eklendiğinde → `systemPatterns.md` (ve gerekiyorsa `techContext.md`).
-- **Önemli değişiklik** sonrası (faz tamamlandı, QA geçti, dosya/rota eklendi, komut değişti) → `activeContext.md` ve `progress.md`.
-- **Kapsam veya karar değişirse** → `projectbrief.md` (kullanıcı onayıyla).
-- **Kullanıcı "update memory bank" dediğinde** → TÜM dosyalar gözden geçirilir ve güncellenir.
-- **Bağlam belirsizse** (eski bilgi şüphesi, dosyalar arası çelişki) → kodu ve kaynakları kontrol et, sonra ilgili dosyayı düzelt.
+## Update triggers
+- **New pattern** or architecture decision → `systemPatterns.md` (and `techContext.md` if needed).
+- **Significant change** after a phase (phase completed, QA passed, file/route added, command changed) → `activeContext.md` and `progress.md`.
+- **Scope or decision changes** → `projectbrief.md` (with user approval).
+- **When the user says "update memory bank"** → ALL files are reviewed and updated.
+- **When context is uncertain** (suspected stale information, conflicts between files) → check the code and sources, then fix the relevant file.
 
-## Yazım kuralları
-- Kısa, olgusal, taranabilir. Tahmin ve uydurma yok; emin değilsen "doğrulanmadı" yaz.
-- Yollar, komutlar, sürümler ve teknik terimler aynen yazılır.
-- Her bilgi bir yerde yazılır; tekrar yoktur.
-- Tipik dosya 40-120 satır.
+## Writing rules
+- Short, factual, scannable. No guesses or fabrication; if unsure, write "not verified".
+- Paths, commands, versions, and technical terms are written exactly as they are.
+- Each piece of information is written in one place; no repetition.
+- A typical file is 40-120 lines.

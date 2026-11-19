@@ -37,7 +37,7 @@ Turkish-character lines (`[çğıöşüÇĞİÖŞÜ]`) per area:
 | `src/globals` | 4 | 79 | Bilingual labels; some TR-only `description` strings (Integrations.ts) |
 | `src/lib` (excl. admin-i18n) | 30 | ~180 | `slugify` TR map (legit), legal placeholder tokens `[ŞİRKET UNVANI]` (legit content tokens), `visual-editor-labels.ts` (bilingual), `validation-messages.ts` (bilingual), **TR-only**: `media-upload.ts:41` APIError, `brand.ts:140` contrast error, `preview-url.ts:25` breakpoint label |
 | `src/fields` | 4 | 38 | Slash-bilingual validation strings (`'Slug yalnızca … / Slug may only …'`) |
-| `src/app`, `src/components`, `src/editor` | 10 | 15 | Comments quoting UI copy ("Teklif İste"), `global-not-found.tsx` bilingual h1, OG `alt` |
+| `src/app`, `src/components`, `src/editor` | 10 | 15 | Comments quoting UI copy (`Teklif İste`, Request a Quote), `global-not-found.tsx` bilingual h1, OG `alt` |
 | `scripts` | 3 | 25 | `admin-block-placeholders.mjs` (20), `e2e-seed-payments.ts` (4) |
 | `tests/unit` | 46 | 237 | Mostly assertions on TR UI text / TR URLs; 5 Turkish test names |
 | `tests/e2e` | 5 | 40 | TR assertions; 4 Turkish test names |

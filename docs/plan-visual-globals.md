@@ -1,293 +1,293 @@
-# Plan: site çerçevesini görsel düzenleme (header, footer, menüler, marka)
+# Plan: Visual editing for the site chrome (header, footer, menus, branding)
 
 > **CANCELLED — owner decision, 2026-11-18.** Wix-style header and footer editing requires custom code that Payload does not provide. G1 runtime changes have been reverted, and G2–G7 were dropped. The plan and implementation record below are historical.
 
-> Durum: **taslak plan (2026-11-17)**. Kod, şema veya migration değişmedi. Uygulama G0 doğrulamasıyla başlar ve her faz sonunda kullanıcı onayı beklenir.
-> Kaynaklar: `AGENTS.md`, `memory-bank/*`, `docs/plan-visual-editor.md` (Kalıcı kurallar, V3b, V5 kaydı, V5 denetim notu, P1 kapanış kaydı), `docs/editor-pilot/decision.md`, `docs/editor-guide.md` §2.10. Mevcut kod `main` 1a8969e üzerinden okundu. Payload 3.93.0 kaynakları `node_modules` içinde doğrulandı.
+> Status: **draft plan (2026-11-17)**. No code, schema, or migration changed. Implementation starts with G0 verification, and user approval is awaited at the end of each phase.
+> Sources: `AGENTS.md`, `memory-bank/*`, `docs/plan-visual-editor.md` (Permanent rules, V3b, V5 record, V5 audit note, P1 closure record), `docs/editor-pilot/decision.md`, `docs/editor-guide.md` §2.10. Existing code read from `main` 1a8969e. Payload 3.93.0 sources verified in `node_modules`.
 
-## Kullanıcı isteği
+## User request
 
-- Kullanıcının sözleriyle: "sitedeki header, footer ve menü gibi sitenin komponentlerinin yerleri de önizleme bölümü olacak ve önizleme üstünde değiştirilebilir olacak yani, text araçlarına mecbur kalmadan da önizlemeden wix tarzında düzenleme yapılacak."
-- Yorum: V5 görsel editörü (Payload-native canvas: Live Preview iframe ve köprü) şu bileşenleri de düzenleyebilmeli: header, footer, ana menü, mega menü, mobil menü, duyuru bandı, yardımcı çubuk, logo, site adı, slogan, iletişim bilgileri ve sosyal bağlantılar. Kullanıcı bu öğeleri önizlemede seçer ve metni yerinde düzenler. Menü öğesini ekler, siler ya da sürükleyerek sıralar. Bağlantı hedefini küçük bir panelden, logoyu da medya çekmecesinden seçer.
+- In the user's words: "components of the site such as the header, footer, and menu will also have a preview section and be editable directly on the preview—Wix-style editing from the preview without having to rely on text tools."
+- Interpretation: the V5 visual editor (Payload-native canvas: Live Preview iframe and bridge) must also be able to edit these components: header, footer, main menu, mega menu, mobile menu, announcement bar, utility bar, logo, site name, tagline, contact info, and social links. The user selects these items in the preview and edits text in place. They add, delete, or drag-and-drop reorder menu items. They pick the link target from a small panel and the logo from the media drawer.
 
-## Kalıcı kurallar (her fazda geçerli; ihlal edilirse faz reddedilir)
+## Permanent rules (apply to every phase; violations reject the phase)
 
-1. **Tek veri kaynağı Payload global'leridir:** `header`, `footer` ve `site-settings`. Opak editör durumu saklanmaz. Mevcut alan adları, seçenekleri ve `defaultValue` değerleri değişmez. Yalnız ekleme yapılır (Header/Footer dosyalarındaki "F7: append-only" notu).
-2. **Bütün yazımlar Payload formundan geçer.** Köprü API'ye yazmaz. Host (admin), mesajı allowlist ile yeniden doğrular, değişikliği Payload form API'siyle uygular (`dispatchFields`, `addFieldRow`, `moveFieldRow`, `removeFieldRow`) ve sunucu doğrulaması ile erişim zincirini kullanır. Tek istisna G3'teki "varsayılan menüyü kayda dönüştür" uç noktasıdır. Bu uç nokta staff oturumu, aynı origin ve `editorVersion` ön koşulu ister ve yalnız taslak yazar.
-3. **Ziyaretçi taslağı görmez.** Header ve footer taslakları yalnız draft modunda ve her istekte yeniden doğrulanan staff oturumuyla okunur (`readAs`/`getPreviewUser`). Autosave önbelleği yenilemez. Önbellek yalnız yayınla yenilenir.
-4. **Public/ISR HTML'i bayt bayt aynı kalır.** `data-chrome-*` işaretleri, rozetler ve "ziyaretçiye görünmüyor" öğeleri yalnız editing render'da basılır. Kanıt için `<header>` ve `<footer>` HTML'i, değişiklik öncesi temelle karşılaştırılır (V2 deseni).
-5. **Public bundle'a editör kodu girmez.** Ana sayfa JS gzip ≤ 130 KB olmalı. Kanıt `tests/unit/client-bundle-guard.test.ts`. `src/lib/header-nav.ts` içine yalnız birkaç baytlık "sabitlenmiş panel" kontrolü eklenebilir, ölçüm farkı kayda geçer.
-6. **Güvenlik korunur.** postMessage'da iki yönde `origin === location.origin` ve `event.source` eşleşmesi aranır, zod/mini strict şema kullanılır. Köprü URL değeri taşımaz. Bağlantı adresi admin panelindeki forma girilir ve sunucu doğrular (`javascript:`, `data:`, `vbscript:` ve `//` reddedilir). `/api/preview` yalnız staff'a açılır. Draft yanıtları `private, no-store` olur.
-7. **Migration kuralları** (`plan-visual-editor.md` kural 6): önce DB kopyasında çalıştırılır. Up yalnız `CREATE TABLE`, `ADD COLUMN`, `CREATE INDEX` ve yeni kolona yönelik `UPDATE` (backfill) içerir. `DROP`, `DELETE` ve `__new_` yasaktır. Down yalnız kendi tablo, kolon ve indeksini kaldırır. Canlıya uygulamadan önce WAL/SHM dahil yedek ve snapshot alınır.
-8. Görev açıkça istemedikçe 3100 dev sunucusuna, canlı DB'ye ve `.next` klasörüne dokunulmaz. Build `NEXT_DIST_DIR=.next-<ad>`, QA portları 3200, 3300 ve 3400'dür. Süreç öldürülmez.
+1. **The single source of truth is Payload globals:** `header`, `footer`, and `site-settings`. No opaque editor state is stored. Existing field names, options, and `defaultValue` values do not change. Additive changes only (the "F7: append-only" note in the Header/Footer files).
+2. **All writes go through the Payload form.** The bridge does not write to the API. The host (admin) re-validates the message against an allowlist, applies the change via the Payload form API (`dispatchFields`, `addFieldRow`, `moveFieldRow`, `removeFieldRow`), and uses server validation and the access chain. The only exception is the "materialize default menu into a record" endpoint in G3. This endpoint requires a staff session, same origin, and an `editorVersion` precondition, and writes only a draft.
+3. **Visitors never see drafts.** Header and footer drafts are read only in draft mode and with a staff session re-verified on every request (`readAs`/`getPreviewUser`). Autosave does not refresh the cache. The cache is refreshed only on publish.
+4. **Public/ISR HTML stays byte-for-byte identical.** `data-chrome-*` markers, badges, and "not visible to visitors" elements are emitted only in editing render. For proof, `<header>` and `<footer>` HTML is compared against the pre-change baseline (V2 pattern).
+5. **No editor code enters the public bundle.** Home page JS gzip must be ≤ 130 KB. Proof: `tests/unit/client-bundle-guard.test.ts`. Only a few-byte "pinned panel" check may be added inside `src/lib/header-nav.ts`, with the measured difference recorded.
+6. **Security is preserved.** In `postMessage`, `origin === location.origin` and `event.source` match are checked in both directions, and a strict zod/mini schema is used. The bridge does not carry URL values. The link address is entered in the admin panel form and validated on the server (`javascript:`, `data:`, `vbscript:`, and `//` are rejected). `/api/preview` is open to staff only. Draft responses are `private, no-store`.
+7. **Migration rules** (`plan-visual-editor.md` rule 6): run on a DB copy first. Up contains only `CREATE TABLE`, `ADD COLUMN`, `CREATE INDEX`, and `UPDATE` (backfill) targeting the new column. `DROP`, `DELETE`, and `__new_` are forbidden. Down removes only its own tables, columns, and indexes. Before applying to live, take a backup including WAL/SHM and a snapshot.
+8. Unless explicitly requested by the task, do not touch the 3100 dev server, the live DB, or the `.next` folder. Builds use `NEXT_DIST_DIR=.next-<name>`, and QA ports are 3200, 3300, and 3400. Processes are not killed.
 
 ---
 
-## 1. Mevcut durum (kod gerçekliği)
+## 1. Current state (code reality)
 
-| Konu | Bugün | Plan için sonucu |
+| Topic | Current state | Consequence for the plan |
 |---|---|---|
-| Global'ler | `header` (navItems ≤8 → children / megaMenu `products\|solutions\|custom` → columns ≤4 → links ≤8 + featured; cta.link/secondary; announcement; utility.links ≤4 + 3 anahtar), `footer` (columns ≤6 → links; legalLinks; copyright; brandBlurb; showContact/showSocial; newsletter), `site-settings` (siteName, tagline, logo, logoDark, favicon, contact, social[] … commerce/company/legal). **Hiçbirinde `versions` yok.** | Live Preview'da her kayıt anında yayına girer. Taslak için şema değişikliği gerekir (G1). |
-| Erişim | header ve footer: `update: isAdminOrEditor`. site-settings: `update: isAdmin`. | Editör rolü logo, site adı ve sosyal bağlantıları değiştiremez. Bunlar canvas'ta salt okunur rozetle gösterilir. |
-| Bağlantı alanı | `linkField()`: `type` `internal\|external\|route` (istekteki "custom" = `external`), `reference` (LINKABLE_COLLECTIONS, 9 koleksiyon), `route` (LINK_ROUTES) + `routeParam`, `url` (lokalize). **`url` alanında sunucu doğrulaması yok.** Güvenlik yalnız render'daki `safeHref` ile sağlanıyor. | G1'de şemasız `validate` eklenir: `https?:`, `mailto:`, `tel:` ve `/` ile başlayan göreli yol kabul edilir. Mevcut seed verisinde test edilir. |
-| Yükleyiciler | `getHeaderNav`/`getFooterData` (`src/lib/site.ts`): `draft:false`, anonim. Bağlantıyı çözemeyen satırı, yayında olmayan hedefi ve ödeme kapalıyken satış yasal sayfasını (`resolvePublicLink` + `isSalesLegalTarget`, P3/P7) **atar**. Boş başlıklı kolonu atar. Satır `id`'si `NavItem`'a taşınmaz. | Render edilen öğe kayıtlı satıra eşlenemiyor. Editing render satır kimliğini taşımalı ve atılan öğeleri rozetle göstermeli (G2). |
-| Yedekler | navItems boşsa i18n'den sabit menü, CTA boşsa `requestDemo → /demo-talep`, footer kolonları veya legal boşsa i18n yedeği kullanılır. | Bu öğelerin kaydı yok. Düzenlenebilmeleri için önce kayda dönüştürülmeleri gerekir (G3). |
-| Mega menü | Paneller HTML'de gizli durur. `initMegaNav` hover/click gecikmesiyle açar. Dışarı tıklama, odak kaybı ve panel içindeki link tıklaması menüyü kapatır. | Önizlemede açık tutma gerekir. Bunun için `data-canvas-pinned` kontrolü kullanılır (G2). |
-| Mobil menü | Native `<dialog>` + `showModal()`: top layer, sayfa inert, Esc kapatır (`initSheet`). | Köprünün seçim katmanı dialog'un altında ve inert kalır. Dialog açıkken katman dialog'un içine bağlanmalı (G4). |
-| Duyuru bandı | Kapatma `localStorage` (`sm-announcement-dismissed`) ile hatırlanır. | Editing render'da her zaman görünür olmalı. |
-| Payload 3.93 global Live Preview | `isLivePreviewEnabled` root `livePreview.globals` ya da global `admin.livePreview` değerini okur. Document view (`@payloadcms/next/dist/views/Document`) globals için de `openByDefault`'u uygular. `livePreviewURL` fonksiyonu `globalConfig` alır. Global kontrol slotu `admin.components.elements.beforeDocumentControls` yolundadır (koleksiyonda `edit.beforeDocumentControls`). Globals `versions.drafts.autosave` destekler. `lockDocuments` globals için vardır. | Teknik yol açık. Form API'nin global görünümde aynı çalıştığı G0'da kanıtlanır. |
-| Önbellek | `withGlobalRevalidation`: header, footer ve site-settings'in **her** değişikliği `revalidatePath('/', 'layout')` çağırır. Ödeme yeteneği açıkken `commerceRenderBoundary()` her sayfayı istek başına render eder. | Taslak eklenince yenileme yalnız yayında çalışmalı. Aksi halde autosave her 2 saniyede tüm siteyi geçersiz kılar. |
-| Import ve MCP | `content:import` globals için `updateGlobal` çağırır ve `_status` göndermez. MCP: header, footer ve site-settings için find/update. | Taslaklı global'de `_status: 'published'` zorunlu hale gelir. Importer ve AGENTS tarifi güncellenir. |
-| V5 eşzamanlılığı | `editorVersion` sanal alanı ve `guardEditorVersion` yalnız koleksiyon kancalarıyla (`findByID`) çalışıyor. `db-serial-transactions` süreç içinde transaction'ları sıraya koyuyor. | Global eşdeğeri gerekir: `GlobalBeforeChangeHook` + `findGlobal({ draft:true, req })` (G1). |
+| Globals | `header` (navItems ≤8 → children / megaMenu `products\|solutions\|custom` → columns ≤4 → links ≤8 + featured; cta.link/secondary; announcement; utility.links ≤4 + 3 switches), `footer` (columns ≤6 → links; legalLinks; copyright; brandBlurb; showContact/showSocial; newsletter), `site-settings` (siteName, tagline, logo, logoDark, favicon, contact, social[] … commerce/company/legal). **None of them have `versions`.** | In Live Preview, every save goes live immediately. Drafts require a schema change (G1). |
+| Access | header and footer: `update: isAdminOrEditor`. site-settings: `update: isAdmin`. | The editor role cannot change logo, site name, or social links. These are shown with a read-only badge on the canvas. |
+| Link field | `linkField()`: `type` `internal\|external\|route` ("custom" in the request = `external`), `reference` (LINKABLE_COLLECTIONS, 9 collections), `route` (LINK_ROUTES) + `routeParam`, `url` (localized). **No server validation on the `url` field.** Security is provided only by `safeHref` at render time. | In G1, schemaless `validate` is added: `https?:`, `mailto:`, `tel:`, and relative paths starting with `/` are accepted. Tested against existing seed data. |
+| Loaders | `getHeaderNav`/`getFooterData` (`src/lib/site.ts`): `draft:false`, anonymous. Drops rows with unresolvable links, unpublished targets, and sales legal pages when payments are off (`resolvePublicLink` + `isSalesLegalTarget`, P3/P7). Drops columns with empty titles. Row `id` is not carried onto `NavItem`. | Rendered items cannot be mapped back to saved rows. Editing render must carry row IDs and show dropped items with a badge (G2). |
+| Fallbacks | When `navItems` is empty, a static menu from i18n is used; when CTA is empty, `requestDemo → /demo-talep`; when footer columns or legal are empty, an i18n fallback is used. | These items have no record. To be editable, they must first be materialized into a record (G3). |
+| Mega menu | Panels sit hidden in HTML. `initMegaNav` opens them with hover/click delay. Clicking outside, losing focus, or clicking a link inside the panel closes the menu. | Needs to stay open in preview. `data-canvas-pinned` control is used for this (G2). |
+| Mobile menu | Native `<dialog>` + `showModal()`: top layer, page inert, Esc closes (`initSheet`). | The bridge's selection overlay stays underneath the dialog and inert. While the dialog is open, the overlay must mount inside the dialog (G4). |
+| Announcement bar | Dismissal is remembered in `localStorage` (`sm-announcement-dismissed`). | Must always be visible in editing render. |
+| Payload 3.93 global Live Preview | `isLivePreviewEnabled` reads root `livePreview.globals` or global `admin.livePreview`. Document view (`@payloadcms/next/dist/views/Document`) also applies `openByDefault` for globals. `livePreviewURL` function receives `globalConfig`. The global control slot is at `admin.components.elements.beforeDocumentControls` (on collections it is `edit.beforeDocumentControls`). Globals support `versions.drafts.autosave`. `lockDocuments` exists for globals. | Technical path is clear. G0 proves the form API works identically in global view. |
+| Cache | `withGlobalRevalidation`: **every** change to header, footer, and site-settings calls `revalidatePath('/', 'layout')`. When payments capability is on, `commerceRenderBoundary()` renders every page per request. | Once drafts are added, revalidation must run only on publish. Otherwise autosave invalidates the whole site every 2 seconds. |
+| Import and MCP | `content:import` calls `updateGlobal` for globals and does not send `_status`. MCP: find/update for header, footer, and site-settings. | On a drafted global, `_status: 'published'` becomes mandatory. Importer and AGENTS recipe are updated. |
+| V5 concurrency | `editorVersion` virtual field and `guardEditorVersion` work only with collection hooks (`findByID`). `db-serial-transactions` serializes transactions in-process. | Global equivalent needed: `GlobalBeforeChangeHook` + `findGlobal({ draft:true, req })` (G1). |
 
 ---
 
-## 2. Karar özeti
+## 2. Decision summary
 
-### 2.1 Mimari seçim: **(c), ama aşamalı ve tek yazım yolu ile**
+### 2.1 Architecture choice: **(c), phased and with a single write path**
 
-| Seçenek | Artı | Eksi |
+| Option | Pros | Cons |
 |---|---|---|
-| (a) Global başına ayrı Live Preview + köprünün genişletilmesi | Veri bütünlüğü net: bir Payload formu bir global'i yazar. Taslak, yayın, kilit ve 409 V5 deseniyle birebir uyumlu. | Kullanıcı sayfa ile çerçeve arasında ekran değiştirir. |
-| (b) Sayfa editöründe header/footer doğrudan seçilir ve global'e yazılır | Tek tuval (Wix hissi). | Sayfa formu global alanlarını tutamaz. İkinci bir yazım yolu gerekir (form dışı REST): form doğrulaması, geri al/yinele, autosave, 409 ve TR/EN form state'i iki kez kurulur. Sayfa taslağı ile çerçeve taslağı farklı yayınlanır. "Bu sayfayı yayınla" düğmesinin tüm siteyi değiştirmediği kafa karıştırır. |
-| **(c) Önerilen** | — | — |
+| (a) Separate Live Preview per global + extend bridge | Clear data integrity: one Payload form writes one global. Fully compatible with V5 draft, publish, lock, and 409 pattern. | User switches screens between page and chrome. |
+| (b) Select header/footer directly in page editor and write to global | Single canvas (Wix feel). | Page form cannot hold global fields. Needs a second write path (off-form REST): form validation, undo/redo, autosave, 409, and TR/EN form state must be built twice. Page draft and chrome draft publish separately. Confusing that the "Publish this page" button does not change the whole site. |
+| **(c) Recommended** | — | — |
 
-**Öneri:**
-- **Yazım tek yoldan yapılır, yol (a)'dır.** "Site çerçevesi" editörü `header`, `footer` ve (yalnız admin) `site-settings` global görünümlerini Live Preview tuvaliyle açar (`openByDefault`). V5 host'u global kapsamında çalışır. Tuvalde **sayfa gövdesi soluk ve kilitlidir** ("Sayfa içeriği: bu ekranda düzenlenmez → Sayfayı aç"). Çerçeve bölgeleri ise canlıdır.
-- **Tek tuval hissini (b)'nin hafif hali verir.** Sayfa veya ürün editöründe header ve footer bölgeleri üzerine gelince **"Site geneli · Tüm sayfalarda"** rozetiyle çerçevelenir. Tıklanınca "Üst menüyü düzenle ↗" kısayolu çıkar. Kısayol bekleyen sayfa kaydını flush eder ve aynı önizleme yolunda global editörü açar (`previewPath`). Global editörde "← Sayfaya dön" düğmesi bulunur. Kullanıcı aynı görüntüde kalır. Değişen tek şey hangi formun yazdığıdır, bu da üst çubukta büyük etiketle gösterilir: **"Düzenlenen: Üst menü (tüm sayfalar)"**.
-- Global editörde bir bölgeden diğerine geçiş tek tıklıktır. Footer'a tıklamak `/admin/globals/footer?previewPath=…` adresine, logoya tıklamak (admin için) site-settings'e götürür. Önce bekleyen değişiklik flush edilir.
-- Gerekçe: V5'in "tüm yazım form → sunucu" kuralı, 409 eşzamanlılığı ve TR/EN form disiplini bozulmadan Wix'e yakın akış sağlanır. Doğrudan (b) yolu sonraki sürüm olarak açık kalır (§8 soru 1).
+**Recommendation:**
+- **Writing goes through a single path: path (a).** The "Site chrome" editor opens the `header`, `footer`, and (admin-only) `site-settings` global views with the Live Preview canvas (`openByDefault`). The V5 host runs in global scope. On the canvas, the **page body is dimmed and locked** (`"Sayfa içeriği: bu ekranda düzenlenmez → Sayfayı aç"` (Page content: not edited on this screen → Open page)). The chrome regions are live.
+- **The lightweight version of (b) delivers the single-canvas feel.** In the page or product editor, hovering over the header or footer region frames it with a `"Site geneli · Tüm sayfalarda"` (Site-wide · On all pages) badge. Clicking it shows the `"Üst menüyü düzenle ↗"` (Edit top menu ↗) shortcut. The shortcut flushes any pending page save and opens the global editor on the same preview path (`previewPath`). The global editor has a `"← Sayfaya dön"` (← Back to page) button. The user stays on the same view. The only thing that changes is which form writes, shown with a large label in the top bar: `"Düzenlenen: Üst menü (tüm sayfalar)"` (Editing: Top menu (all pages)).
+- In the global editor, switching from one region to another is one click. Clicking the footer goes to `/admin/globals/footer?previewPath=…`, and clicking the logo (for admin) goes to `site-settings`. Any pending change is flushed first.
+- Rationale: V5's "all writes form → server" rule, 409 concurrency, and TR/EN form discipline are preserved while delivering a Wix-like flow. Direct path (b) remains open for a later release (§8 question 1).
 
-### 2.2 Taslak ve yayın: **header ve footer'a `versions.drafts` (autosave 2 sn) eklenir**
+### 2.2 Draft and publish: **add `versions.drafts` (2 s autosave) to header and footer**
 
-- Taslak olmazsa canvas'taki her autosave anında canlıya yansır. Wix tarzı deneme yapılamaz ve bu kabul edilemez.
-- `Header`/`Footer`: `versions: { drafts: { autosave: { interval: 2000 } }, max: 50 }`. Payload bunun karşılığında `_status` kolonu, `_header_v*` ve `_footer_v*` tablolarını üretir. Migration yalnız ekleme yapar (G1).
-- **Mevcut satırın durumu kritik:** `ADD COLUMN _status DEFAULT 'draft'` mevcut global satırını "taslak" yapabilir. G0, Payload 3.93'te `findGlobal({ draft:false })` çağrısının `_status='draft'` olan ana satırı nasıl ele aldığını kopya DB'de kanıtlar. Migration `UPDATE header SET _status='published'` (yalnız yeni kolon) yapar ve gerekiyorsa başlangıç yayın sürümü satırını `INSERT` eder. Kabul ölçütü: migration öncesi ve sonrası public header/footer HTML'i bayt bayt aynıdır.
-- Yayın: Payload'un global "Değişiklikleri yayınla" düğmesi kullanılır. `withGlobalRevalidation`, drafts'lı global için yalnız `_status === 'published'` yazımında yeniler. Taslak ve autosave yenileme yapmaz (koleksiyondaki `withPublicRevalidation` mantığı).
-- **site-settings'e ilk dalgada taslak eklenmez.** Bu global'in okuyucuları ödeme durumu (`commerce/state.ts`, `payments/runtime.ts`), checkout, `company-facts` ve yasal hazırlıktır. Taslak, bunların tamamının denetimini gerektirir. Logo, site adı, slogan, sosyal bağlantılar ve iletişim canvas'ta **yalnız admin** tarafından, **"Kaydet = hemen yayın"** onay iletişim kutusuyla düzenlenir. Bu ekranda autosave yoktur ve kırmızı rozet görünür. Taslak desteği kullanıcı onaylarsa ayrı faz olur (§8 soru 2).
-- Önizleme: staff draft isteğinde `getHeaderNav`/`getFooterData` `draft:true` ve staff `user` ile okur. Sayfa editörü de çerçeve taslağını gösterir. Taslak varsa çerçeve bölgesinde "Yayınlanmamış çerçeve değişikliği var" rozeti çıkar.
+- Without drafts, every autosave on the canvas goes live immediately. Wix-style experimentation becomes impossible, which is unacceptable.
+- `Header`/`Footer`: `versions: { drafts: { autosave: { interval: 2000 } }, max: 50 }`. Payload generates the `_status` column, `_header_v*`, and `_footer_v*` tables for this. The migration is additive only (G1).
+- **Existing row state is critical:** `ADD COLUMN _status DEFAULT 'draft'` can turn the existing global row into a "draft". G0 proves on a DB copy how Payload 3.93 handles a main row with `_status='draft'` on `findGlobal({ draft:false })`. The migration runs `UPDATE header SET _status='published'` (new column only) and `INSERT`s an initial published version row if needed. Acceptance criterion: public header/footer HTML before and after migration is byte-for-byte identical.
+- Publish: Payload's global `"Değişiklikleri yayınla"` (Publish changes) button is used. `withGlobalRevalidation` revalidates a drafted global only on `_status === 'published'` writes. Draft and autosave do not revalidate (same logic as `withPublicRevalidation` on collections).
+- **Drafts are not added to `site-settings` in the first wave.** Readers of this global include payment state (`commerce/state.ts`, `payments/runtime.ts`), checkout, `company-facts`, and legal readiness. Drafts would require auditing all of them. Logo, site name, tagline, social links, and contact are edited on the canvas **by admin only**, with a "Save = publish immediately" confirmation dialog. There is no autosave on this screen and a red badge is shown. Adding draft support becomes a separate phase if the user approves (§8 question 2).
+- Preview: on a staff draft request, `getHeaderNav`/`getFooterData` read with `draft:true` and staff `user`. The page editor also shows the chrome draft. If a draft exists, an "Unpublished chrome changes" badge appears on the chrome region.
 
-### 2.3 Eşzamanlılık: V5 `editorVersion`/409 deseni global'lere taşınır
+### 2.3 Concurrency: V5 `editorVersion`/409 pattern moves to globals
 
-- `editorVersionField` header ve footer'a eklenir (sanal, gizli, şemasız). Global `afterRead` = ham all-locale snapshot SHA-256. `guardGlobalEditorVersion` (`GlobalBeforeChangeHook`) aynı transaction'da (`req`) `findGlobal({ slug, draft:true, depth:0, overrideAccess:true, req })` okur. Sürüm uyuşmazsa `APIError` 409 döner. Sürüm taşımayan yazımlar (MCP, import, betikler) eskisi gibi geçer. Editörün sonraki kaydı 409 alır.
-- Varsayılan menüyü kayda dönüştürme uç noktası aynı ön koşulu kullanır.
-- Host'taki **Birleştir ve kaydet**, **Değişikliklerimi kopyala** ve **Yeniden yükle** akışı (`admin/sync.ts`, `admin/merge.ts`) global kimliğiyle çalışır (`id` yerine `globalSlug`). Satır kimliğiyle birleştirme array satırlarına aynen uygulanır.
-- site-settings da aynı korumayı alır (taslaksız, ama 409 kayıp güncellemeyi önler).
+- `editorVersionField` is added to header and footer (virtual, hidden, schemaless). Global `afterRead` = raw all-locale snapshot SHA-256. `guardGlobalEditorVersion` (`GlobalBeforeChangeHook`) reads `findGlobal({ slug, draft:true, depth:0, overrideAccess:true, req })` in the same transaction (`req`). On version mismatch, it returns `APIError` 409. Writes without a version (MCP, import, scripts) pass as before. The editor's next save gets 409.
+- The "materialize default menu into a record" endpoint uses the same precondition.
+- The host's **`"Birleştir ve kaydet"`** (Merge and save), **`"Değişikliklerimi kopyala"`** (Copy my changes), and **`"Yeniden yükle"`** (Reload) flow (`admin/sync.ts`, `admin/merge.ts`) works with global identity (`globalSlug` instead of `id`). Merging by row ID applies directly to array rows.
+- `site-settings` gets the same guard (no drafts, but 409 prevents lost updates).
 
-### 2.4 Wix'e yakın, Wix'in serbestliği değil
+### 2.4 Close to Wix, not Wix's free-form layout
 
-- Serbest konumlandırma, yeni bölge ve yeni bileşen tipi yoktur. Yalnız mevcut alanlar düzenlenir: metin yerinde, liste ekle/sil/sırala, bağlantı, medya ve aç/kapa anahtarları. Header düzeni (logo solda, menü, CTA) değişmez.
+- There is no free positioning, no new regions, and no new component types. Only existing fields are edited: inline text, list add/delete/reorder, links, media, and on/off toggles. Header layout (logo left, menu, CTA) does not change.
 
 ---
 
-## 3. Düzenlenebilir alan haritası
+## 3. Editable field map
 
-### 3.1 Yerinde metin (`INLINE_GLOBAL_FIELDS`, `src/editor/canvas/fields.ts`)
+### 3.1 Inline text (`INLINE_GLOBAL_FIELDS`, `src/editor/canvas/fields.ts`)
 
-Kural V5 ile aynıdır: lokalize `text` (çok satırsız `textarea` de olur), tek satır, ≤ 1000 karakter, `normalizeInline`, `plaintext-only`. EN boşsa TR yedeği gösterilir, tıklanınca "Bu dilde metin yok" uyarısı çıkar ve yalnız EN'e yazılır.
+The rule is the same as V5: localized `text` (single-line `textarea` also allowed), single line, ≤ 1000 characters, `normalizeInline`, `plaintext-only`. If EN is empty, the TR fallback is shown; clicking shows a `"No text in this language"` warning and writes only to EN.
 
-| Global | Yollar |
+| Global | Paths |
 |---|---|
 | `header` | `navItems.*.link.label`, `navItems.*.children.*.link.label`, `navItems.*.children.*.description`, `navItems.*.columns.*.title`, `navItems.*.columns.*.links.*.link.label`, `navItems.*.columns.*.links.*.description`, `navItems.*.featured.title`, `navItems.*.featured.description`, `navItems.*.featured.link.label`, `cta.link.label`, `cta.secondary.label`, `announcement.text`, `announcement.link.label`, `utility.links.*.link.label` |
-| `footer` | `columns.*.title`, `columns.*.links.*.link.label`, `legalLinks.*.link.label`, `brandBlurb` (boşsa slogan yedeği: yedek rozeti, yazınca yalnız brandBlurb'a yazılır) |
+| `footer` | `columns.*.title`, `columns.*.links.*.link.label`, `legalLinks.*.link.label`, `brandBlurb` (if empty, tagline fallback: fallback badge; typing writes only to `brandBlurb`) |
 | `site-settings` (admin) | `siteName`, `tagline` |
 
-- `FIELD_PATH_RE` en çok 4 ek segment kabul eder. En derin yol olan `navItems.0.columns.1.links.2.link.label` bu sınıra tam oturur. Test bunu kilitler. Regex genişletilmez.
-- Global'e özgü güvenlik: `isInlineGlobalField(global, path)` kontrolü `Object.hasOwn` kullanır ve şema↔allowlist testi yapılır (V5 `visual-editor-fields.test.tsx` deseni: her yol global config'te lokalize text/textarea olmalı).
-- **Yerinde düzenlenmeyenler:** `copyright` (`{year}`/`{siteName}` şablonu, tuvalde çözülmüş metin görünür). Bu alan küçük panelde ham şablonla düzenlenir. Bağlantı adresleri, medya ve ilişkiler de yerinde düzenlenmez.
+- `FIELD_PATH_RE` accepts at most 4 extra segments. The deepest path, `navItems.0.columns.1.links.2.link.label`, fits this limit exactly. A test locks this. The regex is not widened.
+- Global-specific security: `isInlineGlobalField(global, path)` check uses `Object.hasOwn`, and a schema↔allowlist test is written (V5 `visual-editor-fields.test.tsx` pattern: every path must be a localized text/textarea in the global config).
+- **Not editable inline:** `copyright` (`{year}`/`{siteName}` template; resolved text appears on the canvas). This field is edited as a raw template in a small panel. Link URLs, media, and relations are also not edited inline.
 
-### 3.2 Listeler: ekle, sil, sırala (`CHROME_LISTS`, `src/editor/canvas/chrome-rules.ts`)
+### 3.2 Lists: add, delete, reorder (`CHROME_LISTS`, `src/editor/canvas/chrome-rules.ts`)
 
-| Liste yolu | maxRows | Eksen | Yeni satır şablonu |
+| List path | maxRows | Axis | New row template |
 |---|---|---|---|
-| `header.navItems` | 8 | yatay (masaüstü) / dikey (mobil) | `{ link: { type:'route', route:'urunler', label:'Yeni öğe' } }` (aktif dil) |
-| `header.navItems.*.children` | — (öneri: UI sınırı 12) | dikey | route bağlantısı + boş açıklama |
-| `header.navItems.*.columns` | 4 | yatay | başlık + 1 bağlantı |
-| `header.navItems.*.columns.*.links` | 8 | dikey | — |
-| `header.utility.links` | 4 | yatay | — |
-| `footer.columns` | 6 | yatay | başlık (zorunlu) + 1 bağlantı |
-| `footer.columns.*.links` | — | dikey | — |
-| `footer.legalLinks` | — | yatay | route `yasal_slug` |
-| `site-settings.social` | — | yatay | platform seçimi zorunlu (panelden) |
+| `header.navItems` | 8 | horizontal (desktop) / vertical (mobile) | `{ link: { type:'route', route:'urunler', label:'Yeni öğe' } }` (active locale) |
+| `header.navItems.*.children` | — (recommended UI limit: 12) | vertical | route link + empty description |
+| `header.navItems.*.columns` | 4 | horizontal | title + 1 link |
+| `header.navItems.*.columns.*.links` | 8 | vertical | — |
+| `header.utility.links` | 4 | horizontal | — |
+| `footer.columns` | 6 | horizontal | title (required) + 1 link |
+| `footer.columns.*.links` | — | vertical | — |
+| `footer.legalLinks` | — | horizontal | route `yasal_slug` |
+| `site-settings.social` | — | horizontal | platform selection required (from panel) |
 
-- İşlemler: seçili öğenin araç çubuğunda ←/→ (yatay) ya da ↑/↓ (dikey) ile taşıma, ⠿ ile sürükleme, Çoğalt, Sil (ikinci tıkta onay) ve "+ Öğe ekle" bulunur. Taşıma **yalnız aynı liste içinde** yapılır (listeler arası taşıma: §8 soru 4).
-- Klavye: Tab/↑↓/←→ seçer. Alt+ok taşır. Enter metni düzenler. Delete iki basışta siler. Esc seçimi bırakır. Odak halkası görünürdür (`outline` 2 px, vurgu rengi, WCAG 2.4.7). Taşıma sonucu `aria-live` ile duyurulur ("Ürünler 2. sıraya taşındı").
-- maxRows'a ulaşan listede "+ Öğe ekle" devre dışıdır ve nedeni ipucunda yazar. Sunucu `maxRows` doğrulaması yine otoritedir.
-- `navItems.*.megaMenu` (yok / products / solutions / custom) seçili menü öğesinin küçük panelinde segment düğmeleriyle değişir. `custom` seçilince kolonlar ve öne çıkan kart düzenlenebilir hale gelir.
+- Actions: the selected item's toolbar has move ←/→ (horizontal) or ↑/↓ (vertical), drag via ⠿, Duplicate, Delete (confirmation on second click), and "+ Add item". Moving is **within the same list only** (moving across lists: §8 question 4).
+- Keyboard: Tab/↑↓/←→ selects. Alt+arrow moves. Enter edits text. Delete deletes on two presses. Esc clears selection. Focus ring is visible (`outline` 2 px, accent color, WCAG 2.4.7). Move result is announced via `aria-live` (e.g. "Products moved to position 2").
+- When a list reaches `maxRows`, "+ Add item" is disabled and the tooltip explains why. Server `maxRows` validation remains authoritative.
+- `navItems.*.megaMenu` (none / products / solutions / custom) is changed via segmented buttons in the selected menu item's small panel. When `custom` is selected, columns and the featured card become editable.
 
-### 3.3 Küçük paneller (admin tarafında, tuvalin üstünde konumlanır)
+### 3.3 Small panels (on the admin side, positioned over the canvas)
 
-Popover **admin host'ta** çizilir, iframe'de çizilmez. Köprü yalnız `{ type:'panel', kind, path, rowIds, rect }` isteği gönderir. Değerler admin formuna girer, böylece iframe'e hiçbir URL veya ilişki değeri yazılmaz.
+Popovers are rendered **in the admin host**, not in the iframe. The bridge only sends a `{ type:'panel', kind, path, rowIds, rect }` request. Values go into the admin form, so no URL or relation value is ever written into the iframe.
 
-| Panel | İçerik | Kural |
+| Panel | Content | Rule |
 |---|---|---|
-| **Bağlantı hedefi** | Sekmeler: *Site sayfası* (LINK_ROUTES listesi + gerekiyorsa `routeParam` slug alanı, `ROUTE_PARAM_PATTERN`), *Kayıt* (Payload `useListDrawer` ile LINKABLE_COLLECTIONS; sayfa, ürün, çözüm…), *Harici adres* (URL + "yeni sekmede aç") | URL sunucu `validate` ile sınanır (G1). İstemci de aynı saf fonksiyonla erken uyarı verir. `pageType: template` sayfalar listede çıkmaz (filterOptions eklemesi, şemasız). Taslak hedef seçilirse "Hedef yayında değil, ziyaretçi bu öğeyi görmez" uyarısı çıkar. Satış yasal sayfası seçilirse "Ödemeler kapalıyken gizlenir" bilgisi verilir. |
-| **Mega menü** | Tip seçimi, kolon ekle/sil, öne çıkan kart görseli (medya çekmecesi) ve bağlantısı | `products`/`solutions` otomatik içeriklidir. Tuvalde "Otomatik: ürün aileleri" rozeti çıkar, içerik buradan düzenlenmez. |
-| **Duyuru bandı** | Göster, ziyaretçi kapatabilir, bağlantı | Metin yerinde düzenlenir. Editing render'da `localStorage` kapatma durumu yok sayılır. |
-| **Yardımcı çubuk** | Arama, dil, hesap anahtarları | Çubuk yalnız ≥ lg genişlikte görünür. 390 genişlikte "Masaüstünde görünür" notu çıkar. |
-| **Logo** (admin) | `logo` / `logoDark` için medya çekmecesi (`useListDrawer({ collectionSlugs:['media'] })`, `where protected equals false`) ve yükleme (`useDocumentDrawer`) | `publicImage` korumalı veya görsel olmayan medyayı reddeder. Panel aynı kuralla uyarır. Header ve footer koyu zemindedir, `logoDark` önceliklidir; panel bunu açıklar. |
-| **Sosyal bağlantılar** (admin) | Platform (6 seçenek) + URL, ekle/sil/sırala | Render yalnız `https?:` gösterir. G1'de `social.url` için `validate` (https zorunlu) eklenir. |
-| **İletişim** (admin) | e-posta, telefon, adres, çalışma saatleri | Footer'daki "İletişim bilgilerini göster" anahtarı footer formundadır. Panel iki global'i açıkça ayırır. |
-| **Telif metni** | Ham şablon + `{year}` `{siteName}` yardımı | — |
+| **Link target** | Tabs: *Site page* (`LINK_ROUTES` list + `routeParam` slug field if needed, `ROUTE_PARAM_PATTERN`), *Record* (`LINKABLE_COLLECTIONS` via Payload `useListDrawer`; page, product, solution…), *External URL* (URL + "open in new tab") | URL is checked by server `validate` (G1). Client also gives an early warning using the same pure function. `pageType: template` pages do not appear in the list (`filterOptions` addition, schemaless). If a draft target is selected, a "Target is not published; visitors will not see this item" warning appears. If a sales legal page is selected, a "Hidden while payments are off" notice is shown. |
+| **Mega menu** | Type selection, add/remove column, featured card image (media drawer) and link | `products`/`solutions` have automatic content. Canvas shows an "Automatic: product families" badge; content is not edited here. |
+| **Announcement bar** | Show, visitor can dismiss, link | Text is edited inline. Editing render ignores `localStorage` dismissal state. |
+| **Utility bar** | Search, language, account toggles | Bar is visible only at ≥ lg width. At 390 width, a "Visible on desktop" note appears. |
+| **Logo** (admin) | Media drawer for `logo` / `logoDark` (`useListDrawer({ collectionSlugs:['media'] })`, `where protected equals false`) and upload (`useDocumentDrawer`) | `publicImage` rejects protected or non-image media. Panel warns with the same rule. Header and footer are on a dark background, so `logoDark` takes precedence; the panel explains this. |
+| **Social links** (admin) | Platform (6 options) + URL, add/delete/reorder | Render only shows `https?:`. In G1, `validate` (https required) is added to `social.url`. |
+| **Contact** (admin) | email, phone, address, working hours | The "Show contact info" toggle in the footer lives in the footer form. The panel clearly separates the two globals. |
+| **Copyright text** | Raw template + `{year}` `{siteName}` help | — |
 
-### 3.4 Rozet ve durumlar (yalnız editing render)
+### 3.4 Badges and states (editing render only)
 
-- "Ziyaretçiye görünmüyor": bağlantı çözülemedi, hedef taslak, satış yasal sayfası ve ödeme kapalı, kolon başlığı boş. Satır soluk gösterilir, rozetin nedeni yazar ve seçilebilir.
-- "Varsayılan (kayıtlı değil)": i18n yedek menü, CTA, footer kolonları ve legal yedeği. İlk düzenleme denemesinde G3 dönüşüm iletişim kutusu açılır.
-- "Otomatik içerik": products ve solutions mega panelleri.
-- "Yalnız yönetici": editor rolünde logo, site adı, sosyal ve iletişim.
-- "Site geneli · Tüm sayfalarda": sayfa veya ürün editöründe çerçeve bölgeleri.
+- `"Ziyaretçiye görünmüyor"` (Not visible to visitors): link unresolved, target is draft, sales legal page while payments are off, or column title empty. Row is dimmed, badge states the reason, and it remains selectable.
+- `"Varsayılan (kayıtlı değil)"` (Default (not saved)): i18n fallback menu, CTA, footer columns, and legal fallback. First edit attempt opens the G3 materialization dialog.
+- `"Otomatik içerik"` (Automatic content): products and solutions mega panels.
+- `"Yalnız yönetici"` (Admin only): logo, site name, social, and contact when logged in as editor.
+- `"Site geneli · Tüm sayfalarda"` (Site-wide · On all pages): chrome regions in the page or product editor.
 
 ---
 
-## 4. Fazlar
+## 4. Phases
 
-Toplam tahmin: **12–16 iş günü** (G6 dahil). Şema tek fazdadır (G1). Her faz sonunda durulur ve kullanıcı onayı alınır.
+Total estimate: **12–16 business days** (including G6). Schema is in a single phase (G1). Pause at the end of each phase for user approval.
 
-### G0 — Doğrulama spike'ı (0,5–1 gün, şemasız, atılabilir dal)
+### G0 — Verification spike (0.5–1 day, schemaless, throwaway branch)
 
-- **Kapsam:** git worktree `../softmarket-g0`, kopya DB ve uploads, port 3510. Kanıtlanacaklar:
-  1. Global görünümde `admin.livePreview.openByDefault`, `elements.beforeDocumentControls` host'u, `useDocumentInfo().globalSlug`, `useAllFormFields`/`addFieldRow`/`moveFieldRow`/`removeFieldRow` ve `useLivePreviewContext().iframeRef` çalışıyor mu?
-  2. `livePreviewURL({ globalConfig, req })` içinde `req.searchParams.get('previewPath')` erişilebilir mi? Erişilemiyorsa yedek olarak kullanıcı tercihi (`usePreferences`) kullanılır.
-  3. Header'a geçici `versions.drafts` ile `migrate:create` (yalnız kopyada): SQL yalnız ADD mi, `__new_` var mı? `_status` varsayılanı ve mevcut satırda `findGlobal({draft:false})` çıktısı ne? Sürüm satırı yokken `findGlobal({draft:true})` ana satıra düşüyor mu? `_status` göndermeyen `updateGlobal` (import/MCP) ne yapıyor: taslak mı, yayın mı?
-  4. `<dialog>` top layer içinde köprü katmanını bağlama ve `cancel` olayını yönetme.
-  5. `initMegaNav`'ın `data-canvas-pinned` ile kapanmaması.
-- **Çıktı:** `docs/editor-pilot/globals-spike.md` (her madde için evet/hayır, kanıt komutu, G1–G4'e etkisi). Spike kodu ana dala alınmaz.
-- **Kabul:** 5 maddenin her biri kanıtlı. Madde 1 veya 3 "hayır" çıkarsa plan revize edilir ve kullanıcıya bildirilir.
+- **Scope:** git worktree `../softmarket-g0`, DB and uploads copy, port 3510. Items to prove:
+  1. In global view, do `admin.livePreview.openByDefault`, `elements.beforeDocumentControls` host, `useDocumentInfo().globalSlug`, `useAllFormFields`/`addFieldRow`/`moveFieldRow`/`removeFieldRow`, and `useLivePreviewContext().iframeRef` work?
+  2. Is `req.searchParams.get('previewPath')` accessible inside `livePreviewURL({ globalConfig, req })`? If not, use a user preference (`usePreferences`) as fallback.
+  3. Temporary `versions.drafts` on Header with `migrate:create` (on copy only): is the SQL ADD-only, is there any `__new_`? What is the `_status` default and what does `findGlobal({draft:false})` return on an existing row? Does `findGlobal({draft:true})` fall back to the main row when no version row exists? What does `updateGlobal` without `_status` (import/MCP) do: draft or published?
+  4. Mounting the bridge overlay inside `<dialog>` top layer and handling the `cancel` event.
+  5. Keeping `initMegaNav` open with `data-canvas-pinned`.
+- **Output:** `docs/editor-pilot/globals-spike.md` (yes/no per item, evidence command, impact on G1–G4). Spike code is not merged into main.
+- **Acceptance:** all 5 items proven. If item 1 or 3 is "no", the plan is revised and the user is notified.
 
-### G1 — Şema ve sunucu sözleşmeleri (1,5–2 gün, **şema VAR**)
+### G1 — Schema and server contracts (1.5–2 days, **WITH schema**)
 
-- **Kapsam:**
+- **Scope:**
   - `src/globals/Header.ts`, `Footer.ts`: `versions.drafts.autosave.interval = 2000`, `max: 50`.
-  - Migration `pnpm migrate:create globals_chrome_drafts`: `CREATE TABLE _header_v*`/`_footer_v*` (+ locales ve iç içe array tabloları), `ALTER TABLE header|footer ADD _status` (+ `_header_v.autosave`), indeksler, mevcut satır için `UPDATE … SET _status='published'` ve G0 sonucuna göre başlangıç yayın sürümü `INSERT`'i. Down yalnız bunları kaldırır. Kopya DB → `pnpm migrate` → `content:import --dry-run` → integrity/FK → migration testi.
-  - `src/lib/revalidate.ts`: `withGlobalRevalidation` drafts'lı global'de yalnız yayında yeniler. site-settings ve taslaksız global'ler eskisi gibi çalışır.
-  - `src/editor/canvas/concurrency.ts`: `guardGlobalEditorVersion`, `savedGlobalEditorVersion` (global kancaları). `plugin.ts` → `visualEditorGlobals(['header','footer','site-settings'])`: alanı ekler, kancaları bağlar, `admin.livePreview.openByDefault`, `admin.components.elements.beforeDocumentControls` host.
-  - `src/fields/link.ts`: `url` alanına `validate` (saf `isSafeLinkUrl`, `src/lib/safe-href.ts` ile ortak kural). `reference` için `filterOptions` ile `pages.pageType != template`. `SiteSettings.social.url`: https doğrulaması. Bu değişiklikler şema değildir, yalnız doğrulamadır.
-  - `src/lib/content-import/importer.ts`: drafts'lı global'e `_status: 'published'`. `content/seed/schema.json` yeniden üretilir.
-  - `src/lib/preview-url.ts`: `LIVE_PREVIEW_GLOBALS = ['header','footer','site-settings']`, `previewTargetPath` global için `previewPath` (yalnız `safePreviewRedirect` geçerse) ya da `/`. `payload.config.ts` `livePreview.globals`.
-  - `AGENTS.md` MCP tarifi: header ve footer güncellemesi `_status: 'published'` ister, göndermezse taslak kalır (G0 sonucuna göre kesin cümle). `src/lib/mcp.ts` allowlist değişmez.
+  - Migration `pnpm migrate:create globals_chrome_drafts`: `CREATE TABLE _header_v*`/`_footer_v*` (+ locales and nested array tables), `ALTER TABLE header|footer ADD _status` (+ `_header_v.autosave`), indexes, `UPDATE … SET _status='published'` for existing row and initial published version row `INSERT` per G0 result. Down removes only these. DB copy → `pnpm migrate` → `content:import --dry-run` → integrity/FK → migration test.
+  - `src/lib/revalidate.ts`: `withGlobalRevalidation` revalidates drafted globals only on publish. `site-settings` and non-drafted globals work as before.
+  - `src/editor/canvas/concurrency.ts`: `guardGlobalEditorVersion`, `savedGlobalEditorVersion` (global hooks). `plugin.ts` → `visualEditorGlobals(['header','footer','site-settings'])`: adds field, attaches hooks, `admin.livePreview.openByDefault`, `admin.components.elements.beforeDocumentControls` host.
+  - `src/fields/link.ts`: `validate` on `url` field (pure `isSafeLinkUrl`, shared rule with `src/lib/safe-href.ts`). `filterOptions` on `reference` so `pages.pageType != template`. `SiteSettings.social.url`: https validation. These changes are validation-only, not schema.
+  - `src/lib/content-import/importer.ts`: `_status: 'published'` for drafted globals. Regenerate `content/seed/schema.json`.
+  - `src/lib/preview-url.ts`: `LIVE_PREVIEW_GLOBALS = ['header','footer','site-settings']`, `previewTargetPath` for global uses `previewPath` (only if `safePreviewRedirect` passes) or `/`. `payload.config.ts` `livePreview.globals`.
+  - `AGENTS.md` MCP recipe: header and footer updates require `_status: 'published'`, otherwise they stay draft (exact wording per G0 result). `src/lib/mcp.ts` allowlist unchanged.
   - `pnpm generate:types`, `pnpm generate:importmap`.
-- **Kabul:** migration öncesi ve sonrası 8 temsilî sayfa × TR/EN `<header>`/`<footer>` HTML'i bayt bayt aynı (`/`, `/tr/urunler`, ürün, yasal, `/en`…). Eski tabloların satır farkı 0, integrity ok, FK 0. Taslak autosave public okumayı değiştirmez ve revalidate çağırmaz (test). Yayın bir kez revalidate eder. `_status` göndermeyen MCP update davranışı testle kilitli. `content:import` 2× idempotent, globals yayınlı kalır. Eski sürümle 409 alınır, sürümsüz yazım geçer, iki eşzamanlı kayıttan biri 409 alır. `javascript:`/`data:`/`//evil` URL kaydı 400 döner. Seed ve starter template'teki tüm mevcut URL'ler geçer.
-- **Testler:** `tests/unit/globals-drafts-migration.test.ts` (kopya DB, up/down/up, satır ve TR/EN koruma, SQL'de yasak ifade yok), `globals-editor-db.test.ts` (409, sürümsüz yazım, eşzamanlı, draft okuma yalnız staff), `link-url-validate.test.ts`, `revalidate` testi genişletilir, `content-import` global fixture, `starter-template-db.test.ts` yeşil.
-- **Riskler:** `_status` varsayılanı yüzünden çerçevenin public'te yedeğe düşmesi (G0 + bayt testi). İç içe array sürüm tablolarının uzun adları. `max: 50` dışında budama yok. Yeni URL doğrulamasının eski kaydı engellemesi (seed testi + gerekirse yalnız yeni değerde uygulanan doğrulama).
+- **Acceptance:** `<header>`/`<footer>` HTML across 8 representative pages × TR/EN before and after migration is byte-for-byte identical (`/`, `/tr/urunler`, product, legal, `/en`…). 0 row difference on old tables, integrity ok, FK 0. Draft autosave does not change public reads and does not call revalidate (test). Publish revalidates once. MCP update behavior without `_status` is locked by test. `content:import` 2× idempotent, globals stay published. Stale version returns 409, versionless write passes, one of two concurrent saves gets 409. `javascript:`/`data:`/`//evil` URL save returns 400. All existing URLs in seed and starter template pass.
+- **Tests:** `tests/unit/globals-drafts-migration.test.ts` (DB copy, up/down/up, row and TR/EN preservation, no forbidden SQL statements), `globals-editor-db.test.ts` (409, versionless write, concurrent, draft read staff-only), `link-url-validate.test.ts`, extend `revalidate` test, `content-import` global fixture, `starter-template-db.test.ts` green.
+- **Risks:** chrome falling back to default in public due to `_status` default (G0 + byte test). Long names for nested array version tables. No pruning beyond `max: 50`. New URL validation blocking legacy records (seed test + validation applied only on new values if needed).
 
-### G2 — Render: taslak okuma ve editing işaretleri (1,5–2 gün, şemasız)
+### G2 — Rendering: draft reading and editing markers (1.5–2 days, schemaless)
 
-- **Kapsam:**
-  - `src/lib/site.ts`: `getHeaderNav(locale, mode)` ve `getFooterData(locale, mode)`. `mode = 'public' | 'editing'` (`readAs` ile staff draft). Public yol bugünkü kodu aynen kullanır. Editing yolu her öğeye `rowPath` (`navItems.2.children.1`), `rowIds` zinciri, `hiddenReason` (`unresolved|draftTarget|salesLegal|emptyTitle`) ve `fallback: true` bilgisini ekler. Görünürlük kararı yine **public** çözümleyiciyle verilir: rozet "ziyaretçi bunu görür mü" sorusunu doğru yanıtlar. Görünüm taslak veriden gelir.
-  - `src/components/layout/{header,header-shell,footer,announcement-bar,logo}.tsx`: yalnız `editing` prop'u true iken `data-chrome="header|footer|announcement|utility|mobile"`, `data-chrome-path`, `data-chrome-ids`, `data-chrome-list` (liste kapsayıcısı + eksen) ve `data-field-path` (metin) basılır. Rozetler sunucuda basılır. `AnnouncementBar` editing'de kapatma durumunu okumaz.
-  - `src/app/(frontend)/[locale]/layout.tsx`: `previewUser` varsa `Header`/`Footer` editing modunda çağrılır. Public dal değişmez.
-  - `src/lib/header-nav.ts`: panel `data-canvas-pinned` taşıyorsa kapanmaz (≤ 5 satır). `initSheet`: `data-canvas-pinned` dialog'da link tıklaması kapatmaz.
-  - Sayfa editörü için çerçeve bölgelerinde `data-chrome-region` (G5 kullanır).
-- **Kabul:** public HTML bayt bayt aynı (G1'deki 8 sayfa × 2 dil, anonim ve draft-cookie'siz staff). Ana sayfa JS gzip farkı ≤ +0,1 KB. Editing HTML'de her görünür menü/footer öğesinin `data-chrome-path`'i form state'teki satıra eşlenir (DB testi). Ödeme kapalıyken satış yasal linki editing'de rozetli, public'te yoktur. Mega panel `data-canvas-pinned` ile açık kalır. `header-keyboard.spec.ts` yeşil.
-- **Testler:** `tests/unit/chrome-render.test.tsx` (public işaretsiz / editing işaretli, rozet nedenleri, yedek bayrakları), `chrome-render-db.test.ts` (geçici SQLite, TR/EN, taslak yalnız staff), `client-bundle-guard` (+ chrome editör modülleri frontend'de import edilmez), e2e `header-keyboard` regresyonu.
-- **Riskler:** `React.cache` anahtarına mod eklenmesi (public ve editing aynı istekte karışmamalı). Rozetli öğelerin mobil menü düzenini bozması (yalnız editing).
+- **Scope:**
+  - `src/lib/site.ts`: `getHeaderNav(locale, mode)` and `getFooterData(locale, mode)`. `mode = 'public' | 'editing'` (staff draft via `readAs`). Public path uses today's code unchanged. Editing path adds `rowPath` (`navItems.2.children.1`), `rowIds` chain, `hiddenReason` (`unresolved|draftTarget|salesLegal|emptyTitle`), and `fallback: true` to each item. Visibility decision still uses the **public** resolver so the badge accurately answers "does a visitor see this". Appearance comes from draft data.
+  - `src/components/layout/{header,header-shell,footer,announcement-bar,logo}.tsx`: only when `editing` prop is true, emit `data-chrome="header|footer|announcement|utility|mobile"`, `data-chrome-path`, `data-chrome-ids`, `data-chrome-list` (list container + axis), and `data-field-path` (text). Badges are rendered on the server. `AnnouncementBar` ignores dismissal state in editing.
+  - `src/app/(frontend)/[locale]/layout.tsx`: if `previewUser` exists, call `Header`/`Footer` in editing mode. Public branch unchanged.
+  - `src/lib/header-nav.ts`: panel does not close if it has `data-canvas-pinned` (≤ 5 lines). `initSheet`: link click does not close a `data-canvas-pinned` dialog.
+  - `data-chrome-region` on chrome regions for the page editor (used by G5).
+- **Acceptance:** public HTML byte-for-byte identical (8 pages × 2 languages from G1, anonymous and staff without draft cookie). Home page JS gzip diff ≤ +0.1 KB. In editing HTML, every visible menu/footer item's `data-chrome-path` maps to a row in form state (DB test). When payments are off, sales legal link has a badge in editing and is absent in public. Mega panel stays open with `data-canvas-pinned`. `header-keyboard.spec.ts` green.
+- **Tests:** `tests/unit/chrome-render.test.tsx` (public unmarked / editing marked, badge reasons, fallback flags), `chrome-render-db.test.ts` (temp SQLite, TR/EN, draft staff-only), `client-bundle-guard` (+ chrome editor modules not imported in frontend), e2e `header-keyboard` regression.
+- **Risks:** adding mode to `React.cache` key (public and editing must not mix in the same request). Badged items breaking mobile menu layout (editing only).
 
-### G3 — Köprü ve host çekirdeği: global kapsam (3–4 gün, şemasız) — **kritik çekirdek**
+### G3 — Bridge and host core: global scope (3–4 days, schemaless) — **critical core**
 
-- **Kapsam:**
-  - `src/editor/canvas/protocol.ts` **v3**: `scope: 'block'|'doc'|'chrome'`. Yeni bridge mesajları: `chromeReady` (bölgeler + liste özetleri), `chromeSelect`, `chromeMove { list, ids, place, targetId }`, `chromeAdd { list, ids, afterId }`, `chromeDuplicate`, `chromeRemove`, `panel { kind, path, ids, rect }`, `openGlobal { global, previewPath }`. Metin mesajları `scope:'chrome'` + `global`. Host mesajları: `host` (`target: { kind:'collection'|'global', slug }`, `editable` bölge listesi, `readOnly` nedenleri, liste limitleri), `textGrant`, `notice`. Strict şema korunur, origin+source kapısı aynı kalır. `CANVAS_VERSION` 2 → 3 (iki taraf birlikte yüklenir, eski sürümlü mesaj sessizce düşer).
-  - `src/editor/canvas/fields.ts`: `INLINE_GLOBAL_FIELDS`, `isInlineGlobalField`. `chrome-rules.ts`: `CHROME_LISTS`, limitler, yeni satır şablonları, id→index çözümü (adres daima satır id zinciridir, render index'i kullanılmaz; host mevcut form state'ten çözer ve id uyuşmazsa reddeder).
-  - `src/editor/canvas/admin/host.tsx`: `useDocumentInfo()`'dan `globalSlug` ile global kapsam. Sayfa gövdesi kilitli. Bölge geçişi (flush → `router.push('/admin/globals/<x>?previewPath=…')`). site-settings'te autosave yok, "Kaydet = hemen yayın" onayı. Editor rolünde site-settings bölgeleri salt okunur. Geri al/yinele (`history.ts`, dil başına anahtar `global:<slug>:<locale>`). 409 akışı (`sync.ts`, `merge.ts` global kimliği). Bağımlı tipler ortak tutulur, kopya modül açılmaz.
-  - `src/editor/canvas/bridge.tsx`: `[data-chrome]` bölgelerinde hover/seçim çerçevesi, liste araç çubuğu, yatay/dikey sürükleme, klavye eksenleri, `plaintext-only` düzenleme, panel isteği. Mega/mobil durumları G4'te gelir.
-  - **Varsayılan menüyü kayda dönüştür:** `POST /api/editor/chrome/materialize` (`src/app/(payload)/api/...` ya da Payload global endpoint'i). Yalnız staff oturumu, aynı origin, `editorVersion` ön koşulu. i18n `nav`/`footer` mesajlarından TR **ve** EN etiketleriyle route bağlantıları üretir ve yalnız **taslak** yazar. Ardından host `Yeniden yükle` yapar. Kullanıcıya "Varsayılan menü düzenlenebilir hale getirilecek (görünüm değişmez)" onayı sorulur.
-- **Kabul (V4 kapılarının global karşılığı):** round-trip 0 fark (aç → değiştirmeden kaydet → header/footer TR/EN derin eşit, `editorVersion` ve `updatedAt` hariç). TR/EN 0 sızıntı (EN'de label yaz → TR aynı, boş EN'e TR yazılmamış, Escape boş değeri korur). Sahte postMessage 5 varyant + yanlış `global`, bilinmeyen liste, sahte satır id'si, allowlist dışı yol ve URL taşıyan mesaj reddedilir. maxRows aşılamaz (istemci + sunucu). Dönüşüm sonrası public HTML yayından önce değişmez. Yayından sonra yedek menü ile aynı linkler oluşur (href kümesi eşit).
-- **Testler:** `visual-editor-chrome-fields.test.tsx` (şema↔allowlist, her yol lokalize text), `visual-editor-chrome-bridge.test.ts` (protokol v3, id çözümü, limitler, eksenler), `visual-editor-chrome-db.test.ts` (round-trip, 409, dönüşüm uç noktası yetki: anonim 401, customer/editor-API-key 403, cross-site 403), `visual-editor-merge` global vakası.
-- **Riskler:** Payload form API'nin global görünümde farklı davranması (G0 ile azaltılır). Derin array yollarında `moveFieldRow` ile satır id'sinin korunması. `CANVAS_VERSION` artışında açık sekmeler (eski host ile yeni köprü uyarı verir: "Sayfayı yenileyin").
+- **Scope:**
+  - `src/editor/canvas/protocol.ts` **v3**: `scope: 'block'|'doc'|'chrome'`. New bridge messages: `chromeReady` (regions + list summaries), `chromeSelect`, `chromeMove { list, ids, place, targetId }`, `chromeAdd { list, ids, afterId }`, `chromeDuplicate`, `chromeRemove`, `panel { kind, path, ids, rect }`, `openGlobal { global, previewPath }`. Text messages `scope:'chrome'` + `global`. Host messages: `host` (`target: { kind:'collection'|'global', slug }`, `editable` region list, `readOnly` reasons, list limits), `textGrant`, `notice`. Strict schema preserved, same origin+source gate. `CANVAS_VERSION` 2 → 3 (both sides load together; old-version messages are silently dropped).
+  - `src/editor/canvas/fields.ts`: `INLINE_GLOBAL_FIELDS`, `isInlineGlobalField`. `chrome-rules.ts`: `CHROME_LISTS`, limits, new row templates, id→index resolution (address is always the row ID chain, render index is never used; host resolves against current form state and rejects on ID mismatch).
+  - `src/editor/canvas/admin/host.tsx`: global scope via `globalSlug` from `useDocumentInfo()`. Page body locked. Region switching (flush → `router.push('/admin/globals/<x>?previewPath=…')`). No autosave on `site-settings`, "Save = publish immediately" confirmation. In editor role, `site-settings` regions are read-only. Undo/redo (`history.ts`, per-locale key `global:<slug>:<locale>`). 409 flow (`sync.ts`, `merge.ts` global identity). Shared types kept in common modules; no duplicate modules.
+  - `src/editor/canvas/bridge.tsx`: hover/selection frame on `[data-chrome]` regions, list toolbar, horizontal/vertical drag, keyboard axes, `plaintext-only` editing, panel request. Mega/mobile states arrive in G4.
+  - **Materialize default menu into a record:** `POST /api/editor/chrome/materialize` (`src/app/(payload)/api/...` or a Payload global endpoint). Staff session only, same origin, `editorVersion` precondition. Generates route links with both TR **and** EN labels from i18n `nav`/`footer` messages and writes a **draft** only. Then host runs `Yeniden yükle` (Reload). Prompts user: "The default menu will be converted into an editable record (appearance does not change)."
+- **Acceptance (global equivalent of V4 gates):** round-trip 0 diff (open → save without changes → header/footer TR/EN deep equal, excluding `editorVersion` and `updatedAt`). TR/EN 0 leak (edit label in EN → TR unchanged, empty EN not overwritten with TR, Escape preserves empty value). Spoofed postMessage 5 variants + wrong `global`, unknown list, fake row ID, off-allowlist path, and URL-carrying message rejected. `maxRows` cannot be exceeded (client + server). Public HTML does not change after materialization before publish. After publish, same links as fallback menu (equal href set).
+- **Tests:** `visual-editor-chrome-fields.test.tsx` (schema↔allowlist, every path localized text), `visual-editor-chrome-bridge.test.ts` (protocol v3, ID resolution, limits, axes), `visual-editor-chrome-db.test.ts` (round-trip, 409, materialize endpoint auth: anonymous 401, customer/editor-API-key 403, cross-site 403), `visual-editor-merge` global case.
+- **Risks:** Payload form API behaving differently in global view (mitigated by G0). Preserving row IDs with `moveFieldRow` on deep array paths. Open tabs across `CANVAS_VERSION` bump (old host with new bridge warns: "Refresh the page").
 
-### G4 — Paneller, mega menü ve mobil menü UI (2,5–3 gün, şemasız)
+### G4 — Panels, mega menu, and mobile menu UI (2.5–3 days, schemaless)
 
-- **Kapsam:** `src/editor/canvas/admin/panels/{link-target,mega-menu,announcement,utility,logo,social,contact,copyright}.tsx` (admin import map, frontend'den import yok). Popover konumu iframe `rect` + ölçek (Sığdır modu) ile hesaplanır. Odak popover'a taşınır, Esc kapatır ve odak tuvale döner (`aria-modal` değil, `role="dialog"` + odak döngüsü).
-  - **Mega menü:** seçili üst öğede "Paneli aç/sabitle" düğmesi bulunur. Köprü `data-state=open` + `data-canvas-pinned` uygular. Seçim değişince panel açık kalır. "Kapat" ile sabitleme kalkar. Kolon ve öne çıkan kart düzenlemesi panel içinde yapılır. Otomatik paneller (products/solutions) rozetli ve salt okunurdur.
-  - **Mobil menü:** 390 kırılımında araç çubuğunda "Mobil menüyü aç" bulunur. Köprü `showModal()` çağırır, seçim/araç çubuğu katmanını **dialog'un içine** portal eder (top layer), dialog'a `data-canvas-pinned` ekler. `cancel` olayı metin düzenleme sırasında `preventDefault` ile yutulur (Esc önce düzenlemeyi bırakır, ikinci Esc dialog'u kapatır). Native focus trap korunur. Admin popover'ları parent belgede olduğu için çakışma yoktur. Mobil liste dikey eksen kullanır. Masaüstü ve mobil aynı satırları düzenler.
-  - Etiketler `src/lib/visual-editor-labels.ts` (TR/EN), `admin-labels.test.ts`.
-- **Kabul:** e2e: mega panel açık tutulup kolon başlığı düzenlenir ve kaydedilir. Mobil menüde öğe sırası değiştirilir ve masaüstünde de değişir. Bağlantı hedefi route → kayıt → harici olarak değiştirilir. `javascript:` adresi panelde ve sunucuda reddedilir. Logo yalnız public görselle değişir, korumalı medya reddedilir. axe ihlali 0 (popover'lar). Klavye ile seç → taşı → düzenle → panel aç akışı fare olmadan tamamlanır.
-- **Testler:** e2e `tests/e2e/isolated/visual-editor-chrome.spec.ts`, panel birim testleri (URL kuralı, limitler).
-- **Riskler:** top layer içinde köprü stillerinin site stiliyle çakışması (shadow DOM yerine önekli sınıf + `all: initial` kapsayıcı). Ölçekli iframe'de popover konumu. Dialog'un kendi Esc davranışı.
+- **Scope:** `src/editor/canvas/admin/panels/{link-target,mega-menu,announcement,utility,logo,social,contact,copyright}.tsx` (admin import map, no frontend imports). Popover position calculated from iframe `rect` + scale (`Sığdır` (Fit) mode). Focus moves to popover, Esc closes it and returns focus to canvas (`role="dialog"` + focus loop, not `aria-modal`).
+  - **Mega menu:** selected top-level item has an "Open/pin panel" button. Bridge applies `data-state=open` + `data-canvas-pinned`. Panel stays open when selection changes. "Close" unpins it. Column and featured card editing happens inside the panel. Automatic panels (products/solutions) are badged and read-only.
+  - **Mobile menu:** at 390 breakpoint, toolbar has "Open mobile menu". Bridge calls `showModal()`, portals the selection/toolbar overlay **inside the dialog** (top layer), adds `data-canvas-pinned` to dialog. `cancel` event is swallowed with `preventDefault` during text editing (first Esc exits editing, second Esc closes dialog). Native focus trap is preserved. Admin popovers live in the parent document, so there is no conflict. Mobile list uses vertical axis. Desktop and mobile edit the same rows.
+  - Labels `src/lib/visual-editor-labels.ts` (TR/EN), `admin-labels.test.ts`.
+- **Acceptance:** e2e: mega panel is kept open while editing and saving a column title. Item order is changed in mobile menu and also changes on desktop. Link target is changed route → record → external. `javascript:` URL is rejected in panel and on server. Logo changes only with a public image, protected media is rejected. 0 axe violations (popovers). Keyboard-only select → move → edit → open panel flow completes without a mouse.
+- **Tests:** e2e `tests/e2e/isolated/visual-editor-chrome.spec.ts`, panel unit tests (URL rule, limits).
+- **Risks:** bridge styles colliding with site styles inside top layer (prefixed classes + `all: initial` wrapper instead of shadow DOM). Popover positioning in scaled iframe. Dialog's own Esc behavior.
 
-### G5 — Sayfa ve ürün editöründe "Site geneli" kısayolu (1 gün, şemasız)
+### G5 — "Site-wide" shortcut in page and product editors (1 day, schemaless)
 
-- **Kapsam:** pages/products tuvalinde `data-chrome-region` hover çerçevesi ve "Site geneli · Tüm sayfalarda" rozeti. Tıklanınca "Üst menüyü düzenle ↗ / Alt bilgiyi düzenle ↗" görünür. Seçim satırı açılmaz. Host bekleyen sayfa kaydını flush eder ve global editörü `previewPath=<o anki yol>` ile açar. Global editörde "← <Sayfa adı>'na dön" (`sessionStorage` dönüş yolu, yalnız `/admin/collections/(pages|products)/<id>` deseni) bulunur. Çerçeve taslağı yayınlanmamışsa rozet: "Çerçevede yayınlanmamış değişiklik".
-- **Kabul:** sayfada bekleyen değişiklik kaybolmaz (flush + 409 yolu). Dönüşte aynı sayfa ve aynı kaydırma konumu gelir. Ürün editörü V2 kilitleri bozulmaz. Rozet public HTML'de yoktur.
-- **Testler:** e2e senaryosu (sayfa → çerçeve → dön), `visual-editor-bridge` genişletmesi.
+- **Scope:** `data-chrome-region` hover frame and `"Site geneli · Tüm sayfalarda"` (Site-wide · On all pages) badge on pages/products canvas. Clicking shows `"Üst menüyü düzenle ↗"` / `"Alt bilgiyi düzenle ↗"` (Edit top menu / Edit footer). Selection row does not open. Host flushes pending page save and opens global editor with `previewPath=<current path>`. Global editor has "← Back to <Page name>" (`sessionStorage` return path, only `/admin/collections/(pages|products)/<id>` pattern). If chrome draft is unpublished, badge shows: "Unpublished changes in chrome".
+- **Acceptance:** pending changes on page are not lost (flush + 409 path). Return restores the same page and same scroll position. Product editor V2 locks are not broken. Badge is absent from public HTML.
+- **Tests:** e2e scenario (page → chrome → back), `visual-editor-bridge` extension.
 
-### G6 — site-settings marka bölgeleri (1–1,5 gün, şemasız; §8 soru 2 yanıtına bağlı)
+### G6 — `site-settings` brand regions (1–1.5 days, schemaless; depends on §8 question 2 answer)
 
-- **Kapsam:** site-settings global görünümünde canvas: logo/logoDark (panel), siteName/tagline (yerinde), social (liste + panel), contact (panel). Autosave yok. Kaydetmeden önce onay iletişim kutusu: "Bu değişiklik kaydedince tüm sitede hemen yayınlanır." Diğer sekmeler (commerce, company, legal) formda kalır, tuvalde bölgeleri yoktur. Editor rolü için bölgeler salt okunurdur (sunucu `isAdmin` otoritedir).
-- **Kabul:** admin logo ve sosyal bağlantıları değiştirir, kayıt sonrası public header/footer güncellenir (revalidate 1 kez). Editor rolünde yazım denemesi 403 alır ve canvas "Yalnız yönetici" gösterir. Commerce/legal alanları canvas işlemleriyle değişmez (DB testi: kayıt öncesi ve sonrası derin eşit).
-- **Riskler:** site-settings formu büyük ve sekmelidir. Formun tamamı gönderilir, bu yüzden ödeme alanlarının kazara değişmemesi testle kilitlenir.
+- **Scope:** canvas in `site-settings` global view: logo/logoDark (panel), siteName/tagline (inline), social (list + panel), contact (panel). No autosave. Confirmation dialog before saving: "Saving this change publishes it across the entire site immediately." Other tabs (commerce, company, legal) stay in the form and have no canvas regions. For editor role, regions are read-only (server `isAdmin` is authoritative).
+- **Acceptance:** admin changes logo and social links; after save, public header/footer update (revalidate once). Write attempt as editor gets 403 and canvas shows `"Yalnız yönetici"` (Admin only). Commerce/legal fields do not change through canvas operations (DB test: deep equal before and after save).
+- **Risks:** `site-settings` form is large and tabbed. The entire form is submitted, so a test must lock that payment fields are not accidentally modified.
 
-### G7 — QA, performans, güvenlik denetimi ve kılavuz (1,5–2 gün)
+### G7 — QA, performance, security audit, and guide (1.5–2 days)
 
-- Kopya DB ile `.next-g7` build. Lighthouse mobil 3 koşu medyanı (`/tr`, ürün): Perf, LCP, CLS 0 ve JS ≤ 130 KB (V5 değeri 129,62 KB'tan +0,2 KB'tan fazla artış olmaz).
-- İzole e2e (3400): V5 senaryoları + chrome senaryoları + `header-keyboard` + `payments` (satış yasal link filtresi). Güvenlik: sahte mesaj, anonim/customer admin global görünümü, draft cookie kopyası, dönüşüm uç noktası.
-- `docs/editor-guide.md` yeni bölüm "§2.11 Site çerçevesini görsel düzenle". `AGENTS.md`: globals taslak/yayın, MCP `_status`, chrome işaretleri. `memory-bank` güncellemesi.
-- **Kabul:** `docs/perf/visual-globals-acceptance.md` tablosu yeşil, kullanıcı 6 görevlik deneme yapmış ve onaylamış: (1) menü öğesi ekle ve adını yaz, (2) iki öğenin yerini değiştir, (3) bir öğenin hedefini başka sayfaya çevir, (4) footer'a kolon ekle, (5) EN'e geç ve bir etiketi çevir, (6) yayınla.
+- `.next-g7` build with DB copy. Lighthouse mobile 3-run median (`/tr`, product): Perf, LCP, CLS 0, and JS ≤ 130 KB (no more than +0.2 KB increase over V5's 129.62 KB).
+- Isolated e2e (3400): V5 scenarios + chrome scenarios + `header-keyboard` + `payments` (sales legal link filter). Security: spoofed message, anonymous/customer admin global view, copied draft cookie, materialize endpoint.
+- `docs/editor-guide.md` new section `"§2.11 Site çerçevesini görsel düzenle"` (Visually edit the site chrome). `AGENTS.md`: globals draft/publish, MCP `_status`, chrome markers. `memory-bank` update.
+- **Acceptance:** `docs/perf/visual-globals-acceptance.md` table green, user has completed and approved the 6-task trial: (1) add a menu item and type its name, (2) swap two items, (3) point an item to another page, (4) add a column to footer, (5) switch to EN and translate a label, (6) publish.
 
 ---
 
-## 5. Paralellik ve sıralama
+## 5. Parallelism and sequencing
 
-- **Sıra:** G0 → G1 (tek şema fazı; ana dala alınmadan başka `migrate:create` yapılmaz) → G2 → G3 → (G4 ∥ G5) → G6 → G7.
-- G4 ve G5 paralel yürüyebilir. Dosya sahipliği: G4 `src/editor/canvas/admin/panels/**`, `bridge.tsx`'in mega/mobil bölümü. G5 `host.tsx` yönlendirme/dönüş bölümü, `bridge.tsx`'in `data-chrome-region` bölümü. `bridge.tsx`/`host.tsx` ortak dosyalardır, birleştirmeden önce G3 sahibi gözden geçirir.
-- `generate:types`/`generate:importmap` yalnız şema sahibinde (G1) ve panel bileşenleri eklendiğinde (G4) çalışır.
-- Build ile typecheck aynı anda çalıştırılmaz. Ağır SQLite testleri `--maxWorkers=1`.
-- Her faz sonunda çapraz QA ve kullanıcı onayı alınır, sonra sıradaki faza geçilir.
+- **Order:** G0 → G1 (single schema phase; no other `migrate:create` until merged into main) → G2 → G3 → (G4 ∥ G5) → G6 → G7.
+- G4 and G5 can run in parallel. File ownership: G4 `src/editor/canvas/admin/panels/**`, mega/mobile part of `bridge.tsx`. G5 redirect/return part of `host.tsx`, `data-chrome-region` part of `bridge.tsx`. `bridge.tsx`/`host.tsx` are shared files; the G3 owner reviews before merging.
+- `generate:types`/`generate:importmap` run only on the schema owner (G1) and when panel components are added (G4).
+- Build and typecheck are not run at the same time. Heavy SQLite tests use `--maxWorkers=1`.
+- Cross-QA and user approval are obtained at the end of each phase before moving to the next.
 
-## 6. Ajan dağılımı
+## 6. Agent assignments
 
-Kurallar: yazan ve denetleyen farklı olur. Claude yazarsa GPT Sol veya Terra High denetler. GPT yazarsa Opus Medium denetler. Ağır backend ve kritik çekirdek Opus Medium'dur. UI Sonnet Medium'dur. Tasarım ağırlıklı iş Opus Medium'dur (Sonnet High kullanılmaz). Pahalı modeller yalnız kritik işte kullanılır.
+Rules: author and reviewer are different. When Claude writes, GPT Sol or Terra High reviews. When GPT writes, Opus Medium reviews. Heavy backend and critical core are Opus Medium. UI is Sonnet Medium. Design-heavy work is Opus Medium (Sonnet High is not used). Expensive models are used only on critical work.
 
-| Faz | Yazan (effort) | Denetleyen (effort) | Not |
+| Phase | Author (effort) | Reviewer (effort) | Note |
 |---|---|---|---|
-| G0 spike | GPT Terra (High) | Claude Opus (Medium) | Odaklı teşhis, zaman kutusu 1 gün |
-| G1 şema + migration + kancalar | Claude Opus (Medium) | GPT Sol (High) | Migration SQL'i ve `_status` semantiğini Sol denetler |
-| G1 URL doğrulama + importer | GPT Sol (Medium) | Claude Opus (Medium) | Net ve testli iş |
-| G2 render + işaretler | Claude Opus (Medium) | GPT Terra (High) | Bayt eşdeğerliği ve bundle ölçümü Terra'da |
-| G3 protokol + host + köprü çekirdeği | Claude Opus (Medium) | GPT Sol (High) + Terra (High) güvenlik | Planın en kritik işi. Opus High yalnız G0 form API farkı bulursa |
-| G3 dönüşüm uç noktası | Claude Opus (Medium) | GPT Sol (High) | Yetki ve transaction |
-| G4 paneller + mega/mobil UI | Claude Sonnet (Medium); popover/etkileşim tasarımı Opus (Medium) | GPT Sol (High) | a11y ve bundle guard |
-| G5 kısayol | Claude Sonnet (Medium) | GPT Sol (High) | |
-| G6 site-settings | Claude Sonnet (Medium) | GPT Sol (High) | Commerce alanlarının korunduğu test şart |
-| G7 testler/perf/güvenlik | GPT Terra (High) + Sol (Medium) e2e | Claude Opus (Medium) | Kısa görevlere bölünür |
-| G7 kılavuz, etiketler, AGENTS, memory-bank | Claude Haiku (Low) | GPT Sol (Medium) | |
-| Faz sonu commit | Claude Haiku (Low) | — | Yalnız QA yeşilken ve kullanıcı isteyince |
+| G0 spike | GPT Terra (High) | Claude Opus (Medium) | Focused diagnosis, 1-day timebox |
+| G1 schema + migration + hooks | Claude Opus (Medium) | GPT Sol (High) | Sol reviews migration SQL and `_status` semantics |
+| G1 URL validation + importer | GPT Sol (Medium) | Claude Opus (Medium) | Clear, well-tested work |
+| G2 render + markers | Claude Opus (Medium) | GPT Terra (High) | Byte equivalence and bundle measurement on Terra |
+| G3 protocol + host + bridge core | Claude Opus (Medium) | GPT Sol (High) + Terra (High) security | Most critical work of the plan. Opus High only if G0 finds a form API difference |
+| G3 materialize endpoint | Claude Opus (Medium) | GPT Sol (High) | Authorization and transaction |
+| G4 panels + mega/mobile UI | Claude Sonnet (Medium); popover/interaction design Opus (Medium) | GPT Sol (High) | a11y and bundle guard |
+| G5 shortcut | Claude Sonnet (Medium) | GPT Sol (High) | |
+| G6 site-settings | Claude Sonnet (Medium) | GPT Sol (High) | Test proving commerce fields are preserved is required |
+| G7 tests/perf/security | GPT Terra (High) + Sol (Medium) e2e | Claude Opus (Medium) | Split into short tasks |
+| G7 guide, labels, AGENTS, memory-bank | Claude Haiku (Low) | GPT Sol (Medium) | |
+| End-of-phase commit | Claude Haiku (Low) | — | Only when QA is green and user requests it |
 
-## 7. En büyük riskler
+## 7. Top risks
 
-1. **Global'lere taslak eklemenin yan etkileri.** `_status` varsayılanı public çerçeveyi yedeğe düşürebilir. `_status` göndermeyen MCP veya import yazımı taslak kalabilir ya da yayına girebilir. Autosave her 2 saniyede tüm siteyi revalidate edebilir. Önlem: G0 kanıtı, backfill, bayt testi, publish-only revalidate testi, importer `_status`, AGENTS tarifi.
-2. **Satır kimliği ve filtrelenmiş render.** Public yükleyici öğeleri atar ve yedek menü kayıtsızdır. Editing render public'ten farklı olmalı, public HTML ise değişmemelidir. Önlem: mod ayrımı, satır id zinciriyle adresleme, host tarafında id doğrulaması, bayt testi, dönüşüm uç noktası.
-3. **Mega ve mobil menü etkileşimi.** Otomatik kapanma, `<dialog>` top layer/inert ve Esc çakışması public koda dokunmayı gerektirir. Önlem: `data-canvas-pinned` ile minimum yama, köprü katmanının dialog içine portal edilmesi, `header-keyboard.spec.ts` regresyonu, bundle ölçümü.
+1. **Side effects of adding drafts to globals.** `_status` default could cause public chrome to fall back to default. MCP or import writes without `_status` could stay draft or go live. Autosave could revalidate the entire site every 2 seconds. Mitigation: G0 proof, backfill, byte test, publish-only revalidate test, importer `_status`, AGENTS recipe.
+2. **Row identity and filtered rendering.** Public loader drops items, and the fallback menu has no record. Editing render must differ from public, while public HTML must not change. Mitigation: mode separation, addressing by row ID chain, host-side ID validation, byte test, materialize endpoint.
+3. **Mega and mobile menu interaction.** Auto-close, `<dialog>` top layer/inert, and Esc conflict require touching public code. Mitigation: minimal patch with `data-canvas-pinned`, portaling bridge overlay inside dialog, `header-keyboard.spec.ts` regression, bundle measurement.
 
-Ek riskler: Payload global edit view iç API'si (her Payload güncellemesinde chrome e2e zorunlu), site-settings formunun tamamının gönderilmesi, yeni URL doğrulamasının eski kayıtları engellemesi.
+Additional risks: Payload global edit view internal API (chrome e2e mandatory on every Payload upgrade), submitting the entire `site-settings` form, new URL validation blocking legacy records.
 
-## 8. Kullanıcıya açık sorular (önerilerle)
+## 8. Open questions for the user (with recommendations)
 
-1. **Tek tuval düzeyi:** Önerimiz şu: çerçeve kendi editöründe düzenlenir ve sayfa editöründe "Site geneli → Düzenle" kısayoluyla aynı görüntüde geçilir. Sayfa editörünün içinden doğrudan menü düzenleme (ikinci yazım yolu, +4–6 gün ve ek risk) ilk sürümde gerekli mi? **Öneri: hayır.**
-2. **Logo, site adı, sosyal bağlantılar ve iletişim (site-settings):** İlk sürümde taslaksız mı olsun (kaydet = hemen yayın, yalnız admin, onay kutusuyla), yoksa site-settings'e de taslak eklensin mi (+1,5–2 gün, ödeme/yasal okuyucu denetimi)? **Öneri: taslaksız + onay.**
-3. **Editör rolü:** Header ve footer'ı bugün editörler de güncelleyebiliyor. Taslak eklenince yayınlama da editörlere açık kalsın mı? **Öneri: evet** (mevcut erişim korunur).
-4. **Menü taşıma kapsamı:** Bir alt menü öğesini başka bir üst menünün altına sürükleme (listeler arası taşıma) ilk sürümde gerekli mi? **Öneri: hayır.** Aynı liste içinde sıralama yeterli, listeler arası taşıma sonraki sürüm.
-5. **Kayıtsız varsayılan menü/footer:** Düzenlemeye başlanınca TR ve EN etiketleriyle tek onayla kayda dönüştürülsün mü (görünüm değişmez, taslak olarak)? **Öneri: evet.**
+1. **Single canvas level:** Our recommendation: chrome is edited in its own editor, and in the page editor a "Site-wide → Edit" shortcut switches to it on the same view. Is direct menu editing from inside the page editor (second write path, +4–6 days and extra risk) needed in the first release? **Recommendation: no.**
+2. **Logo, site name, social links, and contact (`site-settings`):** Should it stay draftless in the first release (save = publish immediately, admin only, with confirmation dialog), or should drafts also be added to `site-settings` (+1.5–2 days, payment/legal reader audit)? **Recommendation: draftless + confirmation.**
+3. **Editor role:** Today editors can also update header and footer. Once drafts are added, should publishing remain open to editors? **Recommendation: yes** (existing access preserved).
+4. **Menu move scope:** Is dragging a submenu item under a different top-level menu (moving across lists) needed in the first release? **Recommendation: no.** Reordering within the same list is enough; moving across lists in a later release.
+5. **Unrecorded default menu/footer:** When editing starts, should it be materialized into a record with TR and EN labels on a single confirmation (appearance unchanged, as a draft)? **Recommendation: yes.**
 
-## Kullanıcı kararları (2026-11-17)
+## User decisions (2026-11-17)
 
-- Sayfa editörü içinden doğrudan menü düzenleme **yok**; sayfa editöründe header/footer bölgesi "Site geneli" kısayoluyla çerçeve editörüne geçer (G5).
-- Site ayarları (logo, site adı, sosyal, iletişim) **taslaksız**: kaydet = yayın, yalnız admin, kayıttan önce onay kutusu (G6).
-- Header/footer yayın yetkisi **editör + admin** (bugünkü erişim korunur).
-- Alt menü öğeleri yalnız **aynı liste içinde** sıralanır; menüler arası sürükleme yok.
-- Kayıtsız varsayılan menü/footer, düzenlemeye başlanınca TR+EN etiketleriyle tek onayla kayda dönüştürülür (öneri kabul — soru 5 sorulmadı, öneri varsayılan alındı).
+- **No** direct menu editing inside the page editor; in the page editor, the header/footer region switches to the chrome editor via the `"Site geneli"` (Site-wide) shortcut (G5).
+- Site settings (logo, site name, social, contact) are **draftless**: save = publish, admin only, confirmation dialog before saving (G6).
+- Header/footer publish permission: **editor + admin** (today's access preserved).
+- Submenu items are reordered **within the same list only**; no dragging across menus.
+- Unrecorded default menu/footer is materialized into a record with TR+EN labels on a single confirmation when editing starts (recommendation accepted — question 5 was not asked, recommendation taken as default).
 
-## G0 sonucu ve plan revizyonu (2026-11-17)
+## G0 result and plan revision (2026-11-17)
 
-G0 kabul edildi (rapor: `docs/editor-pilot/globals-spike.md`). 6 maddeden 5'i geçti, mobil menü Esc yönetimi kurallı kabul. Revizyonlar:
+G0 accepted (report: `docs/editor-pilot/globals-spike.md`). 5 of 6 items passed; mobile menu Esc handling accepted conditionally. Revisions:
 
-1. Mobil menü (`<dialog>`) Esc yönetimi `cancel` olayı yerine `document` capture `keydown` (Escape) ile yapılır; önce seçim/düzenleme kapanır, sonra dialog. Chromium üçüncü ardışık Esc'te `cancel`'ı iptal edilemez yapıyor.
-2. Köprü/seçim katmanı dialog'un İÇİNE mount edilir; `popover` ve body katmanı top layer altında tıklanamıyor.
-3. G1 migration: Header ve Footer için `versions.drafts` + autosave; migration sonuna `UPDATE header SET _status='published'; UPDATE footer SET _status='published';` (ilk sürüm satırı INSERT gerekmez). Footer migration'ı `footer_columns_locales` tablosunu yeniden kuruyor (`title` NOT NULL → nullable): proje kuralı `__new_` yeniden kurulumu yasaklar; yönetici kararı: migration yalnız bu tablo BOŞKEN rebuild yapar, satır varsa hata fırlatıp durur (veri kaybı imkânsız). Canlıda tablo boş. Dolu veriyle prova kopya DB'de yapılır. Down yalnız sürüm tablolarını ve `_status`'u kaldırır; `title` nullability geri alınmaz.
-4. Kabul: migration öncesi/sonrası public header/footer HTML'i ham bayt eşit ve içerik hash'i eşit.
-5. Importer ve MCP tarifi her zaman `_status: 'published'` gönderir; taslak yazım yalnız `draft: true` ile. `beforeChange`'de `draft` olmadan gelen `_status: 'draft'` reddedilir (public okuma `_status`'a bakmadığı için taslak içerik aksi halde yayına sızar). Testli.
-6. Mega menü sabitleme: yalnız editing render `data-canvas-pinned` basar; unpin/cleanup zorunlu; başka panele geçiş unpin+pin.
-7. G2'de `livePreview.breakpoints` (390/768/1440) header/footer için tanımlanır. Drafts+autosave ile tek "Yayınla" düğmesi vardır. `previewPath` sorgusu çalışıyor; tercih yedeği gerekmez. `iframeRef.current` ilk render'da null — efekt/poll ile okunur.
+1. Mobile menu (`<dialog>`) Esc handling uses `document` capture `keydown` (Escape) instead of the `cancel` event; first closes selection/editing, then the dialog. Chromium makes `cancel` non-cancelable on the third consecutive Esc.
+2. Bridge/selection overlay is mounted INSIDE the dialog; `popover` and body overlays cannot be clicked underneath the top layer.
+3. G1 migration: `versions.drafts` + autosave for Header and Footer; at the end of migration `UPDATE header SET _status='published'; UPDATE footer SET _status='published';` (no initial version row INSERT needed). Footer migration rebuilds `footer_columns_locales` (`title` NOT NULL → nullable): project rule forbids `__new_` rebuilds; manager decision: migration rebuilds only when this table is EMPTY, throws and stops if rows exist (data loss impossible). Table is empty on live. Rehearsal with populated data runs on a DB copy. Down drops only version tables and `_status`; `title` nullability is not reverted.
+4. Acceptance: public header/footer HTML before/after migration is raw-byte equal and content-hash equal.
+5. Importer and MCP recipe always send `_status: 'published'`; draft writes only with `draft: true`. In `beforeChange`, `_status: 'draft'` without `draft` is rejected (because public reads do not check `_status`, draft content would otherwise leak to live). Tested.
+6. Mega menu pinning: only editing render emits `data-canvas-pinned`; unpin/cleanup mandatory; switching to another panel unpins+pins.
+7. In G2, `livePreview.breakpoints` (390/768/1440) is defined for header/footer. With drafts+autosave there is a single `"Yayınla"` (Publish) button. `previewPath` query works; preference fallback not needed. `iframeRef.current` is null on first render — read via effect/poll.
 
 ## G1 implementation record (2026-11-17)
 

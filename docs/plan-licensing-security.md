@@ -1,526 +1,526 @@
-# Plan — Program ↔ Site Lisans API'si, Otomatik/Manuel İptal ve Güvenlik Merkezi
+# Plan — Program ↔ Site licensing API, automatic/manual revocation, and security center
 
-> Durum: **taslak plan (2026-11-17)**. Kod, şema veya migration değişmedi. Uygulama L0 spike'ıyla başlar; her faz sonunda kullanıcı onayı beklenir.
-> Kaynaklar: `AGENTS.md`, `memory-bank/*`, `docs/plan-payments.md` (§2.4 lisans↔sipariş, §4 güvenlik, P4 fulfill, P6 iade→`revoked`, dispute→`suspended`), `docs/plan-visual-editor.md` (Kalıcı kurallar), `docs/plan-visual-globals.md` (G0–G7 sırası). Kod `main` 1a8969e üzerinden okundu: `src/collections/{Licenses,Customers,Downloads,Orders,PaymentEvents}.ts`, `src/lib/licenses/*`, `src/access/*`, `src/lib/secrets/crypto.ts`, `src/lib/integrations/vault.ts`, `src/lib/payments/{admin-endpoints,admin-actions,fulfill}.ts`, `src/lib/forms/security.ts`, `src/lib/request-guards.ts`, `src/middleware.ts`, `src/lib/db-serial-transactions.ts`, `deploy/*`, `scripts/deploy.sh`.
-> Hosting ve alt alan adı fizibilitesi ayrı belgede: `docs/plan-hosting.md`.
+> Status: **draft plan (2026-11-17)**. Code, schema, or migrations have not changed. Implementation starts with the L0 spike; user approval is expected at the end of each phase.
+> Sources: `AGENTS.md`, `memory-bank/*`, `docs/plan-payments.md` (§2.4 license↔order, §4 security, P4 fulfill, P6 refund→`revoked`, dispute→`suspended`), `docs/plan-visual-editor.md` (Permanent rules), `docs/plan-visual-globals.md` (G0–G7 order). Code was read on `main` 1a8969e: `src/collections/{Licenses,Customers,Downloads,Orders,PaymentEvents}.ts`, `src/lib/licenses/*`, `src/access/*`, `src/lib/secrets/crypto.ts`, `src/lib/integrations/vault.ts`, `src/lib/payments/{admin-endpoints,admin-actions,fulfill}.ts`, `src/lib/forms/security.ts`, `src/lib/request-guards.ts`, `src/middleware.ts`, `src/lib/db-serial-transactions.ts`, `deploy/*`, `scripts/deploy.sh`.
+> Hosting and subdomain feasibility are in a separate document: `docs/plan-hosting.md`.
 
-## Kullanıcı isteği
+## User request
 
-1. "API ile de program ve site entegrasyonu yapılması gerek." Şirketin sattığı masaüstü/sunucu yazılımları sitedeki lisans sistemiyle konuşacak: aktivasyon, doğrulama (periyodik + çevrimdışı tolerans), deaktivasyon, koltuk sayımı, cihaz bağlama, güncelleme kontrolü, lisanslı indirme hakkı.
-2. "Lisans iptali manuel ya da otomatik olarak yapılacak." Admin elle askıya alır, iptal eder, yeniden etkinleştirir. Otomatik: iade, chargeback (mevcut), süre bitişi, kural ihlali. Otomatik kararlar geri alınabilir ve denetim izlidir.
-3. "İhlal bildirimi, IP ihlali ya da şüpheli hareketler gibi şeyler bir sayfada toplanacak." Admin'de Güvenlik merkezi: olaylar, önem, filtre, olay → lisans/müşteri, tek tıkla eylem, bildirim. KVKK uyumu.
-4. "Bu kritik bir mesele olduğu için hem iyi plan hem de sağlam yapılmalı, güvenlik burada çok önemli."
-5. "Sub domain entegrasyonu yapılabilir mi, VPS'siz standart serverda ama." → `docs/plan-hosting.md`.
+1. "Integration between the program and the site also needs to be done via API." Desktop/server software sold by the company will talk to the licensing system on the site: activation, validation (periodic + offline tolerance), deactivation, seat counting, device binding, update check, licensed download entitlement.
+2. "License revocation will be done manually or automatically." Admin manually suspends, revokes, or reactivates. Automatic: refund, chargeback (existing), expiration, rule violation. Automatic decisions are reversible and have an audit trail.
+3. "Things like violation reporting, IP violations, or suspicious activities will be gathered on one page." Security center in Admin: events, severity, filters, event → license/customer, one-click action, notifications. KVKK (Turkish Personal Data Protection Law) compliance.
+4. "Since this is a critical matter, it must be both well planned and solidly built; security is very important here."
+5. "Can subdomain integration be done, on a standard server without a VPS though." → `docs/plan-hosting.md`.
 
-## Kalıcı kurallar (her fazda geçerli; ihlal = faz reddi)
+## Permanent rules (apply to every phase; violations reject the phase)
 
-1. **Lisans durumu tek kaynaktan değişir.** Her durum geçişi (panel, MCP, ödeme, kural motoru, sweep) `src/lib/licensing/transitions.ts` içindeki `recordLicenseTransition()` ile **aynı transaction'da** `license-status-log` satırı yazar. Ham SQL ile durum değiştiren mevcut yollar (`admin-actions.ts` `refundOrder`, `applyDispute`) da bu fonksiyonu çağırır. Günlüksüz geçiş testle yakalanır.
-2. **Otomatik sistem asla `revoked` yazmaz** (iade hariç: o, mevcut P6 iş kuralıdır ve ödeme kaynağıyla günlüklenir). Kural motoru en fazla `suspended` yazar; iptal admin onayı ister.
-3. **Güvenlik koleksiyonları API'den yazılamaz.** `security-events`, `security-blocks`, `license-status-log`, `security-audit`, `license-activations`: `create/update/delete = nobody`; yazım yalnız sunucu kodunda `overrideAccess: true`. Okuma yalnız admin (editor değil). Hiçbiri MCP allowlist'ine girmez.
-4. **Admin eylemleri yalnız panel oturumu ile.** `guardAdminSession` deseni (`src/lib/payments/admin-endpoints.ts`): admin rolü, `_strategy === 'local-jwt'`, `Authorization` başlığı yok, same-origin + `Sec-Fetch-Site`. API key/MCP/editor/customer 403. Her eylem `security-audit` satırı yazar; gerekçe zorunlu.
-5. **Kişisel veri minimizasyonu.** Tam IP, ham cihaz parmak izi, lisans anahtarı, e-posta loglara ve olay `detail` alanına yazılmaz. IP yalnız kısaltılmış önek (IPv4 /24, IPv6 /48) + anahtarlı HMAC olarak saklanır. Lisans anahtarı loglarda `maskLicenseKey` ile.
-6. **Sıcak yol SQLite'ı ezmez.** Doğrulama isteği en fazla bir küçük UPDATE yapar; olaylar bellekte toplanıp toplu yazılır; reddedilen (rate limit/engel) istek DB'ye satır başına yazmaz.
-7. **Migration kuralları** (`plan-visual-editor.md` kural 6): önce DB kopyası; up yalnız `CREATE TABLE`, `ADD COLUMN`, `CREATE INDEX`, yeni kolona `UPDATE` backfill. `DROP`, `DELETE`, `__new_` yasak. Down yalnız kendi tablo/kolon/indeksini kaldırır, veri varsa reddeder (P4 deseni). Canlıdan önce WAL/SHM dahil yedek.
-8. **Tek şema kulvarı.** `plan-visual-globals.md` G1 ile aynı anda `migrate:create` yapılmaz; biri ana dala alınmadan diğeri başlamaz.
-9. 3100, canlı DB ve `.next` yalnız açık görevle; build `NEXT_DIST_DIR=.next-<ad>`, QA portları 3200/3300/3400, yük testi izole kopya DB üzerinde 3600.
-10. Admin etiketleri `src/lib/admin-i18n.ts` sözlüğüne girer (`tests/unit/admin-labels.test.ts`). Kullanıcının sağlayacağı her ayar admin panelinden girilebilir; env tanımlıysa env kazanır (integrations deseni).
+1. **License status changes from a single source.** Every state transition (panel, MCP, payment, rule engine, sweep) writes a `license-status-log` row **in the same transaction** via `recordLicenseTransition()` in `src/lib/licensing/transitions.ts`. Existing paths that change status with raw SQL (`admin-actions.ts` `refundOrder`, `applyDispute`) also call this function. Transitions without a log entry are caught by tests.
+2. **The automatic system never writes `revoked`** (except refunds: that is the existing P6 business rule and is logged with the payment source). The rule engine writes at most `suspended`; revocation requires admin approval.
+3. **Security collections cannot be written via API.** `security-events`, `security-blocks`, `license-status-log`, `security-audit`, `license-activations`: `create/update/delete = nobody`; writes happen only in server code with `overrideAccess: true`. Reads are admin-only (not editor). None of them enter the MCP allowlist.
+4. **Admin actions only via panel session.** `guardAdminSession` pattern (`src/lib/payments/admin-endpoints.ts`): admin role, `_strategy === 'local-jwt'`, no `Authorization` header, same-origin + `Sec-Fetch-Site`. API key/MCP/editor/customer receive 403. Every action writes a `security-audit` row; a reason is mandatory.
+5. **Personal data minimization.** Full IP, raw device fingerprint, license key, and e-mail are not written to logs or the event `detail` field. IP is stored only as a truncated prefix (IPv4 /24, IPv6 /48) + keyed HMAC. License keys in logs use `maskLicenseKey`.
+6. **The hot path does not overwhelm SQLite.** A validation request performs at most one small UPDATE; events are buffered in memory and batch-written; rejected requests (rate limit/block) do not write per-row to the DB.
+7. **Migration rules** (`plan-visual-editor.md` rule 6): DB copy first; up uses only `CREATE TABLE`, `ADD COLUMN`, `CREATE INDEX`, and `UPDATE` backfill on new columns. `DROP`, `DELETE`, `__new_` are forbidden. Down removes only its own tables/columns/indexes and refuses if data exists (P4 pattern). Backup including WAL/SHM before production.
+8. **Single schema lane.** `migrate:create` is not run concurrently with `plan-visual-globals.md` G1; one does not start until the other is merged into `main`.
+9. 3100, live DB, and `.next` only with an explicit task; build `NEXT_DIST_DIR=.next-<ad>`, QA ports 3200/3300/3400, load test on an isolated copy DB on 3600.
+10. Admin labels go into the `src/lib/admin-i18n.ts` dictionary (`tests/unit/admin-labels.test.ts`). Every user-provided setting can be entered from the admin panel; if an env var is defined, the env var wins (integrations pattern).
 
 ---
 
-## 1. Karar özeti
+## 1. Decision summary
 
-### 1.1 Mimari
+### 1.1 Architecture
 
-- **Aynı Next/Payload süreci, ayrı API ad alanı.** Rotalar `src/app/(payload)/api/v1/licensing/**/route.ts` (ödeme webhook'larıyla aynı desen: Node runtime, `dynamic='force-dynamic'`, Payload catch-all'dan önce eşleşir). Ayrı süreç yok: SQLite tek yazar ve `db-serial-transactions` süreç içidir; ikinci süreç bu garantiyi bozar.
-- **Programlar için ayrı ana bilgisayar adı:** `lisans.<alan-adi>` (öneri). Caddy bu host'ta yalnız `/api/v1/licensing/*` yolunu aynı sürece geçirir, geri kalan 404. Çerez yok, CORS yok (masaüstü istemci tarayıcı değildir). Programa gömülen URL pazarlama sitesinden bağımsız kalır; ileride sunucu taşınırsa programlar etkilenmez. Ayrıntı `docs/plan-hosting.md`.
-- **Kimlik doğrulama = lisans anahtarı (bir kez) + cihaz anahtar çifti (her istek).** Aktivasyonda program cihazda bir Ed25519 anahtar çifti üretir (özel anahtar OS anahtar deposunda: Windows DPAPI/CNG, macOS Keychain, Linux dosya 0600/TPM varsa). Sunucu açık anahtarı aktivasyona bağlar. Sonraki her istek bu anahtarla imzalanır; lisans anahtarı tekrar gönderilmez. Sızan lisans anahtarı mevcut cihazı taklit etmeye yetmez; yeni cihaz ancak koltuk harcayarak eklenir ve olay üretir.
-- **Sunucu imzalı kira (lease) belgesi.** Başarılı aktivasyon/doğrulama, sunucunun Ed25519 anahtarıyla imzalı kısa ömürlü JWS döner. Program bunu gömülü açık anahtar(lar)la **çevrimdışı** doğrular. `refreshAfter` (varsayılan 24 saat) geçince yeniler; çevrimdışıysa `exp`'e (varsayılan 14 gün, ayarlanabilir üst sınır 30 gün) kadar çalışır.
-- **Yanıt imzası + istek nonce bağlama.** Tüm API yanıtları (hata dahil) sunucu anahtarıyla imzalanır ve isteğin nonce'unu içerir. Kullanıcının kurduğu sahte kök sertifikayla TLS'i kıran MITM "geçerli" yanıt üretemez; eski yanıt tekrar oynatılamaz. TLS sertifika sabitleme yapılmaz (Let's Encrypt yenilemesi kırar); sabitlenen şey imza açık anahtarıdır.
-- **Klon tespiti için dönen sayaç.** Her doğrulama yanıtı yeni bir `ctr` verir; program bir sonraki istekte onu geri yollar. Aynı aktivasyonu kopyalayan iki makine kısa sürede ayrışır → `activation.clone_suspected`.
-- **Kural motoru kademeli:** gözlem (yalnız olay) → bildirim → askıya alma (otomatik, geri alınabilir) → iptal (yalnız admin onayıyla). Varsayılan ilk 30 gün **gözlem modu** (Açık soru 2).
-- **Güvenlik merkezi** Payload admin custom view `/admin/guvenlik` (yalnız admin; nav linki yalnız admin'e görünür), veriyi admin-only GET uçlarından okur, eylemleri admin-only POST uçlarıyla yapar.
+- **Same Next/Payload process, separate API namespace.** Routes `src/app/(payload)/api/v1/licensing/**/route.ts` (same pattern as payment webhooks: Node runtime, `dynamic='force-dynamic'`, matches before Payload catch-all). No separate process: SQLite is a single writer and `db-serial-transactions` is in-process; a second process breaks this guarantee.
+- **Separate hostname for programs:** `lisans.<alan-adi>` (recommendation). Caddy passes only the `/api/v1/licensing/*` path on this host to the same process; everything else returns 404. No cookies, no CORS (the desktop client is not a browser). The URL embedded in the program remains independent of the marketing site; if the server moves in the future, programs are unaffected. Details in `docs/plan-hosting.md`.
+- **Authentication = license key (once) + device keypair (every request).** On activation, the program generates an Ed25519 keypair on the device (private key in the OS keystore: Windows DPAPI/CNG, macOS Keychain, Linux file 0600/TPM if available). The server binds the public key to the activation. Every subsequent request is signed with this key; the license key is not sent again. A leaked license key is not enough to impersonate an existing device; a new device can only be added by consuming a seat and emits an event.
+- **Server-signed lease document.** A successful activation/validation returns a short-lived JWS signed with the server's Ed25519 key. The program verifies this **offline** using embedded public key(s). It renews after `refreshAfter` (default 24 hours); when offline, it continues working until `exp` (default 14 days, configurable upper limit 30 days).
+- **Response signature + request nonce binding.** All API responses (including errors) are signed with the server key and include the request's nonce. A MITM breaking TLS with a user-installed fake root certificate cannot forge a "valid" response; old responses cannot be replayed. TLS certificate pinning is not used (Let's Encrypt renewal breaks it); what is pinned is the signing public key.
+- **Rotating counter for clone detection.** Each validation response issues a new `ctr`; the program sends it back in the next request. Two machines cloning the same activation will diverge quickly → `activation.clone_suspected`.
+- **Graduated rule engine:** observe (event only) → notify → suspend (automatic, reversible) → revoke (admin approval only). Default first 30 days is **observe mode** (Open question 2).
+- **Security center** Payload admin custom view `/admin/guvenlik` (admin only; nav link visible only to admin), reads data from admin-only GET endpoints and performs actions via admin-only POST endpoints.
 
-### 1.2 Gizli anahtarlar
+### 1.2 Secret keys
 
-| Sır | Konum | Not |
+| Secret | Location | Note |
 |---|---|---|
-| Lisans imza özel anahtarı (Ed25519, PKCS8) | `integrations` vault deseninde yeni sır kimliği `licensing-signing-ed25519` (AES-256-GCM, `SOFTMARKET_SECRETS_KEY`, AAD `softmarket:integrations:licensing-signing-ed25519`); env `SOFTMARKET_LICENSE_SIGNING_KEY` tanımlıysa env kazanır | Panelde **asla okunamaz**; yalnız "Anahtar çifti üret / döndür" (iki adımlı onay, admin panel oturumu). Panel ele geçse bile özel anahtar dışarı çıkmaz; saldırgan yalnız döndürebilir (olay + e-posta). |
-| Önceki açık anahtarlar | `licensing-settings.signingKeys[]` (kid, publicKey, createdAt, retiredAt) | Döndürmede eski kid 90 gün "yalnız doğrulama" kalır; programlar birden çok kid gömer. |
-| HMAC biber (pepper) | `SOFTMARKET_SECRETS_KEY`'den HKDF: `info = "licensing/fp/v1"` (parmak izi), `"licensing/ip/<YYYY-MM>"` (IP, aylık döner), `"licensing/dl/v1"` (indirme bağlantısı) | Yeni env yok. IP hash anahtarı aylık döner: 1 aydan eski IP hash'leri birbirine bağlanamaz (takma adlaştırma güçlenir). |
+| License signing private key (Ed25519, PKCS8) | New secret ID `licensing-signing-ed25519` in the `integrations` vault pattern (AES-256-GCM, `SOFTMARKET_SECRETS_KEY`, AAD `softmarket:integrations:licensing-signing-ed25519`); if env `SOFTMARKET_LICENSE_SIGNING_KEY` is defined, env wins | **Never readable** in the panel; only "Generate / rotate keypair" (two-step confirmation, admin panel session). Even if the panel is compromised, the private key never leaves; an attacker can only rotate it (event + e-mail). |
+| Previous public keys | `licensing-settings.signingKeys[]` (kid, publicKey, createdAt, retiredAt) | On rotation, the old kid stays "verify-only" for 90 days; programs embed multiple kids. |
+| HMAC pepper | HKDF from `SOFTMARKET_SECRETS_KEY`: `info = "licensing/fp/v1"` (fingerprint), `"licensing/ip/<YYYY-MM>"` (IP, rotates monthly), `"licensing/dl/v1"` (download link) | No new env var. The IP hash key rotates monthly: IP hashes older than 1 month cannot be linked together (strengthens pseudonymization). |
 
-`SOFTMARKET_SECRETS_KEY` kaybı = imza anahtarı ve biber kaybı → tüm cihazlar yeniden aktivasyon ister. Operasyon belgesine yedekleme prosedürü yazılır (L10).
+Loss of `SOFTMARKET_SECRETS_KEY` = loss of signing key and pepper → all devices require re-activation. The backup procedure is documented in the operations doc (L10).
 
-### 1.3 Kapsam dışı (v1)
+### 1.3 Out of scope (v1)
 
-- Kayan (floating/eşzamanlı) koltuk; koltuk = aktif cihaz (Açık soru 3).
-- Hava boşluklu (air-gapped) dosyayla aktivasyon (Açık soru 1; istenirse L11).
-- Bakım/güncelleme hakkı süresi (`maintenanceUntil`); v1'de güncelleme hakkı = geçerli lisans.
-- Admin 2FA (Açık soru 6; v1 önerisi Caddy/Cloudflare ile `/admin` IP kısıtı).
-- İstemci kurcalamasının teknik olarak önlenmesi: sunucu yamalanmış programı engelleyemez (bkz. §2 kalıntı risk).
+- Floating (concurrent) seats; seat = active device (Open question 3).
+- Air-gapped file-based activation (Open question 1; L11 if requested).
+- Maintenance/update entitlement period (`maintenanceUntil`); in v1, update entitlement = valid license.
+- Admin 2FA (Open question 6; v1 recommendation is `/admin` IP restriction via Caddy/Cloudflare).
+- Technical prevention of client tampering: the server cannot block a patched program (see §2 residual risk).
 
 ---
 
-## 2. Tehdit modeli (STRIDE)
+## 2. Threat model (STRIDE)
 
-Varlıklar: lisans anahtarı, cihaz özel anahtarı, sunucu imza anahtarı, `SOFTMARKET_SECRETS_KEY`, admin oturumu/API anahtarı, müşteri kişisel verisi (IP, cihaz adı), SQLite yazma kapasitesi, gelir (korsanlık).
+Assets: license key, device private key, server signing key, `SOFTMARKET_SECRETS_KEY`, admin session/API key, customer personal data (IP, device name), SQLite write capacity, revenue (piracy).
 
-| # | Tehdit | STRIDE | Senaryo | Önlem | Kalıntı risk |
+| # | Threat | STRIDE | Scenario | Mitigation | Residual risk |
 |---|---|---|---|---|---|
-| T1 | Anahtar paylaşımı/korsanlık | S, E | Müşteri anahtarı forumda paylaşır | Koltuk sınırı (atomik sayım), her yeni cihaz olay; IP önek dağılımı, aktivasyon döngüsü, yeniden bağlama kuralları; otomatik askı; admin iptal; iptalde tüm aktivasyonlar `revoked` | Koltuk dolana dek ilk N cihaz çalışır; kira süresi (≤14 gün) boyunca çevrimdışı çalışma |
-| T2 | Aktivasyon klonu | S | Aktive makinenin disk imajı çoğaltılır (cihaz anahtarı + parmak izi aynı) | Dönen sayaç `ctr` → ayrışma; aynı aktivasyondan eşzamanlı farklı IP önekleri; `clone_suspected` | Biri hep çevrimdışıysa tespit gecikir |
-| T3 | İstemci kurcalama | T, E | Program yamalanır, kontrol atlanır; gömülü açık anahtar değiştirilir | Sunucu tarafı hak kontrolü: güncelleme ve lisanslı indirme yalnız geçerli imzalı istekle; program içi doğrulamayı dağıt/obfüske et (istemci kılavuzu) | **Engellenemez**; yalnız maliyet artırılır. Kabul edilmiş risk |
-| T4 | Replay | S, T | Yakalanan `validate`/`deactivate` isteği tekrar gönderilir | İmzalı `SM-Timestamp` (±300 sn) + `SM-Nonce`; okuma uçlarında bellek içi nonce önbelleği (TTL 600 sn); durum değiştiren uçlarda nonce DB'de tekil (`license-activations` ilgili satırı / `security-audit.nonce`); yanıt imzası istek nonce'unu içerir | Süreç yeniden başlarsa okuma nonce önbelleği boşalır; okuma ucunun tekrarı yalnız aynı cihaza bağlı yeni kira üretir (zararsız) |
-| T5 | MITM | I, T | Kurumsal proxy veya kullanıcı kök sertifikasıyla TLS kırılır, "geçerli" yanıt enjekte edilir | Yanıt imzası (Ed25519, gömülü kid listesi), nonce bağlama; HSTS mevcut | Program açık anahtarı değiştirilirse T3'e döner |
-| T6 | API anahtarı sızıntısı | I, E | Programa gömülü paylaşılan "vendor API key" | **Paylaşılan istemci sırrı yok.** Kimlik cihaz anahtarı + lisans anahtarı. Admin MCP anahtarı sızarsa: MCP `licenses.status` değiştiremez (yeni field access reddi), yeni koleksiyonlar MCP'de yok; MCP ile lisans oluşturma `license.created_via_mcp` bilgi olayı | MCP ile lisans oluşturma açık kalır (mevcut iş akışı) |
-| T7 | Brute force | S | Rastgele anahtar denemesi | Anahtar 122,7 bit; IP önek başına geçersiz anahtar sayacı → süreli otomatik IP engeli (1 sa → 24 sa, kademeli); yanıt ayrımı yok (`invalid_license` tek kod) | Dağıtık botnet engeli aşar ama entropi pratikte imkânsız kılar |
-| T8 | DoS / SQLite yazma kilidi | D | Yoğun istek yazma kuyruğunu doldurur (`write queue timeout` 5 sn) | Uygulama içi token bucket (IP önek, lisans, aktivasyon, küresel); gövde ≤ 8 KB; imza doğrulaması DB'den önce; validate günde ~1 UPDATE/cihaz; olay tamponu 10 sn toplu yazım, 500 anahtar üstünde düşür + sayaç; engel listesi bellekte; isteğe bağlı Cloudflare WAF kuralı | Hacimsel L3/L4 saldırı uygulama dışında (Cloudflare/VPS sağlayıcısı) |
-| T9 | Admin hesabının ele geçirilmesi | E | Parola avı, oturum çalma → toplu iptal veya imza anahtarı döndürme | `maxLoginAttempts` 5 (mevcut); yeni IP öneğinden admin girişi olay + e-posta; anahtar döndürme ve toplu eylemler iki adımlı onay + e-posta; özel anahtar okunamaz; `/admin` IP kısıtı önerisi; denetim izi | 2FA yok (Açık soru 6) |
-| T10 | Yanlış pozitif → meşru müşteri kilitlenir | D | Şirket VPN'i/NAT yüzünden IP dağılımı kuralı tetiklenir | Gözlem modu; askıda bile mevcut kira `exp`'e kadar çalışır; askı e-postası destek bağlantısıyla; tek tık geri alma (önceki durumu günlükten geri yükler) + kural için 30 gün bastırma; küresel devre kesici (saatte en çok N otomatik askı, aşılırsa kural motoru gözleme düşer + kritik olay) | Kurallar bilinçli olarak gevşek varsayılanla gelir |
-| T11 | KVKK ihlali | I | IP/cihaz verisinin aşırı saklanması, yurt dışı aktarım | Minimizasyon (§6), saklama süreleri + temizlik işi, aydınlatma metni + EULA güncellemesi, MCP'de yok (LLM sağlayıcısına aktarım yok), loglarda PII yok | Hukukçu onayı gerekir (P7 `legalReview` deseni) |
-| T12 | Sunucu imza anahtarı sızıntısı | S, E | Sunucu ele geçer, saldırgan sınırsız geçerli kira üretir | Vault şifreli; env alternatifi 0600; döndürme + eski kid'i **iptal listesi**ne alma (`/keys` yanıtında `revokedKids`); program güncellemesiyle yeni kid | Döndürme sonrası çevrimdışı programlar eski kirayı `exp`'e kadar kabul eder |
-| T13 | Bilgi sızdırma (enumerasyon) | I | Hata kodlarından anahtarın varlığı/müşteri çıkarılır | Anahtar yok / ürün uyuşmuyor / müşteri doğrulanmamış = aynı `invalid_license` 401; durum ayrıntısı (`license_suspended` vb.) yalnız anahtarın sahipliği kanıtlandıktan sonra; yanıtlarda müşteri adı/e-posta yok | — |
-| T14 | Portal üzerinden koltuk takası kötüye kullanımı | E | Müşteri her gün cihazı deaktive edip başka makineye aktarır (dönen lisans) | Self-servis deaktivasyon kotası (varsayılan 30 günde 3, ayarlanabilir) + `activation.churn` kuralı | — |
-| T15 | Lisanslı indirme bağlantısı paylaşımı | I | İmzalı URL forumda paylaşılır | TTL 5 dk, aktivasyona ve indirme kimliğine bağlı HMAC, IP öneği kayıtlı, aynı belirteçle en çok 5 kullanım (Range devamı için), olay | TTL içinde paylaşım |
+| T1 | Key sharing/piracy | S, E | Customer shares key on a forum | Seat limit (atomic count), every new device emits an event; IP prefix spread, activation churn, rebind rules; auto-suspend; admin revoke; on revocation all activations become `revoked` | First N devices work until seats are full; offline operation during lease duration (≤14 days) |
+| T2 | Activation clone | S | Disk image of an activated machine is cloned (device key + fingerprint identical) | Rotating counter `ctr` → divergence; simultaneous different IP prefixes from the same activation; `clone_suspected` | Detection is delayed if one is always offline |
+| T3 | Client tampering | T, E | Program is patched, check bypassed; embedded public key replaced | Server-side entitlement check: updates and licensed downloads only with a valid signed request; distribute/obfuscate in-app checks (client guide) | **Cannot be prevented**; only increases cost. Accepted risk |
+| T4 | Replay | S, T | Captured `validate`/`deactivate` request is resent | Signed `SM-Timestamp` (±300 s) + `SM-Nonce`; in-memory nonce cache on read endpoints (TTL 600 s); on state-changing endpoints nonce is unique in DB (relevant `license-activations` row / `security-audit.nonce`); response signature includes request nonce | If process restarts, read nonce cache clears; replaying a read endpoint only produces a new lease bound to the same device (harmless) |
+| T5 | MITM | I, T | Corporate proxy or user root certificate breaks TLS, injects "valid" response | Response signature (Ed25519, embedded kid list), nonce binding; HSTS enabled | If program public key is replaced, reduces to T3 |
+| T6 | API key leak | I, E | Shared "vendor API key" embedded in the program | **No shared client secret.** Identity is device key + license key. If admin MCP key leaks: MCP cannot change `licenses.status` (new field access denial), new collections are not in MCP; creating a license via MCP emits `license.created_via_mcp` info event | License creation via MCP remains open (existing workflow) |
+| T7 | Brute force | S | Random key guessing | Key is 122.7 bits; invalid key counter per IP prefix → timed automatic IP block (1 h → 24 h, graduated); no response differentiation (`invalid_license` single code) | Distributed botnet bypasses the block, but entropy makes it practically impossible |
+| T8 | DoS / SQLite write lock | D | Heavy requests fill the write queue (`write queue timeout` 5 s) | In-app token bucket (IP prefix, license, activation, global); body ≤ 8 KB; signature verification before DB; validate ~1 UPDATE/device/day; event buffer 10 s batch write, drop above 500 keys + counter; blocklist in memory; optional Cloudflare WAF rule | Volumetric L3/L4 attack is outside the app (Cloudflare/VPS provider) |
+| T9 | Admin account compromise | E | Phishing, session hijacking → mass revocation or signing key rotation | `maxLoginAttempts` 5 (existing); admin login from new IP prefix emits event + e-mail; key rotation and bulk actions require two-step confirmation + e-mail; private key unreadable; `/admin` IP restriction recommended; audit trail | No 2FA (Open question 6) |
+| T10 | False positive → legitimate customer locked out | D | Corporate VPN/NAT triggers IP spread rule | Observe mode; even when suspended, existing lease works until `exp`; suspension e-mail includes support link; one-click restore (restores previous status from log) + 30-day suppression for the rule; global circuit breaker (at most N auto-suspends per hour, if exceeded rule engine drops to observe + critical event) | Rules ship with intentionally lenient defaults |
+| T11 | KVKK violation | I | Excessive retention of IP/device data, cross-border transfer | Minimization (§6), retention periods + cleanup job, privacy notice + EULA update, not in MCP (no transfer to LLM providers), no PII in logs | Requires lawyer approval (P7 `legalReview` pattern) |
+| T12 | Server signing key leak | S, E | Server is compromised, attacker mints unlimited valid leases | Vault encrypted; env alternative 0600; rotation + adding old kid to **revocation list** (`revokedKids` in `/keys` response); new kid via program update | After rotation, offline programs accept old leases until `exp` |
+| T13 | Information disclosure (enumeration) | I | Error codes reveal key existence/customer | Missing key / product mismatch / unverified customer = same `invalid_license` 401; status details (`license_suspended` etc.) only after key ownership is proven; no customer name/e-mail in responses | — |
+| T14 | Seat-swap abuse via portal | E | Customer deactivates device daily and transfers to another machine (floating license) | Self-service deactivation quota (default 3 in 30 days, configurable) + `activation.churn` rule | — |
+| T15 | Licensed download link sharing | I | Signed URL shared on a forum | TTL 5 min, HMAC bound to activation and download ID, IP prefix logged, at most 5 uses per token (for Range resume), event | Sharing within TTL |
 
 ---
 
-## 3. API sözleşmesi (`/api/v1/licensing`)
+## 3. API contract (`/api/v1/licensing`)
 
-### 3.1 Genel
+### 3.1 General
 
-- Taban: `https://lisans.<alan-adi>/api/v1/licensing` (ana alan adından da aynı yol çalışır; programlar alt alan adını kullanır).
-- Yalnız `POST` (uçlar arası tek tip imzalama) ve `GET /keys`. `Content-Type: application/json`, gövde ≤ 8 KB (`req.text()` ile sınırlı okuma, sonra zod strict parse; bilinmeyen alan 400).
-- Tüm yanıtlar: `Cache-Control: no-store`, `X-Robots-Tag: noindex`, `Date`, `SM-Key-Id`, `SM-Response-Signature`. CORS başlığı yok.
-- Zaman: Unix saniye. Saat kayması ±300 sn (ayarlanabilir 60–900). Kayma hatasında yanıt `serverTime` içerir; program saatini değil, isteğin zamanını düzeltip tekrar dener.
-- Sürümleme: kırıcı değişiklik `/api/v2`; v1 en az 24 ay desteklenir. Yanıtlara alan eklemek kırıcı değildir (program bilinmeyen alanı yok sayar).
+- Base: `https://lisans.<alan-adi>/api/v1/licensing` (the same path also works on the main domain; programs use the subdomain).
+- Only `POST` (uniform signing across endpoints) and `GET /keys`. `Content-Type: application/json`, body ≤ 8 KB (bounded read via `req.text()`, then zod strict parse; unknown fields return 400).
+- All responses: `Cache-Control: no-store`, `X-Robots-Tag: noindex`, `Date`, `SM-Key-Id`, `SM-Response-Signature`. No CORS headers.
+- Time: Unix seconds. Clock skew ±300 s (configurable 60–900). On a skew error, the response includes `serverTime`; the program adjusts the request timestamp (not its system clock) and retries.
+- Versioning: breaking changes use `/api/v2`; v1 is supported for at least 24 months. Adding fields to responses is non-breaking (the program ignores unknown fields).
 
-### 3.2 İstek imzası (cihaz anahtarı)
+### 3.2 Request signature (device key)
 
-Başlıklar: `SM-Activation` (`act_…`; aktivasyonda `-`), `SM-Timestamp`, `SM-Nonce` (16 bayt rastgele, base64url), `SM-Signature` (Ed25519, 64 bayt, base64url).
+Headers: `SM-Activation` (`act_…`; `-` on activation), `SM-Timestamp`, `SM-Nonce` (16 random bytes, base64url), `SM-Signature` (Ed25519, 64 bytes, base64url).
 
-Kanonik dize (UTF-8, `\n` ayraç, sonda `\n` yok):
+Canonical string (UTF-8, `\n` separator, no trailing `\n`):
 
-```
+```text
 SM1-REQ
 <METHOD>
-<path, sorgu dizesi olmadan, ör. /api/v1/licensing/validate>
+<path, without query string, e.g. /api/v1/licensing/validate>
 <SM-Timestamp>
 <SM-Nonce>
 <SM-Activation>
-<lowercase hex SHA-256(ham gövde baytları)>
+<lowercase hex SHA-256(raw body bytes)>
 ```
 
-`/activate`'te imza gövdedeki `devicePublicKey` ile doğrulanır (sahiplik kanıtı); diğer uçlarda aktivasyona kayıtlı açık anahtarla. Sunucu doğrulama sırası: boyut → başlık biçimi → saat → engel listesi (bellek) → rate limit (bellek) → imza → nonce → DB.
+In `/activate`, the signature is verified against `devicePublicKey` in the body (proof of possession); on other endpoints, against the public key registered on the activation. Server verification order: size → header format → clock → blocklist (in-memory) → rate limit (in-memory) → signature → nonce → DB.
 
-### 3.3 Yanıt imzası
+### 3.3 Response signature
 
-`SM-Response-Signature` = Ed25519(sunucu, kanonik):
+`SM-Response-Signature` = Ed25519(server, canonical):
 
-```
+```text
 SM1-RES
 <HTTP status>
-<istekteki SM-Nonce; yoksa ->
-<lowercase hex SHA-256(yanıt gövdesi)>
+<request SM-Nonce; - if absent>
+<lowercase hex SHA-256(response body)>
 ```
 
-Program: `SM-Key-Id` gömülü kid listesinde olmalı ve `revokedKids` içinde olmamalı; nonce kendi gönderdiğiyle aynı olmalı; aksi halde yanıt yok sayılır (ağ hatası gibi davranılır).
+Program: `SM-Key-Id` must be in the embedded kid list and not in `revokedKids`; the nonce must match what it sent; otherwise the response is ignored (treated like a network error).
 
-### 3.4 Kira belgesi (lease, JWS compact)
+### 3.4 Lease document (compact JWS)
 
-Başlık `{ "alg": "EdDSA", "kid": "<kid>", "typ": "sm-lease+jwt" }`. Yük:
+Header `{ "alg": "EdDSA", "kid": "<kid>", "typ": "sm-lease+jwt" }`. Payload:
 
-| Alan | Anlam |
+| Field | Meaning |
 |---|---|
 | `iss` | `https://lisans.<alan-adi>` |
-| `aud` | ürünün `licensingCode` değeri (ör. `studio-pro`) |
+| `aud` | product's `licensingCode` value (e.g., `studio-pro`) |
 | `sub` | `act_<activationPublicId>` |
-| `lid` | `lic_<licensePublicId>` (sıralı DB id'si açığa çıkmaz) |
-| `sku`, `seats` | sürüm SKU'su, lisans koltuk sınırı |
-| `fp` | programın gönderdiği parmak izi değeri (programın kendi hesapladığı hash) |
-| `dkt` | cihaz açık anahtarının SHA-256 parmak izi (base64url) |
-| `iat`, `nbf`, `exp` | `exp` = `iat + leaseDays` (çevrimdışı tolerans sonu); lisans `expiresAt` daha erkense `exp` ona kırpılır |
+| `lid` | `lic_<licensePublicId>` (sequential DB id is not exposed) |
+| `sku`, `seats` | edition SKU, license seat limit |
+| `fp` | fingerprint value sent by the program (hash computed by the program itself) |
+| `dkt` | SHA-256 thumbprint of the device public key (base64url) |
+| `iat`, `nbf`, `exp` | `exp` = `iat + leaseDays` (end of offline tolerance); if license `expiresAt` is earlier, `exp` is clamped to it |
 | `rfa` | `refreshAfter` = `iat + refreshHours` |
-| `lexp` | lisans bitişi (ISO) veya `null` (süresiz) |
-| `ctr` | dönen sayaç (programın bir sonraki istekte geri yollayacağı) |
-| `st` | `active` (yalnız geçerli lisansa kira verilir) |
+| `lexp` | license expiry (ISO) or `null` (perpetual) |
+| `ctr` | rotating counter (to be sent back by the program in the next request) |
+| `st` | `active` (leases are only issued for valid licenses) |
 | `v` | `1` |
 
-### 3.5 Uçlar
+### 3.5 Endpoints
 
-| Uç | Gövde (zod strict) | Başarı | Notlar |
+| Endpoint | Body (zod strict) | Success | Notes |
 |---|---|---|---|
-| `GET /keys` | — | `{ keys: [{kid, alg:"EdDSA", x}], revokedKids: [] }` | Herkese açık, `Cache-Control: public, max-age=3600`; programın kid listesini güncellemesi için değil, teşhis içindir (güven gömülü listeden gelir). |
-| `POST /activate` | `licenseKey`, `productCode`, `fingerprint` (base64url 32 bayt), `devicePublicKey` (base64url 32 bayt), `deviceLabel?` (≤64, kontrol karakteri yok), `platform` (`windows|macos|linux|other`), `arch?`, `appVersion` (semver ≤32) | 200 `{ activationId, lease, refreshAfter, serverTime }` | Tek transaction: lisans bul (normalize anahtar), ürün eşleşmesi, `isLicenseValid`, engel kontrolü, **aynı (lisans, fpHash) aktifse**: aynı açık anahtar → idempotent aynı aktivasyon; farklı açık anahtar → yeniden bağlama (eski satır `deactivated/rebind`, koltuk harcanmaz, kota: 30 günde 3); değilse koltuk sayımı `count(active) < maxDevices ?? seats` → yeni satır. Koltuk doluysa 409 `seat_limit` + `{ used, max }` ve olay. |
-| `POST /validate` | `ctr`, `fingerprint`, `appVersion` | 200 `{ lease, refreshAfter, serverTime }` | Aktivasyon `active` + lisans geçerli + fp eşleşir → yeni kira; `lastSeenAt`/IP/`ctr` UPDATE yalnız son yazımdan ≥ `seenWriteMinutes` (varsayılan 60) geçtiyse **veya** `ctr` değiştiyse (her başarılı validate yeni `ctr` üretir → pratikte 1 UPDATE/istek, istekler günde ~1/cihaz). `ctr` = mevcut veya bir önceki → kabul; daha eski → kabul ama `clone_suspected` olayı (düşük; tekrarlarsa yüksek). |
-| `POST /deactivate` | `reason?` (`user|uninstall|transfer`) | 200 `{ deactivated: true }` | Koltuğu boşaltır; aynı nonce ikinci kez 200 ve aynı sonuç (idempotent). |
-| `POST /updates` | `channel` (`stable|beta|lts`), `currentVersion`, `os`, `arch?` | 200 `{ latest: { version, releaseDate, channel, notesUrl, mandatory:false, downloads:[{id, os, arch, size, sha256?}] } \| null }` | `releases` ürün + kanal, `releaseDate ≤ now`, semver büyük olan. `downloads` yalnız bu ürünün `access` public veya licensed kayıtları (licensed için geçerli lisans zaten kanıtlı). |
-| `POST /downloads/link` | `downloadId` | 200 `{ url, expiresAt }` | `url` = `/api/v1/licensing/dl/<token>`; token = `base64url(payload).base64url(HMAC)`; payload `{ d: downloadId, a: activationId, e: exp(+300 sn), n: rastgele }`. |
-| `GET /dl/<token>` | — | 200/206 dosya akışı | HMAC + exp + aktivasyon hâlâ aktif + indirme ürünü = lisans ürünü; `media` dosyasını güvenli yol çözümüyle (yalnız `UPLOADS_DIR` içi, symlink yok) akıtır, `Range` destekli, `Content-Disposition: attachment`, `Cache-Control: private, no-store`. Token başına en çok 5 kullanım (bellek sayacı). Bu uç imzasızdır (indirme yöneticileri başlık ekleyemez); güvenliği belirtecin kendisidir. |
+| `GET /keys` | — | `{ keys: [{kid, alg:"EdDSA", x}], revokedKids: [] }` | Public, `Cache-Control: public, max-age=3600`; for diagnostics, not for the program to update its kid list (trust comes from the embedded list). |
+| `POST /activate` | `licenseKey`, `productCode`, `fingerprint` (base64url 32 bytes), `devicePublicKey` (base64url 32 bytes), `deviceLabel?` (≤64, no control chars), `platform` (`windows|macos|linux|other`), `arch?`, `appVersion` (semver ≤32) | 200 `{ activationId, lease, refreshAfter, serverTime }` | Single transaction: find license (normalized key), product match, `isLicenseValid`, block check, **if same (license, fpHash) is active**: same public key → idempotent same activation; different public key → rebind (old row `deactivated/rebind`, no seat consumed, quota: 3 in 30 days); otherwise seat count `count(active) < maxDevices ?? seats` → new row. If seats are full, 409 `seat_limit` + `{ used, max }` and event. |
+| `POST /validate` | `ctr`, `fingerprint`, `appVersion` | 200 `{ lease, refreshAfter, serverTime }` | Activation `active` + license valid + fp matches → new lease; `lastSeenAt`/IP/`ctr` UPDATE only if ≥ `seenWriteMinutes` (default 60) elapsed since last write **or** `ctr` changed (every successful validate issues a new `ctr` → in practice 1 UPDATE/request, requests ~1/device/day). `ctr` = current or previous → accepted; older → accepted but emits `clone_suspected` event (low; high if repeated). |
+| `POST /deactivate` | `reason?` (`user|uninstall|transfer`) | 200 `{ deactivated: true }` | Frees the seat; same nonce a second time returns 200 and same result (idempotent). |
+| `POST /updates` | `channel` (`stable|beta|lts`), `currentVersion`, `os`, `arch?` | 200 `{ latest: { version, releaseDate, channel, notesUrl, mandatory:false, downloads:[{id, os, arch, size, sha256?}] } \| null }` | `releases` product + channel, `releaseDate ≤ now`, highest semver. `downloads` only this product's `access` public or licensed records (valid license is already proven for licensed). |
+| `POST /downloads/link` | `downloadId` | 200 `{ url, expiresAt }` | `url` = `/api/v1/licensing/dl/<token>`; token = `base64url(payload).base64url(HMAC)`; payload `{ d: downloadId, a: activationId, e: exp(+300 s), n: random }`. |
+| `GET /dl/<token>` | — | 200/206 file stream | HMAC + exp + activation still active + download product = license product; streams `media` file with safe path resolution (only inside `UPLOADS_DIR`, no symlinks), supports `Range`, `Content-Disposition: attachment`, `Cache-Control: private, no-store`. At most 5 uses per token (in-memory counter). This endpoint is unsigned (download managers cannot add headers); its security is the token itself. |
 
-### 3.6 Hata sözleşmesi
+### 3.6 Error contract
 
-Gövde: `{ "error": { "code": "<kod>", "retryAfter"?: <sn> }, "serverTime": <unix> }`. Mesaj metni yok; program yerelleştirilmiş metni kendi gösterir.
+Body: `{ "error": { "code": "<code>", "retryAfter"?: <s> }, "serverTime": <unix> }`. No message text; the program displays its own localized text.
 
-| HTTP | Kod | Ne zaman | Bilgi sızıntısı kuralı |
+| HTTP | Code | When | Information disclosure rule |
 |---|---|---|---|
-| 400 | `bad_request` | Biçim/şema/boyut | Hangi alanın hatalı olduğu söylenmez |
-| 400 | `clock_skew` | Saat penceresi dışı | `serverTime` döner |
-| 401 | `invalid_signature` | İmza/nonce/aktivasyon bulunamadı | Aktivasyonun varlığı ayırt edilmez |
-| 401 | `invalid_license` | Anahtar yok, ürün uyuşmuyor | Tek kod |
-| 403 | `license_suspended` / `license_revoked` / `license_expired` / `license_not_started` | Anahtar sahipliği kanıtlı | — |
-| 403 | `activation_revoked` | Admin/müşteri bu cihazı kaldırdı | — |
-| 403 | `blocked` | Engel listesi | Neyin engellendiği söylenmez |
-| 409 | `seat_limit` | Koltuk dolu | `used`/`max` döner (sahibine faydalı) |
-| 409 | `rebind_limit` | Yeniden bağlama kotası doldu | — |
+| 400 | `bad_request` | Format/schema/size | Does not reveal which field is invalid |
+| 400 | `clock_skew` | Outside clock window | Returns `serverTime` |
+| 401 | `invalid_signature` | Signature/nonce/activation not found | Does not distinguish whether activation exists |
+| 401 | `invalid_license` | Key missing, product mismatch | Single code |
+| 403 | `license_suspended` / `license_revoked` / `license_expired` / `license_not_started` | Key ownership proven | — |
+| 403 | `activation_revoked` | Admin/customer removed this device | — |
+| 403 | `blocked` | Blocklist | Does not reveal what is blocked |
+| 409 | `seat_limit` | Seats full | Returns `used`/`max` (useful for owner) |
+| 409 | `rebind_limit` | Rebind quota reached | — |
 | 429 | `rate_limited` | Limit | `Retry-After` |
-| 503 | `unavailable` | API kapalı (`licensing-settings.apiEnabled=false`) veya imza anahtarı yok | Program çevrimdışı tolerans moduna geçer |
-| 500 | `internal` | — | Ayrıntı yok |
+| 503 | `unavailable` | API disabled (`licensing-settings.apiEnabled=false`) or no signing key | Program switches to offline tolerance mode |
+| 500 | `internal` | — | No details |
 
-Kural: imzası doğrulanamayan her yanıt dahil, program **hiçbir hatayı "lisans geçersiz" diye kalıcılaştırmaz**; yalnız imzalı 403 `license_*`/`activation_revoked` yerel kirayı siler.
+Rule: including any response whose signature cannot be verified, the program **never persists any error as "license invalid"**; only a signed 403 `license_*`/`activation_revoked` deletes the local lease.
 
-### 3.7 Rate limit (varsayılanlar `licensing-settings`'ten)
+### 3.7 Rate limits (defaults from `licensing-settings`)
 
-| Anahtar | Uç | Varsayılan | Aşımda |
+| Key | Endpoint | Default | On exceed |
 |---|---|---|---|
-| IP öneki | tüm uçlar | 60/dk | 429 + aggregate olay `api.rate_limited` |
-| IP öneki | `invalid_license` | 10/saat | otomatik süreli IP öneki engeli 1 sa; 24 sa içinde tekrarında 24 sa (`security-blocks`, kaynak `rule`) |
-| Lisans | `activate` | 10/gün | 429 + `activation.burst` |
-| Aktivasyon | `validate`/`updates`/`downloads/link` | 30/saat | 429 |
-| Aktivasyon | `invalid_signature` | 5/saat | olay `api.bad_signature` (yüksek) |
-| Küresel | tüm | 200/sn | 503 + kritik olay (süreç koruması) |
+| IP prefix | all endpoints | 60/min | 429 + aggregate event `api.rate_limited` |
+| IP prefix | `invalid_license` | 10/hour | automatic timed IP prefix block 1 h; 24 h on repeat within 24 h (`security-blocks`, source `rule`) |
+| License | `activate` | 10/day | 429 + `activation.burst` |
+| Activation | `validate`/`updates`/`downloads/link` | 30/hour | 429 |
+| Activation | `invalid_signature` | 5/hour | event `api.bad_signature` (high) |
+| Global | all | 200/s | 503 + critical event (process protection) |
 
-Uygulama: `src/lib/licensing/rate-limit.ts`, `createRateLimiter` deseninin token-bucket sürümü (bounded Map, `globalThis` tekil). IP kaynağı `requestIP()` (Caddy doğrulamalı başlık); `unknown` ise tüm istekler ortak kovaya düşer (fail-closed, mevcut kural). Bellek içi olduğu için **tek süreç varsayımı** zorunlu (bkz. `docs/plan-hosting.md`).
+Implementation: `src/lib/licensing/rate-limit.ts`, token-bucket version of the `createRateLimiter` pattern (bounded Map, `globalThis` singleton). IP source `requestIP()` (Caddy-authenticated header); if `unknown`, all requests fall into a shared bucket (fail-closed, existing rule). Because it is in-memory, the **single-process assumption** is mandatory (see `docs/plan-hosting.md`).
 
-### 3.8 Örnek istemci akışı
+### 3.8 Example client flow
 
+```text
+Install/first launch:
+  1. Generate Ed25519 keypair on device, store in OS keystore.
+  2. fp = base64url(SHA-256("sm-fp-v1|" + productCode + "|" + stable hardware IDs)) — raw serial numbers are never sent.
+  3. POST /activate (signed). 200 → securely store lease + activationId.
+On every launch (offline):
+  4. Lease signature (embedded kid), aud == productCode, fp == local fp, dkt == local public key, now < exp.
+  5. If valid, run; if now > rfa, run step 6 in the background.
+Background:
+  6. POST /validate { ctr } → new lease. No network/503/unsigned response → continue with old lease, exponential backoff.
+  7. Signed 403 license_* → delete lease, return to license screen.
+Uninstall:
+  8. POST /deactivate; if it fails, tell the user "remove the device from the portal".
 ```
-Kurulum/ilk açılış:
-  1. Cihazda Ed25519 çifti üret, OS deposuna koy.
-  2. fp = base64url(SHA-256("sm-fp-v1|" + productCode + "|" + kararlı donanım kimlikleri)) — ham seri no gönderilmez.
-  3. POST /activate (imzalı). 200 → kira + activationId'yi güvenli sakla.
-Her açılışta (çevrimdışı):
-  4. Kira imzası (gömülü kid), aud == productCode, fp == yerel fp, dkt == yerel açık anahtar, now < exp.
-  5. Geçerliyse çalış; now > rfa ise arka planda 6.
-Arka plan:
-  6. POST /validate { ctr } → yeni kira. Ağ yok/503/imzasız yanıt → eski kirayla devam, üstel bekleme.
-  7. İmzalı 403 license_* → kirayı sil, lisans ekranına dön.
-Kaldırma:
-  8. POST /deactivate; başarısızsa kullanıcıya "portaldan cihazı kaldırın" de.
-```
 
-`curl` ve imza üretimi örneği, doğrulama algoritmasının adım adım tanımı ve **test vektörleri** (sabit anahtar çifti, sabit nonce/zaman → beklenen imza) L9'da `docs/licensing/client-integration.md` içine yazılır; referans doğrulayıcı TypeScript (Node `crypto`) + C# (.NET `System.Security.Cryptography` Ed25519 yoksa NSec/BouncyCastle notu) örnekleri.
+`curl` and signature generation examples, step-by-step description of the verification algorithm, and **test vectors** (fixed keypair, fixed nonce/timestamp → expected signature) are written in L9 into `docs/licensing/client-integration.md`; reference verifier examples in TypeScript (Node `crypto`) + C# (.NET `System.Security.Cryptography`, with NSec/BouncyCastle note if Ed25519 is unavailable).
 
 ---
 
-## 4. Veri modeli
+## 4. Data model
 
-Tümü `group: 'Güvenlik'` (admin-i18n'de TR/EN), `admin.hidden` yalnız editor'a (custom view kullanılır, liste görünümleri admin'e açık kalır).
+All in `group: 'Güvenlik'` (Security; TR/EN in admin-i18n), `admin.hidden` for editor only (custom view is used, list views remain open to admin).
 
-### 4.1 `licenses` eklemeleri (ADD COLUMN)
+### 4.1 `licenses` additions (ADD COLUMN)
 
-| Alan | Tür | Not |
+| Field | Type | Note |
 |---|---|---|
 | `publicId` | text, unique, readOnly | Backfill uses 12 random bytes in hex and retries collisions before creating the unique index. `prepareLicense` generates IDs for new licenses. |
-| `maxDevices` | number, min 1 | Boş = `seats` |
-| `statusReason` | select (`manual`, `payment_refund`, `payment_dispute`, `rule_*`, `expiry`, `restore`) | Son geçişin nedeni (günlüğün özeti) |
+| `maxDevices` | number, min 1 | Empty = `seats` |
+| `statusReason` | select (`manual`, `payment_refund`, `payment_dispute`, `rule_*`, `expiry`, `restore`) | Reason for the latest transition (summary of the log) |
 | `statusChangedAt` | date | |
 | `statusSource` | select (`admin`, `mcp`, `payment`, `rule`, `system`, `import`) | |
-| `activations` | join → `license-activations.license` | Şema kolonu yok |
+| `activations` | join → `license-activations.license` | No schema column |
 
-`status` alanı: MCP (`_strategy === 'api-key'`) yazamaz (field access; mevcut commerce deseni). Panelde alan kalır ama doğrudan değişiklik `beforeChange` kancasında yakalanır, gerekçe alanı (`statusNote`, sanal/virtual değil — `ui` + kanca `req.context`) yoksa "Lisans işlemleri" panelini kullanın uyarısıyla 400. Önerilen yol yan paneldeki eylem düğmeleri.
+`status` field: MCP (`_strategy === 'api-key'`) cannot write it (field access; existing commerce pattern). The field stays in the panel, but direct changes are caught in the `beforeChange` hook; if the reason field (`statusNote`, not virtual — `ui` + hook `req.context`) is missing, it returns 400 with a warning to use the `Lisans işlemleri` (License actions) panel. The recommended path is the action buttons in the side panel.
 
-### 4.2 `products` eklemeleri
+### 4.2 `products` additions
 
-| Alan | Tür | Not |
+| Field | Type | Note |
 |---|---|---|
-| `licensing.enabled` | checkbox, varsayılan false | API yalnız açık ürünlerde |
-| `licensing.code` | text, unique, `^[a-z0-9][a-z0-9-]{2,40}$` | Kiradaki `aud`; bir kez ayarlanınca değiştirilemez (kanca) — programlara gömülür |
+| `licensing.enabled` | checkbox, default false | API only on enabled products |
+| `licensing.code` | text, unique, `^[a-z0-9][a-z0-9-]{2,40}$` | `aud` in the lease; immutable once set (hook) — embedded in programs |
 
-### 4.3 `license-activations` (yeni)
+### 4.3 `license-activations` (new)
 
-| Alan | Tür | Not |
+| Field | Type | Note |
 |---|---|---|
-| `publicId` | text unique | `act_` öneki API'de |
+| `publicId` | text unique | `act_` prefix in API |
 | `license` | rel licenses, index | |
-| `customer`, `product` | rel, index | Denormalize (sorgu ve portal) |
+| `customer`, `product` | rel, index | Denormalized (queries and portal) |
 | `status` | select `active|deactivated|revoked`, index | |
 | `endReason` | select `user|admin|customer_portal|rebind|license_revoked|rule` | |
 | `devicePublicKey` | text (base64url 32 B) | |
 | `deviceKeyThumbprint` | text, index | |
-| `fingerprintHash` | text (HMAC-SHA256 hex), index | Ham fp saklanmaz |
-| `deviceLabel` | text ≤64 | Müşteri portalda yeniden adlandırabilir; boşsa "Cihaz 1" |
+| `fingerprintHash` | text (HMAC-SHA256 hex), index | Raw fp is not stored |
+| `deviceLabel` | text ≤64 | Customer can rename in portal; if empty, "Device 1" |
 | `platform`, `arch`, `appVersion` | select/text | |
-| `counter` | text (16 B base64url) | Son verilen `ctr`; önceki değer `prevCounter` |
+| `counter` | text (16 B base64url) | Last issued `ctr`; previous value `prevCounter` |
 | `activatedAt`, `lastSeenAt`, `endedAt` | date | |
-| `lastIpPrefix` | text | `203.0.113.0/24`; 90 gün sonra/sonlanmadan 90 gün sonra NULL |
-| `lastIpHash` | text | Aylık anahtar; aynı temizlik |
-| `lastCountry` | text(2) | Yalnız ülke kaynağı açıksa (Açık soru 4) |
-| `endNonce` | text | Deaktivasyon idempotency |
+| `lastIpPrefix` | text | `203.0.113.0/24`; NULL after 90 days / 90 days after ending |
+| `lastIpHash` | text | Monthly key; same cleanup |
+| `lastCountry` | text(2) | Only if country source is enabled (Open question 4) |
+| `endNonce` | text | Deactivation idempotency |
 
-Migration'da ek SQL (CREATE INDEX, kural 7'ye uygun): `CREATE UNIQUE INDEX license_activations_one_active_fp ON license_activations(license_id, fingerprint_hash) WHERE status = 'active'` ve `… _thumb ON (device_key_thumbprint) WHERE status='active'`. Koltuk sayımı yine serial transaction içinde; indeks son savunma hattı.
+Additional SQL in migration (`CREATE INDEX`, compliant with rule 7): `CREATE UNIQUE INDEX license_activations_one_active_fp ON license_activations(license_id, fingerprint_hash) WHERE status = 'active'` and `… _thumb ON (device_key_thumbprint) WHERE status='active'`. Seat counting is still inside the serial transaction; the index is the last line of defense.
 
-### 4.4 `security-events` (yeni, append-only + sunucu tarafı triage)
+### 4.4 `security-events` (new, append-only + server-side triage)
 
-| Alan | Tür | Not |
+| Field | Type | Note |
 |---|---|---|
-| `type` | select (§5.1 kataloğu), index | |
+| `type` | select (§5.1 catalog), index | |
 | `severity` | select `info|low|medium|high|critical`, index | |
 | `source` | select `api|portal|admin|webhook|system|rule` | |
 | `firstSeenAt`, `lastSeenAt` | date, index | |
-| `count` | number | Toplama: aynı `dedupeKey` |
-| `dedupeKey` | text unique | `type|subject|zaman kovası (ör. 1 sa)` |
-| `license`, `customer`, `activation`, `order`, `actorUser` | rel, index | Olay → ilgili kayıt bağlantısı |
-| `ipPrefix`, `ipHash`, `country` | text | 30 gün sonra NULL |
-| `detail` | json | Zod şemalı, olay türüne göre allowlist anahtarlar; PII yok |
-| `ruleKey` | text | Tetikleyen kural |
-| `actionTaken` | select `none|notified|throttled|blocked|suspended` | Otomatik eylem |
-| `triage` | select `open|acknowledged|resolved|false_positive`, index | Yalnız admin uçları değiştirir |
-| `triagedBy`, `triagedAt`, `triageNote` | | Her değişiklik `security-audit`'e de yazılır |
-| `notifyState`, `notifyAttempts`, `notifyNextAt`, `notifyLastError` | | Kalıcı bildirim kuyruğu (P4 `orders.notifications` lease deseni) |
+| `count` | number | Aggregation: same `dedupeKey` |
+| `dedupeKey` | text unique | `type|subject|time bucket (e.g. 1 h)` |
+| `license`, `customer`, `activation`, `order`, `actorUser` | rel, index | Event → related record link |
+| `ipPrefix`, `ipHash`, `country` | text | NULL after 30 days |
+| `detail` | json | Zod-validated, allowlisted keys per event type; no PII |
+| `ruleKey` | text | Triggering rule |
+| `actionTaken` | select `none|notified|throttled|blocked|suspended` | Automatic action |
+| `triage` | select `open|acknowledged|resolved|false_positive`, index | Only admin endpoints modify this |
+| `triagedBy`, `triagedAt`, `triageNote` | | Every change is also written to `security-audit` |
+| `notifyState`, `notifyAttempts`, `notifyNextAt`, `notifyLastError` | | Durable notification queue (P4 `orders.notifications` lease pattern) |
 
-Erişim: read admin; create/update/delete nobody. Panel liste görünümü salt okunur (PaymentEvents `readOnly` deseni).
+Access: read admin; create/update/delete nobody. Panel list view is read-only (PaymentEvents `readOnly` pattern).
 
-### 4.5 `security-blocks` (engel listesi)
+### 4.5 `security-blocks` (blocklist)
 
-`kind` (`ip_prefix|cidr|activation|license|fingerprint`), `value` (önek/CIDR metni ya da kayıt id/hash; IP için yalnız önek, tam IP yok), `scope` (`api|portal|all`), `active` (index), `expiresAt` (boş = süresiz, yalnız admin), `source` (`admin|rule`), `reason`, `event` (rel), `createdBy`, `liftedAt`, `liftedBy`, `liftReason`. Bellek önbelleği 30 sn + süreç içi yazımda anında. Admin kendi IP'sini içeren CIDR engelini iki adımlı onayla ekleyebilir (uyarı). Erişim: read admin; yazım yalnız uçlar.
+`kind` (`ip_prefix|cidr|activation|license|fingerprint`), `value` (prefix/CIDR text or record id/hash; for IP only prefix, no full IP), `scope` (`api|portal|all`), `active` (index), `expiresAt` (empty = permanent, admin only), `source` (`admin|rule`), `reason`, `event` (rel), `createdBy`, `liftedAt`, `liftedBy`, `liftReason`. In-memory cache 30 s + immediate on in-process write. Admin can add a CIDR block containing their own IP with two-step confirmation (warning). Access: read admin; writes only via endpoints.
 
-### 4.6 `license-status-log` (durum geçiş günlüğü)
+### 4.6 `license-status-log` (status transition log)
 
-`license` (index), `from`, `to`, `reason` (statusReason değerleri), `source` (`admin|mcp|payment|rule|system|import|customer`), `actorUser`, `order`, `event`, `ruleKey`, `note` (≤500, PII uyarısı), `at` (index), `revertOf` (rel kendisi; geri alma hangi geçişi geri aldı), `revertible` (bool). Append-only; update/delete nobody. Saklama: lisans ömrü + 10 yıl (ticari kayıt; IP içermez).
+`license` (index), `from`, `to`, `reason` (statusReason values), `source` (`admin|mcp|payment|rule|system|import|customer`), `actorUser`, `order`, `event`, `ruleKey`, `note` (≤500, PII warning), `at` (index), `revertOf` (self rel; which transition the restore reverted), `revertible` (bool). Append-only; update/delete nobody. Retention: license lifetime + 10 years (commercial record; contains no IP).
 
-### 4.7 `security-audit` (admin ve sistem eylemleri)
+### 4.7 `security-audit` (admin and system actions)
 
-`action` (`license.suspend|revoke|reactivate|restore`, `activation.deactivate`, `block.add|lift`, `event.triage`, `settings.update`, `signing_key.rotate`, `bulk.*`), `actorUser`, `actorKind` (`admin|system|rule`), `target` (polymorphic rel: licenses, license-activations, security-blocks, security-events), `reason`, `note`, `at`, `ipPrefix` (admin), `result` (`ok|denied|error`). Saklama 2 yıl.
+`action` (`license.suspend|revoke|reactivate|restore`, `activation.deactivate`, `block.add|lift`, `event.triage`, `settings.update`, `signing_key.rotate`, `bulk.*`), `actorUser`, `actorKind` (`admin|system|rule`), `target` (polymorphic rel: licenses, license-activations, security-blocks, security-events), `reason`, `note`, `at`, `ipPrefix` (admin), `result` (`ok|denied|error`). Retention 2 years.
 
-### 4.8 `licensing-settings` (yeni global, versiyonsuz, yalnız admin, MCP yok)
+### 4.8 `licensing-settings` (new global, unversioned, admin-only, no MCP)
 
-Sekmeler: **Genel** (`apiEnabled`, `publicHost` (ör. `lisans.alanadi.com`), `refreshHours` 24, `leaseDays` 14 (≤30), `clockSkewSeconds` 300, `seenWriteMinutes` 60), **Limitler** (§3.7 tablosu), **Kurallar** (her kural: `mode` `off|observe|notify|suspend`, eşikler, pencere, bastırma günü; `observeUntil` tarihi; devre kesici `maxAutoSuspendsPerHour` 5), **Self-servis** (portal deaktivasyon kotası, yeniden bağlama kotası), **Bildirim** (`alertEmails[]`, `minSeverityImmediate` `high`, `dailyDigest` bool + saat, müşteriye askı e-postası bool), **Saklama** (§6 süreleri, alt sınırlar kod sabiti), **İmza anahtarları** (`signingKeys[]` salt okunur + "üret/döndür" düğmesi → uç), **Ülke kaynağı** (`none|cloudflare_header`; Açık soru 4). Değişiklikler `security-audit` `settings.update` (eski/yeni değer özeti).
+Tabs: **General** (`apiEnabled`, `publicHost` (e.g., `lisans.alanadi.com`), `refreshHours` 24, `leaseDays` 14 (≤30), `clockSkewSeconds` 300, `seenWriteMinutes` 60), **Limits** (§3.7 table), **Rules** (each rule: `mode` `off|observe|notify|suspend`, thresholds, window, suppression days; `observeUntil` date; circuit breaker `maxAutoSuspendsPerHour` 5), **Self-service** (portal deactivation quota, rebind quota), **Notifications** (`alertEmails[]`, `minSeverityImmediate` `high`, `dailyDigest` bool + hour, customer suspension e-mail bool), **Retention** (§6 periods, lower bounds are code constants), **Signing keys** (`signingKeys[]` read-only + "generate/rotate" button → endpoint), **Country source** (`none|cloudflare_header`; Open question 4). Changes write `security-audit` `settings.update` (summary of old/new values).
 
-### 4.9 Migration planı
+### 4.9 Migration plan
 
-Tek migration `licensing_core` (L1): 5 CREATE TABLE (+ Payload ilişki/locale tabloları), `licenses` 5 ADD COLUMN + backfill, `products` 2 ADD COLUMN, global tablo, 2 kısmi UNIQUE INDEX. Down: veri varsa (`license_activations`/`security_events` satırı) reddeder; yoksa yalnız kendi nesnelerini kaldırır. Kopya DB → `pnpm migrate` → `content:import --dry-run` → `starter-template-db` → integrity/FK → migration up/down/up testi.
+Single migration `licensing_core` (L1): 5 CREATE TABLE (+ Payload relation/locale tables), `licenses` 5 ADD COLUMN + backfill, `products` 2 ADD COLUMN, global table, 2 partial UNIQUE INDEXes. Down: refuses if data exists (`license_activations`/`security_events` rows); otherwise removes only its own objects. Copy DB → `pnpm migrate` → `content:import --dry-run` → `starter-template-db` → integrity/FK → migration up/down/up test.
 
 ---
 
-## 5. Olaylar, kural motoru, otomatik/manuel iptal
+## 5. Events, rule engine, automatic/manual revocation
 
-### 5.1 Olay kataloğu (`src/lib/licensing/events/catalog.ts`, tek kaynak)
+### 5.1 Event catalog (`src/lib/licensing/events/catalog.ts`, single source)
 
-| Tür | Varsayılan önem | Kaynak |
+| Type | Default severity | Source |
 |---|---|---|
 | `activation.created` / `activation.rebind` / `activation.ended` | info | api/portal/admin |
 | `activation.seat_limit` | low | api |
-| `activation.burst` (lisans başına kısa sürede çok aktivasyon) | medium | rule |
-| `activation.churn` (aktivasyon/deaktivasyon döngüsü) | medium | rule |
-| `activation.clone_suspected` | low → high (tekrar) | api/rule |
-| `license.ip_spread` (24 sa'te farklı IP öneki > N) | medium | rule |
-| `license.geo_spread` / `license.impossible_travel` | medium/high | rule (ülke kaynağı açıksa) |
-| `license.status_changed` | info (iptal: medium) | tüm |
-| `license.expired` (bir kez) | info | sweep |
+| `activation.burst` (many activations per license in a short time) | medium | rule |
+| `activation.churn` (activation/deactivation cycle) | medium | rule |
+| `activation.clone_suspected` | low → high (repeat) | api/rule |
+| `license.ip_spread` (distinct IP prefixes in 24 h > N) | medium | rule |
+| `license.geo_spread` / `license.impossible_travel` | medium/high | rule (if country source enabled) |
+| `license.status_changed` | info (revocation: medium) | all |
+| `license.expired` (once) | info | sweep |
 | `license.created_via_mcp` | info | admin |
-| `api.invalid_license` (aggregate) | low → high (eşik) | api |
+| `api.invalid_license` (aggregate) | low → high (threshold) | api |
 | `api.bad_signature` / `api.replay` / `api.clock_skew` (aggregate) | medium/high/info | api |
 | `api.rate_limited` (aggregate) | low | api |
 | `api.blocked_request` (aggregate) | info | api |
 | `auth.admin_login_failed` / `auth.admin_locked` / `auth.admin_new_network` | medium/high/high | admin |
 | `auth.portal_login_failed` (aggregate) / `auth.portal_locked` | low/medium | portal |
-| `webhook.bad_signature` (mevcut `payment-events` reddi) | high | webhook |
+| `webhook.bad_signature` (existing `payment-events` rejection) | high | webhook |
 | `system.rule_circuit_open` / `system.signing_key_rotated` / `system.events_dropped` | critical/high/high | system |
 
-### 5.2 Olay yazıcı
+### 5.2 Event writer
 
-`src/lib/licensing/events/writer.ts`: `emit(event)` senkron, belleğe koyar; 10 sn'de bir (ve 200 kayıtta) tek transaction'da `INSERT … ON CONFLICT(dedupe_key) DO UPDATE SET count = count + excluded.count, last_seen_at = …`. Tampon 500 farklı anahtarı aşarsa yeni anahtarlar düşer, `system.events_dropped` sayacı artar. `high`/`critical` olaylar ayrıca hemen yazılır (bildirim gecikmesin). Süreç kapanışında (SIGTERM) son flush. Kural motoru girdi olarak bu tablonun yanında `license-activations`'ı okur.
+`src/lib/licensing/events/writer.ts`: `emit(event)` is synchronous, puts into memory; every 10 s (and at 200 entries) in a single transaction runs `INSERT … ON CONFLICT(dedupe_key) DO UPDATE SET count = count + excluded.count, last_seen_at = …`. If the buffer exceeds 500 distinct keys, new keys are dropped and the `system.events_dropped` counter increments. `high`/`critical` events are also written immediately (so notifications are not delayed). Final flush on process shutdown (SIGTERM). The rule engine reads `license-activations` alongside this table as input.
 
-### 5.3 Kural motoru
+### 5.3 Rule engine
 
-- Senkron kurallar (istekte): koltuk sınırı (reddet, askı değil), rebind kotası, engel listesi, rate limit.
-- Asenkron kurallar (`pnpm licensing:sweep`, 5 dk timer): `ip_spread`, `geo_spread`, `impossible_travel`, `activation.burst`, `activation.churn`, `clone_suspected` tekrarı, `invalid_license` → IP engeli, süre bitişi günlüğü, saklama temizliği, bildirim kuyruğu.
-- Kural sonucu → `mode`'a göre: `observe` (yalnız olay), `notify` (olay + admin e-postası), `suspend` (olay + otomatik askı + admin ve müşteri e-postası). `suspend` koşulları: lisans `active`, son 30 gün içinde aynı kural için bastırma yok, ödeme kaynaklı askı yok, küresel devre kesici kapalı, `observeUntil` geçmiş.
-- **Otomatik askı = API'de yeni kira yok + yeni aktivasyon yok**; mevcut kiralar `exp`'e kadar çalışır, portal ve lisanslı web indirmesi kapanır (mevcut `validLicenseWhere` zaten `active` ister).
-- **Geri alma (Restore):** olay veya lisans panelinde "Yanlış alarm — geri al": son `license-status-log` satırı bu kuralın askısıysa, `from` değerine geri döner (`reason: restore`, `revertOf`), olay `false_positive`, kural + lisans için 30 gün bastırma, müşteriye "yeniden etkin" e-postası. Arada başka bir geçiş (ödeme, admin) olduysa geri alma reddedilir (409) ve admin manuel işlem yapar.
-- **İptal:** yalnız admin, gerekçe zorunlu, iki adımlı onay; tüm aktif aktivasyonlar `revoked` (`endReason: license_revoked`).
-- **Süre bitişi:** durum yazılmaz (tarih tek gerçek; `isLicenseValid` zaten bitişi uygular). Sweep bir kez `license.expired` olayı (dedupe: lisans + `expiresAt`) + müşteriye bilgi e-postası (isteğe bağlı) üretir; durum değişmediği için `license-status-log` satırı yazılmaz. Kiradaki `exp` zaten lisans bitişine kırpılır. Yenileme admin `expiresAt` uzatmasıyla otomatik geri döner.
-- **Ödeme entegrasyonu:** `refundOrder` ve `applyDispute` ham SQL'inden sonra aynı `tx` içinde `recordLicenseTransitions(tx, ids, …, source:'payment', order)` + etkilenen aktivasyonlar (`refund` → `revoked`; dispute → değişmez, askı API'de etkili). İtiraz kazanılırsa admin "Askıyı kaldır" (`restore`) kullanır; Stripe `charge.dispute.closed` otomasyonu ayrı iş (L5'te değerlendirilir, P6 kodu sahibine danışılır).
+- Synchronous rules (on request): seat limit (reject, not suspend), rebind quota, blocklist, rate limit.
+- Asynchronous rules (`pnpm licensing:sweep`, 5 min timer): `ip_spread`, `geo_spread`, `impossible_travel`, `activation.burst`, `activation.churn`, `clone_suspected` repeat, `invalid_license` → IP block, expiry log, retention cleanup, notification queue.
+- Rule result → according to `mode`: `observe` (event only), `notify` (event + admin e-mail), `suspend` (event + automatic suspension + admin and customer e-mail). `suspend` conditions: license `active`, no suppression for the same rule in the last 30 days, no payment-sourced suspension, global circuit breaker closed, `observeUntil` elapsed.
+- **Automatic suspension = no new leases + no new activations on API**; existing leases continue until `exp`, portal and licensed web downloads close (existing `validLicenseWhere` already requires `active`).
+- **Restore:** "False positive — restore" on the event or license panel: if the latest `license-status-log` row is this rule's suspension, reverts to the `from` value (`reason: restore`, `revertOf`), event becomes `false_positive`, 30-day suppression for rule + license, "re-enabled" e-mail to customer. If another transition (payment, admin) occurred in between, restore is rejected (409) and admin handles it manually.
+- **Revocation:** admin only, reason mandatory, two-step confirmation; all active activations become `revoked` (`endReason: license_revoked`).
+- **Expiration:** no status is written (date is the single source of truth; `isLicenseValid` already enforces expiration). Sweep produces one `license.expired` event (dedupe: license + `expiresAt`) + informational e-mail to customer (optional); since status does not change, no `license-status-log` row is written. `exp` in the lease is already clamped to license expiry. Renewal automatically restores via admin extending `expiresAt`.
+- **Payment integration:** after the raw SQL of `refundOrder` and `applyDispute`, inside the same `tx`, call `recordLicenseTransitions(tx, ids, …, source:'payment', order)` + affected activations (`refund` → `revoked`; dispute → unchanged, suspension takes effect on API). If the dispute is won, admin uses "Lift suspension" (`restore`); Stripe `charge.dispute.closed` automation is separate work (evaluated in L5, consult P6 code owner).
 
-### 5.4 Admin eylem uçları (hepsi `guardAdminSession` + gövde `{ reason, note?, confirm? }` ≤ 2 KB)
+### 5.4 Admin action endpoints (all `guardAdminSession` + body `{ reason, note?, confirm? }` ≤ 2 KB)
 
-`POST /api/licenses/:id/{suspend,revoke,reactivate,restore}`, `POST /api/license-activations/:id/deactivate`, `POST /api/security-events/:id/{acknowledge,resolve,false-positive}` (`false-positive` isteğe bağlı `restore: true`), `POST /api/security-events/:id/block` (olaydaki IP öneği/aktivasyon/lisans için süreli engel), `POST /api/security-blocks` + `/:id/lift`, `POST /api/globals/licensing-settings/rotate-signing-key` (`confirm` = "DÖNDÜR" metni), `GET /api/security/summary|events|blocks|audit|risky-licenses` (admin, panel oturumu, sayfalı, `no-store`). Toplu eylem v1'de yok (tek tek; risk azaltımı).
-
----
-
-## 6. KVKK, gözlemlenebilirlik, saklama
-
-- **Toplanan veri:** cihaz etiketi (müşteri kontrolünde), platform/sürüm, parmak izi HMAC'i, cihaz açık anahtarı, IP öneği + aylık anahtarlı IP HMAC'i, (opsiyonel) ülke kodu, zaman damgaları. Ham donanım kimliği, MAC, kullanıcı adı, tam IP **toplanmaz/saklanmaz**.
-- **Hukuki dayanak (taslak, hukukçu onayına):** sözleşmenin ifası (lisans doğrulama) + meşru menfaat (dolandırıcılık/korsanlık önleme). Aydınlatma metni (`content/legal/{tr,en}/kvkk.md`, `gizlilik.md`) ve EULA'ya "aktivasyon ve doğrulama verileri" bölümü; P7 `legalReview` onayı. VERBİS kaydı güncellemesi kullanıcıya hatırlatılır.
-- **Saklama (varsayılan, admin artırabilir/azaltabilir; kod alt sınırı parantezde):**
-  - `security-events` ham IP alanları 30 gün (7) → NULL; olay satırı 180 gün (30) → silinir.
-  - `license-activations` IP alanları: aktifken son 90 gün; sonlanınca 90 gün sonra NULL; satır (IP'siz) lisans ömrü + 2 yıl.
-  - `security-blocks` sona ermiş + 90 gün → silinir.
-  - `license-status-log` lisans ömrü + 10 yıl; `security-audit` 2 yıl.
-  - Temizlik `licensing:sweep` içinde, gece bir kez, 1000'lik partiler, her parti ayrı kısa transaction.
-- **Loglar:** yalnız kodlar ve kısa kimlikler (`act_…` son 6, `lid` son 6, maskeli anahtar). Tam IP, e-posta, parmak izi, gövde loglanmaz. Test: log yakalama ile regex taraması.
-- **Müşteri hakları:** portalda cihaz listesi ve deaktivasyon; silme talebinde aktivasyon IP alanları anında NULL, aktivasyon satırları anonimleştirilir (müşteri bağlantısı lisans üzerinden kalır, lisans silinmez — ticari kayıt).
-- **Gözlem:** Güvenlik merkezi özet kartları (son 24 sa olay/önem, açık yüksek olay, aktif engel, otomatik askı sayısı, API istek/ret oranı — bellek sayaçları, süreç başına), `GET /api/security/summary`.
+`POST /api/licenses/:id/{suspend,revoke,reactivate,restore}`, `POST /api/license-activations/:id/deactivate`, `POST /api/security-events/:id/{acknowledge,resolve,false-positive}` (`false-positive` optional `restore: true`), `POST /api/security-events/:id/block` (timed block for IP prefix/activation/license in the event), `POST /api/security-blocks` + `/:id/lift`, `POST /api/globals/licensing-settings/rotate-signing-key` (`confirm` = `"DÖNDÜR"` text), `GET /api/security/summary|events|blocks|audit|risky-licenses` (admin, panel session, paginated, `no-store`). No bulk actions in v1 (one by one; risk reduction).
 
 ---
 
-## 7. Güvenlik merkezi (admin custom view)
+## 6. KVKK, observability, retention
 
-- Konum: `admin.components.views.securityCenter` → `/admin/guvenlik`; nav: `afterNavLinks` bileşeni yalnız `isAdminUser` ise render. Görünüm sunucu tarafında da rolü doğrular (editor doğrudan URL ile 403/redirect).
-- Dosyalar: `src/admin/security/{SecurityCenterView.tsx, Summary.tsx, EventsTable.tsx, EventDrawer.tsx, BlocksTable.tsx, AuditTable.tsx, RiskyLicenses.tsx, actions.ts}`; stil mevcut admin token'ları; bağımlılık eklenmez.
-- **Sekmeler:** Özet · Olaylar · Riskli lisanslar · Engeller · Denetim izi · Ayarlar (→ `licensing-settings`).
-- **Olaylar filtresi:** tür, önem (çoklu), triage, tarih aralığı, kaynak, lisans/müşteri araması (id/maskeli anahtar son grup/e-posta tam eşleşme — sunucuda). Sayfalama 50, varsayılan sıralama `lastSeenAt desc`, varsayılan filtre `triage=open`.
-- **Olay çekmecesi:** ayrıntı (allowlist alanları), bağlantılar (lisans, müşteri, aktivasyon, sipariş — Payload belge linkleri), zaman çizelgesi (aynı lisansın son 20 olayı + status-log), eylemler: Onayla · Çözüldü · Yanlış alarm (+geri al) · Lisansı askıya al · Lisansı iptal et (iki adım) · Cihazı kaldır · IP önekini/aktivasyonu engelle (süre seçimi 1 sa/24 sa/7 gün/süresiz). Her eylem gerekçe ister.
-- **Lisans belge görünümü:** yan panel "Lisans işlemleri" (P6 "Sipariş işlemleri" deseni): durum rozeti + neden, Askıya al/İptal/Yeniden etkinleştir/Geri al, aktivasyon listesi (cihaz etiketi, platform, son görülme, IP öneki, kaldır), son 10 status-log satırı.
-- **Bildirim:** `high`+ anında e-posta (`alertEmails`, yoksa `PAYMENTS_ALERT_EMAIL` → site-settings iletişim), günlük özet (isteğe bağlı), nav'da açık yüksek olay sayısı rozeti. E-posta içeriği PII'siz: tür, önem, maskeli kimlik, panel bağlantısı. Kuyruk en az bir kez teslim (P4 notu: SMTP ile işaret arasında kesintide tekrar olası).
+- **Collected data:** device label (customer-controlled), platform/version, fingerprint HMAC, device public key, IP prefix + monthly keyed IP HMAC, (optional) country code, timestamps. Raw hardware ID, MAC, username, and full IP are **not collected/stored**.
+- **Legal basis (draft, pending lawyer approval):** performance of a contract (license validation) + legitimate interest (fraud/piracy prevention). Privacy notice (`content/legal/{tr,en}/kvkk.md`, `gizlilik.md`) and "activation and verification data" section in EULA; P7 `legalReview` approval. Remind the user to update the VERBIS registration.
+- **Retention (default; admin can increase/decrease; code lower bound in parentheses):**
+  - `security-events` raw IP fields 30 days (7) → NULL; event row 180 days (30) → deleted.
+  - `license-activations` IP fields: last 90 days while active; NULL 90 days after ending; row (without IP) license lifetime + 2 years.
+  - `security-blocks` expired + 90 days → deleted.
+  - `license-status-log` license lifetime + 10 years; `security-audit` 2 years.
+  - Cleanup inside `licensing:sweep`, once nightly, batches of 1,000, each batch a separate short transaction.
+- **Logs:** only codes and short IDs (`act_…` last 6, `lid` last 6, masked key). Full IP, e-mail, fingerprint, and body are not logged. Test: regex scan with log capture.
+- **Customer rights:** device list and deactivation in portal; on a deletion request, activation IP fields are immediately NULLed and activation rows are anonymized (customer link remains via license, license is not deleted — commercial record).
+- **Observability:** Security center summary cards (last 24 h events/severity, open high events, active blocks, auto-suspends count, API request/rejection rate — in-memory counters, per process), `GET /api/security/summary`.
 
 ---
 
-## 8. Mevcut sistemle entegrasyon
+## 7. Security center (admin custom view)
 
-| Alan | Değişiklik |
+- Location: `admin.components.views.securityCenter` → `/admin/guvenlik`; nav: `afterNavLinks` component renders only if `isAdminUser`. The view also verifies the role server-side (editor via direct URL gets 403/redirect).
+- Files: `src/admin/security/{SecurityCenterView.tsx, Summary.tsx, EventsTable.tsx, EventDrawer.tsx, BlocksTable.tsx, AuditTable.tsx, RiskyLicenses.tsx, actions.ts}`; styling uses existing admin tokens; no dependencies added.
+- **Tabs:** Overview · Events · Risky licenses · Blocks · Audit trail · Settings (→ `licensing-settings`).
+- **Events filter:** type, severity (multi), triage, date range, source, license/customer search (id/last group of masked key/exact e-mail match — server-side). Pagination 50, default sort `lastSeenAt desc`, default filter `triage=open`.
+- **Event drawer:** detail (allowlist fields), links (license, customer, activation, order — Payload document links), timeline (last 20 events of same license + status-log), actions: Acknowledge · Resolve · False positive (+restore) · Suspend license · Revoke license (two-step) · Remove device · Block IP prefix/activation (duration choice 1 h/24 h/7 days/permanent). Every action requires a reason.
+- **License document view:** side panel `Lisans işlemleri` (License actions; P6 `Sipariş işlemleri` pattern): status badge + reason, Suspend/Revoke/Reactivate/Restore, activation list (device label, platform, last seen, IP prefix, remove), last 10 status-log rows.
+- **Notifications:** `high`+ immediate e-mail (`alertEmails`, fallback `PAYMENTS_ALERT_EMAIL` → site-settings contact), daily digest (optional), open high event count badge in nav. E-mail content is PII-free: type, severity, masked ID, panel link. Queue is at-least-once delivery (P4 note: duplicate possible on interruption between SMTP and mark).
+
+---
+
+## 8. Integration with existing system
+
+| Area | Change |
 |---|---|
-| P4 fulfill | Değişmez; yeni lisans `publicId` alır; `license.status_changed` gerekmez (create). |
-| P6 iade/dispute | `admin-actions.ts` ham SQL'ine aynı tx'te günlük + aktivasyon `revoked` (iade). Regresyon `payments-p6*.test.ts` yeşil kalmalı. |
-| Müşteri portalı | `/hesap/lisanslar` (EN `licenses`): lisans başına cihaz listesi (etiket, platform, son görülme gün düzeyinde, IP gösterilmez), "Bu cihazı kaldır" (server action, `forbiddenActionOrigin` + müşteri başına limit + kota), etiket yeniden adlandırma. Askıdaki lisansta neden metni (genel) + destek talebi bağlantısı. |
-| İndirmeler | Web indirmesi değişmez (`downloadsRead`/`mediaRead`). API yolu ayrı (`/dl/<token>`), aynı dosyayı akıtır. |
-| E-posta | Yeni şablonlar: müşteriye askı/geri alma/iptal/yeni cihaz eklendi (isteğe bağlı) — `src/lib/email/licensing-*.ts`, `softmarketEmailAdapter`. |
-| MCP | `src/lib/mcp.ts` allowlist: yeni koleksiyon/global **eklenmez**; `licenses` create/find/update kalır, `status` alanı API key ile yazılamaz (field access) → `mcp.test.ts` kilitler. AGENTS.md MCP bölümüne not. |
-| Ödeme webhook rotaları | İmza reddinde `emit('webhook.bad_signature')` (aggregate); yanıt değişmez. |
-| Login | Admin: `users` `hooks.afterLogin` (yeni ağ öneği → olay), başarısız giriş için L0'da Payload 3.93 hook noktası doğrulanır (`afterError`/`beforeOperation('login')`). Portal: `src/lib/portal/actions.ts` mevcut giriş akışına `emit`. |
-| Content import / starter | Yeni alanlar opsiyonel; seed değişmez, `schema.json` yeniden üretilir; `products.licensing` seed'de yok. |
-| Caddy / deploy | `deploy/Caddyfile` alt alan adı bloğu; `deploy/licensing-sweep.{service,timer}`; `.env.example` yeni değişken yok (opsiyonel `SOFTMARKET_LICENSE_SIGNING_KEY`). |
+| P4 fulfill | Unchanged; new license receives `publicId`; `license.status_changed` not needed (create). |
+| P6 refund/dispute | Log + activation `revoked` (refund) in same tx as `admin-actions.ts` raw SQL. Regression `payments-p6*.test.ts` must stay green. |
+| Customer portal | `/hesap/lisanslar` (EN `licenses`): device list per license (label, platform, last seen at day granularity, IP not shown), "Remove this device" (server action, `forbiddenActionOrigin` + per-customer limit + quota), label renaming. On suspended license, reason text (generic) + support ticket link. |
+| Downloads | Web download unchanged (`downloadsRead`/`mediaRead`). API path is separate (`/dl/<token>`), streams the same file. |
+| E-mail | New templates: customer suspended/restored/revoked/new device added (optional) — `src/lib/email/licensing-*.ts`, `softmarketEmailAdapter`. |
+| MCP | `src/lib/mcp.ts` allowlist: new collections/global **not added**; `licenses` create/find/update remains, `status` field cannot be written with API key (field access) → `mcp.test.ts` locks this. Note in AGENTS.md MCP section. |
+| Payment webhook routes | `emit('webhook.bad_signature')` (aggregate) on signature rejection; response unchanged. |
+| Login | Admin: `users` `hooks.afterLogin` (new network prefix → event); for failed login, Payload 3.93 hook point verified in L0 (`afterError`/`beforeOperation('login')`). Portal: `emit` in `src/lib/portal/actions.ts` existing login flow. |
+| Content import / starter | New fields optional; seed unchanged, `schema.json` regenerated; `products.licensing` not in seed. |
+| Caddy / deploy | `deploy/Caddyfile` subdomain block; `deploy/licensing-sweep.{service,timer}`; no new variable in `.env.example` (optional `SOFTMARKET_LICENSE_SIGNING_KEY`). |
 
 ---
 
-## 9. Fazlar
+## 9. Phases
 
-Toplam tahmin: **24–30 iş günü** (L11 hariç). Şema yalnız L1'de. Her faz sonunda çapraz QA + kullanıcı onayı.
+Total estimate: **24–30 business days** (excluding L11). Schema only in L1. Cross-QA + user approval at the end of each phase.
 
-### L0 — Spike ve ADR (1 gün, şemasız, atılabilir dal)
+### L0 — Spike and ADR (1 day, schema-free, disposable branch)
 
-- **Kapsam:** (1) Payload 3.93 admin custom view + `afterNavLinks` rol filtresi + view içinde sunucu rol kontrolü; (2) admin başarısız giriş için hook noktası; (3) Node 24 `crypto` ile Ed25519 JWS (bağımlılıksız) — `jose` gerekip gerekmediği; (4) kopya DB'de 100 eşzamanlı "validate benzeri" tx (serial queue) gecikme ölçümü; (5) Next 15 route handler'da ham gövde + `Range` dosya akışı; (6) partial unique index'in Drizzle/Payload migration ile birlikte yaşaması.
-- **Çıktı:** `docs/licensing/adr-l0.md` (evet/hayır + kanıt komutu + plana etkisi).
-- **Kabul:** 6 maddenin kanıtı; (4)'te p95 > 250 ms ise L3 tasarımı (yazım birleştirme) revize edilir.
+- **Scope:** (1) Payload 3.93 admin custom view + `afterNavLinks` role filter + server-side role check inside view; (2) hook point for failed admin login; (3) Ed25519 JWS with Node 24 `crypto` (zero dependencies) — whether `jose` is needed; (4) latency measurement of 100 concurrent "validate-like" tx (serial queue) on copy DB; (5) raw body + `Range` file streaming in Next 15 route handler; (6) partial unique index coexisting with Drizzle/Payload migrations.
+- **Output:** `docs/licensing/adr-l0.md` (yes/no + proof command + impact on plan).
+- **Acceptance:** proof for all 6 items; if p95 > 250 ms in (4), L3 design (write coalescing) is revised.
 
-### L1 — Şema (2–2,5 gün, **şema VAR**)
+### L1 — Schema (2–2.5 days, **has schema**)
 
-- **Kapsam:** §4.1–4.8 koleksiyon/global/alanlar, `src/access` yardımcıları (`nobody` mevcut), admin-i18n, `generate:types`, `generate:importmap`, migration `licensing_core` (§4.9), `prepareLicense` `publicId`, `products.licensing.code` değişmezlik kancası, `licenses.status` MCP field access, `recordLicenseTransition()` iskeleti + `Licenses.beforeChange` günlük kancası.
-- **Kabul:** anonim/customer/editor/API key ile yeni koleksiyonlara REST/GraphQL okuma-yazma 401/403; admin okuma var, yazma 403; migration kopyada up/down/up, satır farkı 0, integrity/FK ok, SQL'de yasak ifade yok; seed + starter import idempotent; panelden durum değişikliği günlük satırı yazar; MCP `status` yazımı reddedilir.
-- **Testler:** `tests/unit/licensing-access.test.ts`, `licensing-migration.test.ts`, `licensing-transitions-db.test.ts`, `mcp.test.ts` genişletme, `admin-labels.test.ts` yeşil.
-- **Riskler:** G1 ile migration çakışması (kural 8); partial index'in Payload'ın sonraki `migrate:create` diff'inde "fark" sayılması (L0 madde 6).
+- **Scope:** §4.1–4.8 collections/global/fields, `src/access` helpers (`nobody` exists), admin-i18n, `generate:types`, `generate:importmap`, migration `licensing_core` (§4.9), `prepareLicense` `publicId`, `products.licensing.code` immutability hook, `licenses.status` MCP field access, `recordLicenseTransition()` skeleton + `Licenses.beforeChange` logging hook.
+- **Acceptance:** REST/GraphQL read-write to new collections with anonymous/customer/editor/API key returns 401/403; admin can read, write returns 403; migration up/down/up on copy, row diff 0, integrity/FK ok, no forbidden statements in SQL; seed + starter import idempotent; status change from panel writes log row; MCP `status` write is rejected.
+- **Tests:** `tests/unit/licensing-access.test.ts`, `licensing-migration.test.ts`, `licensing-transitions-db.test.ts`, `mcp.test.ts` expansion, `admin-labels.test.ts` green.
+- **Risks:** migration collision with G1 (rule 8); partial index counted as a "diff" in Payload's next `migrate:create` diff (L0 item 6).
 
-### L2 — Kripto ve kira çekirdeği (2 gün, şemasız) — **kritik**
+### L2 — Crypto and lease core (2 days, schema-free) — **critical**
 
-- **Kapsam:** `src/lib/licensing/crypto/{keys.ts, jws.ts, canonical.ts, hmac.ts, ip.ts}` (saf, `server-only`); vault sır kimliği `licensing-signing-ed25519` + env önceliği; `pnpm licensing:keygen` (yalnız kurulum; vault'a yazar, çıktı yalnız kid + açık anahtar); döndürme fonksiyonu; `GET /keys`.
-- **Kabul:** test vektörleri sabit (RFC 8032 + kendi kanonik dizelerimiz); bozuk imza, yanlış kid, `revokedKids`, `alg` değişikliği (`none`/HS256) reddi; özel anahtar hiçbir yanıtta/logda yok (tarama testi); anahtar yoksa API 503.
-- **Testler:** `licensing-crypto.test.ts` (vektörler, negatifler), `licensing-keys-db.test.ts`.
+- **Scope:** `src/lib/licensing/crypto/{keys.ts, jws.ts, canonical.ts, hmac.ts, ip.ts}` (pure, `server-only`); vault secret ID `licensing-signing-ed25519` + env precedence; `pnpm licensing:keygen` (setup only; writes to vault, outputs only kid + public key); rotation function; `GET /keys`.
+- **Acceptance:** test vectors fixed (RFC 8032 + our own canonical strings); malformed signature, wrong kid, `revokedKids`, `alg` change (`none`/HS256) rejected; private key absent from all responses/logs (scan test); API returns 503 if no key.
+- **Tests:** `licensing-crypto.test.ts` (vectors, negatives), `licensing-keys-db.test.ts`.
 
-### L3 — İstemci API'si (3,5–4,5 gün, şemasız) — **kritik**
+### L3 — Client API (3.5–4.5 days, schema-free) — **critical**
 
-- **Kapsam:** `activate`, `validate`, `deactivate` rotaları; `src/lib/licensing/{api/guard.ts, rate-limit.ts, nonce.ts, blocks-cache.ts, activation-service.ts, errors.ts, respond.ts}`; olay yazıcı (§5.2); payments entegrasyonu (§5.3 son madde); IP önek/HMAC; `licenses.activations` join.
-- **Kabul:** §3 sözleşmesinin tamamı testli; koltuk sınırı eşzamanlı 20 aktivasyonda tam N; idempotent tekrar aktivasyon; rebind kotası; replay (aynı nonce) 401; ±skew; imzasız/yanlış imzalı yanıt testi istemci simülatörüyle; enumerasyon testi (yok/uyuşmaz ürün aynı yanıt ve benzer süre ±20 ms); iade → aktivasyonlar `revoked` + günlük; dispute → günlük + API 403 `license_suspended`.
-- **Yük testi** (`scripts/licensing-load.ts`, izole kopya DB, port 3600, prod build): 100 eşzamanlı `validate` × 10 tur → hata 0, `write queue timeout` 0, p95 < 300 ms, p99 < 800 ms; 1000 istek/10 sn tek IP → 429'lar, DB yazımı aggregate satırlarla sınırlı (satır sayısı ölçülür); 50 eşzamanlı aktivasyon + paralel admin yazımı → SQLITE_BUSY 0.
-- **Testler:** `licensing-api.test.ts`, `licensing-api-db.test.ts`, `licensing-seats-concurrency.test.ts`, `licensing-load` raporu `docs/licensing/load-report.md`.
+- **Scope:** `activate`, `validate`, `deactivate` routes; `src/lib/licensing/{api/guard.ts, rate-limit.ts, nonce.ts, blocks-cache.ts, activation-service.ts, errors.ts, respond.ts}`; event writer (§5.2); payments integration (§5.3 last bullet); IP prefix/HMAC; `licenses.activations` join.
+- **Acceptance:** entire §3 contract tested; seat limit is exact N under 20 concurrent activations; idempotent re-activation; rebind quota; replay (same nonce) 401; ±skew; unsigned/badly-signed response test with client simulator; enumeration test (missing/mismatched product same response and similar timing ±20 ms); refund → activations `revoked` + log; dispute → log + API 403 `license_suspended`.
+- **Load test** (`scripts/licensing-load.ts`, isolated copy DB, port 3600, prod build): 100 concurrent `validate` × 10 rounds → 0 errors, 0 `write queue timeout`, p95 < 300 ms, p99 < 800 ms; 1,000 requests/10 s single IP → 429s, DB writes bounded to aggregate rows (row count measured); 50 concurrent activations + parallel admin write → 0 SQLITE_BUSY.
+- **Tests:** `licensing-api.test.ts`, `licensing-api-db.test.ts`, `licensing-seats-concurrency.test.ts`, `licensing-load` report `docs/licensing/load-report.md`.
 
-### L4 — Güncelleme ve lisanslı indirme (1,5–2 gün, şemasız)
+### L4 — Updates and licensed downloads (1.5–2 days, schema-free)
 
-- **Kapsam:** `updates`, `downloads/link`, `dl/<token>`; güvenli yol çözümü; Range; kullanım sayacı; olaylar.
-- **Kabul:** yol geçişi (`../`, symlink, mutlak yol) reddi; başka ürünün indirmesi 403; süresi dolmuş/değiştirilmiş token 401; deaktive aktivasyonla token 403; 206 doğru `Content-Range`; büyük dosyada bellek sabit (stream).
-- **Testler:** `licensing-updates.test.ts`, `licensing-download-db.test.ts`.
+- **Scope:** `updates`, `downloads/link`, `dl/<token>`; safe path resolution; Range; usage counter; events.
+- **Acceptance:** path traversal (`../`, symlink, absolute path) rejected; download of another product 403; expired/tampered token 401; token with deactivated activation 403; 206 accurate `Content-Range`; constant memory on large files (stream).
+- **Tests:** `licensing-updates.test.ts`, `licensing-download-db.test.ts`.
 
-### L5 — Kural motoru, sweep, bildirim kuyruğu (2,5–3 gün, şemasız) — **kritik**
+### L5 — Rule engine, sweep, notification queue (2.5–3 days, schema-free) — **critical**
 
-- **Kapsam:** `src/lib/licensing/rules/*` (her kural saf fonksiyon: girdi pencere verisi → karar), `scripts/licensing-sweep.ts` (`pnpm licensing:sweep`), `deploy/licensing-sweep.{service,timer}` (5 dk), gözlem modu, devre kesici, bastırma, restore, saklama temizliği, e-posta kuyruğu (§7 bildirim), müşteri e-posta şablonları.
-- **Kabul:** her kural için eşik altı/üstü/bastırılmış/gözlem testleri; devre kesici N+1'inci askıda açılır ve kritik olay üretir; restore yalnız son geçiş kuralın askısıysa; ödeme askısını kural geri alamaz; sweep idempotent ve 10k aktivasyonda < 30 sn; temizlik yalnız süresi dolanları siler; e-posta en az bir kez, deneme bütçesi ≤5.
-- **Testler:** `licensing-rules.test.ts`, `licensing-sweep-db.test.ts`, `licensing-retention-db.test.ts`, `licensing-notify-db.test.ts`.
+- **Scope:** `src/lib/licensing/rules/*` (each rule a pure function: input window data → decision), `scripts/licensing-sweep.ts` (`pnpm licensing:sweep`), `deploy/licensing-sweep.{service,timer}` (5 min), observe mode, circuit breaker, suppression, restore, retention cleanup, e-mail queue (§7 notifications), customer e-mail templates.
+- **Acceptance:** below/above threshold, suppressed, and observe tests for each rule; circuit breaker trips on (N+1)th suspension and produces critical event; restore only if latest transition is the rule's suspension; rule cannot undo payment suspension; sweep idempotent and < 30 s for 10k activations; cleanup deletes only expired records; e-mail at-least-once, retry budget ≤5.
+- **Tests:** `licensing-rules.test.ts`, `licensing-sweep-db.test.ts`, `licensing-retention-db.test.ts`, `licensing-notify-db.test.ts`.
 
-### L6 — Güvenlik merkezi + admin eylemleri (3–4 gün, şemasız)
+### L6 — Security center + admin actions (3–4 days, schema-free)
 
-- **Kapsam:** §5.4 uçları, §7 görünüm ve lisans yan paneli, `licensing-settings` imza anahtarı düğmesi, nav rozeti.
-- **Kabul:** editor/customer/API key/MCP/cross-site her uçta 401/403 (P6 matrisi); her eylem `security-audit` satırı; iki adımlı onaylar; filtreler sunucuda; 10k olayda liste < 500 ms; a11y (klavye, odak, kontrast); public bundle'a admin kodu girmez (`client-bundle-guard`).
-- **Testler:** `licensing-admin-endpoints.test.ts`, `security-center-view.test.tsx` (React DOM), e2e `tests/e2e/security-center.spec.ts` (izole: olay üret → askıya al → geri al).
+- **Scope:** §5.4 endpoints, §7 view and license side panel, `licensing-settings` signing key button, nav badge.
+- **Acceptance:** editor/customer/API key/MCP/cross-site return 401/403 on every endpoint (P6 matrix); every action writes a `security-audit` row; two-step confirmations; server-side filters; list < 500 ms on 10k events; a11y (keyboard, focus, contrast); no admin code enters public bundle (`client-bundle-guard`).
+- **Tests:** `licensing-admin-endpoints.test.ts`, `security-center-view.test.tsx` (React DOM), e2e `tests/e2e/security-center.spec.ts` (isolated: emit event → suspend → restore).
 
-### L7 — Portal, e-postalar, KVKK metinleri (1,5–2 gün, şemasız)
+### L7 — Portal, e-mails, KVKK texts (1.5–2 days, schema-free)
 
-- **Kapsam:** §8 portal satırı; TR/EN i18n; yasal taslak güncellemeleri (`content/legal/*`, `legalReview` yeniden onay ister); `docs/editor-guide.md` lisans bölümü.
-- **Kabul:** müşteri yalnız kendi cihazlarını görür (başka müşterinin aktivasyon id'si 404); kota; askı metni PII'siz; legal değişiklik `legalReady`'yi hukukçu onayına kadar düşürür (mevcut davranış).
-- **Testler:** `portal-devices.test.ts`, e2e portal cihaz kaldırma.
+- **Scope:** §8 portal row; TR/EN i18n; legal draft updates (`content/legal/*`, requires `legalReview` re-approval); `docs/editor-guide.md` licensing section.
+- **Acceptance:** customer sees only their own devices (another customer's activation ID returns 404); quota; suspension text PII-free; legal change drops `legalReady` until lawyer approval (existing behavior).
+- **Tests:** `portal-devices.test.ts`, e2e portal device removal.
 
-### L8 — Kimlik ve webhook anomalileri (1–1,5 gün, şemasız)
+### L8 — Identity and webhook anomalies (1–1.5 days, schema-free)
 
-- **Kapsam:** admin/portal giriş olayları, yeni ağdan admin girişi e-postası, webhook imza reddi olayı.
-- **Kabul:** başarısız giriş sayımı aggregate; kilitlenme olayı; webhook yanıtları birebir aynı (regresyon).
+- **Scope:** admin/portal login events, admin login from new network e-mail, webhook signature rejection event.
+- **Acceptance:** failed login counting aggregated; lockout event; webhook responses byte-identical (regression).
 
-### L9 — İstemci entegrasyon kılavuzu ve referans doğrulayıcı (1,5–2 gün, şemasız)
+### L9 — Client integration guide and reference verifier (1.5–2 days, schema-free)
 
-- **Kapsam:** `docs/licensing/client-integration.md` (akış, curl, kanonik dize, kira doğrulama algoritması, hata tablosu, çevrimdışı davranış, anahtar depolama önerileri, obfüskasyon önerileri), `docs/licensing/test-vectors.json`, `scripts/licensing-sim.ts` (sahte istemci: activate/validate/deactivate/updates/download), C# ve TypeScript doğrulayıcı örnekleri.
-- **Kabul:** simülatör izole sunucuya karşı uçtan uca geçer; vektörler L2 testleriyle aynı dosyadan beslenir.
+- **Scope:** `docs/licensing/client-integration.md` (flow, curl, canonical string, lease verification algorithm, error table, offline behavior, key storage recommendations, obfuscation recommendations), `docs/licensing/test-vectors.json`, `scripts/licensing-sim.ts` (fake client: activate/validate/deactivate/updates/download), C# and TypeScript verifier examples.
+- **Acceptance:** simulator passes end-to-end against isolated server; vectors fed from the same file as L2 tests.
 
-### L10 — QA, güvenlik denetimi, deploy (2 gün)
+### L10 — QA, security audit, deploy (2 days)
 
-- **Kapsam:** tehdit modeli tablosunun madde madde doğrulaması, bağımsız pentest tarzı denetim (rate limit atlatma, imza karışıklığı, IDOR, CSRF, SSRF yok, yol geçişi), Caddy alt alan adı bloğu + `deploy/` birimleri, `docs/licensing/operations.md` (anahtar döndürme, `SOFTMARKET_SECRETS_KEY` yedeği, olay müdahalesi, yanlış pozitif prosedürü), AGENTS.md + memory-bank.
-- **Kabul:** typecheck/lint/test/build yeşil; izole e2e yeşil; yük raporu hedefleri; açık P1/P2 yok.
+- **Scope:** item-by-item verification of threat model table, independent pentest-style audit (rate limit bypass, signature confusion, IDOR, CSRF, no SSRF, path traversal), Caddy subdomain block + `deploy/` units, `docs/licensing/operations.md` (key rotation, `SOFTMARKET_SECRETS_KEY` backup, incident response, false positive procedure), AGENTS.md + memory-bank.
+- **Acceptance:** typecheck/lint/test/build green; isolated e2e green; load report targets met; no open P1/P2.
 
-### L11 — (opsiyonel) Dosyayla çevrimdışı aktivasyon (2 gün, şemasız)
+### L11 — (optional) Offline file activation (2 days, schema-free)
 
-Program imzalı istek dosyası üretir → müşteri portala yükler → portal imzalı kira dosyası verir (uzun `leaseDays` ayrı üst sınır). Açık soru 1'e bağlı.
+Program generates signed request file → customer uploads to portal → portal returns signed lease file (separate upper limit for long `leaseDays`). Depends on Open question 1.
 
 ---
 
-## 10. Sıra ve paralellik
+## 10. Order and parallelism
 
-- **Sıra:** L0 → L1 (şema) → L2 → L3 → (L4 ∥ L5) → L6 → (L7 ∥ L8 ∥ L9) → L10 → [L11].
-- **Görsel çerçeve planı ile:** G0 şu an `../softmarket-g0` worktree'sinde. L0 şemasızdır, G0/G2–G7 ile paralel yürüyebilir. **L1 ve G1 aynı anda `migrate:create` yapmaz**: G1 ana dala alınmadan L1 başlamaz (ya da kullanıcı önceliği tersine çevirirse G1 L1'i bekler). Ortak dosyalar: `src/payload.config.ts` (koleksiyon listesi, admin bileşenleri), `src/lib/admin-i18n.ts`, `src/payload-types.ts`, `src/app/(payload)/admin/importMap.js` — birleştirmede yeniden üretilir, elle çözülmez.
-- **Ödeme kodu:** L3 `admin-actions.ts`'e dokunur; o sırada P-serisi açık işi varsa dosya sahibiyle sıralanır.
-- `generate:types`/`generate:importmap` yalnız L1 ve L6'da. Build ile typecheck aynı anda çalışmaz; SQLite testleri `--maxWorkers=1`.
+- **Order:** L0 → L1 (schema) → L2 → L3 → (L4 ∥ L5) → L6 → (L7 ∥ L8 ∥ L9) → L10 → [L11].
+- **With visual frame plan:** G0 is currently in `../softmarket-g0` worktree. L0 is schema-free and can run in parallel with G0/G2–G7. **L1 and G1 never run `migrate:create` concurrently**: L1 does not start until G1 is merged into `main` (or if the user reverses priority, G1 waits for L1). Shared files: `src/payload.config.ts` (collection list, admin components), `src/lib/admin-i18n.ts`, `src/payload-types.ts`, `src/app/(payload)/admin/importMap.js` — regenerated on merge, not resolved manually.
+- **Payment code:** L3 touches `admin-actions.ts`; if there is open P-series work at that time, coordinate order with the file owner.
+- `generate:types`/`generate:importmap` only in L1 and L6. Build and typecheck do not run concurrently; SQLite tests use `--maxWorkers=1`.
 
-## 11. Ajan dağılımı
+## 11. Agent allocation
 
-Kurallar: yazan ≠ denetleyen. Claude yazarsa GPT Sol/Terra (High) denetler; GPT yazarsa Claude Sonnet (Medium) veya Gemini Hydrogen (High) denetler; kritik güvenlik çekirdeği Claude Opus (Medium); GPT backend'de dolanırsa Opus (Medium) devralır; UI Sonnet (Medium). **Fable kullanılmaz.** Her faz sonunda kullanıcı onayı.
+Rules: author ≠ reviewer. If Claude writes, GPT Sol/Terra (High) reviews; if GPT writes, Claude Sonnet (Medium) or Gemini Hydrogen (High) reviews; critical security core goes to Claude Opus (Medium); if GPT spins on backend, Opus (Medium) takes over; UI goes to Sonnet (Medium). **Fable is not used.** User approval at the end of each phase.
 
-| Faz | Yazan (effort) | Denetleyen (effort) | Not |
+| Phase | Author (effort) | Reviewer (effort) | Note |
 |---|---|---|---|
-| L0 spike | GPT Terra (High) | Claude Opus (Medium) | Zaman kutusu 1 gün |
-| L1 şema + migration | Claude Opus (Medium) | GPT Sol (High) | Migration SQL'i ve erişim matrisi |
-| L2 kripto çekirdeği | Claude Opus (Medium) | GPT Terra (High) + Gemini Hydrogen (High) kripto incelemesi | En kritik iş; iki bağımsız denetçi |
-| L3 istemci API'si | Claude Opus (Medium) | GPT Terra (High) | Yük testi Terra çalıştırır |
-| L4 güncelleme/indirme | GPT Terra (High) | Claude Opus (Medium) | Yol geçişi ve stream |
-| L5 kural motoru/sweep | Claude Opus (Medium) | GPT Sol (High) | Yanlış pozitif senaryoları |
-| L6 uçlar | Claude Opus (Medium) | GPT Sol (High) | Yetki matrisi |
-| L6 görünüm/UI | Claude Sonnet (Medium) | GPT Sol (High) | a11y, bundle guard |
-| L7 portal + e-posta | Claude Sonnet (Medium) | GPT Sol (High) | Yasal metin: Claude Haiku (Low) taslak → kullanıcı/hukukçu |
-| L8 anomaliler | GPT Sol (Medium) | Claude Sonnet (Medium) | |
-| L9 kılavuz + referans | Claude Opus (Medium) (algoritma/vektör), Claude Haiku (Low) (metin) | GPT Terra (High) | Vektörler L2 testinden |
-| L10 denetim | GPT Terra (High) + Gemini Hydrogen (High) | Claude Opus (Medium) özet | Bulgu → ilgili faz yazarı düzeltir |
-| Commit | Claude Haiku (Low) | — | Yalnız QA yeşil ve kullanıcı isteyince |
+| L0 spike | GPT Terra (High) | Claude Opus (Medium) | Timebox 1 day |
+| L1 schema + migration | Claude Opus (Medium) | GPT Sol (High) | Migration SQL and access matrix |
+| L2 crypto core | Claude Opus (Medium) | GPT Terra (High) + Gemini Hydrogen (High) crypto review | Most critical work; two independent reviewers |
+| L3 client API | Claude Opus (Medium) | GPT Terra (High) | Terra runs load test |
+| L4 updates/downloads | GPT Terra (High) | Claude Opus (Medium) | Path traversal and stream |
+| L5 rule engine/sweep | Claude Opus (Medium) | GPT Sol (High) | False positive scenarios |
+| L6 endpoints | Claude Opus (Medium) | GPT Sol (High) | Authorization matrix |
+| L6 view/UI | Claude Sonnet (Medium) | GPT Sol (High) | a11y, bundle guard |
+| L7 portal + e-mail | Claude Sonnet (Medium) | GPT Sol (High) | Legal text: Claude Haiku (Low) draft → user/lawyer |
+| L8 anomalies | GPT Sol (Medium) | Claude Sonnet (Medium) | |
+| L9 guide + reference | Claude Opus (Medium) (algorithm/vectors), Claude Haiku (Low) (text) | GPT Terra (High) | Vectors from L2 test |
+| L10 audit | GPT Terra (High) + Gemini Hydrogen (High) | Claude Opus (Medium) summary | Findings → fixed by respective phase author |
+| Commit | Claude Haiku (Low) | — | Only when QA is green and user requests |
 
-## 12. En büyük riskler
+## 12. Biggest risks
 
-1. **Yanlış pozitifle meşru müşterinin kilitlenmesi** (kurumsal NAT/VPN, disk imajıyla kurulum). Önlem: gözlem modu, kira toleransı, tek tık geri alma, bastırma, devre kesici.
-2. **SQLite yazma baskısı / DoS.** Önlem: bellek içi limit ve engel, aggregate olay yazımı, günde ~1 yazım/cihaz, yük testi kabul kapısı. Kalıntı: hacimsel saldırı → Cloudflare/sağlayıcı.
-3. **Tek süreç varsayımı.** Rate limit, nonce, olay tamponu, serial queue süreç içidir. Paylaşımlı hosting'de Passenger çoklu süreç açarsa bu garantiler bozulur (`docs/plan-hosting.md`).
-4. **İmza anahtarı veya `SOFTMARKET_SECRETS_KEY` kaybı/sızıntısı.** Kayıp = tüm cihazların yeniden aktivasyonu; sızıntı = sahte kira. Önlem: vault + env, döndürme, `revokedKids`, yedekleme prosedürü, çoklu kid gömme.
-5. **İstemci kurcalaması teknik olarak önlenemez.** Sunucu yalnız güncelleme/indirme/destek hakkını korur; programın kendi korumasının kalitesi şirketin yazılım ekibine bağlıdır (L9 kılavuzu).
+1. **Legitimate customer locked out by false positives** (corporate NAT/VPN, disk-image deployment). Mitigation: observe mode, lease tolerance, one-click restore, suppression, circuit breaker.
+2. **SQLite write pressure / DoS.** Mitigation: in-memory limits and blocks, aggregated event writes, ~1 write/device/day, load test acceptance gate. Residual: volumetric attack → Cloudflare/provider.
+3. **Single-process assumption.** Rate limits, nonces, event buffer, and serial queue are in-process. If Passenger spawns multiple processes on shared hosting, these guarantees break (`docs/plan-hosting.md`).
+4. **Loss/leak of signing key or `SOFTMARKET_SECRETS_KEY`.** Loss = re-activation of all devices; leak = forged leases. Mitigation: vault + env, rotation, `revokedKids`, backup procedure, embedding multiple kids.
+5. **Client tampering cannot be prevented technically.** The server protects only update/download/support entitlement; the quality of the program's own protection depends on the company's software team (L9 guide).
 
-Ek: P6 ödeme koduna dokunma (regresyon), G1 ile migration sırası, KVKK metinlerinin hukukçu onayı gecikmesi, Payload custom view iç API'sinin sürüm değişikliklerinde kırılması.
+Additional: touching P6 payment code (regression), migration order with G1, lawyer approval delay for KVKK texts, Payload custom view internal API breaking across version upgrades.
 
-## 13. Kullanıcıya açık sorular (önerilerle)
+## 13. Open questions for the user (with recommendations)
 
-1. **İnterneti hiç olmayan (air-gapped) müşteri sunucuları var mı?** Varsa dosyayla aktivasyon (L11, +2 gün). **Öneri:** v1'de 14 gün çevrimdışı tolerans yeterli; ihtiyaç varsa L11 sonra.
-2. **Otomatik askıya alma ilk günden açık mı olsun?** **Öneri:** ilk 30 gün yalnız gözlem + e-posta; veriye bakıp eşikleri birlikte ayarladıktan sonra admin panelinden "askıya al" moduna geçilir. İptal her zaman admin onaylı.
-3. **Koltuk = cihaz mı, eşzamanlı kullanım mı?** **Öneri:** koltuk = aktif cihaz (bugünkü `seats` alanının en doğal karşılığı); kayan lisans ayrı faz.
-4. **Ülke/konum bilgisi kullanılsın mı?** "İmkânsız seyahat" ülke bilgisi ister. **Öneri:** site Cloudflare arkasındaysa yalnız `CF-IPCountry` ülke kodu; değilse v1'de konum yok (KVKK yükü ve MaxMind lisansı gerekmez).
-5. **Barındırma ve alt alan adı:** VPS'te kalınsın mı, alt alan adı ne olsun? **Öneri:** lisans API'si için VPS (ayrıntı `docs/plan-hosting.md`) + `lisans.<alan-adi>` alt alan adı, ilk sürümden itibaren programlara gömülü.
-6. **Admin hesabı ek koruması:** **Öneri:** v1'de `/admin` erişimini Caddy'de ofis IP'leri veya Cloudflare Access ile sınırlamak; TOTP 2FA ayrı küçük faz (yaklaşık 2 gün).
+1. **Are there customer servers with no internet at all (air-gapped)?** If so, file-based activation (L11, +2 days). **Recommendation:** 14-day offline tolerance is sufficient in v1; L11 later if needed.
+2. **Should automatic suspension be enabled from day one?** **Recommendation:** first 30 days observe + e-mail only; after reviewing data and tuning thresholds together, switch to "suspend" mode from the admin panel. Revocation always requires admin approval.
+3. **Seat = device or concurrent usage?** **Recommendation:** seat = active device (most natural match for today's `seats` field); floating license in a separate phase.
+4. **Should country/location info be used?** "Impossible travel" requires country info. **Recommendation:** if the site is behind Cloudflare, use only `CF-IPCountry` country code; otherwise no location in v1 (avoids KVKK burden and MaxMind license).
+5. **Hosting and subdomain:** stay on VPS, and what should the subdomain be? **Recommendation:** VPS for the licensing API (details `docs/plan-hosting.md`) + `lisans.<alan-adi>` subdomain, embedded in programs from the first release.
+6. **Additional admin account protection:** **Recommendation:** in v1, restrict `/admin` access in Caddy to office IPs or Cloudflare Access; TOTP 2FA as a separate small phase (approx. 2 days).
 
-## Kullanıcı kararları (2026-11-17)
+## User decisions (2026-11-17)
 
-- Sıra: **önce visual-globals G1**, sonra lisans L1. L0 (şemasız spike) G1 ile paralel yürür.
-- Otomatik kurallar: **ilk 30 gün yalnız izleme** (olay + e-posta, askıya alma yok); eşikler veriye göre ayarlanınca admin panelinden açılır. İptal her zaman admin onayıyla.
-- Koltuk: **cihaz başına** (müşteri portaldan cihaz kaldırıp koltuk boşaltır).
-- Barınma: **VPS + `lisans.<alan-adı>`** alt alan adı (DNS + Caddy bloğu). Paylaşımlı hosting hedeflenmez.
-- Sorulmayan maddeler öneriyle varsayıldı: v1'de 14 gün internetsiz tolerans (L11 dosyayla aktivasyon sonra), ülke bilgisi yalnız Cloudflare `CF-IPCountry` varsa, `/admin` için IP/Cloudflare Access sınırlaması önerisi + TOTP ayrı küçük faz.
+- Order: **visual-globals G1 first**, then licensing L1. L0 (schema-free spike) runs in parallel with G1.
+- Automatic rules: **first 30 days monitor-only** (event + e-mail, no suspension); enabled from the admin panel once thresholds are tuned based on data. Revocation always requires admin approval.
+- Seat: **per device** (customer removes a device from the portal to free a seat).
+- Hosting: **VPS + `lisans.<alan-adı>`** subdomain (DNS + Caddy block). Shared hosting is not targeted.
+- Unasked items defaulted to recommendations: 14-day offline tolerance in v1 (L11 file-based activation later), country info only if Cloudflare `CF-IPCountry` is present, IP/Cloudflare Access restriction recommendation for `/admin` + TOTP as a separate small phase.
 
 ## L0 result and plan revision (2026-11-17)
 
@@ -629,7 +629,7 @@ Scope: §5.4 admin actions and the action half of §7 (license side panel, event
 - **Settings audit.** A panel admin's save of `licensing-settings` writes one `settings.update` row in the same operation transaction (`settings-audit.ts`): changed paths with old → new values for numbers, booleans and short strings; arrays and anything containing `@` are named without values; server writes (key lifecycle) are not audited there.
 - **UI.** License document sidebar `ui` field `licenseActions` (`src/admin/fields/license-actions.tsx`): status badge, reason, source, last change, devices (label, platform, IP prefix, last seen, release/revoke), last 10 status transitions, and only the actions valid for the saved state; read with the requesting admin and `overrideAccess: false`, always with `select` (no key, device key, thumbprint, fingerprint or IP hash). Security center: an "Actions" column on event and block tables (acknowledge, resolve, false positive, false positive + restore when the row is a rule suspension of a still-suspended license, block from event; lift) and an "Add block" form on the Blocks tab, shown only when `isAdminSessionUser` (the view already redirects everyone else). Signing keys tab: active kid and the rotate button. Client widgets (`src/admin/security/{action-client,actions-ui}.tsx`) import no server code; each dialog is an inline labelled region (focus to the first field and back, Escape cancels, polite live result), keeps one requestId per dialog so a network retry cannot double-apply, and refreshes the route after success. Styles reuse Payload theme tokens (`.sc-dialog`, `.sc-panel`, `.sc-btn--danger` with a text label), so light and dark follow the admin theme. TR/EN strings in `security-center-labels.ts` (`actions.*`), audited by `admin-labels.test.ts`.
 - **Tests.** `licensing-admin-endpoints-db.test.ts` (authorization matrix on all 13 routes incl. cross-site, `Sec-Fetch-Site` and JSON-only; malformed/oversized/incomplete bodies; suspend with one log + one audit + queued e-mail, replay and stale; concurrency; manual and rule restore, `use_restore`, `not_restorable`, reactivate after a dispute; revoke confirmation/reason/device revocation/terminal; device release/revoke; triage and stale; event-bound restore; breaker close; blocks cache invalidation, validation, self-block confirmation, event fingerprint block without hash exposure; rotation without private material, replay, env key; settings audit) and `licensing-admin-ui.test.tsx` (side panel and rotate button render nothing for editor, customer, API-key and bearer admins; admin markup has actions but no secrets; action columns only with `canAct`).
-- **Status lock (§4.1, follow-up).** `licenses.status` is read-only for every user-facing update: field access `update` is `nobodyField` (create stays panel-admin only; MCP/API key still gets the default), the field is `readOnly` in the panel with a TR+EN hint to "Lisans işlemleri". A submitted value (panel form, REST PATCH, bulk, Local API with `overrideAccess: false`, MCP) is stripped silently while other fields save. The only writers are server code with `overrideAccess: true`, where field access does not apply: the L6b action endpoints (`source admin`), payment fulfilment/refund/dispute, and the L5 rule engine (`source rule`, still guarded by the monitor-only checks). Each keeps declaring `req.context.licenseTransition`, so exactly one `license-status-log` row per change is unchanged. Replaces the old "reason required for a direct panel edit" idea: a direct edit is no longer possible at all. A license created in the panel by an admin can still pick its initial status through a non-panel create (REST/Local API as panel admin); the panel form shows the field read-only.
+- **Status lock (§4.1, follow-up).** `licenses.status` is read-only for every user-facing update: field access `update` is `nobodyField` (create stays panel-admin only; MCP/API key still gets the default), the field is `readOnly` in the panel with a TR+EN hint to `Lisans işlemleri`. A submitted value (panel form, REST PATCH, bulk, Local API with `overrideAccess: false`, MCP) is stripped silently while other fields save. The only writers are server code with `overrideAccess: true`, where field access does not apply: the L6b action endpoints (`source admin`), payment fulfilment/refund/dispute, and the L5 rule engine (`source rule`, still guarded by the monitor-only checks). Each keeps declaring `req.context.licenseTransition`, so exactly one `license-status-log` row per change is unchanged. Replaces the old "reason required for a direct panel edit" idea: a direct edit is no longer possible at all. A license created in the panel by an admin can still pick its initial status through a non-panel create (REST/Local API as panel admin); the panel form shows the field read-only.
 - **Denied audit (follow-up).** `src/lib/licensing/admin/denied-audit.ts`: every refusal of an identified caller (user, customer, editor, API key, bearer, cross-site, 415/413/400 validation, 404, 409 stale/invalid transition/confirmation/etc.) writes a `security-audit` row `result denied` in its own transaction after the refusal. No schema change: `action` (route's audit action), `reason` = fixed response code, `note` = `count=<n> http=<status>`, `ipPrefix` /24 or /48 only, `actorUser` only for users-collection callers (`actorKind admin` for an admin, `system` otherwise), `target` when the document exists, `nonce = denied:<hash(actor-or-prefix|action|code)>:<window start ms>`. At most one row per key per 10 minutes: a repeat inside the window increments the counter of the opening row (serial writer queue, so no duplicate rows). Anonymous 401s, successful and replayed actions write nothing; failures of the audit write are logged by code and never change the response. No security event is raised: no existing event type fits repeated forbidden admin actions and a new type is a stored enum change. The security center UI is unchanged (the audit list is the Payload screen, where `result=denied` already has a label).
 - **Deviations / open.** The event drawer's "suspend/revoke license" and "remove device" shortcuts link to the license document's panel instead of duplicating the actions in the table. Bulk actions remain out of scope (§5.4). `GET /api/security/*` read endpoints are not added: the view reads through the Local API (L6a).
 - **Browser check** (isolated `.backup` copy, `NEXT_DIST_DIR=.next-l6b`, port 3570, throwaway admin/editor/customer, one license with two devices and two events in the copy only; build removed afterwards): the first run found that the action dialog was a `<form>` nested inside Payload's document form, so its confirm button did nothing; the dialog is now a labelled `div` region with a button and Enter handling that never reaches the document form. Second run: admin suspended and restored license 1 from the side panel (two status-log rows admin/manual and admin/restore, two audit rows, suspension event queued for the customer e-mail), acknowledged an event in `/admin/guvenlik` (audit `open -> acknowledged`); the revoke dialog shows the typed-confirmation hint; light and dark themes render; no horizontal scroll at 1440 px. Editor: the license document is not reachable (`?notFound=1`, licenses are admin-only), `/admin/guvenlik` ends at `/admin`, no action widgets, and a direct same-origin POST to `/api/licenses/1/suspend` returns `403 forbidden`. Screenshots in the scratchpad `l6b/` folder. Not covered: English admin language and screen readers in a browser (unit-tested labels only).
@@ -644,7 +644,7 @@ Scope: documentation and legal drafts only. No `src/`, `tests/`, package, schema
 - `content/legal/en/*`: GDPR-style mirror of the same sections (Art. 6(1)(b) and 6(1)(f) wording).
 - `docs/editor-guide.md`: new English section "Licensing and security center" (locations, actions, monitor-only and observeUntil, circuit breaker, settings, sweep timer).
 - `docs/editor-guide.tr.md`: created with a one-line note and the Turkish version of the same section.
-- Lawyer re-approval is required for the changed legal pages (TR and EN eula, gizlilik-politikasi, kvkk-aydinlatma). Importing them changes the `legalReview` content hash, so the approval drops and `legalReady` stays false until counsel re-approves. Every new section carries a "Hukukçu onayı gerekir" / "Requires lawyer review" note.
+- Lawyer re-approval is required for the changed legal pages (TR and EN eula, gizlilik-politikasi, kvkk-aydinlatma). Importing them changes the `legalReview` content hash, so the approval drops and `legalReady` stays false until counsel re-approves. Every new section carries a `Hukukçu onayı gerekir` / "Requires lawyer review" note.
 - The lease duration is system-wide, with a 14-day default and a 30-day maximum. Device release does not implement a deletion request. The deletion and anonymisation procedure, legitimate-interest assessment, and notice duties for automated decisions remain for review.
 
 ## L7a implementation record (customer portal devices and e-mail)

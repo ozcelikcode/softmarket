@@ -1,21 +1,21 @@
-# Barındırma: alt alan adı ve VPS'siz (paylaşımlı/yönetilen) hosting fizibilitesi
+# Hosting: subdomain and non-VPS (shared/managed) hosting feasibility
 
-> Durum: değerlendirme (2026-11-17). Kod/şema değişmedi. İlgili plan: `docs/plan-licensing-security.md`.
-> Bugünkü düzen: tek VPS, systemd `softmarket.service` (`pnpm start`, 127.0.0.1:3000), host Caddy (otomatik TLS, `X-Softmarket-Client-IP` + `FORM_PROXY_SECRET`), Litestream (S3), `payments-reconcile.timer` (15 dk), `scripts/deploy.sh` (sunucuda `pnpm build` + `pnpm migrate`), SQLite WAL + süreç içi yazma kuyruğu (`src/lib/db-serial-transactions.ts`).
+> Status: assessment (2026-11-17). No code/schema changes. Related plan: `docs/plan-licensing-security.md`.
+> Current setup: single VPS, systemd `softmarket.service` (`pnpm start`, 127.0.0.1:3000), host Caddy (automatic TLS, `X-Softmarket-Client-IP` + `FORM_PROXY_SECRET`), Litestream (S3), `payments-reconcile.timer` (15 min), `scripts/deploy.sh` (`pnpm build` + `pnpm migrate` on server), SQLite WAL + in-process write queue (`src/lib/db-serial-transactions.ts`).
 
-## Kısa cevap
+## Short answer
 
-| Soru | Karar |
+| Question | Decision |
 |---|---|
-| (a) Siteyi veya lisans API'sini alt alan adında çalıştırmak (`lisans.alanadi.com`, `api.alanadi.com`) | **Olur.** Bugünkü VPS'te yalnız DNS + Caddy bloğu. Lisans API'si için **önerilir**. |
-| (b) VPS yerine cPanel/Plesk Node.js (Passenger) paylaşımlı hosting | **Koşullu olur — lisans API'si ve ödeme için önerilmez.** Aşağıdaki minimum özelliklerin tamamı yazılı olarak sağlanmadıkça kurulmamalı. |
-| (c) VPS'siz ama tek örnekli yönetilen konteyner + kalıcı disk (ör. kalıcı volume'lü PaaS) | **Koşullu olur.** Tek örnek ve kalıcı disk sabitlenirse mimari değişmeden çalışır; yedek Litestream ile korunur. |
+| (a) Running the site or licensing API on a subdomain (`lisans.alanadi.com`, `api.alanadi.com`) | **Works.** Only DNS + Caddy block on today's VPS. **Recommended** for the licensing API. |
+| (b) cPanel/Plesk Node.js (Passenger) shared hosting instead of a VPS | **Conditional — not recommended for licensing API and payments.** Must not be deployed unless all minimum specifications below are guaranteed in writing. |
+| (c) Non-VPS single-instance managed container + persistent disk (e.g., PaaS with persistent volume) | **Conditional.** Works without architecture changes if single instance and persistent disk are pinned; backups preserved via Litestream. |
 
-Öneri: **VPS'te kalın, lisans API'sini `lisans.<alan-adi>` alt alan adından yayınlayın.** Aylık maliyet farkı küçük; lisans doğrulaması ve ödeme webhook'ları için kalıcı tek süreç, sistem zamanlayıcısı ve gerçek zamanlı yedek gereklidir.
+Recommendation: **Stay on the VPS, serve the licensing API from the `lisans.<alan-adi>` subdomain.** The monthly cost difference is small; license verification and payment webhooks require a persistent single process, system timers, and real-time backups.
 
-## (a) Alt alan adı
+## (a) Subdomain
 
-**Ne gerekir:** DNS `A/AAAA lisans → VPS IP`; Caddy'ye ikinci site bloğu. Aynı süreç, ayrı host:
+**What is required:** DNS `A/AAAA lisans → VPS IP`; a second site block in Caddy. Same process, separate host:
 
 ```caddy
 lisans.{$DOMAIN} {
@@ -36,65 +36,65 @@ lisans.{$DOMAIN} {
 }
 ```
 
-(İndirme ucu `/api/v1/licensing/dl/*` büyük dosya akıtır; gövde sınırı yalnız istek içindir, yanıtı etkilemez.)
+(The download endpoint `/api/v1/licensing/dl/*` streams large files; the body limit applies only to requests and does not affect responses.)
 
-**Etkiler:**
+**Impacts:**
 
-- **Çerez:** Payload ve portal çerezleri bugün `Domain` özniteliği olmadan (host-only) yazılır; alt alan adına gitmez. Bu korunmalı: `Domain=.alanadi.com` **yapılmamalı** (alt alan adındaki bir açık oturum çerezlerini okuyabilir hale gelir). Lisans API'si çerez kullanmaz.
-- **SameSite:** değişmez (Lax). Alt alan adı "same-site" sayılır; bu nedenle admin uçlarındaki same-origin (`Origin == Host`) ve `Sec-Fetch-Site: same-origin` kontrolü (`guardAdminSession`) zaten SameSite'tan daha sıkıdır ve korunur.
-- **CORS:** gerekmez (masaüstü/sunucu programı tarayıcı değildir). `Access-Control-Allow-Origin` yazılmaz; tarayıcıdan çağrı bilinçli olarak desteklenmez.
-- **HSTS `includeSubDomains`** zaten açık: tüm alt alan adları HTTPS olmak zorunda (Caddy otomatik sertifika alır).
-- **CSP/middleware:** `/api` middleware dışında; etkisi yok.
-- **Artılar:** programa gömülü adres pazarlama sitesinden bağımsız (site yeniden tasarlanır/taşınır, programlar etkilenmez); ileride API ayrı makineye taşınabilir; Cloudflare/WAF kuralı ve rate limit host'a özel yazılabilir; loglar ayrışır.
-- **Eksiler:** ek DNS kaydı ve sertifika (otomatik); yanlış Caddy kuralıyla admin/portalın alt alan adından açılma riski → yukarıdaki "yalnız `/api/v1/licensing/*`" kuralı ve L10 testi (`curl https://lisans…/admin` → 404).
-- **Cloudflare proxy kullanılırsa:** istemci IP'si `CF-Connecting-IP` olur; Caddy'de `trusted_proxies` yalnız Cloudflare aralıklarıyla ayarlanmalı, aksi halde rate limit tek IP'ye çöker.
+- **Cookies:** Payload and portal cookies today are written without a `Domain` attribute (host-only); they are not sent to subdomains. Keep this: **do not** set `Domain=.alanadi.com` (a vulnerability on the subdomain would be able to read session cookies). The licensing API does not use cookies.
+- **SameSite:** unchanged (`Lax`). A subdomain counts as "same-site"; therefore the same-origin (`Origin == Host`) and `Sec-Fetch-Site: same-origin` check (`guardAdminSession`) on admin endpoints is already stricter than SameSite and is preserved.
+- **CORS:** not needed (desktop/server software is not a browser). `Access-Control-Allow-Origin` is not emitted; browser calls are intentionally unsupported.
+- **HSTS `includeSubDomains`** is already enabled: all subdomains must be HTTPS (Caddy obtains certificates automatically).
+- **CSP/middleware:** `/api` is outside middleware; no impact.
+- **Pros:** the address embedded in software is independent of the marketing site (site can be redesigned/moved without affecting applications); the API can move to a separate machine later; Cloudflare/WAF rules and rate limits can be written per host; logs are separated.
+- **Cons:** additional DNS record and certificate (automatic); risk of exposing admin/portal on the subdomain via a misconfigured Caddy rule → mitigated by the "only `/api/v1/licensing/*`" rule above and the L10 test (`curl https://lisans…/admin` → 404).
+- **If Cloudflare proxy is used:** client IP is `CF-Connecting-IP`; `trusted_proxies` in Caddy must be configured strictly to Cloudflare IP ranges, otherwise rate limiting collapses to a single IP.
 
-## (b) Paylaşımlı / yönetilen hosting (cPanel "Setup Node.js App"/Application Manager, Plesk Node.js, CloudLinux Node.js Selector — Phusion Passenger veya LiteSpeed lsnode)
+## (b) Shared / managed hosting (cPanel "Setup Node.js App"/Application Manager, Plesk Node.js, CloudLinux Node.js Selector — Phusion Passenger or LiteSpeed lsnode)
 
-### Uyum tablosu
+### Compatibility table
 
-| Gereksinim (bugünkü sistem) | Paylaşımlı hosting gerçeği | Sonuç |
+| Requirement (current system) | Shared hosting reality | Outcome |
 |---|---|---|
-| Kalıcı, **tek** Node süreci | Passenger süreci isteğe göre başlatır, boşta kapatır (pool idle time), yük altında **birden çok süreç** açabilir; Node için varsayılan "sınırsız eşzamanlılık" ipucu ile genelde 1 süreç kalır ama garanti değil; ayar çoğu planda müşteriye kapalı | **Kritik risk.** İkinci süreç: `db-serial-transactions` süreç içi olduğundan eşzamanlı yazımda `SQLITE_BUSY`/kayıp güncelleme koruması kaybolur; bellek içi rate limit, nonce önbelleği, olay tamponu, Turnstile/form limiti süreç başına bölünür (atlatma). Gerekli: `max pool/instances = 1`, `min instances = 1`, idle kapatma kapalı. |
-| Node `>=24.22.1 <25` | Seçici sürümleri sağlayıcıya bağlı, çoğu zaman geride | Sürüm yoksa **olmaz**. |
-| `next build` (2–4 GB RAM, dakikalar) | LVE bellek/süreç limitleri (çoğu 1–2 GB) build'i öldürür | Build **CI'da** yapılmalı, sunucuya derlenmiş çıktı (`.next` / `output: 'standalone'`) yüklenmeli → `deploy.sh` yeniden yazılır. |
-| Çalışma belleği (Next + Payload + sharp) ~400–800 MB RSS | LVE limiti aşılırsa süreç sessizce öldürülür; lsnode birikmesi "resource temporarily unavailable" | En az 2 GB garantili RAM. |
-| Yazılabilir kalıcı dizin (`data/`, `uploads/`) web kökü dışında | Genelde ev dizini; sağlanır | Web kökü dışında olmalı (SQLite dosyası indirilebilir olmamalı). |
-| SQLite WAL (yerel disk, paylaşımlı bellek dosyaları `-wal`/`-shm`) | Ağ dosya sistemi (NFS) kullanan hostlarda WAL/kilit güvenilmez | **Yerel disk** yazılı teyit gerekli. |
-| systemd timer'lar: `payments-reconcile` (15 dk), lisans `licensing:sweep` (5 dk), bildirim kuyruğu, saklama temizliği | cPanel/Plesk **cron** var (çoğunda en sık 5 dk; bazıları 15 dk) | Cron ile karşılanır; komut ortamında `.env` yüklenmeli, aynı DB'ye ikinci süreç olarak yazar (kısa süreli; WAL + `busy_timeout` 5000 ile kabul edilebilir, ama süreçler arası kuyruk yok). |
-| Litestream (sürekli WAL replikasyonu, RPO saniyeler) | Kalıcı yan süreç çalıştırılamaz | Yerine cron ile `sqlite3 .backup` / `VACUUM INTO` + uploads tar + dış depoya (rclone/S3) yükleme; **RPO = cron aralığı** (15–60 dk). Ödeme/lisans kaybı riski artar. |
-| HTTPS | AutoSSL/Let's Encrypt; alt alan adı için de var | Olur. |
-| Gerçek istemci IP'si | Caddy + `FORM_PROXY_SECRET` deseni yok; IP Apache/LiteSpeed/Passenger üzerinden `X-Forwarded-For` gelir | `requestIP()` için "güvenilen tek proxy" kipi gerekir (kod değişikliği); yanlış yapılandırmada başlık sahteciliği → rate limit atlatma. |
-| Webhook erişilebilirliği (iyzico/Stripe) ve uzun istekler | Süreç uyurken ilk istek soğuk başlar (birkaç sn); bazı hostlarda istek zaman aşımı/gövde sınırı | Webhook sağlayıcıları tekrar dener; yine de idle kapatma kapalı olmalı. |
-| Büyük indirme akışı (lisanslı indirme, 512 MB yükleme) | Gövde/yanıt boyutu ve süre limitleri | Sağlayıcıdan teyit; yoksa indirmeler ayrı depolamaya (S3 imzalı URL) taşınmalı → ek iş. |
-| Özel başlık/HSTS/CSP | `.htaccess`/panel ile kısmen | Uygulama başlıkları Next'ten gelir; Caddy başlıkları `.htaccess`'e taşınmalı. |
-| SSH + `pnpm` | Çoğunda SSH var, pnpm yoksa `corepack` | SSH zorunlu (migration, yedek, acil müdahale). |
+| Persistent, **single** Node process | Passenger starts processes on demand, shuts them down when idle (pool idle time), and may spawn **multiple processes** under load; for Node, the default "unlimited concurrency" hint usually keeps 1 process, but it is not guaranteed; the setting is closed to customers on most plans | **Critical risk.** Second process: since `db-serial-transactions` is in-process, concurrent-write protection against `SQLITE_BUSY`/lost updates is lost; in-memory rate limits, nonce cache, event buffer, and Turnstile/form limits split per process (bypass). Required: `max pool/instances = 1`, `min instances = 1`, idle shutdown disabled. |
+| Node `>=24.22.1 <25` | Selector versions depend on the provider and often lag behind | If the version is missing, **not viable**. |
+| `next build` (2–4 GB RAM, minutes) | LVE memory/process limits (often 1–2 GB) kill the build | Build must run **in CI**, and compiled output (`.next` / `output: 'standalone'`) uploaded to the server → `deploy.sh` must be rewritten. |
+| Working memory (Next + Payload + sharp) ~400–800 MB RSS | If LVE limit is exceeded, the process is silently killed; lsnode accumulation "resource temporarily unavailable" | At least 2 GB guaranteed RAM. |
+| Writable persistent directory (`data/`, `uploads/`) outside web root | Usually home directory; provided | Must be outside web root (SQLite file must not be downloadable). |
+| SQLite WAL (local disk, shared-memory files `-wal`/`-shm`) | WAL/locking is unreliable on hosts using network file systems (NFS) | Written confirmation of **local disk** required. |
+| systemd timers: `payments-reconcile` (15 min), licensing `licensing:sweep` (5 min), notification queue, retention cleanup | cPanel/Plesk has **cron** (most allow 5 min minimum; some 15 min) | Covered by cron; `.env` must be loaded in command environment, writes to the same DB as a second process (short-lived; acceptable with WAL + `busy_timeout` 5000, but no cross-process queue). |
+| Litestream (continuous WAL replication, RPO seconds) | Persistent sidecar process cannot run | Instead, cron `sqlite3 .backup` / `VACUUM INTO` + uploads tar + upload to external storage (`rclone`/S3); **RPO = cron interval** (15–60 min). Risk of payment/license loss increases. |
+| HTTPS | AutoSSL/Let's Encrypt; also available for subdomains | Works. |
+| Real client IP | No Caddy + `FORM_PROXY_SECRET` pattern; IP arrives via `X-Forwarded-For` from Apache/LiteSpeed/Passenger | Needs "trusted single proxy" mode for `requestIP()` (code change); misconfiguration allows header spoofing → rate-limit bypass. |
+| Webhook availability (iyzico/Stripe) and long requests | When process sleeps, first request cold-starts (several seconds); some hosts have request timeout/body limits | Webhook providers retry; idle shutdown should still be disabled. |
+| Large download streaming (licensed download, 512 MB upload) | Body/response size and duration limits | Confirm with provider; otherwise downloads must move to separate storage (S3 signed URL) → extra work. |
+| Custom headers/HSTS/CSP | Partial via `.htaccess`/panel | App headers come from Next; Caddy headers must move to `.htaccess`. |
+| SSH + `pnpm` | Most have SSH; if no pnpm, `corepack` | SSH mandatory (migrations, backups, emergency intervention). |
 
-### Minimum hosting özellikleri (hepsi yazılı teyitle)
+### Minimum hosting specifications (all with written confirmation)
 
-1. Node.js **24.22.1+** (24.x) seçilebilir, SSH erişimi.
-2. Uygulama başına **tek süreç** sabitlenebilir (`passenger_max_instances`/pool = 1, `min_instances = 1`) ve **boşta kapatma kapalı**; ya da Passenger yerine kalıcı süreç (PM2/supervisor) izni.
-3. En az **2 GB** garantili RAM, 1 vCPU, 20 GB **yerel** (NFS değil) disk, inode sınırı ≥ 200k.
-4. Web kökü dışında kalıcı yazılabilir dizin; çalışma dizininin dağıtımlar arasında korunması.
-5. **Cron** en az 5 dakikada bir; komutlar uygulamanın Node sürümü ve ortam değişkenleriyle çalışabilmeli.
-6. Panelden **ortam değişkeni** tanımlama (sırlar dosyaya yazılmadan) veya web kökü dışında 0600 `.env`.
-7. Alt alan adı + otomatik TLS; istek gövdesi ≥ 512 MB (medya yükleme) veya yüklemeyi küçültme kararı; uzun yanıt akışına izin.
-8. Gerçek istemci IP'sinin güvenilir tek başlıkla iletilmesi (sağlayıcının proxy zinciri belgelenmiş).
-9. Dış yedek hedefi (S3 uyumlu) ve cron'dan erişim.
+1. Selectable Node.js **24.22.1+** (24.x), SSH access.
+2. Per-app **single process** pinnable (`passenger_max_instances`/pool = 1, `min_instances = 1`) and **idle shutdown disabled**; or permission for a persistent process (PM2/supervisor) instead of Passenger.
+3. At least **2 GB** guaranteed RAM, 1 vCPU, 20 GB **local** (not NFS) disk, inode limit ≥ 200k.
+4. Persistent writable directory outside web root; working directory preserved across deployments.
+5. **Cron** at least every 5 minutes; commands must run with the app's Node version and environment variables.
+6. Panel support for **environment variables** (without committing secrets to files) or `0600` `.env` outside web root.
+7. Subdomain + automatic TLS; request body ≥ 512 MB (media uploads) or decision to downsize uploads; long response streaming allowed.
+8. Real client IP forwarded via a single trusted header (provider's proxy chain documented).
+9. External backup target (S3-compatible) reachable from cron.
 
-Bunlardan biri yoksa paylaşımlı hosting **olmaz**. Hepsi varsa da bu sunucu "VPS'e yakın" bir planı demektir; fiyat avantajı genelde kalmaz.
+If any of these is missing, shared hosting **will not work**. If all are present, that server is essentially a "near-VPS" plan; the price advantage usually disappears.
 
-### Gerekli kod/operasyon değişiklikleri (paylaşımlı hostinge geçilirse, ~2–3 gün)
+### Required code/ops changes (if moving to shared hosting, ~2–3 days)
 
-- `next.config` `output: 'standalone'` + Passenger giriş dosyası (`server.js`, `PORT`'u Passenger'dan okur); CI'da build, artefakt yükleme; `deploy.sh` yerine artefakt dağıtımı + `pnpm migrate` SSH adımı.
-- `requestIP()` için yapılandırılabilir güvenilen proxy kipi (yalnız loopback'ten gelen `X-Forwarded-For`'un son değeri).
-- Süreç başlangıcında "ikinci süreç" tespiti: `data/` içinde `flock` tabanlı tekil kilit; kilidi alamayan süreç yazma yapan işleri (lisans API'si, webhook) 503 ile reddeder ve kritik olay yazar (fail-closed). VPS'te de zararsız bir koruma olarak önerilir.
-- Litestream yerine `scripts/backup.sh` cron sürümü + dış yükleme; geri yükleme provası.
-- systemd timer'lar → cron satırları (`payments:reconcile`, `licensing:sweep`).
+- `next.config` `output: 'standalone'` + Passenger entry file (`server.js`, reads `PORT` from Passenger); build in CI, upload artifact; artifact deployment + SSH `pnpm migrate` step instead of `deploy.sh`.
+- Configurable trusted-proxy mode for `requestIP()` (only the last value of `X-Forwarded-For` arriving from loopback).
+- "Second process" detection at startup: `flock`-based singleton lock in `data/`; a process failing to acquire the lock rejects write operations (licensing API, webhook) with 503 and logs a critical event (fail-closed). Recommended as a harmless safeguard on VPS as well.
+- Cron version of `scripts/backup.sh` + external upload instead of Litestream; restore rehearsal.
+- systemd timers → cron entries (`payments:reconcile`, `licensing:sweep`).
 
-## (c) Yönetilen konteyner + kalıcı disk
+## (c) Managed container + persistent disk
 
-Tek örnek (`min=max=1`), kalıcı volume (`data/`, `uploads/`), sürekli çalışan süreç, cron/zamanlanmış görev ve yan süreç (Litestream) destekleyen bir platformda mevcut mimari korunur. Koşullar: otomatik ölçekleme **kapalı**, sıfıra ölçekleme kapalı, volume tek örneğe bağlı, sağlayıcı bölgesi KVKK değerlendirmesinden geçmiş (yurt dışı aktarım). Dağıtımda kısa kesinti kabul edilir (tek örnek, blue/green yok).
+On a platform supporting single instance (`min=max=1`), persistent volume (`data/`, `uploads/`), always-on process, cron/scheduled tasks, and sidecar process (Litestream), the current architecture is preserved. Conditions: autoscaling **off**, scale-to-zero off, volume attached to the single instance, provider region cleared under KVKK assessment (cross-border transfer). Brief downtime during deployment is accepted (single instance, no blue/green).
 
 ## Disk footprint
 
@@ -121,16 +121,16 @@ Run `pnpm backups:prune --dry-run` to preview migration-snapshot retention under
 
 Locally, inactive `.next-perf` and other `.next-*` builds, `test-results/` and `playwright-report/` can be cleared when you no longer need their output. Keep any dist directory used by a running server. Clear `.cache/ms-playwright` only if you can reinstall browsers before the next E2E run. Keep `.cache/pnpm` if you rely on it for offline installs.
 
-## Kaynaklar
+## References
 
-- cPanel — Node.js uygulaması kurma (Application Manager, Passenger): https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/
-- cPanel — Passenger uygulamaları (ters port bağlama): https://docs.cpanel.net/knowledge-base/web-services/using-passenger-applications
-- Plesk — Next.js desteği (Obsidian 18.0.81+, Passenger): https://support.plesk.com/hc/en-us/articles/12376965359511-Does-Plesk-support-Next-JS
-- Plesk forum — Passenger süreç havuzu sabitleme: https://talk.plesk.com/threads/how-to-configure-a-fixed-process-pool-for-nodejs-with-passenger.362847/
-- Phusion Passenger — Node.js dinamik süreç ölçekleme: https://www.phusionpassenger.com/library/indepth/nodejs/dynamic_scaling_of_app_processes/nginx/
-- Phusion Passenger — Node.js istek dengeleme: https://www.phusionpassenger.com/library/indepth/nodejs/request_load_balancing.html
-- Phusion Passenger — Apache optimizasyonu (havuz boyutu): https://www.phusionpassenger.com/library/config/apache/optimization/
-- CloudLinux — limitler (LVE): https://docs.cloudlinux.com/cloudlinuxos/limits/
-- CloudLinux — web arayüzünden başlatılan süreçlerin (Node.js) limit kipi: https://cloudlinux.zendesk.com/hc/en-us/articles/21229976203804-What-are-web-interface-resource-limiting-modes
-- LiteSpeed — CloudLinux/lsnode süreç birikmesi: https://docs.litespeedtech.com/lsws/cp/cpanel/ts-cloudlinux/
-- SQLite — WAL ve ağ dosya sistemleri: https://www.sqlite.org/wal.html
+- cPanel — How to install a Node.js application (Application Manager, Passenger): https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/
+- cPanel — Passenger applications (reverse port binding): https://docs.cpanel.net/knowledge-base/web-services/using-passenger-applications
+- Plesk — Next.js support (Obsidian 18.0.81+, Passenger): https://support.plesk.com/hc/en-us/articles/12376965359511-Does-Plesk-support-Next-JS
+- Plesk forum — Pinning Passenger process pool for Node.js: https://talk.plesk.com/threads/how-to-configure-a-fixed-process-pool-for-nodejs-with-passenger.362847/
+- Phusion Passenger — Dynamic scaling of Node.js app processes: https://www.phusionpassenger.com/library/indepth/nodejs/dynamic_scaling_of_app_processes/nginx/
+- Phusion Passenger — Node.js request load balancing: https://www.phusionpassenger.com/library/indepth/nodejs/request_load_balancing.html
+- Phusion Passenger — Apache optimization (pool size): https://www.phusionpassenger.com/library/config/apache/optimization/
+- CloudLinux — Limits (LVE): https://docs.cloudlinux.com/cloudlinuxos/limits/
+- CloudLinux — Resource limiting modes for web-interface-started Node.js processes: https://cloudlinux.zendesk.com/hc/en-us/articles/21229976203804-What-are-web-interface-resource-limiting-modes
+- LiteSpeed — CloudLinux/lsnode process accumulation: https://docs.litespeedtech.com/lsws/cp/cpanel/ts-cloudlinux/
+- SQLite — WAL and network file systems: https://www.sqlite.org/wal.html

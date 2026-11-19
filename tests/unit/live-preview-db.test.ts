@@ -35,6 +35,7 @@ const login = async (collection: 'users' | 'customers', email: string) =>
   (await payload.login({ collection, data: { email, password: 'Preview-test-123!' } })).token as string
 
 beforeAll(async () => {
+  vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'http://127.0.0.1:3200')
   dir = mkdtempSync(join(tmpdir(), 'softmarket-f8-'))
   process.env.UPLOADS_DIR = join(dir, 'uploads')
   process.env.DATABASE_URI = `file:${dir}/test.db`
@@ -74,7 +75,7 @@ beforeAll(async () => {
   cookies.customerPortal = `${PORTAL_COOKIE}=${customerToken}`
   cookies.customerJwt = `payload-token=${customerToken}`
 }, 120000)
-afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }) })
+afterAll(async () => { await payload?.destroy(); if (dir) rmSync(dir, { recursive: true, force: true }); vi.unstubAllEnvs() })
 beforeEach(() => { state.draft.isEnabled = false; state.headers = new Headers() })
 
 describe(`migration ${NAME}`, () => {
@@ -98,7 +99,7 @@ describe('/api/preview gate', () => {
       [{ cookie: '__prerender_bypass=stolen' }, 401],
       [{ cookie: cookies.customerPortal }, 403],
       // A customer JWT in the staff cookie still authenticates as a customer: rejected.
-      [{ cookie: cookies.customerJwt }, 403],
+      [{ cookie: cookies.customerJwt, 'sec-fetch-site': 'same-origin' }, 403],
       [{ authorization: `JWT ${cookies.customerPortal.split('=')[1]}` }, 403],
     ]
     for (const [headers, status] of cases) {
@@ -123,9 +124,9 @@ describe('/api/preview gate', () => {
       expect(res.status).toBe(403)
       expect(state.draft.isEnabled).toBe(false)
     }
-    for (const headers of [{}, { origin: 'https://evil.example' }, { referer: 'https://evil.example/' }] as Record<string, string>[]) {
+    for (const [headers, status] of [[{}, 401], [{ origin: 'https://evil.example' }, 403], [{ referer: 'https://evil.example/' }, 403]] as const) {
       const res = await route.enablePreview(request('?redirect=/tr', { cookie: cookies.editor, ...headers }))
-      expect(res.status).toBe(403)
+      expect(res.status).toBe(status)
       expect(state.draft.isEnabled).toBe(false)
     }
     const fallback = await route.enablePreview(request('?redirect=/tr', { cookie: cookies.editor, referer: 'http://127.0.0.1:3200/admin' }))
@@ -141,6 +142,25 @@ describe('/api/preview gate', () => {
       expect(res.headers.get('cache-control')).toBe('private, no-store, max-age=0')
       expect(state.draft.isEnabled).toBe(true)
     }
+  })
+
+  it('uses the public HTTPS authority for preview behind the private listener', async () => {
+    const csrf = payload.config.csrf
+    const origin = 'https://site.example.test:3443'
+    payload.config.csrf = [origin]
+    try {
+      const headers = { host: 'site.example.test:3443', 'x-forwarded-proto': 'https', cookie: cookies.editor, referer: `${origin}/admin` }
+      const res = await route.enablePreview(new Request('http://127.0.0.1:3000/api/preview?redirect=/tr', { headers }))
+      expect(res.status).toBe(307)
+      expect(res.headers.get('referrer-policy')).toBe('same-origin')
+      state.headers = new Headers(headers)
+      const { getPreviewUser } = await import('../../src/lib/preview')
+      expect(await getPreviewUser()).toMatchObject({ collection: 'users', roles: ['editor'] })
+      const mismatched = await route.disablePreview(new Request('https://127.0.0.1:3000/api/exit-preview', {
+        headers: { ...headers, origin: 'https://site.example.test', 'sec-fetch-site': 'same-origin' },
+      }))
+      expect(mismatched.status).toBe(403)
+    } finally { payload.config.csrf = csrf }
   })
 
   it('exit-preview disables draft mode and validates its redirect', async () => {
@@ -164,7 +184,7 @@ describe('/api/preview gate', () => {
 describe('draft loaders and cache invalidation', () => {
   const as = (draft: boolean, cookie?: string) => {
     state.draft.isEnabled = draft
-    state.headers = new Headers(cookie ? { cookie } : {})
+    state.headers = new Headers(cookie ? { cookie, 'sec-fetch-site': 'same-origin' } : {})
   }
 
   it('product-bound data stays anonymous for related lists and autosave never leaks or purges ISR', async () => {

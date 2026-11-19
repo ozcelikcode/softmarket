@@ -64,6 +64,7 @@ if [[ ! "$DIST" =~ ^\.next-[a-z0-9-]+$ ]]; then
   exit 1
 fi
 export UPLOADS_DIR="$DIR/uploads" NEXT_DIST_DIR="$DIST"
+export NEXT_PUBLIC_SERVER_URL='http://127.0.0.1:3400'
 export PAYLOAD_CONFIG_PATH="$PWD/src/payload.config.ts"
 export PAYLOAD_SECRET="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
 # Never use inherited live SMTP credentials for a copied database.

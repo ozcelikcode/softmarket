@@ -69,7 +69,7 @@ describe('license assignment email', () => {
     await scheduled.shift()!()
     expect(req.payload.findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'products', locale }))
     expect(req.payload.sendEmail).toHaveBeenCalledWith(expect.objectContaining({
-      to: 'customer@example.test', text: expect.stringContaining('SECRET-KEY'), html: expect.stringContaining('&lt;Product&gt;'),
+      to: 'customer@example.test', requireSmtp: true, text: expect.stringContaining('SECRET-KEY'), html: expect.stringContaining('&lt;Product&gt;'),
     }))
     const mail = vi.mocked(req.payload.sendEmail).mock.calls[0][0]
     expect(mail.text).toContain('Pro (PRO)')

@@ -692,3 +692,57 @@ Files:
 Verification: typecheck passed; 27 L2/client-reference tests passed; simulator help ran. QA ran `pnpm licensing:sim` end to end against an isolated server on a DB copy: activate, validate, updates, downloads/link, download and deactivate all succeeded. The C# example is pending compilation. No server, schema, migration or dependency changes. The 1,833-pass full run had timeouts in three unrelated suites (block-motion migration, media pipeline, SQLite integrity); they passed on a single worker.
 
 Open: compile and run the C# example on a host with dotnet.
+
+## L10 implementation record (deployment, security audit and fixes)
+
+Scope: deployment config, operations runbook, preflight helper, and fixes from the independent audit (F-01..F-09). No schema change, migration or dependency change. Nothing committed by the implementation itself. The isolated browser recheck used a DB copy and port 3400/3500 only; `data/*.db`, port 3100 and `.next` were not touched.
+
+**Deploy changes**
+- `deploy/Caddyfile`: `lisans.{$DOMAIN}` block. Allowlisted licensing paths only, L3 authenticated client-address headers, client `CF-IPCountry` stripped, 8 KiB request body cap, upstream timeouts, access logging skipped. The main site block is unchanged.
+- `deploy/softmarket.service`: explicit `--hostname 127.0.0.1`, `SOFTMARKET_READ_ONLY_RELEASE=1` (in-memory ISR), writable Corepack cache, optional writable `.next/cache`. Data, uploads and Litestream paths stay writable.
+- `deploy/litestream.service`: private temp directory. Timers and existing env file handling kept.
+- `pnpm licensing:preflight` (`scripts/licensing-preflight.ts`): read-only Linux VPS check of uploads root, L4 file confinement, active public signing metadata and proxy secret. Fixed-label failures, no input values echoed.
+- `docs/licensing/operations.md`: runbook, DB and vault-master backup pairing, isolated load-test commands.
+
+**Audit verdicts**
+
+| ID | Verdict | Fix |
+|---|---|---|
+| F-01 | Confirmed | Separate limiters per namespace, LRU eviction, `global` in its own capacity-1 limiter. Overflow budget shares new keys, active budgets kept. |
+| F-02 | Confirmed | IP limited before account. Portal auth uses IPv4 address or IPv6 /48. Public forms keep deny-on-overflow. |
+| F-03 | Confirmed | `csrf` and users cookie from `payloadSessionConfig()`. Exact origin from `NEXT_PUBLIC_SERVER_URL`. Loopback aliases allowed on plain HTTP; Secure otherwise. |
+| F-04 | Confirmed | Denied audit: in-memory 10-minute window reserved before the writer lock, max 4 writes in flight. Repeats write nothing. |
+| F-05 | Partially confirmed | Caddy strips client `CF-IPCountry` and skips licensing logs. Header trusted only with `countrySource=cloudflare_header` and proxy secret. Cloudflare topology not shipped. |
+| F-06 | Confirmed | API-key license create (REST or MCP) emits `license.created_via_mcp` at `info` in the create transaction. Panel creates emit nothing. |
+| F-07 | Partially confirmed | Key buffers zeroed. Config load before traffic rejection kept by design (residual). |
+| F-08 | Confirmed | Successful validate, updates and download-link nonce receipts pruned after 1 day. Activate, deactivate and admin rows keep `auditYears`. |
+| F-09 | Confirmed | Customer licensing e-mails require SMTP at send time. Unavailable SMTP leaves the row pending. |
+
+**Final QA fixes (Sol 6.2 High)**
+- Limiter overflow budget and portal IPv6 /48 grouping. Pooled observations cannot trigger individual blocks.
+- Staff REST login blocked cross-origin before cookie issue. Preview origin checks fixed behind HTTPS proxies (ports, loopback aliases, IPv6, trailing slash).
+- Caddy restricted to canonical licensing routes, 8 KiB body cap (matches app guard), download-token paths and proxy secret redacted from runtime logs. systemd override removes packaged `--environ`.
+- Denied-audit cache bounded (10,000 keys); saturation skips new keys. Original 10-minute deadline kept across cold caches.
+- Read-only release sets `isrFlushToDisk` off (in-memory ISR); pnpm services get a writable Corepack cache.
+- SMTP-gated e-mails at send time (`licensing.ts`, `license-assigned.ts`); preflight percent-decoding matches SQLite.
+
+**Test results**
+- `pnpm typecheck`: passed. `pnpm lint`: passed.
+- `pnpm test --maxWorkers=4 --hookTimeout=30000`: 115 files, 1,880 tests passed.
+- Isolated e2e: 30/30. Manual browser recheck on 127.0.0.1 and localhost: admin panel, Live Preview, publish/ISR, license actions, portal device release.
+- Caddy route and body-limit parity, shell syntax and `git diff --check` passed.
+- Load: local HTTP p95 718 ms (target 250 ms). Not met locally.
+
+**Open VPS items**
+- DNS for `lisans.{$DOMAIN}`, TLS, and matching proxy secret on app and Caddy.
+- Validate Caddy and systemd units on the VPS (`caddy validate`, unit override).
+- Provision the licensing signer (`pnpm licensing:keygen`), then verify `GET /api/v1/licensing/keys`.
+- Back up `SOFTMARKET_SECRETS_KEY` with the DB. Losing it makes stored secrets unreadable.
+- Run `pnpm licensing:preflight` on Linux.
+- Load test against the VPS: p95 must be below 250 ms. Local result 718 ms.
+
+**Residual risks**
+- F-01/F-02: an attacker with more than 10,000 distinct keys in one window can evict its own buckets. Global throughput limit still applies.
+- F-03: `Sec-Fetch-Site: same-site` without `Origin` is accepted for GET navigations. Browser writes carry `Origin` and are checked exactly.
+- F-04: a flood across many keys can drop denied-audit rows.
+- F-05: enabling Cloudflare needs the documented Caddy changes.

@@ -1,3 +1,15 @@
+{
+    # Streaming failures can log the upstream request even when access logging is skipped.
+    log {
+        format filter {
+            request>uri delete
+            request>headers>X-Softmarket-Proxy-Secret delete
+            request>headers>Referer delete
+            resp_headers>Location delete
+        }
+    }
+}
+
 {$DOMAIN} {
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -7,11 +19,60 @@
         -Server
     }
     header /api/media/file/* Cache-Control "private, no-store, max-age=0"
+    log_skip /api/v1/licensing/*
+    request_body /api/v1/licensing/* {
+        max_size 8KiB
+    }
     request_body {
         max_size 512MB
     }
     reverse_proxy 127.0.0.1:3000 {
         header_up X-Softmarket-Client-IP {remote_host}
-        header_up X-Softmarket-Proxy-Secret {$FORM_PROXY_SECRET}
+        header_up X-Softmarket-Proxy-Secret {env.FORM_PROXY_SECRET}
+        header_up -CF-IPCountry
+    }
+    handle_errors {
+        respond /api/v1/licensing/* "" {err.status_code}
+    }
+}
+
+lisans.{$DOMAIN} {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        -Server
+    }
+
+    # Download paths contain bearer credentials. Keep access logging off.
+    log_skip
+
+    # Match the raw URI so routing never depends on Caddy and Next normalizing a path identically.
+    @licensing expression `{http.request.orig_uri}.matches('^/api/v1/licensing/(keys|activate|validate|deactivate|updates|downloads/link|dl/[A-Za-z0-9_-]+[.][A-Za-z0-9_-]+)([?].*)?$')`
+    handle @licensing {
+        request_body {
+            max_size 8KiB
+        }
+        reverse_proxy 127.0.0.1:3000 {
+            # Set replaces every incoming value for these headers.
+            header_up X-Softmarket-Client-IP {remote_host}
+            header_up X-Softmarket-Proxy-Secret {env.FORM_PROXY_SECRET}
+            header_up -CF-IPCountry
+            header_up -Cookie
+            header_up -Authorization
+            transport http {
+                dial_timeout 3s
+                response_header_timeout 15s
+                read_timeout 60s
+                write_timeout 15s
+            }
+        }
+    }
+    handle {
+        respond 404
+    }
+
+    # Handle proxy errors without emitting a runtime access-style error with the URL.
+    handle_errors {
+        respond "" {err.status_code}
     }
 }

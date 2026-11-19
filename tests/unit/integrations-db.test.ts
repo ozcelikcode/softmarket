@@ -158,15 +158,15 @@ describe('write-only secrets (admin panel session only)', () => {
     await writeSecret(payload, 'iyzico.live.secretKey', null)
     await run('UPDATE integrations SET secrets = NULL')
   })
-  it('anonymous 401; customer, editor, API key (MCP), header JWT, missing/foreign origin 403; nothing stored', async () => {
+  it('refuses unauthorized callers and foreign-origin cookies without storing anything', async () => {
     const body = { id: 'iyzico.sandbox.apiKey', value: PLAIN['iyzico.sandbox.apiKey'] }
     expect((await setSecret({ origin: ORIGIN }, body)).status).toBe(401)
     expect((await setSecret(panel(jwt.customer), body)).status).toBe(403)
     expect((await setSecret(panel(jwt.editor), body)).status).toBe(403)
     expect((await setSecret({ origin: ORIGIN, authorization: `users API-Key ${API_KEY}` }, body)).status).toBe(403)
     expect((await setSecret({ origin: ORIGIN, authorization: `JWT ${jwt.admin}` }, body)).status).toBe(403)
-    expect((await setSecret({ cookie: `payload-token=${jwt.admin}` }, body)).status).toBe(403)
-    expect((await setSecret({ origin: 'https://evil.example', cookie: `payload-token=${jwt.admin}` }, body)).status).toBe(403)
+    expect((await setSecret({ cookie: `payload-token=${jwt.admin}`, 'sec-fetch-site': 'same-origin' }, body)).status).toBe(403)
+    expect((await setSecret({ ...panel(jwt.admin), origin: 'https://evil.example' }, body)).status).toBe(401)
     expect((await setSecret({ ...panel(jwt.admin), 'sec-fetch-site': 'cross-site' }, body)).status).toBe(403)
     expect((await run('SELECT secrets FROM integrations')).rows[0]?.secrets ?? null).toBeNull()
   })
@@ -204,16 +204,16 @@ describe('write-only secrets (admin panel session only)', () => {
   it('no role reads plaintext or ciphertext: REST, GraphQL, Local API (anonymous, customer, editor, admin, API key)', async () => {
     const get = (headers: Record<string, string>) => rest('GET', ['globals', 'integrations'], headers)
     expect((await get({})).status).toBe(403)
-    expect((await get({ cookie: `payload-token=${jwt.customer}` })).status).toBe(403)
-    expect((await get({ cookie: `payload-token=${jwt.editor}` })).status).toBe(403)
-    for (const headers of [{ cookie: `payload-token=${jwt.admin}` }, { authorization: `users API-Key ${API_KEY}` }] as Record<string, string>[]) {
+    expect((await get(panel(jwt.customer))).status).toBe(403)
+    expect((await get(panel(jwt.editor))).status).toBe(403)
+    for (const headers of [{ cookie: `payload-token=${jwt.admin}`, 'sec-fetch-site': 'none' }, { authorization: `users API-Key ${API_KEY}` }] as Record<string, string>[]) {
       const res = await get(headers)
       expect(res.status).toBe(200)
       expect(JSON.parse(res.text)).not.toHaveProperty('secrets')
       noLeak(res.text)
     }
     const { GRAPHQL_POST } = await import('@payloadcms/next/routes')
-    for (const auth of [{}, { cookie: `payload-token=${jwt.admin}` }, { authorization: `users API-Key ${API_KEY}` }] as Record<string, string>[]) {
+    for (const auth of [{}, panel(jwt.admin), { authorization: `users API-Key ${API_KEY}` }] as Record<string, string>[]) {
       const res = await GRAPHQL_POST(await config())(new Request(`${ORIGIN}/api/graphql`, {
         method: 'POST', headers: { host: '127.0.0.1:3100', 'content-type': 'application/json', ...auth },
         body: JSON.stringify({ query: '{ Integration { secrets smtp { host } } }' }),

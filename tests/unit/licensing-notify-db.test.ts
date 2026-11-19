@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { SMTP_UNAVAILABLE, type SmtpOnlyEmail } from '../../src/lib/email/adapter'
 import { NOTIFY_POLICY, deliverLicensingNotifications, enqueueDigest, enqueueSeverityAlerts, istanbulHour } from '../../src/lib/licensing/rules/notify'
 import { normalizeSweepSettings, type SweepSettings } from '../../src/lib/licensing/rules/settings'
 import { CUSTOMER, createLicense, setupLicensingDb, type Ctx } from './helpers/licensing-db'
@@ -60,6 +61,19 @@ describe('licensing notification queue', () => {
     }
     expect((await deliver()).claimed).toBe(0)
     expect(mail.sent).toHaveLength(1)
+  })
+
+  it('keeps admin alerts and digests pending if SMTP disappears after the queue check', async () => {
+    mail = stubMail(ctx.payload)
+    const alert = await queued()
+    const digest = await insertEvent(ctx, { type: 'system.daily_digest', source: 'system', notifyState: 'pending' })
+    const transport = vi.spyOn(ctx.payload, 'sendEmail').mockResolvedValue(SMTP_UNAVAILABLE)
+    try {
+      expect(await deliver()).toMatchObject({ claimed: 2, deferred: 2, failed: 0, sent: { admin: 0, digest: 0 } })
+      expect(transport).toHaveBeenCalledTimes(2)
+      for (const [message] of transport.mock.calls) expect(message).toMatchObject({ requireSmtp: true })
+      for (const id of [alert, digest]) expect(await row(id)).toMatchObject({ state: 'pending', attempts: 0 })
+    } finally { transport.mockRestore() }
   })
 
   it('concurrent senders: the lease lets exactly one of them send', async () => {
@@ -159,6 +173,29 @@ describe('licensing notification queue', () => {
     await deliver({ settings: { ...settings, customerSuspensionEmail: false } })
     expect(mail.sent.length - before).toBe(1)
     expect(await row(quiet)).toMatchObject({ state: 'sent' })
+  })
+
+  it.each(['suspended', 'restored'] as const)('defers the customer %s notice if SMTP disappears after claiming the row', async (kind) => {
+    mail = stubMail(ctx.payload)
+    const { id: license } = await createLicense(ctx)
+    const event = await queued(license, 'suspended')
+    if (kind === 'restored') {
+      const now = new Date().toISOString()
+      await ctx.run(`UPDATE security_events SET detail = json_set(detail, '$.notifyCustomerSuspendedAt', '${now}', '$.restoredAt', '${now}') WHERE id = ${event}`)
+    }
+    const send = ctx.payload.sendEmail
+    const transport = vi.spyOn(ctx.payload, 'sendEmail').mockImplementation(async (message) => {
+      if (message.to !== CUSTOMER.email) return send(message)
+      expect((message as SmtpOnlyEmail).requireSmtp).toBe(true)
+      return SMTP_UNAVAILABLE
+    })
+    try {
+      expect(await deliver()).toMatchObject({ claimed: 1, failed: 0, sent: { customerSuspended: 0, customerRestored: 0 } })
+      expect(transport).toHaveBeenCalledWith(expect.objectContaining({ to: CUSTOMER.email, requireSmtp: true }))
+      expect(await row(event)).toMatchObject({ state: 'pending', attempts: 0, error: null })
+    } finally {
+      transport.mockRestore()
+    }
   })
 
   it('queues API events at or above minSeverityImmediate once, within 24 h', async () => {

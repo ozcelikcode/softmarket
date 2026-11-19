@@ -71,13 +71,14 @@ export async function setupLicensingDb(prefix: string): Promise<Ctx> {
     const handler = { GET: routes.REST_GET, POST: routes.REST_POST, PATCH: routes.REST_PATCH, DELETE: routes.REST_DELETE }[method](cfg)
     const [pathname, search] = path.split('?')
     const slug = pathname!.split('/').filter(Boolean)
+    const auth = pathname === 'mcp' && principal === 'apiKey' ? { authorization: `Bearer ${API_KEY}` } : headers[principal]
     const res = await handler(new Request(`${ORIGIN}/api/${slug.join('/')}${search ? `?${search}` : ''}`, {
       method,
       headers: {
         host: '127.0.0.1:3100',
         ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
         ...(pathname === 'mcp' ? { accept: 'application/json, text/event-stream' } : {}),
-        ...headers[principal],
+        ...auth,
       },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }), { params: Promise.resolve({ slug }) })

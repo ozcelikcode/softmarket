@@ -133,6 +133,9 @@ describe('portal request protection', () => {
     expect(sameOrigin(new Headers({ host: '127.0.0.1:3100' })).ok).toBe(false)
     expect(sameOrigin(new Headers({ host: '127.0.0.1:3100', origin: 'http://evil.test' })).ok).toBe(false)
     expect(sameOrigin(new Headers({ host: '127.0.0.1:3100', origin: 'http://127.0.0.1:3100' })).ok).toBe(true)
+    expect(sameOrigin(new Headers({ host: '[::1]:443', origin: 'https://[::1]', 'x-forwarded-proto': 'https' })).ok).toBe(true)
+    expect(sameOrigin(new Headers({ host: 'site.example.test', origin: 'http://site.example.test', 'x-forwarded-proto': 'https' })).ok).toBe(false)
+    expect(sameOrigin(new Headers({ host: 'site.example.test', origin: 'https://site.example.test/', 'x-forwarded-proto': 'https' })).ok).toBe(false)
   })
   it('limits rotating accounts even without a trusted proxy IP', () => {
     const scope = `test-unknown-${Date.now()}`
@@ -146,6 +149,28 @@ describe('portal request protection', () => {
       const scope = `test-account-${Date.now()}`
       expect(allowAuthAttempt(h('192.0.2.1'), ' Ada@Example.test ', scope, 1)).toBe(true)
       expect(allowAuthAttempt(h('192.0.2.2'), 'ada@example.test', scope, 1)).toBe(false)
+    } finally { vi.unstubAllEnvs() }
+  })
+  it('does not charge an account when its attempt is denied by the IP limiter', () => {
+    const secret = 's'.repeat(32)
+    vi.stubEnv('FORM_PROXY_SECRET', secret)
+    try {
+      const scope = 'test-ip-first'
+      for (let i = 0; i < 4; i++) expect(allowAuthAttempt(new Headers(), `rotating-${i}`, scope, 1)).toBe(true)
+      expect(allowAuthAttempt(new Headers(), 'customer@example.test', scope, 1)).toBe(false)
+      const trusted = new Headers({ 'x-softmarket-proxy-secret': secret, 'x-softmarket-client-ip': '192.0.2.50' })
+      expect(allowAuthAttempt(trusted, 'customer@example.test', scope, 1)).toBe(true)
+    } finally { vi.unstubAllEnvs() }
+  })
+  it('shares a network window across IPv6 addresses and keeps separate prefixes independent', () => {
+    const secret = 's'.repeat(32)
+    vi.stubEnv('FORM_PROXY_SECRET', secret)
+    try {
+      const h = (ip: string) => new Headers({ 'x-softmarket-proxy-secret': secret, 'x-softmarket-client-ip': ip })
+      const scope = 'test-ipv6-prefix'
+      for (let i = 1; i <= 4; i++) expect(allowAuthAttempt(h(`2001:db8:10::${i}`), `user-${i}`, scope, 1)).toBe(true)
+      expect(allowAuthAttempt(h('2001:db8:10:1::1'), 'customer', scope, 1)).toBe(false)
+      expect(allowAuthAttempt(h('2001:db8:20::1'), 'customer', scope, 1)).toBe(true)
     } finally { vi.unstubAllEnvs() }
   })
 })

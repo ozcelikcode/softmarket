@@ -12,7 +12,8 @@ import { errorCode, loadPaymentsDeps, type PaymentsDeps } from './runtime'
  * Access = an admin's PANEL SESSION only:
  *   anonymous 401 · customer 403 · editor 403 · users API key (and therefore MCP) 403 · JWT sent in an
  *   Authorization header 403 (not a browser panel session).
- * CSRF: Payload accepts the `payload-token` cookie from any origin when `csrf` is not configured, so these POSTs also
+ * CSRF: Payload's `csrf` allowlist (payload.config, from NEXT_PUBLIC_SERVER_URL) drops the `payload-token` cookie for a
+ * foreign `Origin`, but still admits `Sec-Fetch-Site: same-site`; these POSTs therefore also
  * require a same-origin `Origin` (= Host, the Server Action rule) and, when the browser sends Fetch Metadata,
  * `Sec-Fetch-Site: same-origin`. SameSite=Lax already keeps the cookie off cross-site POSTs; this is defence in depth.
  * No request body is read: the order id is the only input; amount = order total (full refund, v1).

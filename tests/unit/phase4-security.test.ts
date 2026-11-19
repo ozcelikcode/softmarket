@@ -53,6 +53,17 @@ describe('lead validation', () => {
     expect(allow('c', 4)).toBe(false)
     expect(allow('a', 101)).toBe(true)
   })
+  it('shares overflow without resetting active windows', () => {
+    const allow = createRateLimiter(1, 100, 2, true)
+    expect(allow('a', 0)).toBe(true)
+    expect(allow('b', 1)).toBe(true)
+    expect(allow('a', 2)).toBe(false)
+    expect(allow('c', 3)).toBe(true)
+    expect(allow('a', 4)).toBe(false)
+    expect(allow('b', 5)).toBe(false)
+    expect(allow('d', 6)).toBe(false)
+    expect(allow('d', 100)).toBe(true)
+  })
   it('trusts only an authenticated proxy and otherwise uses a shared bucket', () => {
     const secret = 's'.repeat(32)
     const spoof = new Headers({ 'x-forwarded-for': '203.0.113.1', 'x-softmarket-client-ip': '203.0.113.2' })

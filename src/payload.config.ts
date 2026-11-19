@@ -11,6 +11,7 @@ import { mcpOptions } from './lib/mcp'
 import { ADMIN_GROUPS, COLLECTION_LABELS, loc, localizeCollection, localizeGlobal, localizeSeoFields } from './lib/admin-i18n'
 import { withPublicRevalidation, withGlobalRevalidation } from './lib/revalidate'
 import { LIVE_PREVIEW_BREAKPOINTS, LIVE_PREVIEW_COLLECTIONS, livePreviewURL } from './lib/preview-url'
+import { payloadSessionConfig } from './lib/server-url'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
@@ -92,6 +93,7 @@ const databaseAdapter = withSerialTransactions(sqliteAdapter({
 }), { timeoutMs: 5000 })
 
 export default buildConfig({
+  csrf: payloadSessionConfig().csrf,
   admin: {
     // Only `users` (admin/editor) can enter the panel; `customers` is portal-only.
     user: Users.slug,

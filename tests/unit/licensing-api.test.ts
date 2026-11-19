@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import type { Payload } from 'payload'
+import { describe, expect, it, vi } from 'vitest'
 
 import { parseClientBody, readBoundedBody, signedHeaders } from '@/lib/licensing/api/guard'
 import { failure, respond } from '@/lib/licensing/api/respond'
+import { runtimeFor } from '@/lib/licensing/api/runtime'
 import { ed25519PublicMetadata, ed25519Signer } from '@/lib/licensing/crypto/keys'
 import { createLicensingLimiter } from '@/lib/licensing/rate-limit'
 import { activateBody, makeDevice, signedRequest, verifyResponse } from './helpers/licensing-client'
@@ -52,13 +54,46 @@ describe('client API wire contract', () => {
     expect(verifyResponse(429, raw, signature, Buffer.alloc(16).toString('base64url'), publicKey)).toBe(false)
   })
 
-  it('refills with a retry interval and cannot evict an active bucket', () => {
-    const limit = createLicensingLimiter(1)
+  it('refills active budgets without resetting them during sustained overflow', () => {
+    const limit = createLicensingLimiter(2)
     expect(limit('A', 2, 4000, 0)).toBe(0)
     expect(limit('A', 2, 4000, 0)).toBe(0)
     expect(limit('A', 2, 4000, 0)).toBe(2)
-    expect(limit('B', 2, 4000, 2000)).toBe(1)
+    expect(limit('B', 1, 10_000, 0)).toBe(0)
     expect(limit('A', 2, 4000, 2000)).toBe(0)
-    expect(limit('B', 2, 4000, 6000)).toBe(0)
+    expect(limit('C', 2, 4000, 2000)).toBe(0)
+    expect(limit('A', 2, 4000, 2000)).toBe(2)
+    expect(limit('B', 1, 10_000, 2000)).toBe(8)
+    expect(limit('D', 2, 4000, 2000)).toBe(0)
+    expect(limit('E', 2, 4000, 2000)).toBe(2)
+    expect(limit('E', 2, 4000, 10_000)).toBe(0)
+  })
+
+  it('does not attribute overflow observations to an untracked subject', () => {
+    const observe = createLicensingLimiter(1, true)
+    expect(observe('tracked', 1, 60_000, 0)).toBe(0)
+    expect(observe('new', 1, 60_000, 0)).toBe(0)
+    expect(observe('new', 1, 60_000, 0)).toBe(0)
+    expect(observe('tracked', 1, 60_000, 0)).toBe(60)
+  })
+
+  it('prefix churn cannot evict the global, activation or license buckets', () => {
+    const { globalLimit, prefixLimit, activationLimit, licenseLimit } = runtimeFor({} as Payload)
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(0)
+    try {
+      expect(globalLimit(1)).toBe(0)
+      expect(activationLimit('activation', 1, 60_000)).toBe(0)
+      expect(licenseLimit('license', 1, 60_000)).toBe(0)
+      for (let i = 0; i <= 10_000; i++) {
+        if (prefixLimit(`prefix-${i}`, 1, 60_000)) throw new Error(`Prefix ${i} was denied`)
+      }
+      expect(prefixLimit('untracked', 1, 60_000)).toBe(60)
+      expect(prefixLimit('prefix-0', 1, 60_000)).toBe(60)
+      expect(globalLimit(1)).toBe(1)
+      expect(activationLimit('activation', 1, 60_000)).toBe(60)
+      expect(licenseLimit('license', 1, 60_000)).toBe(60)
+    } finally {
+      clock.mockRestore()
+    }
   })
 })

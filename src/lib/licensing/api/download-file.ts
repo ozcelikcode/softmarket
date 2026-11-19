@@ -33,9 +33,12 @@ async function openUpload(root: string, filename: string) {
   }
 }
 
-export async function openDownloadFile(filename: string | null) {
+export async function openDownloadFile(
+  filename: string | null,
+  uploadsDir = process.env.UPLOADS_DIR || join(process.cwd(), 'uploads'),
+) {
   if (!safeUploadName(filename)) return null
-  const configured = resolve(process.env.UPLOADS_DIR || join(process.cwd(), 'uploads'))
+  const configured = resolve(uploadsDir)
   let handle: Awaited<ReturnType<typeof open>> | undefined
   try {
     // The configured root is operator-controlled and is a symlink in the release layout

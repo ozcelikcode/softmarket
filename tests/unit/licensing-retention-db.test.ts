@@ -98,6 +98,23 @@ describe('licensing retention', () => {
     expect(await runRetention(ctx.payload, low, new Date())).toMatchObject({ eventIp: 0, events: 0 })
   })
 
+  it('prunes day-old read-operation nonce receipts and preserves replay-window and state-change records', async () => {
+    const now = new Date('2026-11-18T10:00:00.000Z')
+    const old = ago(DAY + 1, now.getTime())
+    const fresh = ago(30 * 60_000, now.getTime())
+    await ctx.run(`INSERT INTO security_audit (action, actor_kind, at, result, nonce) VALUES
+      ('api.validate', 'system', '${old}', 'ok', 'validate-old'),
+      ('api.updates', 'system', '${old}', 'ok', 'updates-old'),
+      ('api.downloads/link', 'system', '${old}', 'ok', 'link-old'),
+      ('api.validate', 'system', '${fresh}', 'ok', 'validate-fresh'),
+      ('api.activate', 'system', '${old}', 'ok', 'activate'),
+      ('api.deactivate', 'system', '${old}', 'ok', 'deactivate'),
+      ('license.suspend', 'admin', '${old}', 'ok', 'suspend')`)
+    expect((await runRetention(ctx.payload, settings, now)).audit).toBe(3)
+    expect((await ctx.run('SELECT nonce FROM security_audit ORDER BY id')).rows.map((r) => r.nonce))
+      .toEqual(['validate-fresh', 'activate', 'deactivate', 'suspend'])
+  })
+
   it('spares open high/critical events, active false-positive suppressions, block-linked events, recently lifted blocks, newer logs and leap-day audit rows', async () => {
     const openHigh = await insertEvent(ctx, { type: 'system.rule_circuit_open', severity: 'critical', triage: 'open', lastSeenAt: ago(200 * DAY) })
     const fpSuppressed = await insertEvent(ctx, { type: 'license.ip_spread', source: 'rule', severity: 'medium', triage: 'false_positive', lastSeenAt: ago(200 * DAY) })

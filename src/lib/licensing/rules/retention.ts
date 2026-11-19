@@ -16,7 +16,8 @@ import type { SweepSettings } from './settings'
  *   activations    ended license-activations whose license ended (expiry, or revocation time) activationRowYears ago
  *   blocks         security-blocks expired or lifted before blockDays
  *   statusLog      license-status-log rows of licenses that ended statusLogYears ago
- *   audit          security-audit rows older than auditYears
+ *   audit          security-audit rows older than auditYears; client nonce receipts of read-only calls (validate,
+ *                  updates, downloads/link) after one day, far beyond the signed-timestamp window (<= 900 s)
  * A license that never ends (perpetual, not revoked) keeps its activation rows and status history.
  */
 
@@ -58,6 +59,8 @@ export async function runRetention(payload: Payload, settings: SweepSettings, no
   const blockCutoff = daysAgo(now, r.blockDays)
   const statusLogCutoff = yearsAgo(now, r.statusLogYears)
   const auditCutoff = yearsAgo(now, r.auditYears)
+  // Read-operation receipts only need to outlive the maximum signed timestamp span (2 x 900 seconds).
+  const readReceiptCutoff = daysAgo(now, 1)
   const maxSuppressDays = Math.max(0, ...Object.values(settings.rules).map((rule) => rule.suppressDays))
   const suppressCutoff = daysAgo(now, maxSuppressDays)
   const limit = RETENTION_BATCH
@@ -93,6 +96,7 @@ export async function runRetention(payload: Payload, settings: SweepSettings, no
       WHERE ${licenseEnded} IS NOT NULL AND ${licenseEnded} < ${statusLogCutoff} AND s.at < ${statusLogCutoff}
       LIMIT ${limit})`),
     audit: await batched(payload, () => sql`DELETE FROM security_audit WHERE id IN (SELECT id FROM security_audit
-      WHERE at < ${auditCutoff} LIMIT ${limit})`),
+      WHERE at < ${readReceiptCutoff} AND (at < ${auditCutoff} OR (result = 'ok' AND nonce IS NOT NULL
+        AND action IN ('api.validate', 'api.updates', 'api.downloads/link'))) LIMIT ${limit})`),
   }
 }

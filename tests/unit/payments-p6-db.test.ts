@@ -256,8 +256,8 @@ describe('admin endpoint access matrix (REST, real Payload auth)', () => {
       expect((await post(order.id, action, { origin: ORIGIN, cookie: `payload-token=${editorJwt}` })).status).toBe(403)
       expect((await post(order.id, action, { origin: ORIGIN, authorization: `users API-Key ${API_KEY}` })).status).toBe(403)
       expect((await post(order.id, action, { origin: ORIGIN, authorization: `JWT ${adminJwt}` })).status).toBe(403)
-      expect((await post(order.id, action, { cookie: `payload-token=${adminJwt}` })).status).toBe(403)
-      expect((await post(order.id, action, { origin: 'https://evil.example', cookie: `payload-token=${adminJwt}` })).status).toBe(403)
+      expect((await post(order.id, action, { cookie: `payload-token=${adminJwt}`, 'sec-fetch-site': 'same-origin' })).status).toBe(403)
+      expect((await post(order.id, action, { origin: 'https://evil.example', cookie: `payload-token=${adminJwt}` })).status).toBe(401)
       expect((await post(order.id, action, { origin: ORIGIN, 'sec-fetch-site': 'cross-site', cookie: `payload-token=${adminJwt}` })).status).toBe(403)
     }
     expect(fake.refundCalls).toBe(0)

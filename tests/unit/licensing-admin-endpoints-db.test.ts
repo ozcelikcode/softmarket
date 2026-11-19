@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto'
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { runtimeFor } from '../../src/lib/licensing/api/runtime'
+import { DENIED_WINDOW_MS } from '../../src/lib/licensing/admin/denied-audit'
 import { summarizeSettingsChange } from '../../src/lib/licensing/admin/settings-audit'
 import { ORIGIN, createLicense, setupLicensingDb, type Ctx, type Principal } from './helpers/licensing-db'
 import { insertActivation, insertEvent, resetLicensingRows, transition } from './helpers/licensing-sweep'
@@ -77,10 +78,14 @@ beforeAll(async () => {
   ctx = await setupLicensingDb('l6b-admin')
 }, 240_000)
 afterAll(async () => { await ctx?.destroy() })
+let testTime = Date.now()
 beforeEach(async () => {
+  testTime += DENIED_WINDOW_MS
+  vi.setSystemTime(testTime)
   await resetLicensingRows(ctx)
   delete process.env.FORM_PROXY_SECRET
 })
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks() })
 
 describe('authorization (P6 matrix on every L6b endpoint)', () => {
   it('admin panel session only: anonymous 401; customer, editor, API key, bearer, cross-site 403; JSON only', async () => {
@@ -102,7 +107,7 @@ describe('authorization (P6 matrix on every L6b endpoint)', () => {
         const res = await post(path, who, body)
         expect(res.status, `${path} ${who}`).toBe(403)
       }
-      expect((await post(path, 'admin', body, { origin: 'https://evil.example' })).json, path).toEqual({ code: 'cross_origin' })
+      expect((await post(path, 'admin', body, { origin: 'https://evil.example' })).json, path).toEqual({ code: 'unauthorized' })
       expect((await post(path, 'admin', body, { 'sec-fetch-site': 'cross-site' })).status, path).toBe(403)
       expect((await post(path, 'admin', body, { 'content-type': 'text/plain' })).status, path).toBe(415)
     }
@@ -488,7 +493,7 @@ describe('settings audit', () => {
 })
 
 describe('denied admin actions are audited (coalesced, no PII)', () => {
-  it('identified callers are audited once per (actor or prefix, action, reason) with a counter; anonymous and successes are not', async () => {
+  it('identified callers are audited once per (actor or prefix, action, reason); anonymous and successes are not', async () => {
     process.env.FORM_PROXY_SECRET = PROXY_SECRET
     const own = { 'x-softmarket-proxy-secret': PROXY_SECRET, 'x-softmarket-client-ip': '192.0.2.77' }
     const { id, publicId } = await createLicense(ctx)
@@ -499,7 +504,7 @@ describe('denied admin actions are audited (coalesced, no PII)', () => {
     for (let i = 0; i < 3; i += 1) expect((await post(`licenses/${id}/suspend`, 'editor', body, own)).status).toBe(403)
     expect((await post(`licenses/${id}/suspend`, 'customer', body, own)).status).toBe(403)
     expect((await post(`licenses/${id}/suspend`, 'apiKey', body, own)).status).toBe(403)
-    expect((await post(`licenses/${id}/suspend`, 'admin', body, { ...own, origin: 'https://evil.example' })).status).toBe(403)
+    expect((await post(`licenses/${id}/suspend`, 'admin', body, { ...own, 'sec-fetch-site': 'same-site' })).status).toBe(403)
     expect((await post(`licenses/${id}/suspend`, 'admin', body, { ...own, 'content-type': 'text/plain' })).status).toBe(415)
     expect((await post(`licenses/${id}/suspend`, 'admin', { ...body, requestId: 'x' }, own)).json).toEqual({ code: 'invalid_requestId' })
 
@@ -507,7 +512,7 @@ describe('denied admin actions are audited (coalesced, no PII)', () => {
     // editor (3 coalesced), customer, api-key admin, cross-origin admin, 415, invalid requestId: 6 keys.
     expect(rows).toHaveLength(6)
     const editorRow = rows.find((r) => r.actor === ctx.ids.editor)!
-    expect(editorRow).toMatchObject({ action: 'license.suspend', kind: 'system', reason: 'forbidden', note: 'count=3 http=403', ip: '192.0.2.0/24', result: 'denied', license: id })
+    expect(editorRow).toMatchObject({ action: 'license.suspend', kind: 'system', reason: 'forbidden', note: 'count=1 http=403', ip: '192.0.2.0/24', result: 'denied', license: id })
     expect(String(editorRow.nonce)).toMatch(/^denied:[0-9a-f]{24}:\d+$/)
     expect(rows.find((r) => r.reason === 'cross_origin')).toMatchObject({ actor: ctx.ids.admin, kind: 'admin', note: 'count=1 http=403' })
     expect(rows.find((r) => r.reason === 'invalid_requestId')).toMatchObject({ actor: ctx.ids.admin, note: 'count=1 http=400' })
@@ -555,12 +560,29 @@ describe('denied admin actions are audited (coalesced, no PII)', () => {
     const deny = (now: Date) => recordDeniedAdminAction(req, { route: 'block.add', code: 'invalid_kind', http: 400, now })
     await deny(t0)
     await deny(at(DENIED_WINDOW_MS - 1))
-    expect(await denied()).toMatchObject([{ action: 'block.add', reason: 'invalid_kind', note: 'count=2 http=400', ip: null }])
+    expect(await denied()).toMatchObject([{ action: 'block.add', reason: 'invalid_kind', note: 'count=1 http=400', ip: null }])
     await deny(at(DENIED_WINDOW_MS))
-    expect(await denied()).toMatchObject([{ note: 'count=2 http=400' }, { note: 'count=1 http=400' }])
+    expect(await denied()).toMatchObject([{ note: 'count=1 http=400' }, { note: 'count=1 http=400' }])
     // Anonymous callers and malformed reason codes write nothing.
     await recordDeniedAdminAction({ user: null, headers: new Headers(), payload: ctx.payload } as never, { route: 'block.add', code: 'forbidden', http: 403, now: t0 })
     await recordDeniedAdminAction(req, { route: 'block.add', code: 'has space', http: 400, now: t0 })
+    expect(await denied()).toHaveLength(2)
+  })
+
+  it('recovers the existing window deadline when the in-process cache is cold', async () => {
+    const { recordDeniedAdminAction, DENIED_WINDOW_MS } = await import('../../src/lib/licensing/admin/denied-audit')
+    const user = { id: ctx.ids.admin, collection: 'users', roles: ['admin'] }
+    const headers = new Headers()
+    const start = Date.parse('2026-11-18T11:00:00.000Z')
+    const deny = (payload: typeof ctx.payload, offset: number) => recordDeniedAdminAction({ user, headers, payload } as never, {
+      route: 'block.lift', code: 'stale', http: 409, now: new Date(start + offset),
+    })
+    // The proxy simulates a fresh process's cache while sharing the committed SQLite rows.
+    const cold = new Proxy(ctx.payload, {})
+    await deny(ctx.payload, 0)
+    await deny(cold, DENIED_WINDOW_MS - 1)
+    expect(await denied()).toHaveLength(1)
+    await deny(cold, DENIED_WINDOW_MS)
     expect(await denied()).toHaveLength(2)
   })
 
@@ -569,14 +591,16 @@ describe('denied admin actions are audited (coalesced, no PII)', () => {
     const expected = await expectedOf(id)
     const body = { requestId: rid(), reason: 'concurrent test', expected }
 
-    // Five concurrent refusals from the same caller coalesce into a single denied row with count=5.
+    const writer = vi.spyOn(ctx.payload.db, 'beginTransaction')
+    // Only the first concurrent refusal asks for the writer lock.
     const burst = await Promise.all(Array.from({ length: 5 }, () => post(`licenses/${id}/suspend`, 'editor', body)))
     expect(burst.every((r) => r.status === 403 && r.json.code === 'forbidden')).toBe(true)
-    expect(await denied()).toMatchObject([{ actor: ctx.ids.editor, action: 'license.suspend', reason: 'forbidden', note: 'count=5 http=403', license: id }])
+    expect(await denied()).toMatchObject([{ actor: ctx.ids.editor, action: 'license.suspend', reason: 'forbidden', note: 'count=1 http=403', license: id }])
+    expect(writer).toHaveBeenCalledTimes(1)
 
-    // Post-guard 403s (empty Authorization header and non-canonical Origin) still record the target id.
+    // The custom guard still rejects and audits a request with cross-site metadata.
     expect((await post(`licenses/${id}/suspend`, 'admin', body, { authorization: '' })).status).toBe(403)
-    expect((await post(`licenses/${id}/suspend`, 'admin', body, { origin: `${ORIGIN}/` })).status).toBe(403)
+    expect((await post(`licenses/${id}/suspend`, 'admin', body, { 'sec-fetch-site': 'cross-site' })).status).toBe(403)
     const rows = await denied()
     expect(rows.find((r) => r.reason === 'panel_session_required')).toMatchObject({ actor: ctx.ids.admin, license: id })
     expect(rows.find((r) => r.reason === 'cross_origin')).toMatchObject({ actor: ctx.ids.admin, license: id })

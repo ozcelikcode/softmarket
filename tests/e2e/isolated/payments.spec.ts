@@ -28,7 +28,7 @@ async function adminRequest(playwright: { request: { newContext(o: { baseURL: st
 }
 
 async function setMode(admin: APIRequestContext, mode: 'payments' | 'quote-only') {
-  const current = await admin.get('/api/globals/site-settings?locale=tr&depth=0')
+  const current = await admin.get('/api/globals/site-settings?locale=tr&depth=0', { headers: { 'Sec-Fetch-Site': 'same-origin' } })
   expect(current.status()).toBe(200)
   const commerce = ((await current.json()) as { commerce?: Record<string, unknown> }).commerce ?? {}
   const res = await admin.post('/api/globals/site-settings?locale=tr', {
@@ -205,7 +205,7 @@ test('mobile 390: checkout fits the viewport; CSP form-action allows the provide
 test('P6: admin refunds in the panel (İade et) → order refunded, the portal shows the licence as revoked', async ({ browser, request }) => {
   expect(secondOrder).toMatch(/^SM-/)
   // The endpoint refuses anything but an admin panel session (anonymous here).
-  const found = await adminCtx.get(`/api/orders?where[orderNumber][equals]=${secondOrder}&depth=0&limit=1`)
+  const found = await adminCtx.get(`/api/orders?where[orderNumber][equals]=${secondOrder}&depth=0&limit=1`, { headers: { 'Sec-Fetch-Site': 'same-origin' } })
   const id = ((await found.json()) as { docs: { id: number }[] }).docs[0]!.id
   expect((await request.post(`/api/orders/${id}/refund`, { headers: { Origin: BASE } })).status()).toBe(401)
 

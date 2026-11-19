@@ -1,20 +1,30 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { isIP } from 'node:net'
 
-/** Fixed-window limiter with bounded storage; never evict an active window to admit a new IP. */
-export function createRateLimiter(max = 5, windowMs = 10 * 60_000, capacity = 10000) {
-  const entries = new Map<string, { count: number; until: number }>()
+/** Fixed windows with bounded storage. Optional overflow shares one budget among untracked keys. */
+export function createRateLimiter(max = 5, windowMs = 10 * 60_000, capacity = 10_000, shareOverflow = false) {
+  type Window = { count: number; until: number }
+  const entries = new Map<string, Window>()
+  let overflow: Window | undefined
+  let nextCleanup = 0
   return (key: string, now = Date.now()): boolean => {
-    for (const [k, value] of entries) if (value.until <= now) entries.delete(k)
+    if (!shareOverflow || now >= nextCleanup) {
+      for (const [k, value] of entries) if (value.until <= now) entries.delete(k)
+      nextCleanup = now + Math.min(1000, windowMs)
+    }
     const hashed = createHash('sha256').update(key).digest('hex')
     let entry = entries.get(hashed)
-    if (!entry) {
-      if (entries.size >= capacity) return false
+    if (!entry && entries.size >= capacity) {
+      if (!shareOverflow) return false
+      if (!overflow || overflow.until <= now) overflow = { count: 0, until: now + windowMs }
+      entry = overflow
+    } else if (!entry || entry.until <= now) {
       entry = { count: 0, until: now + windowMs }
       entries.set(hashed, entry)
     }
+    if (entry.count >= max) return false
     entry.count++
-    return entry.count <= max
+    return true
   }
 }
 const globalLimiter = globalThis as typeof globalThis & {

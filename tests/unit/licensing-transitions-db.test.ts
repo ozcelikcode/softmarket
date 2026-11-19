@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { LICENSE_STATUSES, LICENSING_RULE_KEYS, RULE_STATUS_REASONS } from '../../src/lib/licensing/constants'
 import { LICENSE_TRANSITION_CONTEXT, recordLicenseTransition } from '../../src/lib/licensing/transitions'
-import { createLicense, setupLicensingDb, type Ctx } from './helpers/licensing-db'
+import { ADMIN, ORIGIN, createLicense, setupLicensingDb, type Ctx } from './helpers/licensing-db'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 
@@ -16,11 +16,39 @@ const logs = async (license: number) => (await ctx.run(
   `SELECT "from", "to", reason, source, actor_user_id AS actor, order_id AS "order", rule_key AS rule, note, revertible, at FROM license_status_log WHERE license_id = ${license} ORDER BY id`,
 )).rows
 const licenseRow = async (id: number) => (await ctx.run(`SELECT status, status_reason AS reason, status_source AS source, status_changed_at AS changed FROM licenses WHERE id = ${id}`)).rows[0]!
+const apiKeyEvents = async () => (await ctx.run(`SELECT license_id AS license, actor_user_id AS actor, severity, source, detail, dedupe_key AS dedupe
+  FROM security_events WHERE type = 'license.created_via_mcp' ORDER BY id`)).rows
 
 beforeAll(async () => { ctx = await setupLicensingDb('l1-transitions') }, 240000)
 afterAll(async () => { await ctx?.destroy() })
 
 describe('license status transitions', () => {
+  it('accepts normal panel cookie auth and rejects sibling-origin cookie writes', async () => {
+    const { REST_POST, REST_PATCH } = await import('@payloadcms/next/routes')
+    const config = (await import('../../src/payload.config')).default
+    const logIn = (headers: Record<string, string>) => REST_POST(config)(new Request(`${ORIGIN}/api/users/login`, {
+      method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(ADMIN),
+    }), { params: Promise.resolve({ slug: ['users', 'login'] }) })
+    const denied = await logIn({ origin: 'http://127.0.0.1:9999', 'sec-fetch-site': 'same-site' })
+    expect(denied.status).toBe(403)
+    expect(denied.headers.get('set-cookie')).toBeNull()
+    expect((await logIn({})).status).toBe(200)
+    const login = await logIn({ origin: ORIGIN })
+    expect(login.status).toBe(200)
+    const cookie = login.headers.get('set-cookie')!
+    expect(cookie).toMatch(/payload-token=.+;.*HttpOnly/i)
+    expect(cookie).toContain('SameSite=Lax')
+    expect(cookie).not.toMatch(/;\s*Secure/i)
+    const { id } = await createLicense(ctx)
+    const patch = (origin: string, site: string) => REST_PATCH(config)(new Request(`${ORIGIN}/api/licenses/${id}`, {
+      method: 'PATCH', headers: { origin, 'sec-fetch-site': site, cookie: cookie.split(';')[0]!, 'content-type': 'application/json' },
+      body: JSON.stringify({ notes: 'panel edit' }),
+    }), { params: Promise.resolve({ slug: ['licenses', String(id)] }) })
+    expect([401, 403]).toContain((await patch('http://127.0.0.1:9999', 'same-site')).status)
+    expect((await ctx.run(`SELECT notes FROM licenses WHERE id = ${id}`)).rows[0]?.notes).toBeNull()
+    expect((await patch(ORIGIN, 'same-origin')).status).toBe(200)
+  })
+
   it('rule reasons map 1:1 to rule keys', () => {
     expect(RULE_STATUS_REASONS).toEqual(LICENSING_RULE_KEYS.map((k) => `rule_${k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)}`))
   })
@@ -212,6 +240,7 @@ describe('license status transitions', () => {
   })
 
   it('the MCP endpoint advertises only allowed tools and strips status writes', async () => {
+    const priorEvents = await apiKeyEvents()
     const mcp = async (method: string, params?: Record<string, unknown>) => {
       const res = await ctx.rest('POST', 'mcp', 'apiKey', { jsonrpc: '2.0', id: 1, method, params })
       expect(res.status).toBe(200)
@@ -238,6 +267,7 @@ describe('license status transitions', () => {
         edition: ctx.ids.edition,
         startsAt: '2026-01-01T00:00:00.000Z',
         status: 'revoked',
+        select: { status: true },
       },
     })
     expect(mcpCreated.error).toBeUndefined()
@@ -245,7 +275,34 @@ describe('license status transitions', () => {
     const createdText = String((mcpCreated.result as { content?: { text?: string }[] })?.content?.[0]?.text ?? '')
     const createdMatch = createdText.match(/"id"\s*:\s*(\d+)/)
     expect(createdMatch).not.toBeNull()
-    expect(await licenseRow(Number(createdMatch![1]))).toMatchObject({ status: 'active', source: null, changed: null })
+    const mcpId = Number(createdMatch![1])
+    expect(await licenseRow(mcpId)).toMatchObject({ status: 'active', source: null, changed: null })
+    expect(await apiKeyEvents()).toEqual([...priorEvents, {
+      license: mcpId, actor: ctx.ids.admin, severity: 'info', source: 'admin', detail: null,
+      dedupe: expect.stringMatching(/^license\.created_via_mcp:[a-f0-9]{24}$/),
+    }])
+  })
+
+  it('audits REST API-key creates without blocking them when event storage fails', async () => {
+    const data = { customer: ctx.ids.customer, edition: ctx.ids.edition }
+    const priorEvents = await apiKeyEvents()
+    expect((await ctx.rest('POST', 'licenses', 'admin', data)).status).toBe(201)
+    expect(await apiKeyEvents()).toEqual(priorEvents)
+    const created = await ctx.rest('POST', 'licenses?select[status]=true', 'apiKey', data)
+    expect(created.status).toBe(201)
+    const id = (created.json.doc as { id: number }).id
+    expect((await apiKeyEvents()).slice(priorEvents.length)).toMatchObject([{ license: id, actor: ctx.ids.admin }])
+
+    await ctx.run(`CREATE TRIGGER reject_key_create_event BEFORE INSERT ON security_events WHEN NEW.type = 'license.created_via_mcp'
+      BEGIN SELECT RAISE(ABORT, 'test event failure'); END`)
+    try {
+      const withoutEvent = await ctx.rest('POST', 'licenses', 'apiKey', data)
+      expect(withoutEvent.status).toBe(201)
+      expect(await licenseRow((withoutEvent.json.doc as { id: number }).id)).toMatchObject({ status: 'active' })
+      expect((await apiKeyEvents()).slice(priorEvents.length)).toMatchObject([{ license: id, actor: ctx.ids.admin }])
+    } finally {
+      await ctx.run('DROP TRIGGER reject_key_create_event')
+    }
   })
 
   it('recordLicenseTransition validates its input', async () => {

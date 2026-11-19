@@ -1,8 +1,9 @@
 type Bucket = { tokens: number; at: number; expires: number }
 
-/** Bounded token buckets. An active bucket cannot be evicted by flooding the map with new subjects. */
-export function createLicensingLimiter(capacity = 10_000, denyOnOverflow = true) {
+/** Keep active budgets intact. Untracked subjects share one bounded overflow budget. */
+export function createLicensingLimiter(capacity = 10_000, observeOnly = false) {
   const buckets = new Map<string, Bucket>()
+  let overflow: Bucket | undefined
   let nextCleanup = 0
   return (key: string, max: number, windowMs: number, now = performance.now()): number => {
     if (now >= nextCleanup) {
@@ -11,9 +12,14 @@ export function createLicensingLimiter(capacity = 10_000, denyOnOverflow = true)
     }
     let bucket = buckets.get(key)
     if (!bucket) {
-      if (buckets.size >= capacity) return denyOnOverflow ? 1 : 0
-      bucket = { tokens: max, at: now, expires: now }
-      buckets.set(key, bucket)
+      if (buckets.size < capacity) {
+        bucket = { tokens: max, at: now, expires: now }
+        buckets.set(key, bucket)
+      } else {
+        // Observations can trigger per-subject blocks. A pooled count must never trigger one.
+        if (observeOnly) return 0
+        bucket = overflow ??= { tokens: max, at: now, expires: now }
+      }
     }
     const refill = max / windowMs
     bucket.tokens = Math.min(max, bucket.tokens + Math.max(0, now - bucket.at) * refill)

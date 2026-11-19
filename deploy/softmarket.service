@@ -7,15 +7,19 @@ Group=softmarket
 WorkingDirectory=/opt/softmarket/current
 EnvironmentFile=/etc/softmarket.env
 Environment=NODE_ENV=production
+Environment=SOFTMARKET_READ_ONLY_RELEASE=1
 Environment=PORT=3000
-Environment=HOSTNAME=127.0.0.1
-ExecStart=/usr/bin/env pnpm start
+Environment=COREPACK_HOME=/var/cache/softmarket/corepack
+ExecStart=/usr/bin/env pnpm start --hostname 127.0.0.1
 Restart=always
 RestartSec=3
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
+CacheDirectory=softmarket
+# Optional Next image cache, separate from compiled route code.
+ReadWritePaths=-/opt/softmarket/current/.next/cache
 ReadWritePaths=/opt/softmarket/shared/data /opt/softmarket/shared/uploads
 [Install]
 WantedBy=multi-user.target

@@ -1,4 +1,5 @@
 import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig, PayloadRequest } from 'payload'
+import { APIError } from 'payload'
 
 import {
   USER_ROLES,
@@ -9,6 +10,8 @@ import {
   isAdminOrSelfUser,
 } from '@/access'
 import { observeLoginFailure, observeLoginSuccess } from '@/lib/licensing/events/anomalies'
+import { sameOrigin } from '@/lib/portal/guard'
+import { payloadSessionConfig } from '@/lib/server-url'
 
 const isPanelLogin = (req: PayloadRequest) => req.payloadAPI === 'REST' && req.method === 'POST'
   && req.pathname.replace(/\/$/, '') === `${req.payload.config.routes.api}/users/login`
@@ -41,6 +44,7 @@ export const Users: CollectionConfig = {
     tokenExpiration: 60 * 60 * 8,
     maxLoginAttempts: 5,
     lockTime: 15 * 60 * 1000,
+    cookies: payloadSessionConfig().cookies,
   },
   access: {
     admin: canAccessAdminPanel,
@@ -51,6 +55,17 @@ export const Users: CollectionConfig = {
     unlock: isAdmin,
   },
   hooks: {
+    beforeOperation: [({ args, operation, req }) => {
+      // Payload's CSRF allowlist checks existing cookie credentials. Login sets a new cookie.
+      if (operation !== 'login' || req.payloadAPI !== 'REST') return args
+      const origin = req.headers.get('origin')
+      const site = req.headers.get('sec-fetch-site')
+      if ((site !== null && site !== 'same-origin' && site !== 'none')
+        || (origin !== null && (!req.payload.config.csrf.includes(origin) || (req.headers.has('host') && !sameOrigin(req.headers).ok)))) {
+        throw new APIError('Cross-origin login refused.', 403, null, true)
+      }
+      return args
+    }],
     beforeChange: [bootstrapFirstAdmin],
     beforeValidate: [adminAPIKeysOnly],
     afterError: [({ req, error }) => {

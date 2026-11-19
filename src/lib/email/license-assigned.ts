@@ -1,7 +1,7 @@
 import type { License } from '@/payload-types'
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 import { after } from 'next/server'
-import { isEmailConfigured } from './adapter'
+import { SMTP_UNAVAILABLE, isEmailConfigured, type SmtpOnlyEmail } from './adapter'
 import { emailLocale, emailTemplate, type EmailLocale } from './template'
 
 const idOf = (value: number | { id: number }) => typeof value === 'object' ? value.id : value
@@ -64,8 +64,10 @@ export const notifyLicenseAssigned: CollectionAfterChangeHook<License> = async (
         const committed = await req.payload.findByID({ collection: 'licenses', id: doc.id, depth: 0, overrideAccess: true })
         if (committed.key !== doc.key) return
         const customer = await req.payload.findByID({ collection: 'customers', id: idOf(doc.customer), depth: 0, overrideAccess: true })
-        const message = await buildLicenseEmail(req.payload, [doc], emailLocale(customer))
-        await req.payload.sendEmail({ to: customer.email, ...message })
+        const message: SmtpOnlyEmail = { to: customer.email, requireSmtp: true, ...await buildLicenseEmail(req.payload, [doc], emailLocale(customer)) }
+        if (await req.payload.sendEmail(message) === SMTP_UNAVAILABLE) {
+          req.payload.logger.error('License assignment email skipped: SMTP is not configured.')
+        }
       } catch {
         req.payload.logger.error('License assignment email failed; license retained.')
       }

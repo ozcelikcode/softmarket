@@ -2,6 +2,7 @@ import { draftMode } from 'next/headers'
 
 import { isAdminOrEditorUser } from '@/access/roles'
 import { safePreviewRedirect } from '@/lib/preview-url'
+import { originForHost } from '@/lib/server-url'
 import { getPayloadClient } from '@/lib/site'
 
 /*
@@ -21,18 +22,27 @@ const NO_STORE = {
 const deny = (status: 400 | 401 | 403, message: string) =>
   new Response(message, { status, headers: { ...NO_STORE, 'Content-Type': 'text/plain; charset=utf-8' } })
 
-const redirectTo = (location: string) => new Response(null, { status: 307, headers: { ...NO_STORE, Location: location } })
+const redirectTo = (location: string) => new Response(null, {
+  status: 307, headers: { ...NO_STORE, 'Referrer-Policy': 'same-origin', Location: location },
+})
 
 /** Require evidence of a same-origin navigation, including for browsers without Fetch Metadata. */
 const sameOrigin = (request: Request) => {
   const site = request.headers.get('sec-fetch-site')
-  if (site) return site === 'same-origin'
-  const source = request.headers.get('origin') || request.headers.get('referer')
-  if (!source) return false
+  const url = new URL(request.url)
+  const host = request.headers.get('host')
+  const forwarded = request.headers.get('x-forwarded-proto')
+  const origin = originForHost(host ?? url.host, forwarded === null ? url.protocol : `${forwarded}:`)
+  const explicitOrigin = request.headers.get('origin')
+  if (!origin || (explicitOrigin !== null && explicitOrigin !== origin)) return null
+  if (site) return site === 'same-origin' ? origin : null
+  if (explicitOrigin) return origin
+  const referer = request.headers.get('referer')
+  if (!referer) return null
   try {
-    return new URL(source).origin === new URL(request.url).origin
+    return new URL(referer).origin === origin ? origin : null
   } catch {
-    return false
+    return null
   }
 }
 
@@ -41,15 +51,20 @@ export async function enablePreview(request: Request): Promise<Response> {
   if (site && site !== 'same-origin') return deny(403, 'Forbidden')
   const redirect = safePreviewRedirect(new URL(request.url).searchParams.get('redirect'))
   if (!redirect) return deny(400, 'Invalid redirect')
+  const origin = sameOrigin(request)
+  if (!origin && (request.headers.has('origin') || request.headers.has('referer'))) return deny(403, 'Forbidden')
+  const authHeaders = new Headers(request.headers)
+  // Browsers without Fetch Metadata can still prove same origin with the iframe Referer.
+  if (!site && !authHeaders.has('origin') && origin) authHeaders.set('origin', origin)
   let user: unknown = null
   try {
-    user = (await (await getPayloadClient()).auth({ headers: request.headers })).user
+    user = (await (await getPayloadClient()).auth({ headers: authHeaders })).user
   } catch {
     user = null
   }
   if (!user) return deny(401, 'Unauthorized')
   if (!isAdminOrEditorUser(user as never)) return deny(403, 'Forbidden')
-  if (!sameOrigin(request)) return deny(403, 'Forbidden')
+  if (!origin) return deny(403, 'Forbidden')
   ;(await draftMode()).enable()
   return redirectTo(redirect)
 }

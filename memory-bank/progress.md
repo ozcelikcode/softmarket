@@ -1,7 +1,12 @@
+## L10 deployment and audit (2026-11-19, uncommitted)
+
+- Added `lisans.{$DOMAIN}`, reviewed all systemd units, and documented provisioning, recovery, incident response, and VPS acceptance. `pnpm licensing:preflight` checks the real L4 file helper and reads signing metadata through read-only SQLite.
+- Hardened Caddy routing, trusted headers and log redaction. Fixed limiter eviction, audit coalescing, login and preview origin checks, API-key license creation and SMTP deferral. The web unit uses in-memory ISR under the read-only release sandbox.
+- Typecheck and lint passed. Vitest passed 1,880 tests in 115 files, and 23 focused tests passed after adding the staff REST login guard. Linux VPS acceptance, browser E2E, and the 250 ms load gate remain open.
+
 ## L8 identity/webhook anomalies and L9 client kit (2026-11-18, not committed)
 - L8: `events/anomalies.ts` observers in Users hooks, portal login action and payment webhooks; per-hour coalescing, cap of 20 prefix rows per type/hour; new-network admin alert via L5 queue. Tests: `licensing-anomalies-db.test.ts` (6 L8 cases). Full suite 1,848 tests / 114 files passed.
 - L9: client guide, test vectors tied to L2 fixtures, TS verifier (tested), C# verifier (not compiled, no dotnet), `pnpm licensing:sim` run end to end on an isolated DB copy by QA.
-- Next: L10 QA.
 
 ## G1 rollback (2026-11-18)
 
@@ -401,3 +406,6 @@
 ## L7a portal devices (2026-11-18, no commit)
 - Added portal device list/release (`src/lib/licensing/portal-devices.ts`, `src/lib/portal/device-actions.ts`, detail page), TR/EN strings, `customerDeviceReleased` queue message. Tests: `portal-devices-db.test.ts` (8), `portal-device-action.test.ts` (8). Gates: typecheck and lint clean, full suite 112 files / 1819 tests passed. Browser check on a DB copy (port 3580): owner released a device, foreign license 404 both ways.
 - The L7 audit added regressions for concurrent attempts, quota changes, atomic rollback, ownership transfers, license states, and SMTP loss. Bilingual legal drafts reflect the implemented lease limits, rule modes, and retention exceptions.
+
+## 2026-11-19 L10 tamamlandı
+- L10 deploy, audit düzeltmeleri ve QA düzeltmeleri tamam; kalan: yalnız VPS kabulü (DNS/proxy secret, Caddy/systemd doğrulama, signer, SECRETS_KEY yedeği, Linux preflight, p95 < 250 ms). Opsiyonel L11.

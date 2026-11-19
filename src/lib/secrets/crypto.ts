@@ -44,6 +44,7 @@ function decodeKeyMaterial(raw: string): Buffer | null {
     const bytes = Buffer.from(value.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
     const normalized = value.replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '')
     if (bytes.length >= MIN_KEY_BYTES && bytes.toString('base64').replace(/=+$/, '') === normalized) return bytes
+    bytes.fill(0)
   }
   return null
 }
@@ -53,8 +54,12 @@ const hkdf = (ikm: Buffer, info: string) => Buffer.from(hkdfSync('sha256', ikm, 
 /** The configured key, or null (missing, placeholder, too short). Never throws, never logs. */
 export function readSecretsKey(env: Record<string, string | undefined> = process.env): SecretsKey | null {
   const material = decodeKeyMaterial(env[SECRETS_KEY_ENV] ?? '')
-  if (!material || material.length < MIN_KEY_BYTES) return null
-  return { key: hkdf(material, 'aes-256-gcm/v1'), kid: hkdf(material, 'kid/v1').toString('hex').slice(0, 12) }
+  if (!material) return null
+  try {
+    return { key: hkdf(material, 'aes-256-gcm/v1'), kid: hkdf(material, 'kid/v1').toString('hex').slice(0, 12) }
+  } finally {
+    material.fill(0)
+  }
 }
 
 /** Derive a licensing key from the master material using a purpose distinct from vault encryption. */

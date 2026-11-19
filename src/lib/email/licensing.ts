@@ -66,13 +66,13 @@ export async function sendLicensingAdminAlert(
     `${safe(r.severity)} ×${Number.isFinite(r.count) ? r.count : 1}${r.outcome ? ` · ${safe(r.outcome)}` : ''}${r.rule ? ` · ${safe(r.rule)}` : ''} · lic ${shortId(r.license && /^[0-9a-f]{24}$/.test(r.license) ? r.license : null)}`,
   ] as const)
   const url = `${ctx.origin}/admin/guvenlik`
-  await payload.sendEmail({
-    to,
+  const message: SmtpOnlyEmail = {
+    to, requireSmtp: true,
     subject,
     text: `${subject}\n\n${body}\n\n${lines.map(([a, b]) => `${a}: ${b}`).join('\n')}\n\n${url}`,
     html: emailTemplate({ locale: 'tr', title: subject, body, rows: lines, action: { label: 'Güvenlik merkezi / Security center', url } }),
-  })
-  return 'sent'
+  }
+  return (await payload.sendEmail(message)) === SMTP_UNAVAILABLE ? 'not_configured' : 'sent'
 }
 
 export async function sendLicensingDigest(
@@ -88,13 +88,13 @@ export async function sendLicensingDigest(
     ['Devre kesici / Circuit breaker', summary.circuitOpen ? 'AÇIK / OPEN' : 'kapalı / closed'],
   ]
   const url = `${ctx.origin}/admin/guvenlik`
-  await payload.sendEmail({
-    to,
+  const message: SmtpOnlyEmail = {
+    to, requireSmtp: true,
     subject,
     text: `${subject}\n\n${body}\n\n${rows.map(([a, b]) => `${a}: ${b}`).join('\n')}\n\n${url}`,
     html: emailTemplate({ locale: 'tr', title: subject, body, rows, action: { label: 'Güvenlik merkezi / Security center', url } }),
-  })
-  return 'sent'
+  }
+  return (await payload.sendEmail(message)) === SMTP_UNAVAILABLE ? 'not_configured' : 'sent'
 }
 
 export type CustomerNotice = {
@@ -150,9 +150,9 @@ export function buildCustomerNotice(notice: CustomerNotice, origin: string) {
   }
 }
 
-export async function sendCustomerLicenseNotice(payload: Payload, notice: CustomerNotice, ctx: { origin: string }): Promise<'sent'> {
-  await payload.sendEmail(buildCustomerNotice(notice, ctx.origin))
-  return 'sent'
+export async function sendCustomerLicenseNotice(payload: Payload, notice: CustomerNotice, ctx: { origin: string }): Promise<'sent' | 'not_configured'> {
+  const message: SmtpOnlyEmail = { ...buildCustomerNotice(notice, ctx.origin), requireSmtp: true }
+  return (await payload.sendEmail(message)) === SMTP_UNAVAILABLE ? 'not_configured' : 'sent'
 }
 
 export type DeviceReleasedNotice = {

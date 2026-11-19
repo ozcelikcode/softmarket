@@ -21,7 +21,13 @@ export const getPreviewUser = cache(async (): Promise<StaffUser | null> => {
     // Outside draft mode `headers()` is never read, so static/ISR rendering is unaffected.
     if (!draft.isEnabled) return null
     const payload = await getPayloadClient()
-    const { user } = await payload.auth({ headers: await headers() })
+    const authHeaders = new Headers(await headers())
+    const referer = authHeaders.get('referer')
+    if (referer && !authHeaders.has('sec-fetch-site') && !authHeaders.has('origin')) {
+      // Payload checks this origin against the configured site, including the isolated server's port.
+      authHeaders.set('origin', new URL(referer).origin)
+    }
+    const { user } = await payload.auth({ headers: authHeaders })
     return isAdminOrEditorUser(user) ? (user as StaffUser) : null
   } catch (error) {
     unstable_rethrow(error)

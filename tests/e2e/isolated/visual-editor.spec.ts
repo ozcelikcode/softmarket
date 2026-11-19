@@ -28,8 +28,10 @@ async function login(request: APIRequestContext, base: string) {
 type Block = { id: string; blockType: string; heading?: string; appearance?: { hidden?: boolean }; motion?: { preset?: string; duration?: string } }
 type Doc = { id: number; title: string; slug: string; layout: Block[]; family: { slug: string } | number; updatedAt: string; editorVersion?: string }
 
+// Browsers always send Fetch Metadata; the cookie-authenticated API contexts must too (Payload csrf, F-03).
+const SAME_ORIGIN = { 'Sec-Fetch-Site': 'same-origin' }
 const draft = async (request: APIRequestContext, collection: string, id: number, locale = 'tr') =>
-  (await (await request.get(`/api/${collection}/${id}?draft=true&depth=1&locale=${locale}&fallback-locale=null`)).json()) as Doc
+  (await (await request.get(`/api/${collection}/${id}?draft=true&depth=1&locale=${locale}&fallback-locale=null`, { headers: SAME_ORIGIN })).json()) as Doc
 
 const canvas = (page: Page): FrameLocator => page.frameLocator('#live-preview-iframe')
 const blockSel = (type: string) => `[data-block-type="${type}"]`
@@ -72,7 +74,7 @@ test.beforeAll(async ({ browser, baseURL }) => {
   base = guard(baseURL)
   ctx = await browser.newContext({ viewport: { width: 1600, height: 1000 }, baseURL: base })
   await login(ctx.request, base)
-  const list = await (await ctx.request.get('/api/products?draft=true&depth=1&locale=tr&limit=50&sort=id')).json() as { docs: Doc[] }
+  const list = await (await ctx.request.get('/api/products?draft=true&depth=1&locale=tr&limit=50&sort=id', { headers: SAME_ORIGIN })).json() as { docs: Doc[] }
   // A compatibility-mode product (no bound section stored): exercises the materialise path too.
   product = list.docs.find((d) => !d.layout?.some((b) => b.blockType.startsWith('product'))) ?? list.docs[0]!
   productPath = `/admin/collections/products/${product.id}`
@@ -340,7 +342,7 @@ test('T8 publish; the public page shows the new title and order and carries no e
 })
 
 test('pages: home opens in the editor; hero heading edits in place and saves to the form', async () => {
-  const home = (await (await ctx.request.get('/api/pages?where[slug][equals]=home&draft=true&depth=0&locale=tr&limit=1')).json()).docs[0] as Doc
+  const home = (await (await ctx.request.get('/api/pages?where[slug][equals]=home&draft=true&depth=0&locale=tr&limit=1', { headers: SAME_ORIGIN })).json()).docs[0] as Doc
   await openEditor(page, `/admin/collections/pages/${home.id}`)
   await select(page, 'hero')
   const heading = canvas(page).locator(`${blockSel('hero')} [data-field-path="heading"]`).first()

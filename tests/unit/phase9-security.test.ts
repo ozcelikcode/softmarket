@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { contentSecurityPolicy, usesNonce } from '@/lib/csp'
-import { serverUrl, validateServerUrl } from '@/lib/server-url'
+import { payloadSessionConfig, serverUrl, validateServerUrl } from '@/lib/server-url'
 
 const cache = vi.hoisted(() => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 vi.mock('next/cache', () => cache)
@@ -29,6 +29,23 @@ describe('CSP rendering boundaries', () => {
 })
 
 describe('public origin', () => {
+  const loopback = (port: number) => [`http://localhost:${port}`, `http://127.0.0.1:${port}`, `http://[::1]:${port}`]
+  it.each([
+    ['production', 'https://site.example.test/admin', ['https://site.example.test'], true],
+    ['development', 'https://site.example.test', ['https://site.example.test'], true],
+    ['production', 'http://site.example.test', ['http://site.example.test'], true],
+    ['production', 'http://127.0.0.1:3400', loopback(3400), false],
+    ['production', 'http://[0:0:0:0:0:0:0:1]:3400/', loopback(3400), false],
+    ['production', 'https://[::1]:3443/', ['https://[::1]:3443'], true],
+    ['production', 'https://site.example.test:443/', ['https://site.example.test'], true],
+    ['development', 'http://127.0.0.1:3100', loopback(3100), false],
+    ['development', 'http://localhost:3100', loopback(3100), false],
+    ['development', '', loopback(3100), false],
+    ['production', undefined, loopback(3100), true],
+    ['production', 'https://user:password@example.test', loopback(3100), true],
+  ] as const)('configures exact Payload cookie origins and transport security (%s, %s)', (NODE_ENV, NEXT_PUBLIC_SERVER_URL, csrf, secure) => {
+    expect(payloadSessionConfig({ NODE_ENV, NEXT_PUBLIC_SERVER_URL })).toEqual({ csrf, cookies: { secure, sameSite: 'Lax' } })
+  })
   it('normalizes local aliases and rejects invalid origins and embedded credentials', () => {
     for (const value of ['', 'http://localhost:3100', 'http://127.0.0.1:3000', 'javascript:alert(1)', 'https://user:secret@example.com']) expect(serverUrl(value)).toBe('http://127.0.0.1:3100')
     expect(serverUrl('https://softmarket.example/path')).toBe('https://softmarket.example')

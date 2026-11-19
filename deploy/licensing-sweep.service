@@ -12,10 +12,12 @@ Group=softmarket
 WorkingDirectory=/opt/softmarket/current
 EnvironmentFile=/etc/softmarket.env
 Environment=NODE_ENV=production
+Environment=COREPACK_HOME=/var/cache/softmarket/corepack
 ExecStart=/usr/bin/env pnpm licensing:sweep
 TimeoutStartSec=240
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
+CacheDirectory=softmarket
 ReadWritePaths=/opt/softmarket/shared/data

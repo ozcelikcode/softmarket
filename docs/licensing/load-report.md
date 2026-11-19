@@ -45,3 +45,5 @@ The run used an isolated `.next-l4http` production build served by `next start` 
 | Observation | A token replayed with a different `X-Softmarket-Client-IP`, or with a wrong proxy secret, was still served (200). The token binds activation and download, not the client address; with a bad proxy secret the request falls into the unknown-address path. Confirm this matches the intended L4 binding design. |
 
 The temporary build, database copy and uploads copy were removed or live only in the session scratchpad. Target VPS behaviour (`/proc/self/fd` real-name check, Caddy) remains unmeasured.
+
+The [VPS acceptance checklist](operations.md#vps-acceptance-checklist) gives the isolated production HTTP commands and the L10 p95 target of 250 ms.

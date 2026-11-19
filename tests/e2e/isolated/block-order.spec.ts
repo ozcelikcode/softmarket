@@ -28,7 +28,7 @@ test('publishing a new block order through the API reorders the home page; anony
   const anon = await playwright.request.newContext({ baseURL: base })
   await login(admin, base)
 
-  const found = await admin.get('/api/pages?where[slug][equals]=home&locale=tr&depth=0&draft=true&limit=1')
+  const found = await admin.get('/api/pages?where[slug][equals]=home&locale=tr&depth=0&draft=true&limit=1', { headers: { 'Sec-Fetch-Site': 'same-origin' } })
   expect(found.status()).toBe(200)
   const home = (await found.json()).docs[0]
   const layout = home.layout as Array<{ id: string; blockType: string }>

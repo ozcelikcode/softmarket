@@ -17,7 +17,12 @@ const nextConfig: NextConfig = {
   // which can be absolute-form or carry repeated slashes, so the pattern is unanchored.
   logging: { incomingRequests: { ignore: [/\/api\/v1\/licensing\/dl\//i] } },
   // Multiple root layouts need a standalone document for unmatched URLs (Next 15.4).
-  experimental: { globalNotFound: true, optimizePackageImports: ['lucide-react', 'radix-ui'] },
+  experimental: {
+    globalNotFound: true,
+    optimizePackageImports: ['lucide-react', 'radix-ui'],
+    // Disk ISR writes alongside compiled app routes. The systemd release is read-only.
+    isrFlushToDisk: process.env.SOFTMARKET_READ_ONLY_RELEASE !== '1',
+  },
   // Only repo-owned immutable assets may enter the shared optimizer. Payload
   // /api/media/file URLs can change permissions and must always bypass it.
   images: { localPatterns: [{ pathname: '/images/**', search: '' }], remotePatterns: [] },

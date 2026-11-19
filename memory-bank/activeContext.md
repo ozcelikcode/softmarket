@@ -1,7 +1,13 @@
+## L10 deployment and audit (2026-11-19)
+
+- Added the licensing Caddy host, explicit loopback app listener, read-only VPS preflight, and `docs/licensing/operations.md`.
+- The L10 audit protects active limiter and denied-audit windows, keeps API-key license issuance independent of event insert failures, and fixes staff REST login and HTTPS preview origin checks. Licensing SMTP notices defer when the transport disappears. The Caddy runbook disables startup environment logging and the web unit keeps ISR writes off the read-only release.
+- VPS acceptance is pending: installed Caddy and systemd validation, DNS/TLS and trusted-header smoke tests, Linux `/proc/self/fd` checks, and production HTTP p95 below 250 ms. Previous loopback p95 was 717.7 ms.
+
 ## L8 and L9 done (2026-11-18, uncommitted until the L8/L9 commit)
 - L8 identity/webhook anomalies: coalesced login failure/lockout and success events, new-network admin alert, webhook rejections recorded after the response (responses byte-identical). Details: "L8 implementation record" in `docs/plan-licensing-security.md`.
 - L9 client integration kit: `docs/licensing/client-integration.md`, `test-vectors.json` bound to L2 fixtures, TS and C# verifiers (C# not compiled yet), `pnpm licensing:sim`. Details: "L9 implementation record".
-- Next: L10 QA (plan §L10). C# compile and `pnpm licensing:sim` against a dotnet-capable host remain open.
+- C# compile and `pnpm licensing:sim` against a dotnet-capable host remain open.
 
 ## Header and footer editing rollback (2026-11-18)
 
@@ -411,3 +417,7 @@ Bu dosya oturumlar arası "şu an neredeyiz" bilgisini tutar. Değişince günce
 ## L7a portal devices and e-mail (2026-11-18, not committed)
 - Portal `/hesap/lisanslar/[id]` (publicId, 404 for foreign) lists a license's active devices and lets the owner release one (no-JS form, confirmation card, quota from `selfService.portalDeactivationsPer30Days`, one serial transaction). Records: portal `activation.ended` event + `security-audit` row, no status-log row. New customer e-mail "device released" through the L5 queue. No schema change. "New device activated" e-mail and label rename not done (need a setting / out of scope). Details: "L7a implementation record" in `docs/plan-licensing-security.md`.
 - The L7 audit bound release receipts to the same owned device, moved the quota read under the writer lock, and checked current ownership in both device summaries and queued notices. Revoked licenses cannot release devices. Suspended and expired licenses can release an existing device without restoring entitlement.
+
+## 2026-11-19 L10 done
+- L10 (deployment, security audit fixes F-01..F-09, QA fixes) implemented and verified: typecheck, lint, 1880 tests, isolated e2e 30/30, browser recheck. Record in `docs/plan-licensing-security.md`.
+- Remaining: VPS acceptance only (DNS/proxy secret, Caddy/systemd validation, signer provisioning, SECRETS_KEY backup, Linux preflight, p95 < 250 ms; local 718 ms). Optional L11 after that.

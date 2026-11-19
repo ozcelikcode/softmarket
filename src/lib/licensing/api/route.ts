@@ -53,7 +53,7 @@ export function createLicensingPost(endpoint: Endpoint, { loadPayload, now: cloc
     try {
       payload = await loadPayload()
       const runtime = runtimeFor(payload)
-      const { limit, observeLimit, blocks, observations } = runtime
+      const { activationLimit, licenseLimit, badSignatureLimit, invalidLicenseLimit, cloneLimit, blocks, observations } = runtime
       const resolved = await readConfiguration(payload)
       const { settings, issuer } = resolved
       signer = resolved.signer
@@ -88,28 +88,31 @@ export function createLicensingPost(endpoint: Endpoint, { loadPayload, now: cloc
       if (!key || !publicKey || !valid) {
         // The threshold aggregates claimed activation IDs. It never locks out the named device.
         // Activation requests carry no activation ID ('-'), so they must not share one global bucket.
-        const high = endpoint !== 'activate' && key && observeLimit(`bad-signature:${headers.activation}`, settings.limits.badSignaturesPerActivationPerHour, HOUR)
+        const high = endpoint !== 'activate' && key && badSignatureLimit(headers.activation, settings.limits.badSignaturesPerActivationPerHour, HOUR)
         observations.emit({ type: 'api.bad_signature', now, ip, severity: high ? 'high' : 'medium' })
         return deny('invalid_signature')
       }
       if (endpoint !== 'activate' && endpoint !== 'deactivate') {
-        const retry = limit(`activation:${headers.activation}`, settings.limits.requestsPerActivationPerHour, HOUR)
+        const retry = activationLimit(headers.activation, settings.limits.requestsPerActivationPerHour, HOUR)
         if (retry) {
           observations.emit({ type: 'api.rate_limited', now, ip, action: 'throttled' })
           return deny('rate_limited', retry)
         }
       }
 
+      // Only a proxy-authenticated request is trusted, and deploy/Caddyfile deletes client copies of CF-IPCountry;
+      // a Cloudflare front end needs the trusted-proxy variant in docs/licensing/operations.md.
       const countryHeader = ip && settings.countrySource === 'cloudflare_header' ? request.headers.get('cf-ipcountry') : null
       const country = countryHeader && /^[A-Z]{2}$/.test(countryHeader) ? countryHeader : null
       const result = await executeClientOperation({
-        payload, settings, signer, issuer, headers, now: clock, key, ip, country, observations, blocks, limit, observeLimit,
+        payload, settings, signer, issuer, headers, now: clock, key, ip, country, observations, blocks,
+        limit: licenseLimit, observeLimit: cloneLimit,
         networkBlocked: (at) => blocks.matches(at, network),
       }, operation)
       // Only unknown keys and product mismatches feed the prefix block. A caller that presented a valid key
       // (for example a device key still bound to another active row) must not block its own network.
       if (endpoint === 'activate' && result.unknownLicense) {
-        const high = observeLimit(`invalid-license:${prefix ?? 'unknown'}`, settings.limits.invalidLicensePerIpPerHour, HOUR)
+        const high = invalidLicenseLimit(prefix ?? 'unknown', settings.limits.invalidLicensePerIpPerHour, HOUR)
         if (high && ip) await blocks.blockPrefix(ip.prefix, now, settings.limits.ipBlockFirstHours, settings.limits.ipBlockRepeatHours)
         observations.emit({ type: 'api.invalid_license', now, ip, severity: high ? 'high' : 'low', action: high && ip ? 'blocked' : undefined })
       }

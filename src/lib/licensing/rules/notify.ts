@@ -254,7 +254,7 @@ export async function deliverLicensingNotifications(
       }
     } else if (outcome === 'not_configured') {
       for (const row of alertRows) deferred.add(row.id)
-      log.warn('licensing alert not sent: no alert recipient')
+      log.warn('licensing alert not sent: SMTP or alert recipient unavailable')
     } else {
       for (const row of alertRows) errors.set(row.id, outcome)
       log.error(`licensing alert failed code=${outcome}`)

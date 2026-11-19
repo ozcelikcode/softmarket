@@ -9,9 +9,15 @@ import { createLicensingLimiter } from '../rate-limit'
 import { failure } from './respond'
 
 function createRuntime(payload: Payload) {
+  const global = createLicensingLimiter(1)
   return {
-    limit: createLicensingLimiter(),
-    observeLimit: createLicensingLimiter(10_000, false),
+    globalLimit: (perSecond: number) => global('global', perSecond, 1000),
+    prefixLimit: createLicensingLimiter(),
+    activationLimit: createLicensingLimiter(),
+    licenseLimit: createLicensingLimiter(),
+    badSignatureLimit: createLicensingLimiter(10_000, true),
+    invalidLicenseLimit: createLicensingLimiter(10_000, true),
+    cloneLimit: createLicensingLimiter(10_000, true),
     blocks: createBlocksCache(payload),
     observations: createObservationWriter(payload),
   }
@@ -42,7 +48,7 @@ export function clientNetwork(headers: Headers, now: Date) {
 }
 
 export async function trafficRejection(
-  { limit, blocks, observations }: Runtime, limits: LicensingSetting['limits'],
+  { globalLimit, prefixLimit, blocks, observations }: Runtime, limits: LicensingSetting['limits'],
   network: ReturnType<typeof clientNetwork>, now: Date,
 ) {
   const { ip, prefix } = network
@@ -51,12 +57,12 @@ export async function trafficRejection(
     observations.emit({ type: 'api.blocked_request', now, ip })
     return failure('blocked', now)
   }
-  const globalRetry = limit('global', limits.globalPerSecond, 1000)
+  const globalRetry = globalLimit(limits.globalPerSecond)
   if (globalRetry) {
     observations.emit({ type: 'api.rate_limited', severity: 'critical', now, action: 'throttled' })
     return failure('unavailable', now, { retryAfter: globalRetry })
   }
-  const retryAfter = limit(`prefix:${prefix ?? 'unknown'}`, limits.ipPrefixPerMinute, 60_000)
+  const retryAfter = prefixLimit(prefix ?? 'unknown', limits.ipPrefixPerMinute, 60_000)
   if (retryAfter) {
     observations.emit({ type: 'api.rate_limited', now, ip, action: 'throttled' })
     return failure('rate_limited', now, { retryAfter })

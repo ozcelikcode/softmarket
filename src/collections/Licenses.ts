@@ -1,4 +1,4 @@
-import type { CollectionAfterOperationHook, CollectionBeforeDeleteHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionAfterOperationHook, CollectionBeforeDeleteHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { APIError, ValidationError } from 'payload'
 
 import { notifyLicenseAssigned } from '@/lib/email/license-assigned'
@@ -92,6 +92,29 @@ const rejectFailedLicenseBulkWrite: CollectionAfterOperationHook = ({ operation,
   return result
 }
 
+/**
+ * T6: a license created with a users API key (REST or MCP) leaves an info event (plan §4.4) for the Security Center.
+ * The flat event row shares the create transaction. Use the adapter directly because a failed nested Local API
+ * operation rolls back the caller's transaction. Panel sessions and payment fulfilment do not emit this event.
+ */
+const recordApiKeyLicenseCreation: CollectionAfterChangeHook = async ({ data, doc, operation, req }) => {
+  const actor = req.user as (typeof req.user & { _strategy?: string })
+  if (operation !== 'create' || actor?.collection !== 'users' || actor._strategy !== 'api-key') return
+  const now = new Date().toISOString()
+  try {
+    await req.payload.db.create({
+      collection: 'security-events', req, returning: false,
+      data: {
+        type: 'license.created_via_mcp', severity: 'info', source: 'admin',
+        firstSeenAt: now, lastSeenAt: now, triage: 'open', count: 1, actionTaken: 'none', notifyAttempts: 0,
+        dedupeKey: `license.created_via_mcp:${doc.publicId ?? data.publicId}`, license: doc.id, actorUser: actor.id,
+      },
+    })
+  } catch {
+    req.payload.logger.error('licensing: API-key license creation event could not be recorded')
+  }
+}
+
 /** Licenses are written ONLY by server code (overrideAccess) or admins. Customers can read their own. */
 export const Licenses: CollectionConfig = {
   slug: 'licenses',
@@ -111,7 +134,7 @@ export const Licenses: CollectionConfig = {
     beforeValidate: [prepareLicense],
     beforeChange: [stampLicenseTransition],
     // Log first: the status log is part of the change; the e-mail hook only schedules a notification.
-    afterChange: [logLicenseTransition, notifyLicenseAssigned],
+    afterChange: [logLicenseTransition, recordApiKeyLicenseCreation, notifyLicenseAssigned],
     afterOperation: [rejectFailedLicenseBulkWrite],
     beforeDelete: [keepLicensingHistory],
   },

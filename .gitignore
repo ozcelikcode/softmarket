@@ -2,9 +2,7 @@ node_modules/
 .pnpm-store/
 .cache/
 .next/
-.next-prod/
-.next-perf/
-.next-v5*/
+.next-*/
 out/
 coverage/
 playwright-report/

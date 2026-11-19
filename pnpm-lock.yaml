@@ -196,9 +196,6 @@ importers:
       '@payloadcms/ui':
         specifier: 3.93.0
         version: 3.93.0(@types/react@19.2.14)(monaco-editor@0.57.0)(next@15.4.11(@opentelemetry/api@1.10.0)(@playwright/test@1.63.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.93.0(graphql@16.14.2)(supports-color@7.2.0)(typescript@5.7.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(supports-color@7.2.0)(typescript@5.7.3)
-      '@tailwindcss/postcss':
-        specifier: ^4.3.4
-        version: 4.3.4
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
@@ -229,9 +226,6 @@ importers:
       payload:
         specifier: 3.93.0
         version: 3.93.0(graphql@16.14.2)(supports-color@7.2.0)(typescript@5.7.3)
-      postcss:
-        specifier: ^8.5.32
-        version: 8.5.32
       radix-ui:
         specifier: ^1.8.1
         version: 1.8.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -247,9 +241,12 @@ importers:
       tailwind-merge:
         specifier: ^3.7.0
         version: 3.7.0
-      tailwindcss:
-        specifier: ^4.3.4
-        version: 4.3.4
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -260,6 +257,9 @@ importers:
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0
+      '@tailwindcss/postcss':
+        specifier: ^4.3.4
+        version: 4.3.4
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.2
@@ -278,12 +278,12 @@ importers:
       lighthouse:
         specifier: ^13.6.0
         version: 13.6.0(ajv@8.20.0)(rollup@4.67.5)(supports-color@7.2.0)
-      tsx:
-        specifier: 4.23.15
-        version: 4.23.15
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
+      postcss:
+        specifier: ^8.5.32
+        version: 8.5.32
+      tailwindcss:
+        specifier: ^4.3.4
+        version: 4.3.4
       vitest:
         specifier: 4.0.18
         version: 4.0.18(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(happy-dom@20.14.6)(jiti@2.7.0)(lightningcss@1.33.0)(sass@1.77.4)(tsx@4.23.15)

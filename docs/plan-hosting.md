@@ -96,6 +96,31 @@ Bunlardan biri yoksa paylaşımlı hosting **olmaz**. Hepsi varsa da bu sunucu "
 
 Tek örnek (`min=max=1`), kalıcı volume (`data/`, `uploads/`), sürekli çalışan süreç, cron/zamanlanmış görev ve yan süreç (Litestream) destekleyen bir platformda mevcut mimari korunur. Koşullar: otomatik ölçekleme **kapalı**, sıfıra ölçekleme kapalı, volume tek örneğe bağlı, sağlayıcı bölgesi KVKK değerlendirmesinden geçmiş (yurt dışı aktarım). Dağıtımda kısa kesinti kabul edilir (tek örnek, blue/green yok).
 
+## Disk footprint
+
+`DEPLOY_HOST=<ssh-target> make deploy` stages a release on the VPS. The script builds with all dependencies in a temporary directory, copies the compiled output, and installs into the release with `pnpm install --prod --frozen-lockfile`. It discards the temporary pnpm store, metadata cache, and Webpack cache before stopping the live service. Keep `NEXT_DIST_DIR` unset or set to `.next` in `/etc/softmarket.env`. Build and run with the same payment capability and public origin. Installs run on the target OS and architecture so sharp, libsql and Next get their matching native binaries.
+
+The release keeps `pnpm start`, the Payload admin, the shared DB and uploads paths, and the production CLI entry points. Next standalone traces the web server and uses its own `server.js`. It also needs a separate copy of `public` and the compiled static assets. The systemd timers and operator CLIs would still need the repo source and an install containing Payload and `tsx`. One production install serves both roles. [Next.js standalone output](https://nextjs.org/docs/15/app/api-reference/config/next-config-js/output)
+
+`tsx` runs the TypeScript CLIs, and Next needs TypeScript to load `next.config.ts` at startup. Monaco comes from the Payload admin, happy-dom from Lexical, and drizzle-kit from Payload's SQLite adapter. The production install excludes the browser test, benchmark, and CSS build tools.
+
+| Component | Planning estimate |
+|---|---:|
+| Source, public assets and content per release | ~50–70 MiB |
+| Production `node_modules` per release | ~0.9–1.2 GiB |
+| Compiled `.next` per release after excluding the Webpack cache | ~40–100 MiB for a small catalog |
+| Live SQLite DB plus WAL | ~20–100 MiB for a small catalog |
+| Shared uploads | Measure separately. Add the full size of installers and media. |
+| Local migration snapshots | ~80 MiB for five 16 MiB snapshots, plus additional snapshots from the last seven days and any WAL files |
+
+Allow **25 GiB minimum** for a small catalog, including Ubuntu, logs, the active and previous releases, and roughly 4–6 GiB of temporary build and install space. Budget separately for large uploads, upload archives and any on-disk Litestream replica. A disposable macOS build measured 952 MiB of production dependencies and 39 MiB of compiled output after excluding an 885 MiB Webpack cache. Measure the release, shared data and replica directories on the target Linux VPS with `du -sh`. Keep the active and previous known-good release after smoke checks and retire older release directories after verifying the `current` symlink.
+
+The release retains prerender and fetch data. The web unit uses in-memory ISR. If the Next image optimizer is used, `.next/cache/images` can be cleared while the service is stopped. The next release starts with an empty image cache. Keep the cache root writable by `softmarket` if image optimization is enabled.
+
+Run `pnpm backups:prune --dry-run` to preview migration-snapshot retention under `data/backups`. The command keeps the newest five snapshots by modification time and any snapshot set with a file modified in the last seven days. Use `--keep <number>` to change the count or `--dir <directory>` for a different snapshot directory. After reviewing the preview, run without `--dry-run` while no backup or restore is in progress. It matches timestamped `pre-*.db` and `post-*.db` snapshots and their SQLite sidecars. Manage `scripts/backup.sh` archives in `backups/` and Litestream retention separately.
+
+Locally, inactive `.next-perf` and other `.next-*` builds, `test-results/` and `playwright-report/` can be cleared when you no longer need their output. Keep any dist directory used by a running server. Clear `.cache/ms-playwright` only if you can reinstall browsers before the next E2E run. Keep `.cache/pnpm` if you rely on it for offline installs.
+
 ## Kaynaklar
 
 - cPanel — Node.js uygulaması kurma (Application Manager, Passenger): https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/

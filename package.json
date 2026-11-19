@@ -40,7 +40,8 @@
     "search:reindex": "tsx scripts/reindex-search.ts",
     "content:import": "tsx scripts/content-import.ts",
     "media:regenerate": "tsx scripts/media-regenerate.ts",
-    "payments:reconcile": "tsx scripts/payments-reconcile.ts"
+    "payments:reconcile": "tsx scripts/payments-reconcile.ts",
+    "backups:prune": "node scripts/prune-backups.mjs"
   },
   "dependencies": {
     "@payloadcms/db-sqlite": "3.93.0",
@@ -53,7 +54,6 @@
     "@payloadcms/plugin-seo": "3.93.0",
     "@payloadcms/richtext-lexical": "3.93.0",
     "@payloadcms/ui": "3.93.0",
-    "@tailwindcss/postcss": "^4.3.4",
     "ajv": "^8.20.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -64,26 +64,27 @@
     "next": "15.4.11",
     "next-intl": "^4.14.9",
     "payload": "3.93.0",
-    "postcss": "^8.5.32",
     "radix-ui": "^1.8.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sharp": "0.35.4",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss": "^4.3.4",
+    "tsx": "4.23.15",
+    "typescript": "5.7.3",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@playwright/test": "1.63.0",
+    "@tailwindcss/postcss": "^4.3.4",
     "@types/node": "^24.0.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "eslint": "^9.16.0",
     "eslint-config-next": "15.4.11",
     "lighthouse": "^13.6.0",
-    "tsx": "4.23.15",
-    "typescript": "5.7.3",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.4",
     "vitest": "4.0.18"
   }
 }

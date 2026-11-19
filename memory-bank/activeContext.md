@@ -1,3 +1,8 @@
+## VPS disk footprint
+
+- `scripts/deploy.sh` builds in a disposable directory and installs production dependencies into the staged release before cutover. Temporary pnpm caches and the Webpack build cache stay out of the release. The web and timer units keep their current entry points.
+- `pnpm backups:prune --dry-run` previews migration snapshot retention. See the disk budget and cleanup instructions in `docs/plan-hosting.md`.
+
 ## Payments P8 security audit (2026-11-19, done)
 
 - Audit and fixes complete; Sonnet QA added iyzico callback limiter ordering (closed surface stays 404). Full suite 1891 tests, isolated e2e 30/30.

@@ -1,3 +1,9 @@
+## VPS disk footprint
+
+- Classified `tsx` and TypeScript as runtime dependencies and Tailwind/PostCSS as build dependencies. The disposable macOS release used 952 MiB of production dependencies and 39 MiB of compiled output after excluding 885 MiB of Webpack cache.
+- The production-only release rendered both locales, a product and the Payload admin, and served a sample upload through in-process HTTP handlers. Snapshot retention was exercised only with temporary fixtures. Linux systemd and Caddy acceptance remains open.
+- Typecheck, lint, the isolated production build, and all 1,892 unit tests passed.
+
 ## Payments P8 security audit (2026-11-19, done)
 
 - P8 audit complete; fixes QA'd and runtime-verified (isolated e2e 30/30, MCP Bearer, REST/GraphQL API-key denials, admin cookie session, content:import and payments:reconcile dry runs).

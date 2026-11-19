@@ -12,6 +12,121 @@ A website for a corporate software company that showcases its 5-20 products, col
 - Content management through the Payload admin panel (`/admin`), with drafts and version history.
 - Content import from JSON (`pnpm content:import`) and a Payload MCP endpoint for AI agents.
 
+## Screenshots
+
+A quick look at the public site, the admin panel, and the customer portal. All screenshots use demo data only (neutral names, `example.com` addresses, masked license keys).
+
+<p align="center">
+  <img src="docs/screenshots/home-tr.webp" alt="SoftMarket home page in Turkish: hero, product families, and solutions" width="100%">
+</p>
+<p align="center"><sub>Home page (Turkish, default locale)</sub></p>
+
+### Public site
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/home-en.webp" alt="Home page in English"></td>
+    <td width="50%"><img src="docs/screenshots/product-catalog.webp" alt="Product catalog with product families"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Home page (English)</sub></td>
+    <td align="center"><sub>Product catalog</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/product-editions-quote.webp" alt="Product detail page showing editions with Request a Quote buttons"></td>
+    <td width="50%"><img src="docs/screenshots/solutions.webp" alt="Solutions listing page"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Product detail: editions and Request a Quote</sub></td>
+    <td align="center"><sub>Solutions</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/news.webp" alt="News listing page"></td>
+    <td width="50%"><img src="docs/screenshots/support-center.webp" alt="Support center with search, downloads, documentation, and release notes"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>News</sub></td>
+    <td align="center"><sub>Support center</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/contact.webp" alt="Contact page"></td>
+    <td width="50%"><img src="docs/screenshots/home-mobile.webp" alt="Mobile home page at 390 px width"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Contact</sub></td>
+    <td align="center"><sub>Mobile (390 px)</sub></td>
+  </tr>
+</table>
+
+### Admin panel
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/visual-editor-light.webp" alt="Visual editor with Live Preview canvas, light theme"></td>
+    <td width="50%"><img src="docs/screenshots/visual-editor-dark.webp" alt="Visual editor with Live Preview canvas, dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Visual editor with Live Preview (light)</sub></td>
+    <td align="center"><sub>Visual editor with Live Preview (dark)</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/security-center-light.webp" alt="Security center overview, light theme"></td>
+    <td width="50%"><img src="docs/screenshots/security-center-dark.webp" alt="Security center overview, dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Security center (light)</sub></td>
+    <td align="center"><sub>Security center (dark)</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/license-actions-light.webp" alt="License detail with the license actions sidebar and active devices, light theme"></td>
+    <td width="50%"><img src="docs/screenshots/license-actions-dark.webp" alt="License detail with the license actions sidebar and active devices, dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>License detail with actions sidebar (light)</sub></td>
+    <td align="center"><sub>License detail with actions sidebar (dark)</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/admin-dashboard-light.webp" alt="Admin dashboard, light theme"></td>
+    <td width="50%"><img src="docs/screenshots/admin-dashboard-dark.webp" alt="Admin dashboard, dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Admin dashboard (light)</sub></td>
+    <td align="center"><sub>Admin dashboard (dark)</sub></td>
+  </tr>
+</table>
+
+### Customer portal
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/customer-portal-licenses.webp" alt="Customer portal license list"></td>
+    <td width="50%"><img src="docs/screenshots/customer-portal-devices.webp" alt="Customer portal license detail with active devices and release buttons"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>My licenses</sub></td>
+    <td align="center"><sub>License detail with active devices</sub></td>
+  </tr>
+</table>
+
+
 ## Tech stack
 
 - **Application:** Next.js 15 (App Router) and Payload CMS 3 running as a single application. The site lives in `src/app/(frontend)/[locale]`; the admin panel and API live in `src/app/(payload)`.
